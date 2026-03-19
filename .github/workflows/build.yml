@@ -1,0 +1,173 @@
+name: Build Unity Project
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Run EditMode Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      - name: Detect Unity project folder
+        id: detect
+        run: |
+          count=0
+          detected=""
+          for dir in */; do
+            if [ -d "${dir}Assets" ] && [ -d "${dir}ProjectSettings" ]; then
+              count=$((count + 1))
+              detected="${dir%/}"
+            fi
+          done
+          if [ "$count" -eq 0 ]; then
+            echo "::error::Unity project not found (no subdirectory containing both Assets/ and ProjectSettings/)"
+            exit 1
+          fi
+          if [ "$count" -gt 1 ]; then
+            echo "::error::Multiple Unity projects found ($count). Cannot auto-detect."
+            exit 1
+          fi
+          echo "project_path=$detected" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Library
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.detect.outputs.project_path }}/Library
+          key: Library-Test-${{ hashFiles(format('{0}/Assets/**', steps.detect.outputs.project_path), format('{0}/Packages/manifest.json', steps.detect.outputs.project_path)) }}
+          restore-keys: |
+            Library-Test-
+            Library-
+
+      - name: Run EditMode tests
+        uses: game-ci/unity-test-runner@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: ${{ steps.detect.outputs.project_path }}
+          unityVersion: 6000.3.8f1
+          testMode: EditMode
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+
+  build-windows:
+    name: Build for Windows
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      - name: Detect Unity project folder
+        id: detect
+        run: |
+          count=0
+          detected=""
+          for dir in */; do
+            if [ -d "${dir}Assets" ] && [ -d "${dir}ProjectSettings" ]; then
+              count=$((count + 1))
+              detected="${dir%/}"
+            fi
+          done
+          if [ "$count" -eq 0 ]; then
+            echo "::error::Unity project not found (no subdirectory containing both Assets/ and ProjectSettings/)"
+            exit 1
+          fi
+          if [ "$count" -gt 1 ]; then
+            echo "::error::Multiple Unity projects found ($count). Cannot auto-detect."
+            exit 1
+          fi
+          echo "project_path=$detected" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Library
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.detect.outputs.project_path }}/Library
+          key: Library-${{ hashFiles(format('{0}/Assets/**', steps.detect.outputs.project_path), format('{0}/Packages/manifest.json', steps.detect.outputs.project_path)) }}
+          restore-keys: |
+            Library-
+
+      - name: Read version
+        id: version
+        run: |
+          ver=$(grep "^  bundleVersion:" "${{ steps.detect.outputs.project_path }}/ProjectSettings/ProjectSettings.asset" | sed 's/.*: //')
+          echo "version=$ver" >> "$GITHUB_OUTPUT"
+
+      - name: Build project
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: ${{ steps.detect.outputs.project_path }}
+          unityVersion: 6000.3.8f1
+          targetPlatform: StandaloneWindows64
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Build-v${{ steps.version.outputs.version }}+build${{ github.run_number }}
+          path: build/StandaloneWindows64
+          retention-days: 14
+
+  release:
+    name: Create GitHub Release
+    needs: build-windows
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect Unity project folder
+        id: detect
+        run: |
+          for dir in */; do
+            if [ -d "${dir}Assets" ] && [ -d "${dir}ProjectSettings" ]; then
+              echo "project_path=${dir%/}" >> "$GITHUB_OUTPUT"
+              break
+            fi
+          done
+
+      - name: Read version
+        id: version
+        run: |
+          ver=$(grep "^  bundleVersion:" "${{ steps.detect.outputs.project_path }}/ProjectSettings/ProjectSettings.asset" | sed 's/.*: //')
+          echo "version=$ver" >> "$GITHUB_OUTPUT"
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: Build-v${{ steps.version.outputs.version }}+build${{ github.run_number }}
+          path: release-build
+
+      - name: Create release zip
+        run: |
+          cd release-build
+          zip -r ../Build-v${{ steps.version.outputs.version }}+build${{ github.run_number }}.zip .
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.version }}+build${{ github.run_number }}
+          name: v${{ steps.version.outputs.version }} (Build ${{ github.run_number }})
+          files: Build-v${{ steps.version.outputs.version }}+build${{ github.run_number }}.zip
+          generate_release_notes: true
