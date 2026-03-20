@@ -10,7 +10,7 @@ call :LOG_INFO "     Unityプロジェクト自動更新ツール 開始      "
 call :LOG_INFO "=============================================="
 call :LOG_INFO "開始日時: %date% %time%"
 
-REM リポジトリルートを取得（tool/ の親フォルダ）
+REM リポジトリルートを取得（Tool/ の親フォルダ）
 for %%i in ("%~dp0..") do SET "REPO_ROOT=%%~fi\"
 
 REM ========================================

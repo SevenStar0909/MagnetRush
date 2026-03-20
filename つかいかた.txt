@@ -12,7 +12,7 @@ Unityエディタを起動せずにビルドを実行するまで
 ============================================================================================
 １．Assets/Editor/ 以下に AutoBuildSystem.cs と BuildConfig.json.template が
 　　あることを確認します（BuildConfig.json は初回起動時に自動生成されます）
-２．tool\path.ini.template をコピーして tool\path.ini を作成し、以下を設定します
+２．Tool\path.ini.template をコピーして Tool\path.ini を作成し、以下を設定します
 　　1行目: 制作に使用しているバージョンの Unity.exe のフルパス
 　　2行目(省略可): Unityプロジェクトフォルダのフルパス
 　　※省略した場合、リポジトリ直下から自動検出されます
@@ -22,7 +22,7 @@ Unityエディタを起動せずにビルドを実行するまで
 ５．保存したいフォルダを絶対パスで記述し、設定保存を押します
 ６．ビルド実行を押してリリースビルドおよびデバッグビルドの両方が
 　　zipファイルで出力されていれば成功です
-７．以後、tool\Deploy.bat を実行するだけで、ゲームパッケージが指定したフォルダにビルドされます
+７．以後、Tool\Deploy.bat を実行するだけで、ゲームパッケージが指定したフォルダにビルドされます
 ※ビルドセッティング（シーンの登録等）は各自でやってください。
 
 ============================================================================================
@@ -62,8 +62,8 @@ Unityエディタを起動せずにビルドを実行するまで
 　　git config --global credential.helper manager
 
 ■ Fetch.bat の実行
-　８．tool\Fetch.bat を実行して、エラーがないか確認してください
-　９．エラーがなければ、次回以降は tool\FetchAndDeploy.bat を実行します
+　８．Tool\Fetch.bat を実行して、エラーがないか確認してください
+　９．エラーがなければ、次回以降は Tool\FetchAndDeploy.bat を実行します
 　　　FetchAndDeploy.bat は gitからソースを最新に更新し、ビルドして指定フォルダに出力します
 
 ■ giturl.ini について（廃止）
@@ -75,7 +75,7 @@ Unityエディタを起動せずにビルドを実行するまで
 ============================================================================================
 ビルドを自動化するための作業手順
 ============================================================================================
-１．Windowsタスクスケジューラに tool\FetchAndDeploy.bat を登録します
+１．Windowsタスクスケジューラに Tool\FetchAndDeploy.bat を登録します
 　　（例：毎日AM3:00に実行するように設定）
 ２．おわり。あとは勝手にデプロイしてくれます。
 
@@ -115,27 +115,27 @@ Git Flow ブランチ運用（チーム開発）
 　・feature/ — 各自の作業ブランチ。develop から分岐し、develop に PR でマージ。
 　　例: feature/add-new-enemy, feature/fix-ui-layout
 
-■ バッチファイル一覧（tool\ フォルダ内）
-　・tool\NewFeature.bat   — 新しいフィーチャーブランチを作成する
-　・tool\SwitchBranch.bat — ブランチを切り替える（番号選択）
-　・tool\Fetch.bat        — リモートの最新変更を取り込む（現在のブランチに対応）
-　・tool\PushBranch.bat   — 現在のブランチをリモートにプッシュする
-　・tool\BranchStatus.bat — 現在のブランチの状態を確認する（読み取り専用）
-　・tool\Deploy.bat       — ビルドを実行する（従来通り）
-　・tool\FetchAndDeploy.bat — Fetch + ビルドを一括実行（従来通り）
+■ バッチファイル一覧（Tool\ フォルダ内）
+　・Tool\NewFeature.bat   — 新しいフィーチャーブランチを作成する
+　・Tool\SwitchBranch.bat — ブランチを切り替える（番号選択）
+　・Tool\Fetch.bat        — リモートの最新変更を取り込む（現在のブランチに対応）
+　・Tool\PushBranch.bat   — 現在のブランチをリモートにプッシュする
+　・Tool\BranchStatus.bat — 現在のブランチの状態を確認する（読み取り専用）
+　・Tool\Deploy.bat       — ビルドを実行する（従来通り）
+　・Tool\FetchAndDeploy.bat — Fetch + ビルドを一括実行（従来通り）
 
 ■ 日常の作業フロー
 　１．新しい作業を始めるとき
-　　　tool\NewFeature.bat をダブルクリック → フィーチャー名を入力
+　　　Tool\NewFeature.bat をダブルクリック → フィーチャー名を入力
 　　　例: add-title-screen と入力 → feature/add-title-screen ブランチが作成される
 
 　２．毎日の作業
 　　　・Unity で作業する
-　　　・tool\Fetch.bat をダブルクリック → リモートの最新を取り込む
+　　　・Tool\Fetch.bat をダブルクリック → リモートの最新を取り込む
 　　　  （変更は自動コミットされてからリベースされます）
 
 　３．作業を共有したいとき
-　　　tool\PushBranch.bat をダブルクリック → リモートにプッシュ
+　　　Tool\PushBranch.bat をダブルクリック → リモートにプッシュ
 　　　→ feature ブランチの場合は PR 作成 URL が表示される
 
 　４．作業が完了したとき
@@ -169,12 +169,12 @@ Git Flow ブランチ運用（チーム開発）
 
 　Q. 今どのブランチにいるか分からない
 　A. Tools → Git Flow を開くと、ウィンドウ上部に現在のブランチと状態が表示されます。
-　   バッチファイルの場合は tool\BranchStatus.bat をダブルクリックしてください。
+　   バッチファイルの場合は Tool\BranchStatus.bat をダブルクリックしてください。
 
 　Q. 他の人のブランチに切り替えたい
 　A. Tools → Git Flow の「切り替え先」ドロップダウンから選んで「ブランチ切り替え」を押します。
 　   リモートにしかないブランチも自動的にローカルに作成されます。
-　   バッチファイルの場合は tool\SwitchBranch.bat をダブルクリックしてください。
+　   バッチファイルの場合は Tool\SwitchBranch.bat をダブルクリックしてください。
 
 　Q. Fetch でコンフリクトが出た
 　A. 同じファイルを複数人が編集した場合に発生します。

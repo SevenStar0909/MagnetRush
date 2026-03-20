@@ -10,7 +10,7 @@ call :LOG_INFO "     ブランチプッシュツール                   "
 call :LOG_INFO "=============================================="
 echo.
 
-REM リポジトリルートを取得（tool/ の親フォルダ）
+REM リポジトリルートを取得（Tool/ の親フォルダ）
 for %%i in ("%~dp0..") do SET "REPO_ROOT=%%~fi\"
 cd /d "!REPO_ROOT!"
 
