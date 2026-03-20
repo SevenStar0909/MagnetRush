@@ -43,15 +43,13 @@ public class GitFlowWindow : EditorWindow
     // 環境チェック結果
     private bool hasGitRepo = false;
     private bool hasOrigin = false;
-    private bool hasUserConfig = false;
     private string envError = "";
 
     // origin 登録用
     private string newOriginUrl = "";
 
-    // git user 設定用
-    private string inputUserName = "";
-    private string inputUserEmail = "";
+    // コミット用
+    private string commitMessage = "";
 
     // ========================================
     // 操作パイプライン（状態機械）
@@ -261,16 +259,6 @@ public class GitFlowWindow : EditorWindow
             return;
         }
         hasOrigin = true;
-
-        // user.name / user.email のチェック
-        hasUserConfig = false;
-        var (nameCode, userName) = RunGit("config user.name");
-        var (emailCode, userEmail) = RunGit("config user.email");
-        if (nameCode == 0 && !string.IsNullOrEmpty(userName?.Trim()) &&
-            emailCode == 0 && !string.IsNullOrEmpty(userEmail?.Trim()))
-        {
-            hasUserConfig = true;
-        }
     }
 
     private void OnGUI()
@@ -343,41 +331,6 @@ public class GitFlowWindow : EditorWindow
             return;
         }
 
-        // git user.name / user.email 未設定時の設定UI
-        if (!hasUserConfig)
-        {
-            EditorGUILayout.HelpBox(
-                "Git のユーザー情報が設定されていません。\nコミットするには名前とメールアドレスが必要です。\nGitHub に登録しているメールアドレスを入力してください。",
-                MessageType.Warning);
-            EditorGUILayout.Space();
-            inputUserName = EditorGUILayout.TextField("名前", inputUserName);
-            inputUserEmail = EditorGUILayout.TextField("メールアドレス", inputUserEmail);
-            if (GUILayout.Button("保存"))
-            {
-                string trimName = inputUserName?.Trim();
-                string trimEmail = inputUserEmail?.Trim();
-                if (string.IsNullOrEmpty(trimName) || string.IsNullOrEmpty(trimEmail))
-                {
-                    Log("エラー", "名前とメールアドレスの両方を入力してください。");
-                }
-                else if (trimName.Contains("\"") || trimEmail.Contains("\"") ||
-                         trimName.Contains(";") || trimEmail.Contains(";"))
-                {
-                    Log("エラー", "無効な文字が含まれています。");
-                }
-                else
-                {
-                    RunGit($"config user.name \"{trimName}\"");
-                    RunGit($"config user.email \"{trimEmail}\"");
-                    Log("成功", $"Git ユーザーを設定しました: {trimName} <{trimEmail}>");
-                    hasUserConfig = true;
-                    RefreshStatus();
-                    RefreshBranches();
-                }
-            }
-            EditorGUILayout.Space();
-        }
-
         EditorGUILayout.LabelField("ブランチ", currentBranch);
 
         // main / develop ブランチ警告（赤文字）
@@ -442,6 +395,13 @@ public class GitFlowWindow : EditorWindow
         if (GUILayout.Button("プッシュ (Push)"))
         {
             PerformPush();
+        }
+
+        EditorGUILayout.Space();
+        commitMessage = EditorGUILayout.TextField("コミットメッセージ", commitMessage);
+        if (GUILayout.Button("コミット (Commit)"))
+        {
+            PerformCommit();
         }
 
         GUI.enabled = true;
@@ -1384,6 +1344,21 @@ public class GitFlowWindow : EditorWindow
             }
         }
         catch { }
+
+        // パッケージファイルのタイムスタンプも保存（不要なパッケージ再解決を防止）
+        string packagesPath = Path.Combine(Path.GetDirectoryName(assetsPath), "Packages");
+        foreach (string name in new[] { "manifest.json", "packages-lock.json" })
+        {
+            try
+            {
+                string file = Path.Combine(packagesPath, name);
+                if (File.Exists(file))
+                {
+                    savedScriptTimestamps[file] = (ComputeFileHash(file), File.GetLastWriteTimeUtc(file));
+                }
+            }
+            catch { }
+        }
     }
 
     /// <summary>
@@ -1641,6 +1616,99 @@ public class GitFlowWindow : EditorWindow
                 }
             });
         };
+    }
+
+    // ========================================
+    // Commit（同期）
+    // ========================================
+
+    private void PerformCommit()
+    {
+        Log("情報", "=== コミット ===");
+
+        if (BranchPolicy.IsFullyProtected(currentBranch))
+        {
+            Log("エラー", $"{currentBranch} ブランチへの直接コミットは禁止されています。");
+            Log("情報", "feature ブランチで作業してください。");
+            return;
+        }
+
+        if (currentBranch == "develop")
+        {
+            bool proceed = EditorUtility.DisplayDialog(
+                "develop ブランチへの直接コミット",
+                "develop は統合用ブランチです。\n通常は feature/ ブランチで作業してください。\n\nそのままコミットしますか？",
+                "コミットする", "キャンセル");
+            if (!proceed)
+            {
+                Log("情報", "コミットをキャンセルしました。");
+                return;
+            }
+        }
+
+        var (code, output) = RunGit("status --porcelain");
+        if (code != 0)
+        {
+            Log("エラー", $"git status の実行に失敗しました: {output}");
+            return;
+        }
+        if (string.IsNullOrEmpty(output))
+        {
+            Log("情報", "コミットする変更がありません。");
+            return;
+        }
+
+        string[] statusLines = output.Split('\n');
+        int fileCount = statusLines.Length;
+
+        var untrackedFiles = new List<string>();
+        foreach (string line in statusLines)
+        {
+            if (line.StartsWith("??"))
+            {
+                untrackedFiles.Add(line.Substring(3).Trim());
+            }
+        }
+        if (untrackedFiles.Count > 0)
+        {
+            Log("情報", $"新規ファイルを追加します ({untrackedFiles.Count} 件):");
+            foreach (string file in untrackedFiles)
+            {
+                Log("情報", $"  + {file}");
+            }
+        }
+
+        Log("情報", $"変更をステージングしています... ({fileCount} ファイル)");
+        var (addCode, addOutput) = RunGit("add -A");
+        if (addCode != 0)
+        {
+            Log("エラー", $"ステージングに失敗しました: {addOutput}");
+            return;
+        }
+
+        string message = string.IsNullOrEmpty(commitMessage.Trim())
+            ? $"Manual commit: {DateTime.Now:yyyy/MM/dd HH:mm:ss}"
+            : commitMessage.Trim();
+
+        string tempFile = Path.GetTempFileName();
+        try
+        {
+            File.WriteAllText(tempFile, message, Encoding.UTF8);
+            (code, output) = RunGit($"commit -F \"{tempFile}\"");
+        }
+        finally
+        {
+            try { File.Delete(tempFile); } catch { }
+        }
+        if (code != 0)
+        {
+            Log("エラー", $"コミットに失敗しました: {output}");
+            return;
+        }
+
+        Log("成功", $"コミットしました: {message}");
+        commitMessage = "";
+        RefreshStatus();
     }
 
     // ========================================
