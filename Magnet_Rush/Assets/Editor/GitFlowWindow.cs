@@ -176,9 +176,11 @@ public class GitFlowWindow : EditorWindow
         }
 
         // ドメインリロード後のパイプライン状態復元
+        // Note: ドメインリロードでUnity内部のAutoRefreshカウンタはリセットされるため、
+        // ここで AllowAutoRefresh を呼ぶとカウンタが負になり Assertion エラーが出る。
+        // isAssemblyReloadLocked のリセットのみ行う。
         if (TryRestorePipelineState())
         {
-            AssetDatabase.AllowAutoRefresh();
             isAssemblyReloadLocked = false;
             Log("情報", "パイプラインを復元しました。処理を継続します...");
         }
