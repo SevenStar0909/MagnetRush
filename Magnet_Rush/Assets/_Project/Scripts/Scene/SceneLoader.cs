@@ -29,6 +29,7 @@ public class SceneLoader : MonoBehaviour
         else
         {
             Destroy(gameObject);
+            return;
         }
     }
 
