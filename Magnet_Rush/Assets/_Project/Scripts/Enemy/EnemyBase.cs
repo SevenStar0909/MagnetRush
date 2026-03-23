@@ -11,7 +11,6 @@ public class EnemyBase : MonoBehaviour
 
     protected NavMeshAgent agent;
     protected int currentHp;
-
     public EnemySettings StatusData => statusData;
     public Transform Player => player;
     public NavMeshAgent Agent => agent;
@@ -21,24 +20,27 @@ public class EnemyBase : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     protected virtual void Awake()
     {
-        agent = GetComponent<NavMeshAgent>();
+        agent = GetComponent<NavMeshAgent>(); 
+        
+        if (player == null)
+        {
+            GameObject playerObj = GameObject.FindWithTag("Player");
+
+            if (playerObj != null)
+            {
+                player = playerObj.transform;
+            }
+            else
+            {
+                Debug.LogError("Player not found. Check Tag or spawn timing.");
+            }
+        }
     }
     protected virtual void Start()
     {
         currentHp = statusData.maxHp;
 
-        if (player == null)
-        {
-            GameObject playerObj = GameObject.FindWithTag("Player");
-            if (playerObj != null)
-            {
-                player = playerObj.transform;
-            }
-        }
-        else
-        {
-            Debug.LogError("Player not found. Check Tag or spawn timing.");
-        }
+
 
         if (agent != null && statusData != null)
         {
