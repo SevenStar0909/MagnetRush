@@ -100,4 +100,13 @@ public class MagnetBullet : MonoBehaviour
         }
     }
 
+    // リストからも削除する
+    private void OnDestroy()
+    {
+        if (BulletManager.Instance != null)
+        {
+            BulletManager.Instance.UnregisterBullet(this);
+        }
+    }
+    
 }
