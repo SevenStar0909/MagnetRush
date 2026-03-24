@@ -1,7 +1,7 @@
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "BulletSettings", menuName = "MagnetRush/BulletSettings")]
-public class BulletSettings : ScriptableObject
+public class BulletSettings_Shimomoto : ScriptableObject
 {
     [Header("Bullet")]
     public float bulletSpeed = 30f;

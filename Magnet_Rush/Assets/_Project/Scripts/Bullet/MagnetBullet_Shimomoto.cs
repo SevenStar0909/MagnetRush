@@ -11,7 +11,7 @@ public enum MagneticPole
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(SphereCollider))]
 [RequireComponent(typeof(Renderer))]
-public class MagnetBullet : MonoBehaviour
+public class MagnetBullet_Shimomoto : MonoBehaviour
 {
     [SerializeField] private BulletSettings settings;
 

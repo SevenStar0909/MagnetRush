@@ -7,10 +7,17 @@ on:
     branches: [main, develop]
   workflow_dispatch:
 
+permissions:
+  contents: write
+  checks: write
+
 jobs:
   test:
     name: Run EditMode Tests
     runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      contents: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -58,7 +65,6 @@ jobs:
           projectPath: ${{ steps.detect.outputs.project_path }}
           unityVersion: 6000.3.8f1
           testMode: EditMode
-          githubToken: ${{ secrets.GITHUB_TOKEN }}
 
   build-windows:
     name: Build for Windows
