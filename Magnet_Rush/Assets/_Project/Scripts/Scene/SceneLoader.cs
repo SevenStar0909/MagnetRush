@@ -65,15 +65,15 @@ public class SceneLoader : MonoBehaviour
     {
         // --- 全シーン共通の追加ロード ---
 
-        //SceneManager.LoadScene("UI", LoadSceneMode.Additive);
-        //SceneManager.LoadScene("Audio", LoadSceneMode.Additive);
+        //SceneManager.LoadScene("UIScene", LoadSceneMode.Additive);
+        //SceneManager.LoadScene("AudioScene", LoadSceneMode.Additive);
 
         // --- 特定のシーン限定の追加ロード ---
 
         // ゲームシーンがロードされた場合、マップシーンも追加でロードする
         if (baseSceneName == SceneType.Game.ToString())
         {
-            SceneManager.LoadScene("Map", LoadSceneMode.Additive);
+            SceneManager.LoadScene("MapScene", LoadSceneMode.Additive);
         }
     }
 
