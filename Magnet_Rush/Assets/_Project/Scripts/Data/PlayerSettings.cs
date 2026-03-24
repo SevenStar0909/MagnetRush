@@ -1,9 +1,11 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 [CreateAssetMenu(fileName = "PlayerSettings", menuName = "MagnetRush/PlayerSettings")]
 public class PlayerSettings : ScriptableObject
 {
     [Header("Movement")]
+    [FormerlySerializedAs("moveSpeed")]
     public float topSpeed = 6f;
     public float acceleration = 30f;
     public float deceleration = 25f;
