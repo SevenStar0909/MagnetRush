@@ -11,11 +11,15 @@
 *.anim text eol=lf
 *.controller text eol=lf
 
-# コード
-*.cs text eol=crlf
+# コード（全てLF統一）
+*.cs text eol=lf
 *.shader text eol=lf
 *.cginc text eol=lf
 *.hlsl text eol=lf
+
+# .NETプロジェクトファイル（.NET仕様でCRLF必須）
+*.sln text eol=crlf
+*.csproj text eol=crlf
 
 # 設定ファイル
 *.json text eol=lf
