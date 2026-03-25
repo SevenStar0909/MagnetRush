@@ -50,10 +50,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ steps.detect.outputs.project_path }}/Library
-          key: Library-Test-${{ hashFiles(format('{0}/Assets/**', steps.detect.outputs.project_path), format('{0}/Packages/manifest.json', steps.detect.outputs.project_path)) }}
+          key: Library-Test-v2-${{ hashFiles(format('{0}/Assets/**', steps.detect.outputs.project_path), format('{0}/Packages/manifest.json', steps.detect.outputs.project_path)) }}
           restore-keys: |
-            Library-Test-
-            Library-
+            Library-Test-v2-
 
       - name: Run EditMode tests
         uses: game-ci/unity-test-runner@v4
@@ -102,9 +101,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ steps.detect.outputs.project_path }}/Library
-          key: Library-${{ hashFiles(format('{0}/Assets/**', steps.detect.outputs.project_path), format('{0}/Packages/manifest.json', steps.detect.outputs.project_path)) }}
+          key: Library-v2-${{ hashFiles(format('{0}/Assets/**', steps.detect.outputs.project_path), format('{0}/Packages/manifest.json', steps.detect.outputs.project_path)) }}
           restore-keys: |
-            Library-
+            Library-v2-
 
       - name: Read version
         id: version
