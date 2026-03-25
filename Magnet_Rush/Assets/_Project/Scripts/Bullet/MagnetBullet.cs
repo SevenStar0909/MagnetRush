@@ -70,17 +70,17 @@ public class MagnetBullet : MonoBehaviour
         // 他の弾は無視
         if (other.CompareTag(GameTags.MagnetBullet)) return;
 
-        // パターン①: 壁/タレット/その他の静的オブジェクトにくっつく
+        // パターン1 壁/タレット/その他の静的オブジェクトにくっつく
         if (other.CompareTag(GameTags.Wall) || other.CompareTag(GameTags.Turret)
             || other.CompareTag(GameTags.Untagged))
         {
             StickToSurface(other);
         }
-        // パターン②: 敵/敵武器/プレイヤーに当たると弾消去＋対象を磁化
+        // パターン2 敵/敵武器/プレイヤーに当たると弾消去＋対象を磁化
         else if (other.CompareTag(GameTags.Enemy) || other.CompareTag(GameTags.EnemyWeapon)
                  || other.CompareTag(GameTags.Player))
         {
-            // フォールバック: 技術的に②が困難な場合は①動作
+            // フォールバック: 技術的に2が困難な場合は1の動作
             if (settings != null && settings.useFallbackMode)
             {
                 StickToSurface(other);
@@ -91,7 +91,7 @@ public class MagnetBullet : MonoBehaviour
             if (magnetizable != null)
             {
                 magnetizable.SetPole(Pole);
-                // パターン②: 対象に可視化を追加（MagnetFieldVisualizerに委譲）
+                // パターン2対象に可視化を追加（MagnetFieldVisualizerに委譲）
                 ShowFieldVisualization(other.gameObject);
             }
 
@@ -111,7 +111,7 @@ public class MagnetBullet : MonoBehaviour
         var mag = GetComponent<Magnetizable>();
         if (mag != null) mag.SetPole(Pole);
 
-        // パターン①: 磁力範囲を可視化（MagnetFieldVisualizerに委譲）
+        // パターン1: 磁力範囲を可視化（MagnetFieldVisualizerに委譲）
         ShowFieldVisualization(gameObject);
 
         OnImpact?.Invoke();
