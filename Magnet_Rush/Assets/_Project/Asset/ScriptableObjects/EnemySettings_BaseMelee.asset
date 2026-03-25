@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59655f068fd3a8d438aa1c36c61e9248, type: 3}
+  m_Name: EnemySettings_BaseMelee
+  m_EditorClassIdentifier: Assembly-CSharp::EnemySettings
+  maxHp: 10
+  moveSpeed: 2.5
+  acceleration: 8
+  chaseRange: 15
+  stopDistance: 1.8
+  attackDamage: 1
+  attackRange: 2
+  attackInterval: 1.2
+  attackHitboxDuration: 0.2

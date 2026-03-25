@@ -1,17 +1,47 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+/// <summary>
+/// Input System入力をバッファリングする。
+/// ボタン入力はConsumeパターンで1回だけ読み取り可能。
+/// </summary>
 [RequireComponent(typeof(PlayerInput))]
 public class PlayerInputHandler : MonoBehaviour
 {
     public Vector2 MoveInput { get; private set; }
     public Vector2 LookInput { get; private set; }
-    public bool FirePressed { get; private set; }
     public bool AimHeld { get; private set; }
-    public bool SwitchPolePressed { get; private set; }
-    public bool ReloadPressed { get; private set; }
 
-    // InputSystem Messages (PlayerInput component calls these via SendMessages or Invoke Unity Events)
+    // ボタン入力バッファ（Consumeで読み取り後にリセット）
+    private bool fireBuffer;
+    private bool switchPoleBuffer;
+    private bool reloadBuffer;
+
+    /// <summary>射撃入力を消費する。1回呼ぶとfalseに戻る。</summary>
+    public bool ConsumeFire()
+    {
+        if (!fireBuffer) return false;
+        fireBuffer = false;
+        return true;
+    }
+
+    /// <summary>磁極切替入力を消費する。</summary>
+    public bool ConsumeSwitchPole()
+    {
+        if (!switchPoleBuffer) return false;
+        switchPoleBuffer = false;
+        return true;
+    }
+
+    /// <summary>リロード入力を消費する。</summary>
+    public bool ConsumeReload()
+    {
+        if (!reloadBuffer) return false;
+        reloadBuffer = false;
+        return true;
+    }
+
+    // InputSystemメッセージ
 
     public void OnMove(InputValue value)
     {
@@ -25,8 +55,7 @@ public class PlayerInputHandler : MonoBehaviour
 
     public void OnAttack(InputValue value)
     {
-        // Attackを射撃(Fire)として使用
-        FirePressed = value.isPressed;
+        if (value.isPressed) fireBuffer = true;
     }
 
     public void OnAim(InputValue value)
@@ -36,19 +65,11 @@ public class PlayerInputHandler : MonoBehaviour
 
     public void OnSwitchPole(InputValue value)
     {
-        SwitchPolePressed = value.isPressed;
+        if (value.isPressed) switchPoleBuffer = true;
     }
 
     public void OnReload(InputValue value)
     {
-        ReloadPressed = value.isPressed;
-    }
-
-    void LateUpdate()
-    {
-        // 1フレームだけtrueのフラグをリセット
-        FirePressed = false;
-        SwitchPolePressed = false;
-        ReloadPressed = false;
+        if (value.isPressed) reloadBuffer = true;
     }
 }
