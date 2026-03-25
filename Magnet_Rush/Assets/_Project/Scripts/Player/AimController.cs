@@ -1,80 +1,77 @@
 using UnityEngine;
 
-namespace MagnetRush.Player
+/// <summary>
+/// LT入力でエイムモード（スロー＋カメラ寄り＋FOV変更）を制御する。
+/// </summary>
+public class AimController : MonoBehaviour
 {
-    /// <summary>
-    /// LT入力でエイムモード（スロー＋カメラ寄り＋FOV変更）を制御する。
-    /// </summary>
-    public class AimController : MonoBehaviour
+    [SerializeField] private PlayerSettings settings;
+    [SerializeField] private CameraSettingsApplier cameraSettings;
+
+    private PlayerInputHandler input;
+    private PlayerStateManager states;
+    private bool isAiming;
+    private float aimReleaseGrace; // LT離しのジッター防止用タイマー
+    private const float AimReleaseGraceTime = 0.15f; // 150ms猶予
+
+    void Awake()
     {
-        [SerializeField] private PlayerSettings settings;
-        [SerializeField] private CameraSettingsApplier cameraSettings;
+        input = GetComponent<PlayerInputHandler>();
+        states = GetComponent<PlayerStateManager>();
+    }
 
-        private PlayerInputHandler input;
-        private PlayerStateManager states;
-        private bool isAiming;
-        private float aimReleaseGrace; // LT離しのジッター防止用タイマー
-        private const float AimReleaseGraceTime = 0.15f; // 150ms猶予
-
-        void Awake()
+    void Update()
+    {
+        if (input.AimHeld)
         {
-            input = GetComponent<PlayerInputHandler>();
-            states = GetComponent<PlayerStateManager>();
+            aimReleaseGrace = AimReleaseGraceTime;
+            if (!isAiming) StartAim();
         }
-
-        void Update()
+        else
         {
-            if (input.AimHeld)
+            // LTが離されても猶予時間内は解除しない（RT押下時のジッター防止）
+            if (isAiming)
             {
-                aimReleaseGrace = AimReleaseGraceTime;
-                if (!isAiming) StartAim();
+                aimReleaseGrace -= Time.unscaledDeltaTime;
+                if (aimReleaseGrace <= 0f) StopAim();
             }
+        }
+    }
+
+    public void StartAim()
+    {
+        isAiming = true;
+        Time.timeScale = settings.aimTimeScale;
+
+        if (cameraSettings != null)
+            cameraSettings.SetAimMode(true);
+
+        if (states != null)
+            states.Change<AimPlayerState>();
+    }
+
+    public void StopAim()
+    {
+        isAiming = false;
+        Time.timeScale = 1f;
+
+        if (cameraSettings != null)
+            cameraSettings.SetAimMode(false);
+
+        // 入力があればMove、なければIdleに戻る
+        if (states != null)
+        {
+            var playerInput = GetComponent<PlayerInputHandler>();
+            if (playerInput != null && playerInput.MoveInput.sqrMagnitude > 0.01f)
+                states.Change<MovePlayerState>();
             else
-            {
-                // LTが離されても猶予時間内は解除しない（RT押下時のジッター防止）
-                if (isAiming)
-                {
-                    aimReleaseGrace -= Time.unscaledDeltaTime;
-                    if (aimReleaseGrace <= 0f) StopAim();
-                }
-            }
+                states.Change<IdlePlayerState>();
         }
+    }
 
-        public void StartAim()
-        {
-            isAiming = true;
-            Time.timeScale = settings.aimTimeScale;
-
-            if (cameraSettings != null)
-                cameraSettings.SetAimMode(true);
-
-            if (states != null)
-                states.Change<States.AimPlayerState>();
-        }
-
-        public void StopAim()
-        {
-            isAiming = false;
-            Time.timeScale = 1f;
-
-            if (cameraSettings != null)
-                cameraSettings.SetAimMode(false);
-
-            // 入力があればMove、なければIdleに戻る
-            if (states != null)
-            {
-                var playerInput = GetComponent<PlayerInputHandler>();
-                if (playerInput != null && playerInput.MoveInput.sqrMagnitude > 0.01f)
-                    states.Change<States.MovePlayerState>();
-                else
-                    states.Change<States.IdlePlayerState>();
-            }
-        }
-
-        void OnDisable()
-        {
-            // シーン遷移・オブジェクト破棄時にスロー状態を強制解除
-            Time.timeScale = 1f;
-        }
+    void OnDisable()
+    {
+        // シーン遷移・オブジェクト破棄時にスロー状態を強制解除
+        Time.timeScale = 1f;
     }
 }

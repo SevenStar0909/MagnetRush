@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using MagnetRush.Common;
 
 /// <summary>
 /// 磁力システムの中枢。全Magnetizableを管理し、ペア間の引力/反発を計算・適用する。

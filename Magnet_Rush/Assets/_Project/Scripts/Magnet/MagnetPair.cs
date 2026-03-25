@@ -1,5 +1,4 @@
 using UnityEngine;
-using MagnetRush.Common;
 
 /// <summary>
 /// 2つのMagnetizable間の磁力ペア情報。

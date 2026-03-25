@@ -1,9 +1,6 @@
-namespace MagnetRush.Common
+public enum MagneticPole
 {
-    public enum MagneticPole
-    {
-        None,
-        S,
-        N
-    }
+    None,
+    S,
+    N
 }
