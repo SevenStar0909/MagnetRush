@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.InputSystem;
-using MagnetRush.Common;
 
 /// <summary>
 /// ゲーム全体の管理。リスタート、リスポーン、テレポートを担当する。
