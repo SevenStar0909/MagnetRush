@@ -1,75 +1,29 @@
 # ============================================================
-# Git LFS — バイナリアセットを LFS で管理
+# 改行コード統一
 # ============================================================
 
-# 画像
-*.png filter=lfs diff=lfs merge=lfs -text
-*.jpg filter=lfs diff=lfs merge=lfs -text
-*.jpeg filter=lfs diff=lfs merge=lfs -text
-*.psd filter=lfs diff=lfs merge=lfs -text
-*.tga filter=lfs diff=lfs merge=lfs -text
-*.tif filter=lfs diff=lfs merge=lfs -text
-*.tiff filter=lfs diff=lfs merge=lfs -text
-*.exr filter=lfs diff=lfs merge=lfs -text
-*.hdr filter=lfs diff=lfs merge=lfs -text
-*.gif filter=lfs diff=lfs merge=lfs -text
-*.bmp filter=lfs diff=lfs merge=lfs -text
+# Unityアセット（常にLF）
+*.unity text eol=lf
+*.prefab text eol=lf
+*.asset text eol=lf
+*.meta text eol=lf
+*.mat text eol=lf
+*.anim text eol=lf
+*.controller text eol=lf
 
-# 音声
-*.wav filter=lfs diff=lfs merge=lfs -text
-*.mp3 filter=lfs diff=lfs merge=lfs -text
-*.ogg filter=lfs diff=lfs merge=lfs -text
-*.aif filter=lfs diff=lfs merge=lfs -text
-*.aiff filter=lfs diff=lfs merge=lfs -text
+# コード
+*.cs text eol=crlf
+*.shader text eol=lf
+*.cginc text eol=lf
+*.hlsl text eol=lf
 
-# 3Dモデル
-*.fbx filter=lfs diff=lfs merge=lfs -text
-*.obj filter=lfs diff=lfs merge=lfs -text
-*.blend filter=lfs diff=lfs merge=lfs -text
-*.dae filter=lfs diff=lfs merge=lfs -text
-*.3ds filter=lfs diff=lfs merge=lfs -text
+# 設定ファイル
+*.json text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.xml text eol=lf
+*.asmdef text eol=lf
 
-# フォント
-*.ttf filter=lfs diff=lfs merge=lfs -text
-*.otf filter=lfs diff=lfs merge=lfs -text
-
-# ライブラリ
-*.dll filter=lfs diff=lfs merge=lfs -text
-*.so filter=lfs diff=lfs merge=lfs -text
-*.a filter=lfs diff=lfs merge=lfs -text
-
-# 動画
-*.mp4 filter=lfs diff=lfs merge=lfs -text
-*.mov filter=lfs diff=lfs merge=lfs -text
-*.avi filter=lfs diff=lfs merge=lfs -text
-*.webm filter=lfs diff=lfs merge=lfs -text
-
-# Unity固有
-*.unitypackage filter=lfs diff=lfs merge=lfs -text
-*.cubemap filter=lfs diff=lfs merge=lfs -text
-
-# ============================================================
-# Unity YAML マージ設定
-# ============================================================
-*.unity merge=unityyamlmerge diff
-*.prefab merge=unityyamlmerge diff
-*.asset merge=unityyamlmerge diff
-*.mat merge=unityyamlmerge diff
-*.anim merge=unityyamlmerge diff
-*.controller merge=unityyamlmerge diff
-*.overrideController merge=unityyamlmerge diff
-*.physicMaterial merge=unityyamlmerge diff
-*.physicsMaterial2D merge=unityyamlmerge diff
-*.spriteatlas merge=unityyamlmerge diff
-*.terrainlayer merge=unityyamlmerge diff
-*.fontsettings merge=unityyamlmerge diff
-*.guiskin merge=unityyamlmerge diff
-*.flare merge=unityyamlmerge diff
-*.renderTexture merge=unityyamlmerge diff
-*.lighting merge=unityyamlmerge diff
-*.shadervariants merge=unityyamlmerge diff
- 
-# === DeployKit === 
 # ============================================================
 # Git LFS — バイナリアセットを LFS で管理
 # ============================================================
@@ -140,4 +94,3 @@
 *.renderTexture merge=unityyamlmerge diff
 *.lighting merge=unityyamlmerge diff
 *.shadervariants merge=unityyamlmerge diff
-# === /DeployKit === 

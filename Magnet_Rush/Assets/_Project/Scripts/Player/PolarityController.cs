@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 
 /// <summary>
-/// Y入力で弾の磁極（S⇔N）を切り替える。
+/// Y入力で弾の磁極（S/N）を切り替える。
 /// </summary>
 public class PolarityController : MonoBehaviour
 {
