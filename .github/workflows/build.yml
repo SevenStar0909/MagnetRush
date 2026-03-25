@@ -62,7 +62,7 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           projectPath: ${{ steps.detect.outputs.project_path }}
-          unityVersion: 6000.3.8f1
+          unityVersion: 6000.3.11f1
           testMode: EditMode
 
   build-windows:
@@ -119,7 +119,7 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           projectPath: ${{ steps.detect.outputs.project_path }}
-          unityVersion: 6000.3.8f1
+          unityVersion: 6000.3.11f1
           targetPlatform: StandaloneWindows64
 
       - name: Upload build artifact
