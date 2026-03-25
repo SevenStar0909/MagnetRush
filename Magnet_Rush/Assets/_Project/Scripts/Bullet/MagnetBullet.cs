@@ -1,6 +1,5 @@
 using System;
 using UnityEngine;
-using MagnetRush.Common;
 
 /// <summary>
 /// 磁力弾。着弾時にパターン①（壁にくっつく）またはパターン②（弾消去＋磁化）を実行する。

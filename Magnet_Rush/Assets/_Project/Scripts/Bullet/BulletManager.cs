@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using MagnetRush.Common;
 
 /// <summary>
 /// 弾の生存管理。4発上限、登録/解除、全消去を行う。

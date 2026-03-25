@@ -2,54 +2,51 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace MagnetRush.Entity
+/// <summary>
+/// エンティティステートを管理する。ステートはRegisterState()で登録される純粋なC#オブジェクト。
+/// </summary>
+public class EntityStateManager<T> : MonoBehaviour where T : Entity
 {
+    private readonly Dictionary<Type, EntityState<T>> states = new();
+    private T entity;
+
+    public EntityState<T> current { get; private set; }
+    public EntityState<T> last { get; private set; }
+
     /// <summary>
-    /// エンティティステートを管理する。ステートはRegisterState()で登録される純粋なC#オブジェクト。
+    /// 全ステート登録後にサブクラスのAwake()から呼び出す。
     /// </summary>
-    public class EntityStateManager<T> : MonoBehaviour where T : Entity
+    public void Initialize(T entity)
     {
-        private readonly Dictionary<Type, EntityState<T>> states = new();
-        private T entity;
+        this.entity = entity;
+    }
 
-        public EntityState<T> current { get; private set; }
-        public EntityState<T> last { get; private set; }
+    public void RegisterState(EntityState<T> state)
+    {
+        states[state.GetType()] = state;
+    }
 
-        /// <summary>
-        /// 全ステート登録後にサブクラスのAwake()から呼び出す。
-        /// </summary>
-        public void Initialize(T entity)
+    public void Change<TState>() where TState : EntityState<T>
+    {
+        var type = typeof(TState);
+        if (!states.TryGetValue(type, out var next))
         {
-            this.entity = entity;
+            Debug.LogError($"State {type.Name} not registered.");
+            return;
         }
 
-        public void RegisterState(EntityState<T> state)
+        if (current != null)
         {
-            states[state.GetType()] = state;
+            current.Exit();
+            last = current;
         }
 
-        public void Change<TState>() where TState : EntityState<T>
-        {
-            var type = typeof(TState);
-            if (!states.TryGetValue(type, out var next))
-            {
-                Debug.LogError($"State {type.Name} not registered.");
-                return;
-            }
+        current = next;
+        current.Enter(entity, this);
+    }
 
-            if (current != null)
-            {
-                current.Exit();
-                last = current;
-            }
-
-            current = next;
-            current.Enter(entity, this);
-        }
-
-        public bool IsCurrentOfType<TState>() where TState : EntityState<T>
-        {
-            return current != null && current.GetType() == typeof(TState);
-        }
+    public bool IsCurrentOfType<TState>() where TState : EntityState<T>
+    {
+        return current != null && current.GetType() == typeof(TState);
     }
 }

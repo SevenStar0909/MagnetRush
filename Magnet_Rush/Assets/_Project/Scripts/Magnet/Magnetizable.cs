@@ -1,5 +1,4 @@
 using UnityEngine;
-using MagnetRush.Common;
 using System;
 
 /// <summary>
@@ -18,12 +17,12 @@ public class Magnetizable : MonoBehaviour
 
     // キャッシュ（力の適用先判別用）
     private Rigidbody rb;
-    private MagnetRush.Entity.IMagnetTarget magnetTarget;
+    private IMagnetTarget magnetTarget;
 
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
-        magnetTarget = GetComponent<MagnetRush.Entity.IMagnetTarget>();
+        magnetTarget = GetComponent<IMagnetTarget>();
     }
 
     void OnEnable()
