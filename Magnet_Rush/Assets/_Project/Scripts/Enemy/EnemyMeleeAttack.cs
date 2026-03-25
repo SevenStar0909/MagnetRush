@@ -1,7 +1,5 @@
 using System.Collections;
-using System.Text.RegularExpressions;
 using UnityEngine;
-using UnityEngine.InputSystem; // for testing
 
 [RequireComponent(typeof(EnemyBase))]
 public class EnemyMeleeAttack : MonoBehaviour
@@ -12,8 +10,6 @@ public class EnemyMeleeAttack : MonoBehaviour
 
     private EnemyBase enemyBase;
     private EnemySettings data;
-
-    //private CapsuleCollider attackCapsule; // for dynamic hitbox adjustment
 
     private float attackTimer;
     private bool isAttacking;
@@ -42,7 +38,6 @@ public class EnemyMeleeAttack : MonoBehaviour
 
         float atkR = data.attackRange;
 
-        Debug.Log($"atkR = {atkR}");
         attackHitbox.height = atkR;
         attackHitbox.center = new Vector3(0f, atkR / 2f, 0f);
         attackHitboxMeshRenderer.transform.localPosition = new Vector3(0f, 0f, atkR / 2f);
@@ -53,7 +48,6 @@ public class EnemyMeleeAttack : MonoBehaviour
     private void Update()
     {
         attackTimer += Time.deltaTime;
-        TestAtk();
     }
 
     public void TryAttack()
@@ -92,20 +86,11 @@ public class EnemyMeleeAttack : MonoBehaviour
         if (attackHitbox == null) return;
         if (!attackHitbox.enabled) return;
 
-        if (other.CompareTag("Player"))
+        if (other.CompareTag(GameTags.Player))
         {
-            Debug.Log($"{gameObject.name} attacked Player. Damage = {data.attackDamage}");
-
-            // example:
-            // other.GetComponent<PlayerHealth>()?.TakeDamage(data.attackDamage);
+            var health = other.GetComponent<Health>();
+            if (health != null) health.Damage(data.attackDamage);
         }
     }
 
-    private void TestAtk()
-    {
-        if (Keyboard.current != null && Keyboard.current.iKey.wasPressedThisFrame)
-        {
-            TryAttack();
-        }
-    }
 }

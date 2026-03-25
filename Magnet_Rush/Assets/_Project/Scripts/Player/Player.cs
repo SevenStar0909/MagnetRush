@@ -1,5 +1,6 @@
-using UnityEngine;
+﻿using UnityEngine;
 
+[RequireComponent(typeof(CharacterController))]
 [RequireComponent(typeof(PlayerInputHandler))]
 [RequireComponent(typeof(PlayerEvents))]
 public class Player : Entity
@@ -42,23 +43,28 @@ public class Player : Entity
 
     void Update()
     {
-        if (states.current != null)
-        {
-            states.current.Step(Time.deltaTime);
-        }
-
+        states.Step(Time.deltaTime);
+        UpdateGround();
         ApplyGravity(settings.gravity, settings.snapForce, Time.deltaTime);
         ApplyMovement(Time.deltaTime);
     }
 
+    /// <summary>
+    /// カメラ相対の入力方向に加速し、進行方向を向く。
+    /// </summary>
+    public void AccelerateToInputDirection(float dt)
+    {
+        var direction = GetCameraRelativeDirection(input.MoveInput);
+        if (direction.sqrMagnitude > 0.01f)
+        {
+            Accelerate(direction, settings.turningDrag, settings.acceleration, settings.topSpeed, dt);
+            FaceDirection(direction, settings.rotationSpeed, dt);
+        }
+    }
+
     public void MoveWithInput(float dt)
     {
-        Vector3 dir = GetCameraRelativeDirection(input.MoveInput);
-        if (dir.sqrMagnitude > 0.01f)
-        {
-            Accelerate(dir, settings.acceleration, settings.topSpeed, dt);
-            FaceDirection(dir, settings.rotationSpeed, dt);
-        }
+        AccelerateToInputDirection(dt);
     }
 
     public void MoveWithInputStrafe(float dt)
@@ -67,18 +73,26 @@ public class Player : Entity
         float aimSpeed = settings.topSpeed * settings.aimMoveSpeedMultiplier;
         if (dir.sqrMagnitude > 0.01f)
         {
-            Accelerate(dir, settings.acceleration, aimSpeed, dt);
+            Accelerate(dir, settings.turningDrag, settings.acceleration, aimSpeed, dt);
         }
         if (cachedCameraTransform != null)
         {
             Vector3 camForward = cachedCameraTransform.forward;
             camForward.y = 0f;
-            FaceDirection(camForward, settings.rotationSpeed * 2f, dt);
+            FaceDirection(camForward, settings.rotationSpeed * 2f, dt, false);
         }
     }
 
     public void SlowDown(float dt)
     {
         Decelerate(settings.deceleration, dt);
+    }
+
+    /// <summary>
+    /// 斜面での加減速を適用する
+    /// </summary>
+    public void RegularSlopeFactor(float dt)
+    {
+        SlopeFactor(settings.slopeUpwardForce, settings.slopeDownwardForce, dt);
     }
 }

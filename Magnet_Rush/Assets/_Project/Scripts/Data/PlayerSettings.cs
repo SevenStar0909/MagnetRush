@@ -25,6 +25,7 @@ public class PlayerSettings : ScriptableObject
     public Vector3 shoulderOffset;
 
     [Header("Aim")]
+    public float aimReleaseGraceTime = 0.15f;
     public float aimTimeScale = 0.3f;
     public float aimFOV = 40f;
     public float aimCameraDistance = 3f;
@@ -32,6 +33,10 @@ public class PlayerSettings : ScriptableObject
 
     [Header("死亡・リスポーン")]
     public float respawnDelay = 3f;
+
+    [Header("Slope")]
+    public float slopeUpwardForce = 15f;
+    public float slopeDownwardForce = 25f;
 
     [Header("Magnet")]
     public float magnetResistance = 0.5f;

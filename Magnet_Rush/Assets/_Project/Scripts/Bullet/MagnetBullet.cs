@@ -69,13 +69,13 @@ public class MagnetBullet : MonoBehaviour
         // 他の弾は無視
         if (other.CompareTag(GameTags.MagnetBullet)) return;
 
-        // パターン①: 壁/タレット/その他の静的オブジェクトにくっつく
+        // パターン1: 壁/タレット/その他の静的オブジェクトにくっつく
         if (other.CompareTag(GameTags.Wall) || other.CompareTag(GameTags.Turret)
             || other.CompareTag(GameTags.Untagged))
         {
             StickToSurface(other);
         }
-        // パターン②: 敵/敵武器/プレイヤーに当たると弾消去＋対象を磁化
+        // パターン2: 敵/敵武器/プレイヤーに当たると弾消去＋対象を磁化
         else if (other.CompareTag(GameTags.Enemy) || other.CompareTag(GameTags.EnemyWeapon)
                  || other.CompareTag(GameTags.Player))
         {
@@ -121,7 +121,8 @@ public class MagnetBullet : MonoBehaviour
     /// </summary>
     private void ShowFieldVisualization(GameObject target)
     {
-        float range = MagnetManager.Instance != null ? MagnetManager.Instance.GetMagnetRange() : 5f;
+        float fallback = settings != null ? settings.defaultMagnetRange : 5f;
+        float range = MagnetManager.Instance != null ? MagnetManager.Instance.GetMagnetRange() : fallback;
         var visualizer = target.AddComponent<MagnetFieldVisualizer>();
         visualizer.Show(Pole, range);
     }

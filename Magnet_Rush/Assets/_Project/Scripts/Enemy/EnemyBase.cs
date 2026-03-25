@@ -1,47 +1,50 @@
 using UnityEngine;
 using UnityEngine.AI;
 
-public class EnemyBase : MonoBehaviour
+/// <summary>
+/// 敵の基底クラス。Entityを継承しHealth・IMagnetTargetを共有する。
+/// 移動はNavMeshAgent経由、磁力はexternalVelocityで適用。
+/// </summary>
+[RequireComponent(typeof(NavMeshAgent))]
+public class EnemyBase : Entity
 {
     [Header("Data")]
-    [SerializeField] protected EnemySettings statusData;
+    [SerializeField] private EnemySettings statusData;
 
     [Header("References")]
-    [SerializeField] protected Transform player;
+    [SerializeField] private Transform player;
 
     protected NavMeshAgent agent;
-    protected int currentHp;
+
     public EnemySettings StatusData => statusData;
     public Transform Player => player;
     public NavMeshAgent Agent => agent;
-    public int CurrentHp => currentHp;
 
-
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    protected virtual void Awake()
+    protected override void Awake()
     {
-        agent = GetComponent<NavMeshAgent>(); 
-        
+        base.Awake();
+        agent = GetComponent<NavMeshAgent>();
+
         if (player == null)
         {
-            GameObject playerObj = GameObject.FindWithTag("Player");
-
+            GameObject playerObj = GameObject.FindWithTag(GameTags.Player);
             if (playerObj != null)
-            {
                 player = playerObj.transform;
-            }
-            else
-            {
-                Debug.LogError("Player not found. Check Tag or spawn timing.");
-            }
         }
+
+        // Health.OnDie → Die()
+        if (health != null)
+            health.OnDie += Die;
     }
+
+    void OnDestroy()
+    {
+        if (health != null)
+            health.OnDie -= Die;
+    }
+
     protected virtual void Start()
     {
-        currentHp = statusData.maxHp;
-
-
-
         if (agent != null && statusData != null)
         {
             agent.speed = statusData.moveSpeed;
@@ -49,17 +52,14 @@ public class EnemyBase : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// �G���_���[�W���󂯂鏈��
-    /// </summary>
-    /// <param name="damage"></param>
-    public virtual void TakeDamage(int damage)
+    void Update()
     {
-        currentHp -= damage;
-
-        if (currentHp <= 0)
+        // NavMeshAgentが移動を管理するのでApplyMovement/ApplyGravityは呼ばない
+        // 磁力等の外部力だけ適用
+        if (externalVelocity.sqrMagnitude > 0.01f && agent != null)
         {
-            Die();
+            agent.Move(externalVelocity * Time.deltaTime);
+            externalVelocity = Vector3.zero;
         }
     }
 
@@ -67,10 +67,4 @@ public class EnemyBase : MonoBehaviour
     {
         Destroy(gameObject);
     }
-
-    // Update is called once per frame
-    //void Update()
-    //{
-    //    
-    //}
 }

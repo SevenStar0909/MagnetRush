@@ -13,19 +13,12 @@ public class EnemyMeleeAI : MonoBehaviour
 
     private void Awake()
     {
-        //Debug.Log("[EnemyMeleeAI] Awake");
         enemyBase = GetComponent<EnemyBase>();
         meleeAttack = GetComponent<EnemyMeleeAttack>();
     }
 
-    private void OnEnable()
-    {
-        //Debug.Log("[EnemyMeleeAI] OnEnable");
-    }
-
     private void Start()
     {
-        //Debug.Log("[EnemyMeleeAI] Start");
         agent = enemyBase.Agent;
         player = enemyBase.Player;
         data = enemyBase.StatusData;
@@ -33,8 +26,6 @@ public class EnemyMeleeAI : MonoBehaviour
 
     private void Update()
     {
-        //Debug.Log("[EnemyMeleeAI] Update");
-
         if (player == null || agent == null || data == null)
         {
             return;
@@ -42,7 +33,7 @@ public class EnemyMeleeAI : MonoBehaviour
 
         float distance = Vector3.Distance(transform.position, player.position);
 
-        // ƒvƒŒƒCƒ„[‚ª’ÇÕ”ÍˆÍŠO‚Ìê‡AˆÚ“®‚ğ’â~
+        // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãŒè¿½è·¡ç¯„å›²å¤–ã®å ´åˆã€ç§»å‹•ã‚’åœæ­¢
         if (distance > data.chaseRange)
         {
             agent.isStopped = true;
@@ -50,13 +41,13 @@ public class EnemyMeleeAI : MonoBehaviour
             return;
         }
 
-        // ƒvƒŒƒCƒ„[‚ªUŒ‚”ÍˆÍ“à‚Ìê‡AUŒ‚‚ğ‚İ‚é
+        // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãŒæ”»æ’ƒç¯„å›²å†…ã®å ´åˆã€æ”»æ’ƒã‚’è©¦ã¿ã‚‹
         if (distance <= data.attackRange)
         {
             agent.isStopped = true;
             agent.ResetPath();
 
-            if (!meleeAttack.IsAttacking) // UŒ‚’†‚ÅƒvƒŒƒCƒ„[‚Ì•û‚ğŒü‚©‚È‚¢
+            if (!meleeAttack.IsAttacking) // æ”»æ’ƒä¸­ã§ãªã‘ã‚Œã°ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®æ–¹ã‚’å‘ã
             {
                 FacePlayer();
             }
@@ -84,7 +75,7 @@ public class EnemyMeleeAI : MonoBehaviour
         transform.rotation = Quaternion.Slerp(
             transform.rotation,
             targetRotation,
-            Time.deltaTime * 10f
+            Time.deltaTime * data.rotationSpeed
         );
     }
 }

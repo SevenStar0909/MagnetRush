@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System;
 
 /// <summary>
@@ -52,7 +52,7 @@ public class Magnetizable : MonoBehaviour
     }
 
     /// <summary>
-    /// 力を適用する。IMagnetTarget → Rigidbody → 無視の優先順で判別（OCP準拠）。
+    /// 力を適用する。IMagnetTarget → Rigidbody → 無視の優先順で判別
     /// 新しい移動タイプはIMagnetTargetを実装すれば自動対応。
     /// </summary>
     public void ApplyForce(Vector3 force)

@@ -12,7 +12,8 @@ public class EnemySettings : ScriptableObject
     public float stopDistance = 1.5f;
     [Header("Attack")]
     public int attackDamage = 1;
-    public float attackRange = 1.5f; // 攻撃の有効範囲
-    public float attackInterval = 1.2f; // 攻撃のクールダウン時間
+    public float attackRange = 1.5f;
+    public float attackInterval = 1.2f;
+    public float rotationSpeed = 10f;
     public float attackHitboxDuration = 0.2f;
 }

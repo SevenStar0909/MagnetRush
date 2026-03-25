@@ -4,18 +4,65 @@ using UnityEngine;
 /// 全物理エンティティ（プレイヤー、敵）の基底クラス。
 /// 速度（横移動・垂直・外部）、重力、移動を管理する。
 /// </summary>
-[RequireComponent(typeof(CharacterController))]
 public abstract class Entity : MonoBehaviour, IMagnetTarget
 {
     protected CharacterController cc;
     [HideInInspector] public Health health;
     protected Transform cachedCameraTransform;
 
-    public Vector3 lateralVelocity;
-    public float verticalVelocity;
+    /// <summary>ワールド空間の速度ベクトル。</summary>
+    public Vector3 velocity;
+
+    /// <summary>外部からの一時的な力（磁力等）。毎フレームリセット。</summary>
     public Vector3 externalVelocity;
 
+    /// <summary>
+    /// ローカル空間の速度（transform.upとVector3.upの間で自動変換）。
+    /// 斜面上でも正しく動作する。
+    /// </summary>
+    public Vector3 localVelocity
+    {
+        get => Quaternion.FromToRotation(transform.up, Vector3.up) * velocity;
+        set => velocity = Quaternion.FromToRotation(Vector3.up, transform.up) * value;
+    }
+
+    /// <summary>ローカル空間のXZ速度（横移動成分）。</summary>
+    public Vector3 lateralVelocity
+    {
+        get
+        {
+            var local = localVelocity;
+            var value = new Vector3(local.x, 0f, local.z);
+            return value.sqrMagnitude < 0.0001f ? Vector3.zero : value;
+        }
+        set
+        {
+            var local = localVelocity;
+            localVelocity = new Vector3(value.x, local.y, value.z);
+        }
+    }
+
+    /// <summary>ローカル空間のY速度（垂直成分）。</summary>
+    public float verticalVelocity
+    {
+        get => localVelocity.y;
+        set
+        {
+            var local = localVelocity;
+            local.y = value;
+            localVelocity = local;
+        }
+    }
+
     public bool IsGrounded { get; private set; }
+
+    // --- 地面情報（斜面対応） ---
+    public RaycastHit groundHit { get; protected set; }
+    public float groundAngle { get; protected set; }
+    public Vector3 groundNormal { get; protected set; } = Vector3.up;
+    public Vector3 localSlopeDirection { get; protected set; }
+
+    protected readonly float slopingGroundAngle = 20f;
 
     protected virtual void Awake()
     {
@@ -31,12 +78,15 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
     /// 全速度成分をCharacterControllerの単一Moveコールで適用する。
     /// 適用後にexternalVelocityをリセットする。
     /// </summary>
-    protected void ApplyMovement(float dt)
+    protected virtual void ApplyMovement(float dt)
     {
-        Vector3 total = lateralVelocity + Vector3.up * verticalVelocity + externalVelocity;
-        cc.Move(total * dt);
+        Vector3 total = velocity + externalVelocity;
+        if (cc != null)
+        {
+            cc.Move(total * dt);
+            IsGrounded = cc.isGrounded;
+        }
         externalVelocity = Vector3.zero;
-        IsGrounded = cc.isGrounded;
     }
 
     /// <summary>
@@ -55,21 +105,31 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
     }
 
     /// <summary>
-    /// 指定方向への横移動速度を加速する。
+    /// 指定方向への横移動速度を加速する（turningDragで滑らかな方向転換）。
+    /// Platformer ProjectのAccelerateパターンを採用。
     /// </summary>
-    protected void Accelerate(Vector3 direction, float acceleration, float topSpeed, float dt)
+    protected void Accelerate(Vector3 direction, float turningDrag, float acceleration, float topSpeed, float dt)
     {
         if (direction.sqrMagnitude < 0.01f) return;
 
         direction.Normalize();
-        float currentSpeed = Vector3.Dot(lateralVelocity, direction);
-        float addSpeed = Mathf.Clamp(topSpeed - currentSpeed, 0f, acceleration * dt);
-        lateralVelocity += direction * addSpeed;
 
-        if (lateralVelocity.magnitude > topSpeed)
+        // 速度を「進行方向成分」と「横方向成分」に分解
+        float speed = Vector3.Dot(direction, lateralVelocity);
+        Vector3 turningVelocity = lateralVelocity - direction * speed;
+
+        // 横方向成分を減衰（滑らかな方向転換）
+        float turningDelta = turningDrag * dt;
+        turningVelocity = Vector3.MoveTowards(turningVelocity, Vector3.zero, turningDelta);
+
+        // 進行方向に加速
+        if (lateralVelocity.magnitude < topSpeed || speed < 0f)
         {
-            lateralVelocity = lateralVelocity.normalized * topSpeed;
+            speed += acceleration * dt;
+            speed = Mathf.Clamp(speed, -topSpeed, topSpeed);
         }
+
+        lateralVelocity = direction * speed + turningVelocity;
     }
 
     /// <summary>
@@ -77,27 +137,68 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
     /// </summary>
     protected void Decelerate(float deceleration, float dt)
     {
-        float speed = lateralVelocity.magnitude;
-        if (speed < 0.01f)
+        float delta = deceleration * dt;
+        lateralVelocity = Vector3.MoveTowards(lateralVelocity, Vector3.zero, delta);
+    }
+
+    /// <summary>
+    /// 地面情報（法線、角度、斜面方向）を更新する。
+    /// </summary>
+    protected void UpdateGround()
+    {
+        if (IsGrounded)
         {
-            lateralVelocity = Vector3.zero;
-            return;
+            float distance = (cc != null ? cc.height : 2f) * 0.5f + 0.3f;
+            if (Physics.Raycast(transform.position, -transform.up, out var hit, distance,
+                Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+            {
+                groundHit = hit;
+                groundNormal = hit.normal;
+                groundAngle = Vector3.Angle(Vector3.up, hit.normal);
+                localSlopeDirection = new Vector3(groundNormal.x, 0f, groundNormal.z).normalized;
+                return;
+            }
         }
 
-        float drop = deceleration * dt;
-        float newSpeed = Mathf.Max(speed - drop, 0f);
-        lateralVelocity *= (newSpeed / speed);
+        groundAngle = 0f;
+        groundNormal = Vector3.up;
+        localSlopeDirection = Vector3.zero;
+    }
+
+    /// <summary>
+    /// 現在の地面が斜面かどうかを返す。
+    /// </summary>
+    public virtual bool OnSlopingGround()
+    {
+        return IsGrounded && groundAngle > slopingGroundAngle;
+    }
+
+    /// <summary>
+    /// 斜面での加減速を適用する。上り坂は減速、下り坂は加速。
+    /// </summary>
+    protected void SlopeFactor(float upwardForce, float downwardForce, float dt)
+    {
+        if (!IsGrounded || !OnSlopingGround()) return;
+
+        var factor = Vector3.Dot(Vector3.up, groundNormal);
+        var downwards = Vector3.Dot(localSlopeDirection, lateralVelocity) > 0;
+        var multiplier = downwards ? downwardForce : upwardForce;
+        var delta = factor * multiplier * dt;
+        lateralVelocity += localSlopeDirection * delta;
     }
 
     /// <summary>
     /// Slerpを使用してエンティティを指定方向に回転させる。
+    /// adjustUp=trueの場合、ローカル空間の方向をtransform.upに合わせて変換する。
     /// </summary>
-    protected void FaceDirection(Vector3 direction, float rotationSpeed, float dt)
+    protected void FaceDirection(Vector3 direction, float rotationSpeed, float dt, bool adjustUp = true)
     {
         if (direction.sqrMagnitude < 0.01f) return;
 
-        direction.y = 0f;
-        Quaternion targetRotation = Quaternion.LookRotation(direction);
+        if (adjustUp)
+            direction = Quaternion.FromToRotation(Vector3.up, transform.up) * direction;
+
+        Quaternion targetRotation = Quaternion.LookRotation(direction, transform.up);
         transform.rotation = Quaternion.Slerp(
             transform.rotation,
             targetRotation,
@@ -118,15 +219,41 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
     /// </summary>
     protected Vector3 GetCameraRelativeDirection(Vector2 input)
     {
-        if (cachedCameraTransform == null) return Vector3.zero;
+        return GetCameraRelativeDirection(input, out _);
+    }
 
-        Vector3 forward = cachedCameraTransform.forward;
-        Vector3 right = cachedCameraTransform.right;
-        forward.y = 0f;
-        right.y = 0f;
-        forward.Normalize();
-        right.Normalize();
+    /// <summary>
+    /// 2D入力からカメラ相対の移動方向を取得する（ProjectOnPlane + localSpace変換）。
+    /// magnitudeには正規化前の大きさが出力される（アナログ入力の強度）。
+    /// Platformer ProjectのGetMovementCameraDirectionパターンを採用。
+    /// </summary>
+    protected Vector3 GetCameraRelativeDirection(Vector2 input, out float magnitude, bool localSpace = true)
+    {
+        magnitude = 0f;
+        if (cachedCameraTransform == null || input.sqrMagnitude < 0.01f)
+            return Vector3.zero;
 
-        return forward * input.y + right * input.x;
+        // 2D入力を3D方向に変換
+        Vector3 direction = new Vector3(input.x, 0f, input.y);
+
+        // カメラのupをエンティティのupに合わせてから回転適用
+        var rotation = Quaternion.FromToRotation(cachedCameraTransform.up, transform.up);
+        direction = rotation * cachedCameraTransform.rotation * direction;
+
+        if (localSpace)
+        {
+            // エンティティの接地面に投影し、ローカル空間に変換
+            direction = Vector3.ProjectOnPlane(direction, transform.up);
+            direction = Quaternion.FromToRotation(transform.up, Vector3.up) * direction;
+        }
+
+        magnitude = direction.magnitude;
+
+        if (magnitude > 0.001f)
+            direction /= magnitude;
+        else
+            return Vector3.zero;
+
+        return direction;
     }
 }

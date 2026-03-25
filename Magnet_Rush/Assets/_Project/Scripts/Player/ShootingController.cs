@@ -54,14 +54,15 @@ public class ShootingController : MonoBehaviour
         Ray ray = mainCamera.ScreenPointToRay(screenCenter);
 
         int layerMask = ~(1 << gameObject.layer); // 自分のレイヤーを除外
+        float maxDist = bulletSettings != null ? bulletSettings.raycastDistance : 200f;
         Vector3 targetPoint;
-        if (Physics.Raycast(ray, out RaycastHit hit, 200f, layerMask))
+        if (Physics.Raycast(ray, out RaycastHit hit, maxDist, layerMask))
         {
             targetPoint = hit.point;
         }
         else
         {
-            targetPoint = ray.GetPoint(200f);
+            targetPoint = ray.GetPoint(maxDist);
         }
 
         // 発射位置から着弾点への方向

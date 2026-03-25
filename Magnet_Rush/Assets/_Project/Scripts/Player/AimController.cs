@@ -10,9 +10,8 @@ public class AimController : MonoBehaviour
 
     private PlayerInputHandler input;
     private PlayerStateManager states;
-    private bool isAiming;
+    public bool IsAiming { get; private set; }
     private float aimReleaseGrace; // LT離しのジッター防止用タイマー
-    private const float AimReleaseGraceTime = 0.15f; // 150ms猶予
 
     void Awake()
     {
@@ -24,13 +23,13 @@ public class AimController : MonoBehaviour
     {
         if (input.AimHeld)
         {
-            aimReleaseGrace = AimReleaseGraceTime;
-            if (!isAiming) StartAim();
+            aimReleaseGrace = settings.aimReleaseGraceTime;
+            if (!IsAiming) StartAim();
         }
         else
         {
             // LTが離されても猶予時間内は解除しない（RT押下時のジッター防止）
-            if (isAiming)
+            if (IsAiming)
             {
                 aimReleaseGrace -= Time.unscaledDeltaTime;
                 if (aimReleaseGrace <= 0f) StopAim();
@@ -40,7 +39,7 @@ public class AimController : MonoBehaviour
 
     public void StartAim()
     {
-        isAiming = true;
+        IsAiming = true;
         Time.timeScale = settings.aimTimeScale;
 
         if (cameraSettings != null)
@@ -52,7 +51,7 @@ public class AimController : MonoBehaviour
 
     public void StopAim()
     {
-        isAiming = false;
+        IsAiming = false;
         Time.timeScale = 1f;
 
         if (cameraSettings != null)

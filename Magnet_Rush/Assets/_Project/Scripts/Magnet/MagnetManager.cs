@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -95,13 +95,13 @@ public class MagnetManager : Singleton<MagnetManager>
             float r = settings.magnetRange;
             Vector3 p = m.transform.position;
 
-            // 水平（赤道）
+            // 水平
             DrawCircle(p, Vector3.up, r, 32);
-            // 正面（経線）
+            // 正面
             DrawCircle(p, Vector3.forward, r, 32);
-            // 側面（経線）
+            // 側面
             DrawCircle(p, Vector3.right, r, 32);
-            // 斜め経線×2（球体感を出す）
+            // 斜め
             DrawCircle(p, (Vector3.forward + Vector3.right).normalized, r, 32);
             DrawCircle(p, (Vector3.forward - Vector3.right).normalized, r, 32);
             // 上下の緯度線
