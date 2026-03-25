@@ -69,15 +69,16 @@ public class MagnetBullet : MonoBehaviour
         // 他の弾は無視
         if (other.CompareTag(GameTags.MagnetBullet)) return;
 
+        // タグで分岐（CompareTagは未定義タグでエラーログを出すためtagプロパティで判定）
+        string tag = other.tag;
+
         // パターン1 壁/タレット/その他の静的オブジェクトにくっつく
-        if (other.CompareTag(GameTags.Wall) || other.CompareTag(GameTags.Turret)
-            || other.CompareTag(GameTags.Untagged))
+        if (tag == GameTags.Wall || tag == GameTags.Turret || tag == GameTags.Untagged)
         {
             StickToSurface(other);
         }
         // パターン2 敵/敵武器/プレイヤーに当たると弾消去＋対象を磁化
-        else if (other.CompareTag(GameTags.Enemy) || other.CompareTag(GameTags.EnemyWeapon)
-                 || other.CompareTag(GameTags.Player))
+        else if (tag == GameTags.Enemy || tag == GameTags.EnemyWeapon || tag == GameTags.Player)
         {
             // フォールバック: 技術的に2が困難な場合は1の動作
             if (settings != null && settings.useFallbackMode)
