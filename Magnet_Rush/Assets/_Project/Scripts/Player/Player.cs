@@ -43,10 +43,32 @@ public class Player : Entity
 
     void Update()
     {
+        UpdateMagneticInfluence();
         states.Step(Time.deltaTime);
         UpdateGround();
         ApplyGravity(settings.gravity, settings.snapForce, Time.deltaTime);
         ApplyMovement(Time.deltaTime);
+    }
+
+    /// <summary>
+    /// 磁力場の影響度に応じてEntity multiplierを更新する。
+    /// 強い磁力を受けているほど移動が鈍くなる。
+    /// </summary>
+    private void UpdateMagneticInfluence()
+    {
+        if (magnetizable == null || MagnetManager.Instance == null
+            || MagnetManager.Instance.Settings == null)
+        {
+            topSpeedMultiplier = 1f;
+            turningDragMultiplier = 1f;
+            return;
+        }
+
+        float influence = magnetizable.GetInfluence(MagnetManager.Instance.Settings.maxForcePerObject);
+        float damping = MagnetManager.Instance.Settings.magnetSpeedDamping;
+
+        topSpeedMultiplier = 1f - influence * damping;
+        turningDragMultiplier = 1f + influence * damping;
     }
 
     /// <summary>

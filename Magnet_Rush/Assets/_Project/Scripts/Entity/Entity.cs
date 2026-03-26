@@ -64,6 +64,11 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
 
     protected readonly float slopingGroundAngle = 20f;
 
+    // --- 外部変調用マルチプライヤー（磁力場・エリア効果等） ---
+    public float topSpeedMultiplier { get; set; } = 1f;
+    public float turningDragMultiplier { get; set; } = 1f;
+    public float decelerationMultiplier { get; set; } = 1f;
+
     protected virtual void Awake()
     {
         cc = GetComponent<CharacterController>();
@@ -114,19 +119,22 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
 
         direction.Normalize();
 
+        var effectiveTopSpeed = topSpeed * topSpeedMultiplier;
+        var effectiveTurningDrag = turningDrag * turningDragMultiplier;
+
         // 速度を「進行方向成分」と「横方向成分」に分解
         float speed = Vector3.Dot(direction, lateralVelocity);
         Vector3 turningVelocity = lateralVelocity - direction * speed;
 
         // 横方向成分を減衰（滑らかな方向転換）
-        float turningDelta = turningDrag * dt;
+        float turningDelta = effectiveTurningDrag * dt;
         turningVelocity = Vector3.MoveTowards(turningVelocity, Vector3.zero, turningDelta);
 
         // 進行方向に加速
-        if (lateralVelocity.magnitude < topSpeed || speed < 0f)
+        if (lateralVelocity.magnitude < effectiveTopSpeed || speed < 0f)
         {
             speed += acceleration * dt;
-            speed = Mathf.Clamp(speed, -topSpeed, topSpeed);
+            speed = Mathf.Clamp(speed, -effectiveTopSpeed, effectiveTopSpeed);
         }
 
         lateralVelocity = direction * speed + turningVelocity;
@@ -137,7 +145,7 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
     /// </summary>
     protected void Decelerate(float deceleration, float dt)
     {
-        float delta = deceleration * dt;
+        float delta = deceleration * decelerationMultiplier * dt;
         lateralVelocity = Vector3.MoveTowards(lateralVelocity, Vector3.zero, delta);
     }
 

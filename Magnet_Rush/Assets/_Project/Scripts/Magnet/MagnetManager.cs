@@ -1,8 +1,9 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
 /// 磁力システムの中枢。全Magnetizableを管理し、ペア間の引力/反発を計算・適用する。
+/// 接触距離に入った異極ペアにはOnMagnetContactを通知する。
 /// </summary>
 [DefaultExecutionOrder(-50)]
 public class MagnetManager : Singleton<MagnetManager>
@@ -10,73 +11,118 @@ public class MagnetManager : Singleton<MagnetManager>
     [SerializeField] private MagnetSettings settings;
 
     private readonly HashSet<Magnetizable> registry = new();
+    private readonly List<Magnetizable> cachedList = new();
+    private bool listDirty = true;
+
+    // 接触中ペアの追跡（Enter/Exit判定用）
+    private readonly HashSet<long> activeContacts = new();
 
     public void Register(Magnetizable m)
     {
-        if (m != null) registry.Add(m);
+        if (m != null && registry.Add(m))
+            listDirty = true;
     }
 
     public void Unregister(Magnetizable m)
     {
-        if (m != null) registry.Remove(m);
+        if (m != null && registry.Remove(m))
+            listDirty = true;
     }
 
     void FixedUpdate()
     {
-        // 破棄済みオブジェクトを除去
-        registry.RemoveWhere(m => m == null || !m.gameObject.activeInHierarchy);
+        // 破棄済みオブジェクト除去
+        int removed = registry.RemoveWhere(m => m == null || !m.gameObject.activeInHierarchy);
+        if (removed > 0) listDirty = true;
 
-        var list = new List<Magnetizable>(registry);
+        // キャッシュ更新（dirty時のみ）
+        if (listDirty)
+        {
+            cachedList.Clear();
+            cachedList.AddRange(registry);
+            listDirty = false;
+        }
+
+        // 今フレームの接触ペアを追跡
+        var contactsThisFrame = new HashSet<long>();
 
         // 全有効ペアをイテレート
-        for (int i = 0; i < list.Count; i++)
+        for (int i = 0; i < cachedList.Count; i++)
         {
-            if (!list[i].IsActive) continue;
+            if (!cachedList[i].IsActive) continue;
 
-            for (int j = i + 1; j < list.Count; j++)
+            for (int j = i + 1; j < cachedList.Count; j++)
             {
-                if (!list[j].IsActive) continue;
+                if (!cachedList[j].IsActive) continue;
 
-                var pair = new MagnetPair(list[i], list[j]);
-                ProcessPair(pair);
+                ProcessPair(cachedList[i], cachedList[j], contactsThisFrame);
             }
         }
+
+        // 接触Exit判定: 前フレームにあって今フレームにないペアを除去
+        activeContacts.IntersectWith(contactsThisFrame);
     }
 
-    private void ProcessPair(MagnetPair pair)
+    private void ProcessPair(Magnetizable a, Magnetizable b, HashSet<long> contactsThisFrame)
     {
-        float distance = pair.Distance;
+        Vector3 delta = b.transform.position - a.transform.position;
+        float distance = delta.magnitude;
         if (distance > settings.magnetRange || distance < 0.01f) return;
+
+        Vector3 dirAtoB = delta / distance;
 
         // F = magnetForce / (distance ^ forceDecayPower)
         float forceMagnitude = settings.magnetForce / Mathf.Pow(distance, settings.forceDecayPower);
 
-        // 合力上限
         if (settings.maxForcePerObject > 0f)
-        {
             forceMagnitude = Mathf.Min(forceMagnitude, settings.maxForcePerObject);
+
+        bool isOpposite = a.Pole != b.Pole && a.Pole != MagneticPole.None && b.Pole != MagneticPole.None;
+        bool isSame = a.Pole == b.Pole;
+
+        if (isOpposite)
+        {
+            a.ApplyForce(dirAtoB * forceMagnitude);
+            b.ApplyForce(-dirAtoB * forceMagnitude);
+        }
+        else if (isSame)
+        {
+            a.ApplyForce(-dirAtoB * forceMagnitude);
+            b.ApplyForce(dirAtoB * forceMagnitude);
         }
 
-        Vector3 dirAtoB = pair.DirectionAtoB;
+        // 接触判定（異極のみ、snapDistance内）
+        if (isOpposite && distance < settings.snapDistance)
+        {
+            long pairKey = GetPairKey(a, b);
+            contactsThisFrame.Add(pairKey);
 
-        if (pair.IsOppositePole)
-        {
-            // 異極: 引力（互いに近づく）
-            pair.a.ApplyForce(dirAtoB * forceMagnitude);
-            pair.b.ApplyForce(-dirAtoB * forceMagnitude);
+            // Enter判定: 前フレームに接触していなかったら通知
+            if (activeContacts.Add(pairKey))
+            {
+                a.NotifyContact(b);
+                b.NotifyContact(a);
+            }
         }
-        else if (pair.IsSamePole)
-        {
-            // 同極: 反発（互いに離れる）
-            pair.a.ApplyForce(-dirAtoB * forceMagnitude);
-            pair.b.ApplyForce(dirAtoB * forceMagnitude);
-        }
+    }
+
+    /// <summary>
+    /// 2つのMagnetizableからユニークなペアキーを生成する。
+    /// </summary>
+    private static long GetPairKey(Magnetizable a, Magnetizable b)
+    {
+        int idA = a.GetInstanceID();
+        int idB = b.GetInstanceID();
+        if (idA > idB) (idA, idB) = (idB, idA);
+        return ((long)idA << 32) | (uint)idB;
     }
 
     public float GetMagnetRange()
     {
         return settings != null ? settings.magnetRange : 10f;
     }
+
+    public MagnetSettings Settings => settings;
 
     void OnDrawGizmos()
     {
@@ -86,7 +132,6 @@ public class MagnetManager : Singleton<MagnetManager>
         {
             if (m == null || !m.IsActive) continue;
 
-            // 磁力範囲を円エッジ×3で描画（水平・正面・側面）
             Color color = m.Pole == MagneticPole.S
                 ? new Color(1f, 0.2f, 0.2f, 0.8f)
                 : new Color(0.2f, 0.4f, 1f, 0.8f);
@@ -95,41 +140,34 @@ public class MagnetManager : Singleton<MagnetManager>
             float r = settings.magnetRange;
             Vector3 p = m.transform.position;
 
-            // 水平
             DrawCircle(p, Vector3.up, r, 32);
-            // 正面
             DrawCircle(p, Vector3.forward, r, 32);
-            // 側面
             DrawCircle(p, Vector3.right, r, 32);
-            // 斜め
             DrawCircle(p, (Vector3.forward + Vector3.right).normalized, r, 32);
             DrawCircle(p, (Vector3.forward - Vector3.right).normalized, r, 32);
-            // 上下の緯度線
             DrawCircle(p + Vector3.up * r * 0.5f, Vector3.up, r * 0.866f, 24);
             DrawCircle(p - Vector3.up * r * 0.5f, Vector3.up, r * 0.866f, 24);
         }
 
         // ペア間のライン
-        var list = new List<Magnetizable>(registry);
-        for (int i = 0; i < list.Count; i++)
+        for (int i = 0; i < cachedList.Count; i++)
         {
-            if (!list[i].IsActive) continue;
-            for (int j = i + 1; j < list.Count; j++)
+            if (!cachedList[i].IsActive) continue;
+            for (int j = i + 1; j < cachedList.Count; j++)
             {
-                if (!list[j].IsActive) continue;
-                var pair = new MagnetPair(list[i], list[j]);
-                if (pair.Distance > settings.magnetRange) continue;
+                if (!cachedList[j].IsActive) continue;
+                float dist = Vector3.Distance(cachedList[i].transform.position, cachedList[j].transform.position);
+                if (dist > settings.magnetRange) continue;
 
-                // 引力=白、斥力=黄
-                Gizmos.color = pair.IsOppositePole ? Color.white : Color.yellow;
-                Gizmos.DrawLine(list[i].transform.position, list[j].transform.position);
+                bool isOpposite = cachedList[i].Pole != cachedList[j].Pole
+                    && cachedList[i].Pole != MagneticPole.None
+                    && cachedList[j].Pole != MagneticPole.None;
+                Gizmos.color = isOpposite ? Color.white : Color.yellow;
+                Gizmos.DrawLine(cachedList[i].transform.position, cachedList[j].transform.position);
             }
         }
     }
 
-    /// <summary>
-    /// 指定した法線軸を中心に円を描画する。
-    /// </summary>
     private void DrawCircle(Vector3 center, Vector3 normal, float radius, int segments)
     {
         Quaternion rot = Quaternion.LookRotation(normal);

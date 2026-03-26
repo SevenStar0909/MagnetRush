@@ -15,9 +15,13 @@ public class Magnetizable : MonoBehaviour
 
     public event Action<MagneticPole> OnPoleChanged;
 
+    /// <summary>磁化オブジェクト同士が接触距離に入った時に発火。</summary>
+    public event Action<Magnetizable> OnMagnetContact;
+
     // キャッシュ（力の適用先判別用）
     private Rigidbody rb;
     private IMagnetTarget magnetTarget;
+    private float totalForceThisFrame;
 
     void Awake()
     {
@@ -52,11 +56,29 @@ public class Magnetizable : MonoBehaviour
     }
 
     /// <summary>
-    /// 力を適用する。IMagnetTarget → Rigidbody → 無視の優先順で判別
-    /// 新しい移動タイプはIMagnetTargetを実装すれば自動対応。
+    /// このフレームに受けた磁力の合計から影響度(0-1)を返す。
+    /// maxForceを超えると1.0にクランプされる。
+    /// </summary>
+    public float GetInfluence(float maxForce)
+    {
+        if (maxForce <= 0f) return 0f;
+        return Mathf.Clamp01(totalForceThisFrame / maxForce);
+    }
+
+    /// <summary>磁力接触コールバックを発火する（MagnetManagerから呼ばれる）。</summary>
+    public void NotifyContact(Magnetizable other)
+    {
+        OnMagnetContact?.Invoke(other);
+    }
+
+    /// <summary>
+    /// 力を適用する。IMagnetTarget → Rigidbody → 無視の優先順で判別。
+    /// 同時にtotalForceThisFrameに蓄積する。
     /// </summary>
     public void ApplyForce(Vector3 force)
     {
+        totalForceThisFrame += force.magnitude;
+
         if (magnetTarget != null)
         {
             magnetTarget.ApplyMagnetForce(force);
@@ -68,7 +90,10 @@ public class Magnetizable : MonoBehaviour
             rb.AddForce(force, ForceMode.Force);
             return;
         }
+    }
 
-        // 固定オブジェクト（壁等）は力を受けない
+    void LateUpdate()
+    {
+        totalForceThisFrame = 0f;
     }
 }
