@@ -168,8 +168,17 @@ public class MagnetManager : Singleton<MagnetManager>
 
         Vector3 dirAtoB = delta / distance;
 
-        // F = magnetForce / (distance ^ forceDecayPower)
-        float forceMagnitude = settings.magnetForce / Mathf.Pow(distance, settings.forceDecayPower);
+        // forceCurve 優先、未設定なら forceDecayPower にフォールバック
+        float forceMagnitude;
+        if (settings.forceCurve != null && settings.forceCurve.length > 0)
+        {
+            float normalizedDist = distance / settings.magnetRange;
+            forceMagnitude = settings.magnetForce * settings.forceCurve.Evaluate(normalizedDist);
+        }
+        else
+        {
+            forceMagnitude = settings.magnetForce / Mathf.Pow(distance, settings.forceDecayPower);
+        }
 
         if (settings.maxForcePerObject > 0f)
             forceMagnitude = Mathf.Min(forceMagnitude, settings.maxForcePerObject);
