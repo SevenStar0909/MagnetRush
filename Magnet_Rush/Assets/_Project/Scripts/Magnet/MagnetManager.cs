@@ -104,30 +104,42 @@ public class MagnetManager : Singleton<MagnetManager>
     }
 
     /// <summary>
-    /// 各EntityにGetStrengthAtが最大のフィールドを割り当てる（nearest-wins）。
+    /// 各Fieldのトリガー検知結果から、EntityにGetStrengthAtが最大のフィールドを割り当てる。
     /// </summary>
     private void AssignFieldsToEntities()
     {
+        // まず全Entityのフィールドをクリア
         for (int i = 0; i < cachedList.Count; i++)
         {
-            var mag = cachedList[i];
-            var entity = mag.GetComponent<Entity>();
-            if (entity == null) continue;
+            var entity = cachedList[i].GetComponent<Entity>();
+            if (entity != null)
+                entity.magnetField = null;
+        }
 
-            MagnetField best = null;
-            float bestStrength = 0f;
+        // 各Fieldのトリガー検知済みEntityから最強フィールドを割り当て
+        for (int i = 0; i < cachedFields.Count; i++)
+        {
+            var field = cachedFields[i];
+            var entities = field.GetEntitiesInRange();
 
-            for (int j = 0; j < cachedFields.Count; j++)
+            for (int j = 0; j < entities.Count; j++)
             {
-                float s = cachedFields[j].GetStrengthAt(entity.transform.position);
-                if (s > bestStrength)
+                var entity = entities[j];
+                if (entity == null) continue;
+
+                float strength = field.GetStrengthAt(entity.transform.position);
+
+                if (entity.magnetField == null)
                 {
-                    bestStrength = s;
-                    best = cachedFields[j];
+                    entity.magnetField = field;
+                }
+                else
+                {
+                    float currentStrength = ((MagnetField)entity.magnetField).GetStrengthAt(entity.transform.position);
+                    if (strength > currentStrength)
+                        entity.magnetField = field;
                 }
             }
-
-            entity.magnetField = best;
         }
     }
 

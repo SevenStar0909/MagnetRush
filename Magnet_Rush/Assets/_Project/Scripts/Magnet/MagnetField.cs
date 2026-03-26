@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
 /// 磁力場コンポーネント。形状ベースの方向計算、減衰、ダメージ蓄積、ライフタイムを管理する。
 /// 弾のGOにAddComponentされ、弾と一体のライフサイクルで動作する。
+/// トリガーベースで範囲内のEntityを検知する。
 /// </summary>
 public class MagnetField : MonoBehaviour, IMagnetField
 {
@@ -12,6 +14,12 @@ public class MagnetField : MonoBehaviour, IMagnetField
     private MagneticPole pole;
     private float remainingLifetime;
     private float storedDamage;
+    private bool m_initialized;
+    private SphereCollider m_triggerCollider;
+
+    // トリガー検知用キャッシュ（GravityFieldパターン）
+    private readonly Dictionary<Collider, Entity> m_entityCache = new();
+    private readonly List<Entity> m_entitiesInRange = new();
 
     // --- IMagnetField ---
     public MagneticPole Pole => pole;
@@ -37,6 +45,9 @@ public class MagnetField : MonoBehaviour, IMagnetField
     public Vector3 Top => Center + transform.up * (CylinderHeight * 0.5f);
     public Vector3 Bottom => Center - transform.up * (CylinderHeight * 0.5f);
 
+    /// <summary>範囲内のEntity一覧。MagnetManagerがフィールド割り当てに使用する。</summary>
+    public List<Entity> GetEntitiesInRange() => m_entitiesInRange;
+
     /// <summary>
     /// フィールドを初期化する。MagnetBullet.StickToSurface等から呼ぶ。
     /// </summary>
@@ -45,6 +56,27 @@ public class MagnetField : MonoBehaviour, IMagnetField
         pole = fieldPole;
         settings = fieldSettings;
         remainingLifetime = settings.lifetime;
+        SetupTriggerCollider();
+        m_initialized = true;
+    }
+
+    private void SetupTriggerCollider()
+    {
+        m_triggerCollider = gameObject.AddComponent<SphereCollider>();
+        m_triggerCollider.isTrigger = true;
+        m_triggerCollider.radius = CalcTriggerRadius();
+    }
+
+    private float CalcTriggerRadius()
+    {
+        if (settings == null) return 8f;
+
+        return Shape switch
+        {
+            FieldShape.Box => settings.size.magnitude * 0.5f + settings.outerRadius,
+            FieldShape.Cylinder => Mathf.Max(settings.cylinderHeight * 0.5f, settings.cylinderRadius) + settings.outerRadius,
+            _ => settings.outerRadius
+        };
     }
 
     /// <summary>
@@ -98,6 +130,42 @@ public class MagnetField : MonoBehaviour, IMagnetField
     /// <summary>MagnetManagerから呼ばれるExit通知。</summary>
     public void NotifyObjectExit(Magnetizable m) => OnObjectExit?.Invoke(m);
 
+    void OnTriggerStay(Collider other)
+    {
+        if (!m_initialized) return;
+
+        if (!m_entityCache.TryGetValue(other, out var entity))
+        {
+            entity = other.GetComponent<Entity>();
+            m_entityCache[other] = entity;
+        }
+
+        if (entity != null && !m_entitiesInRange.Contains(entity))
+            m_entitiesInRange.Add(entity);
+    }
+
+    void OnTriggerExit(Collider other)
+    {
+        if (!m_initialized) return;
+
+        if (m_entityCache.TryGetValue(other, out var entity) && entity != null)
+            m_entitiesInRange.Remove(entity);
+
+        // イベント発火（Magnetizable用）
+        var mag = other.GetComponent<Magnetizable>();
+        if (mag != null)
+            OnObjectExit?.Invoke(mag);
+    }
+
+    void OnTriggerEnter(Collider other)
+    {
+        if (!m_initialized) return;
+
+        var mag = other.GetComponent<Magnetizable>();
+        if (mag != null)
+            OnObjectEnter?.Invoke(mag);
+    }
+
     void OnEnable()
     {
         if (MagnetManager.Instance != null)
@@ -108,6 +176,12 @@ public class MagnetField : MonoBehaviour, IMagnetField
     {
         if (MagnetManager.Instance != null)
             MagnetManager.Instance.UnregisterField(this);
+
+        if (m_triggerCollider != null)
+            Destroy(m_triggerCollider);
+
+        m_entitiesInRange.Clear();
+        m_entityCache.Clear();
     }
 
     void Update()
