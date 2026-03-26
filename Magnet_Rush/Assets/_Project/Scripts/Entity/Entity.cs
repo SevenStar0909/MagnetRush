@@ -74,6 +74,10 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
     public float turningDragMultiplier { get; set; } = 1f;
     public float decelerationMultiplier { get; set; } = 1f;
 
+    // --- 磁力回転設定（サブクラスからSO値で上書き） ---
+    protected float m_pullOrientationThreshold = 5f;
+    protected float m_pullOrientationSpeed = 8f;
+
     protected virtual void Awake()
     {
         rb = GetComponent<Rigidbody>();
@@ -236,6 +240,18 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
             targetRotation,
             rotationSpeed * dt
         );
+    }
+
+    /// <summary>
+    /// 強い磁力を受けて空中にいるとき、引力/斥力方向にプレイヤーの正面を向ける。
+    /// 接地中は通常の移動方向回転を維持する。
+    /// </summary>
+    protected virtual void UpdateMagneticOrientation(float dt)
+    {
+        if (IsGrounded) return;
+        if (externalVelocity.sqrMagnitude < m_pullOrientationThreshold * m_pullOrientationThreshold) return;
+
+        FaceDirection(externalVelocity.normalized, m_pullOrientationSpeed, dt);
     }
 
     /// <summary>
