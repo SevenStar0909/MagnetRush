@@ -10,9 +10,7 @@ using UnityEngine.AI;
 [RequireComponent(typeof(Rigidbody))]
 public class MagneticMover : MonoBehaviour, IMagneticResponse
 {
-    [SerializeField] private float m_maxSpeed = 15f;
-    [SerializeField] private float m_recoveryDelay = 1f;
-    [SerializeField] private int m_maxRecoveryAttempts = 10;
+    [SerializeField] private MagneticMoverSettings m_settings;
 
     private Magnetizable m_magnetizable;
     private Rigidbody m_rb;
@@ -43,7 +41,7 @@ public class MagneticMover : MonoBehaviour, IMagneticResponse
         m_lastForceTime = Time.time;
 
         m_rb.AddForce(force, ForceMode.Force);
-        m_rb.linearVelocity = Vector3.ClampMagnitude(m_rb.linearVelocity, m_maxSpeed);
+        m_rb.linearVelocity = Vector3.ClampMagnitude(m_rb.linearVelocity, m_settings.maxSpeed);
     }
 
     public void OnMagnetContact(Magnetizable self, Magnetizable other)
@@ -55,7 +53,7 @@ public class MagneticMover : MonoBehaviour, IMagneticResponse
     {
         if (!m_isMagnetActive) return;
 
-        if (Time.time - m_lastForceTime > m_recoveryDelay)
+        if (Time.time - m_lastForceTime > m_settings.recoveryDelay)
             TryRecoverNavMesh();
     }
 
@@ -93,7 +91,7 @@ public class MagneticMover : MonoBehaviour, IMagneticResponse
         else
         {
             m_recoveryAttempts++;
-            if (m_recoveryAttempts >= m_maxRecoveryAttempts)
+            if (m_recoveryAttempts >= m_settings.maxRecoveryAttempts)
             {
                 m_rb.isKinematic = true;
                 m_rb.linearVelocity = Vector3.zero;

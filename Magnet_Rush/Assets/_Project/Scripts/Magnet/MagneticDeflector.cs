@@ -10,8 +10,7 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody))]
 public class MagneticDeflector : MonoBehaviour, IMagneticResponse
 {
-    [SerializeField] private float m_deflectionStrength = 0.5f;
-    [SerializeField] private float m_maxDeflectionAngle = 45f;
+    [SerializeField] private MagneticDeflectorSettings m_settings;
 
     private Magnetizable m_magnetizable;
     private Rigidbody m_rb;
@@ -33,7 +32,7 @@ public class MagneticDeflector : MonoBehaviour, IMagneticResponse
         Vector3 currentDir = m_rb.linearVelocity / speed;
         Vector3 forceDir = force.normalized;
 
-        float maxAngleRad = m_maxDeflectionAngle * Mathf.Deg2Rad * m_deflectionStrength * Time.fixedDeltaTime;
+        float maxAngleRad = m_settings.maxDeflectionAngle * Mathf.Deg2Rad * m_settings.deflectionStrength * Time.fixedDeltaTime;
         Vector3 newDir = Vector3.RotateTowards(currentDir, currentDir + forceDir, maxAngleRad, 0f);
 
         m_rb.linearVelocity = newDir.normalized * speed;

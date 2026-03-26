@@ -8,8 +8,10 @@ public class MagnetSettings : ScriptableObject
     public float magnetRange = 10f;
 
     [Header("減衰")]
-    [Tooltip("1=線形, 2=逆二乗")]
+    [Tooltip("deprecated: forceCurve 未設定時のフォールバック。1=線形, 2=逆二乗")]
     public float forceDecayPower = 2f;
+    [Tooltip("X=正規化距離(0-1), Y=力の倍率(0-1)。設定するとforceDecayPowerより優先")]
+    public AnimationCurve forceCurve;
 
     [Header("制限")]
     [Tooltip("1オブジェクトが受ける合力の上限。0=無制限")]

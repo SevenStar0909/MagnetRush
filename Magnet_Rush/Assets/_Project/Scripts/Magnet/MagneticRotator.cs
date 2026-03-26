@@ -7,10 +7,7 @@ using UnityEngine;
 [RequireComponent(typeof(Magnetizable))]
 public class MagneticRotator : MonoBehaviour, IMagneticResponse
 {
-    [SerializeField] private Vector3 m_rotationAxis = Vector3.up;
-    [SerializeField] private float m_maxAngularSpeed = 90f;
-    [SerializeField] private float m_minAngle = -180f;
-    [SerializeField] private float m_maxAngle = 180f;
+    [SerializeField] private MagneticRotatorSettings m_settings;
 
     private Magnetizable m_magnetizable;
 
@@ -27,19 +24,19 @@ public class MagneticRotator : MonoBehaviour, IMagneticResponse
         if (dirToSource.sqrMagnitude < 0.001f) return;
 
         // 回転軸に投影して目標回転を計算
-        Vector3 projectedDir = Vector3.ProjectOnPlane(dirToSource, m_rotationAxis).normalized;
+        Vector3 projectedDir = Vector3.ProjectOnPlane(dirToSource, m_settings.rotationAxis).normalized;
         if (projectedDir.sqrMagnitude < 0.001f) return;
 
-        Quaternion targetRotation = Quaternion.LookRotation(projectedDir, m_rotationAxis);
+        Quaternion targetRotation = Quaternion.LookRotation(projectedDir, m_settings.rotationAxis);
 
         // 角度制限チェック
         float angle = Quaternion.Angle(Quaternion.identity, Quaternion.Inverse(transform.parent != null ? transform.parent.rotation : Quaternion.identity) * targetRotation);
-        if (angle < m_minAngle || angle > m_maxAngle) return;
+        if (angle < m_settings.minAngle || angle > m_settings.maxAngle) return;
 
         transform.rotation = Quaternion.RotateTowards(
             transform.rotation,
             targetRotation,
-            m_maxAngularSpeed * Time.deltaTime
+            m_settings.maxAngularSpeed * Time.deltaTime
         );
     }
 
