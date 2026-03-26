@@ -40,4 +40,10 @@ public class PlayerSettings : ScriptableObject
 
     [Header("Magnet")]
     public float magnetResistance = 0.5f;
+
+    [Header("磁力回転")]
+    [Tooltip("この外部力（magnitude）以上で空中回転開始")]
+    public float pullOrientationThreshold = 5f;
+    [Tooltip("磁力方向への回転速度")]
+    public float pullOrientationSpeed = 8f;
 }

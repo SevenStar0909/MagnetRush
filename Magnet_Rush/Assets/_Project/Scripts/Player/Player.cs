@@ -22,6 +22,10 @@ public class Player : Entity
         states = GetComponent<PlayerStateManager>();
         magnetizable = GetComponent<Magnetizable>();
 
+        // SO値をEntity基底フィールドに反映
+        m_pullOrientationThreshold = settings.pullOrientationThreshold;
+        m_pullOrientationSpeed = settings.pullOrientationSpeed;
+
         // HP=0でDiePlayerStateに遷移
         if (health != null)
         {
@@ -44,11 +48,13 @@ public class Player : Entity
 
     void Update()
     {
-        UpdateMagneticInfluence();
-        states.Step(Time.deltaTime);
+        float dt = Time.deltaTime;
         UpdateGround();
-        ApplyGravity(settings.gravity, settings.snapForce, Time.deltaTime);
-        ApplyMovement(Time.deltaTime);
+        UpdateMagneticInfluence();
+        states.Step(dt);
+        UpdateMagneticOrientation(dt);
+        ApplyGravity(settings.gravity, settings.snapForce, dt);
+        ApplyMovement(dt);
     }
 
     /// <summary>
