@@ -148,10 +148,13 @@ public class MagnetField : MonoBehaviour, IMagnetField
     {
         if (!m_initialized) return;
 
-        if (m_entityCache.TryGetValue(other, out var entity) && entity != null)
-            m_entitiesInRange.Remove(entity);
+        if (m_entityCache.TryGetValue(other, out var entity))
+        {
+            if (entity != null)
+                m_entitiesInRange.Remove(entity);
+            m_entityCache.Remove(other);
+        }
 
-        // イベント発火（Magnetizable用）
         var mag = other.GetComponent<Magnetizable>();
         if (mag != null)
             OnObjectExit?.Invoke(mag);

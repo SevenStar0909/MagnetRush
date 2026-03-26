@@ -25,6 +25,7 @@ public class MagneticDeflector : MonoBehaviour, IMagneticResponse
 
     public void OnMagnetForce(Vector3 force, Vector3 sourcePosition)
     {
+        if (m_settings == null) return;
         if (m_rb.linearVelocity.sqrMagnitude < 0.01f) return;
 
         // 速度方向を力の方向にブレンド（速さは維持）

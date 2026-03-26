@@ -49,9 +49,9 @@ public class Player : Entity
     void Update()
     {
         float dt = Time.deltaTime;
-        UpdateGround();
         UpdateMagneticInfluence();
         states.Step(dt);
+        UpdateGround();
         UpdateMagneticOrientation(dt);
         ApplyGravity(settings.gravity, settings.snapForce, dt);
         ApplyMovement(dt);

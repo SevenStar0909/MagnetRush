@@ -35,12 +35,14 @@ public class MagneticMover : MonoBehaviour, IMagneticResponse
 
     public void OnMagnetForce(Vector3 force, Vector3 sourcePosition)
     {
+        if (m_settings == null) return;
+
         if (!m_isMagnetActive)
             ActivateMagnetMode();
 
         m_lastForceTime = Time.time;
 
-        m_rb.AddForce(force, ForceMode.Force);
+        m_rb.AddForce(force, m_settings.forceMode);
         m_rb.linearVelocity = Vector3.ClampMagnitude(m_rb.linearVelocity, m_settings.maxSpeed);
     }
 

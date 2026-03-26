@@ -20,18 +20,20 @@ public class MagneticRotator : MonoBehaviour, IMagneticResponse
 
     public void OnMagnetForce(Vector3 force, Vector3 sourcePosition)
     {
+        if (m_settings == null) return;
+
         Vector3 dirToSource = (sourcePosition - transform.position).normalized;
         if (dirToSource.sqrMagnitude < 0.001f) return;
 
-        // 回転軸に投影して目標回転を計算
         Vector3 projectedDir = Vector3.ProjectOnPlane(dirToSource, m_settings.rotationAxis).normalized;
         if (projectedDir.sqrMagnitude < 0.001f) return;
 
         Quaternion targetRotation = Quaternion.LookRotation(projectedDir, m_settings.rotationAxis);
 
-        // 角度制限チェック
-        float angle = Quaternion.Angle(Quaternion.identity, Quaternion.Inverse(transform.parent != null ? transform.parent.rotation : Quaternion.identity) * targetRotation);
-        if (angle < m_settings.minAngle || angle > m_settings.maxAngle) return;
+        // 符号付き角度で制限チェック（親のローカル空間基準）
+        Vector3 referenceForward = transform.parent != null ? transform.parent.forward : Vector3.forward;
+        float signedAngle = Vector3.SignedAngle(referenceForward, projectedDir, m_settings.rotationAxis);
+        if (signedAngle < m_settings.minAngle || signedAngle > m_settings.maxAngle) return;
 
         transform.rotation = Quaternion.RotateTowards(
             transform.rotation,
