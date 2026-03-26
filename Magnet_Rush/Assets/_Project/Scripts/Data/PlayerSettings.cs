@@ -40,4 +40,8 @@ public class PlayerSettings : ScriptableObject
 
     [Header("Magnet")]
     public float magnetResistance = 0.5f;
+    [Tooltip("壁面歩行に入るGetStrengthAt閾値")]
+    public float magnetWalkThreshold = 0.3f;
+    [Tooltip("磁力場方向へのtransform.up回転速度 (deg/sec)")]
+    public float magnetGravityAlignSpeed = 360f;
 }
