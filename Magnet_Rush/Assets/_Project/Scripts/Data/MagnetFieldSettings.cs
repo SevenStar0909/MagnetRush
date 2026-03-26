@@ -24,8 +24,4 @@ public class MagnetFieldSettings : ScriptableObject
     [Header("ダメージ蓄積")]
     public bool accumulateDamage = true;
     public float maxStoredDamage = 200f;
-
-    [Header("壁面歩行")]
-    [Tooltip("GetStrengthAtがこの値以上で重力方向を書き換える")]
-    public float gravityOverrideThreshold = 0.5f;
 }

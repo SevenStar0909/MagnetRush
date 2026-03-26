@@ -10,7 +10,6 @@ public class PlayerStateManager : EntityStateManager<Player>
         RegisterState(new MovePlayerState());
         RegisterState(new DiePlayerState());
         RegisterState(new AimPlayerState());
-        RegisterState(new MagnetWalkPlayerState());
 
         Initialize(player);
     }
