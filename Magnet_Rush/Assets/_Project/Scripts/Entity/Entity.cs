@@ -65,6 +65,12 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
 
     protected readonly float slopingGroundAngle = 20f;
 
+    // --- 磁力場 ---
+    /// <summary>現在支配的な磁力場。MagnetManagerが毎フレーム設定する。</summary>
+    public IMagnetField magnetField { get; set; }
+
+    protected float magnetGravityAlignSpeed = 360f;
+
     // --- 外部変調用マルチプライヤー（磁力場・エリア効果等） ---
     public float topSpeedMultiplier { get; set; } = 1f;
     public float turningDragMultiplier { get; set; } = 1f;
@@ -213,6 +219,59 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
         var multiplier = downwards ? downwardForce : upwardForce;
         var delta = factor * multiplier * dt;
         lateralVelocity += localSlopeDirection * delta;
+    }
+
+    /// <summary>
+    /// 磁力場の方向に応じてtransform.upをSlerp回転する。
+    /// 閾値以上の強度がある場合のみ回転（弱い磁力では力のみ適用）。
+    /// </summary>
+    protected void UpdateMagnetField()
+    {
+        if (magnetField == null || magnetField.IsDestroyed)
+        {
+            magnetField = null;
+            return;
+        }
+
+        float strength = magnetField.GetStrengthAt(transform.position);
+        // MagnetFieldSettingsのgravityOverrideThresholdと比較したいが、
+        // IMagnetFieldからはアクセスできないので、strengthの絶対値で判定
+        if (strength < 0.3f) return;
+
+        var direction = magnetField.GetFieldDirection(transform.position);
+        var targetUp = -direction; // 場の中心方向 = 「下」
+
+        var rotation = Quaternion.FromToRotation(transform.up, targetUp);
+        float angle = Quaternion.Angle(Quaternion.identity, rotation);
+        float maxAngle = magnetGravityAlignSpeed * Time.deltaTime;
+
+        if (angle > 0.01f)
+        {
+            if (angle > maxAngle)
+                rotation = Quaternion.SlerpUnclamped(Quaternion.identity, rotation, maxAngle / angle);
+
+            transform.rotation = rotation * transform.rotation;
+            velocity = rotation * velocity;
+        }
+    }
+
+    /// <summary>
+    /// magnetFieldがない時にtransform.upをVector3.upに戻す。
+    /// </summary>
+    protected void UpdateMagnetFieldFallback()
+    {
+        if (magnetField != null) return;
+        if (Vector3.Dot(transform.up, Vector3.up) > 0.9999f) return;
+
+        var rotation = Quaternion.FromToRotation(transform.up, Vector3.up);
+        float angle = Quaternion.Angle(Quaternion.identity, rotation);
+        float maxAngle = magnetGravityAlignSpeed * Time.deltaTime;
+
+        if (angle > maxAngle)
+            rotation = Quaternion.SlerpUnclamped(Quaternion.identity, rotation, maxAngle / angle);
+
+        transform.rotation = rotation * transform.rotation;
+        velocity = rotation * velocity;
     }
 
     /// <summary>

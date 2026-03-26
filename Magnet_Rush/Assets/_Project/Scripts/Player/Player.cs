@@ -45,6 +45,8 @@ public class Player : Entity
     void Update()
     {
         UpdateMagneticInfluence();
+        UpdateMagnetField();
+        UpdateMagnetFieldFallback();
         states.Step(Time.deltaTime);
         UpdateGround();
         ApplyGravity(settings.gravity, settings.snapForce, Time.deltaTime);
