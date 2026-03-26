@@ -14,9 +14,6 @@ public class MagnetFieldSettings : ScriptableObject
     [Tooltip("falloff→0 の半径")]
     public float outerRadius = 8f;
 
-    [Header("強度")]
-    public float strength = 20f;
-
     [Header("ライフタイム")]
     [Tooltip("0=永続")]
     public float lifetime = 12f;
