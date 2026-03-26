@@ -19,6 +19,14 @@ public class MagnetSettings : ScriptableObject
     [Tooltip("磁力スナップが発生する距離")]
     public float snapDistance = 1.5f;
 
+    [Header("スナップ")]
+    [Tooltip("スプリング接近の smoothTime")]
+    public float snapSmoothTime = 0.15f;
+    [Tooltip("FixedJoint 生成距離")]
+    public float snapContactThreshold = 0.1f;
+    [Tooltip("FixedJoint の破壊力（同極反発で分離）")]
+    public float snapBreakForce = 100f;
+
     [Header("移動変調")]
     [Tooltip("磁力場内での最高速度低下率(0=影響なし, 1=完全停止)")]
     [Range(0f, 1f)]

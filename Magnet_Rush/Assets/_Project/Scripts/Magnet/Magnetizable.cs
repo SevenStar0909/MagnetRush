@@ -45,7 +45,10 @@ public class Magnetizable : MonoBehaviour
     void OnDisable()
     {
         if (MagnetManager.Instance != null)
+        {
+            MagnetManager.Instance.SnapResolver?.ReleaseAllFor(this);
             MagnetManager.Instance.Unregister(this);
+        }
     }
 
     public void SetPole(MagneticPole newPole)

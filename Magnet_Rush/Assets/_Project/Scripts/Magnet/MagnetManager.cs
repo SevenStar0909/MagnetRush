@@ -22,6 +22,17 @@ public class MagnetManager : Singleton<MagnetManager>
     // 接触中ペアの追跡（Enter/Exit判定用）
     private readonly HashSet<long> activeContacts = new();
 
+    // スナップ解決
+    private MagneticSnapResolver m_snapResolver;
+
+    protected override void Awake()
+    {
+        base.Awake();
+        m_snapResolver = new MagneticSnapResolver(settings);
+    }
+
+    public MagneticSnapResolver SnapResolver => m_snapResolver;
+
     public void Register(Magnetizable m)
     {
         if (m != null && registry.Add(m))
@@ -39,7 +50,11 @@ public class MagnetManager : Singleton<MagnetManager>
         if (f != null && fieldRegistry.Add(f))
         {
             fieldsDirty = true;
-            f.OnFieldExpired += () => HandleFieldExplosion(f);
+            f.OnFieldExpired += () =>
+            {
+                HandleFieldExplosion(f);
+                m_snapResolver?.ReleaseAllForField(f);
+            };
         }
     }
 
@@ -54,6 +69,8 @@ public class MagnetManager : Singleton<MagnetManager>
 
     void FixedUpdate()
     {
+        m_snapResolver?.CleanupDestroyedJoints();
+
         // 破棄済みオブジェクト除去
         int removed = registry.RemoveWhere(m => m == null || !m.gameObject.activeInHierarchy);
         if (removed > 0) listDirty = true;
@@ -198,6 +215,9 @@ public class MagnetManager : Singleton<MagnetManager>
         // 接触判定（異極のみ、snapDistance内）
         if (isOpposite && distance < settings.snapDistance)
         {
+            // スプリング接近 + 接触固定
+            m_snapResolver?.Resolve(a, b, Time.fixedDeltaTime);
+
             long pairKey = GetPairKey(a, b);
             contactsThisFrame.Add(pairKey);
 
