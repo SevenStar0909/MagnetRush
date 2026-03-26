@@ -3,7 +3,7 @@ using UnityEngine;
 
 /// <summary>
 /// 磁力弾。着弾時にパターン①（壁にくっつく）またはパターン②（弾消去＋磁化）を実行する。
-/// 可視化はMagnetFieldVisualizerに委譲（SRP）。
+/// 飛行中はMagnetFieldの影響で弾道が曲がる。
 /// </summary>
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(SphereCollider))]
@@ -62,12 +62,50 @@ public class MagnetBullet : MonoBehaviour
         }
     }
 
+    void FixedUpdate()
+    {
+        if (IsStuck || rb == null || settings == null) return;
+        if (MagnetManager.Instance == null) return;
+
+        var fields = MagnetManager.Instance.GetActiveFields();
+        for (int i = 0; i < fields.Count; i++)
+        {
+            var field = fields[i];
+            if (field == null) continue;
+
+            float strength = field.GetStrengthAt(transform.position);
+            if (strength <= 0f) continue;
+
+            // 極性判定: 異極=吸引、同極=反発
+            bool attract = Pole != field.Pole && field.Pole != MagneticPole.None && Pole != MagneticPole.None;
+            Vector3 toCenter = (field.Center - transform.position).normalized;
+            float pull = strength * settings.fieldAttractionFactor;
+
+            rb.linearVelocity += (attract ? toCenter : -toCenter) * pull * Time.fixedDeltaTime;
+        }
+    }
+
     void OnTriggerEnter(Collider other)
     {
         if (IsStuck) return;
 
-        // 他の弾は無視
-        if (other.CompareTag(GameTags.MagnetBullet)) return;
+        // 他の弾 — MagnetFieldを持つ弾にはダメージ蓄積
+        if (other.CompareTag(GameTags.MagnetBullet))
+        {
+            var otherField = other.GetComponent<MagnetField>();
+            if (otherField != null && settings != null)
+            {
+                // 異極弾がフィールドに着弾 → ダメージ蓄積
+                bool isOpposite = Pole != otherField.Pole && Pole != MagneticPole.None && otherField.Pole != MagneticPole.None;
+                if (isOpposite)
+                {
+                    otherField.AccumulateDamage(settings.bulletDamage);
+                    OnImpact?.Invoke();
+                    Destroy(gameObject);
+                }
+            }
+            return;
+        }
 
         // パターン1: 壁/タレット/その他の静的オブジェクトにくっつく
         if (other.CompareTag(GameTags.Wall) || other.CompareTag(GameTags.Turret)

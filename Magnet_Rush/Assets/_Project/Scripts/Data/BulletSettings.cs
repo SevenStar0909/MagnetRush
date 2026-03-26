@@ -20,6 +20,10 @@ public class BulletSettings : ScriptableObject
     [Header("磁力場")]
     [Tooltip("弾着弾時に生成するMagnetFieldの設定")]
     public MagnetFieldSettings bulletFieldSettings;
+    [Tooltip("フィールドによる飛行中弾道の曲げ強度")]
+    public float fieldAttractionFactor = 5f;
+    [Tooltip("フィールドへの蓄積ダメージ値")]
+    public float bulletDamage = 10f;
 
     [Header("弾マテリアル")]
     public Material sMaterial;
