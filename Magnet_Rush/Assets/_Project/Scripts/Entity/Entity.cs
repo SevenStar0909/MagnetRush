@@ -6,7 +6,8 @@ using UnityEngine;
 /// </summary>
 public abstract class Entity : MonoBehaviour, IMagnetTarget
 {
-    protected CharacterController cc;
+    protected Rigidbody rb;
+    protected CapsuleCollider capsuleCollider;
     [HideInInspector] public Health health;
     protected Transform cachedCameraTransform;
 
@@ -54,7 +55,7 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
         }
     }
 
-    public bool IsGrounded { get; private set; }
+    public bool IsGrounded { get; protected set; }
 
     // --- 地面情報（斜面対応） ---
     public RaycastHit groundHit { get; protected set; }
@@ -71,8 +72,16 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
 
     protected virtual void Awake()
     {
-        cc = GetComponent<CharacterController>();
+        rb = GetComponent<Rigidbody>();
+        capsuleCollider = GetComponent<CapsuleCollider>();
         health = GetComponent<Health>();
+
+        if (rb != null)
+        {
+            rb.useGravity = false;
+            rb.freezeRotation = true;
+            rb.interpolation = RigidbodyInterpolation.Interpolate;
+        }
 
         var mainCam = Camera.main;
         if (mainCam != null)
@@ -80,18 +89,18 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
     }
 
     /// <summary>
-    /// 全速度成分をCharacterControllerの単一Moveコールで適用する。
+    /// 全速度成分をRigidbody.MovePositionで適用する。
     /// 適用後にexternalVelocityをリセットする。
     /// </summary>
     protected virtual void ApplyMovement(float dt)
     {
         Vector3 total = velocity + externalVelocity;
-        if (cc != null)
+        if (rb != null)
         {
-            cc.Move(total * dt);
-            IsGrounded = cc.isGrounded;
+            rb.MovePosition(rb.position + total * dt);
         }
         externalVelocity = Vector3.zero;
+        // IsGrounded は UpdateGround() のレイキャストで更新
     }
 
     /// <summary>
@@ -154,11 +163,18 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
     /// </summary>
     protected void UpdateGround()
     {
-        if (IsGrounded)
+        float height = capsuleCollider != null ? capsuleCollider.height : 2f;
+        float groundCheckDist = height * 0.5f + 0.3f;
+
+        // レイキャストで接地判定（cc.isGroundedの代替）
+        if (Physics.Raycast(transform.position, -transform.up, out var hit, groundCheckDist,
+            Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
         {
-            float distance = (cc != null ? cc.height : 2f) * 0.5f + 0.3f;
-            if (Physics.Raycast(transform.position, -transform.up, out var hit, distance,
-                Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+            // 足元からの距離が十分近ければ接地
+            float footDist = hit.distance - height * 0.5f;
+            IsGrounded = footDist < 0.1f;
+
+            if (IsGrounded)
             {
                 groundHit = hit;
                 groundNormal = hit.normal;
@@ -166,6 +182,10 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
                 localSlopeDirection = new Vector3(groundNormal.x, 0f, groundNormal.z).normalized;
                 return;
             }
+        }
+        else
+        {
+            IsGrounded = false;
         }
 
         groundAngle = 0f;

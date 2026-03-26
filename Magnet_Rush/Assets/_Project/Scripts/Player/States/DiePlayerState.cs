@@ -38,10 +38,7 @@ public class DiePlayerState : EntityState<Player>
         // スポーン地点にテレポート
         if (GameManager.Instance != null)
         {
-            var cc = entity.GetComponent<CharacterController>();
-            if (cc != null) cc.enabled = false;
             entity.transform.position = GameManager.Instance.GetSpawnPosition();
-            if (cc != null) cc.enabled = true;
         }
 
         entity.health.ResetHealth();

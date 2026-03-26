@@ -49,10 +49,7 @@ public class GameManager : Singleton<GameManager>
         var player = GameObject.FindWithTag(GameTags.Player);
         if (player != null && spawnPoint != null)
         {
-            var cc = player.GetComponent<CharacterController>();
-            if (cc != null) cc.enabled = false;
             player.transform.position = spawnPoint.position;
-            if (cc != null) cc.enabled = true;
         }
     }
 

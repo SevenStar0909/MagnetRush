@@ -1943,6 +1943,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 5792353818699100823, guid: 3c2f68b0a5548044da7bfdff022cc9ee, type: 3}
+    - {fileID: 1601968799644404217, guid: 3c2f68b0a5548044da7bfdff022cc9ee, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
@@ -1970,6 +1971,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 4877007147656353374, guid: 3c2f68b0a5548044da7bfdff022cc9ee, type: 3}
       insertIndex: -1
       addedObject: {fileID: 5139780556775547987}
+    - targetCorrespondingSourceObject: {fileID: 4877007147656353374, guid: 3c2f68b0a5548044da7bfdff022cc9ee, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5139780556775547996}
   m_SourcePrefab: {fileID: 100100000, guid: 3c2f68b0a5548044da7bfdff022cc9ee, type: 3}
 --- !u!1 &5139780556775547975 stripped
 GameObject:
@@ -2084,6 +2088,33 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MagnetRush.Player.ShootingController
   bulletSettings: {fileID: 11400000, guid: 425ee2473071b7a4fa2afd4ccb6a162c, type: 2}
   firePoint: {fileID: 0}
+--- !u!54 &5139780556775547996
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5139780556775547975}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 0
+  m_IsKinematic: 0
+  m_Interpolate: 1
+  m_Constraints: 112
+  m_CollisionDetection: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
