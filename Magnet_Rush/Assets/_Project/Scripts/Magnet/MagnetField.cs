@@ -80,6 +80,18 @@ public class MagnetField : MonoBehaviour, IMagnetField
     /// <summary>MagnetManagerから呼ばれるExit通知。</summary>
     public void NotifyObjectExit(Magnetizable m) => OnObjectExit?.Invoke(m);
 
+    void OnEnable()
+    {
+        if (MagnetManager.Instance != null)
+            MagnetManager.Instance.RegisterField(this);
+    }
+
+    void OnDisable()
+    {
+        if (MagnetManager.Instance != null)
+            MagnetManager.Instance.UnregisterField(this);
+    }
+
     void Update()
     {
         if (settings == null) return;

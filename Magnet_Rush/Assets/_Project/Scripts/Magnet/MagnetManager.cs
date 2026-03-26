@@ -14,6 +14,11 @@ public class MagnetManager : Singleton<MagnetManager>
     private readonly List<Magnetizable> cachedList = new();
     private bool listDirty = true;
 
+    // MagnetField レジストリ
+    private readonly HashSet<MagnetField> fieldRegistry = new();
+    private readonly List<MagnetField> cachedFields = new();
+    private bool fieldsDirty = true;
+
     // 接触中ペアの追跡（Enter/Exit判定用）
     private readonly HashSet<long> activeContacts = new();
 
@@ -29,11 +34,32 @@ public class MagnetManager : Singleton<MagnetManager>
             listDirty = true;
     }
 
+    public void RegisterField(MagnetField f)
+    {
+        if (f != null && fieldRegistry.Add(f))
+        {
+            fieldsDirty = true;
+            f.OnFieldExpired += () => HandleFieldExplosion(f);
+        }
+    }
+
+    public void UnregisterField(MagnetField f)
+    {
+        if (f != null && fieldRegistry.Remove(f))
+            fieldsDirty = true;
+    }
+
+    /// <summary>弾道吸引用。アクティブなフィールド一覧を返す。</summary>
+    public List<MagnetField> GetActiveFields() => cachedFields;
+
     void FixedUpdate()
     {
         // 破棄済みオブジェクト除去
         int removed = registry.RemoveWhere(m => m == null || !m.gameObject.activeInHierarchy);
         if (removed > 0) listDirty = true;
+
+        int removedFields = fieldRegistry.RemoveWhere(f => f == null);
+        if (removedFields > 0) fieldsDirty = true;
 
         // キャッシュ更新（dirty時のみ）
         if (listDirty)
@@ -43,24 +69,66 @@ public class MagnetManager : Singleton<MagnetManager>
             listDirty = false;
         }
 
+        if (fieldsDirty)
+        {
+            cachedFields.Clear();
+            cachedFields.AddRange(fieldRegistry);
+            fieldsDirty = false;
+        }
+
         // 今フレームの接触ペアを追跡
         var contactsThisFrame = new HashSet<long>();
 
-        // 全有効ペアをイテレート
+        // 全有効ペアをイテレート（点力計算）
         for (int i = 0; i < cachedList.Count; i++)
         {
             if (!cachedList[i].IsActive) continue;
 
+            // MagnetFieldを持つ弾は点力スキップ（フィールドが力を管理）
+            if (cachedList[i].GetComponent<MagnetField>() != null) continue;
+
             for (int j = i + 1; j < cachedList.Count; j++)
             {
                 if (!cachedList[j].IsActive) continue;
+                if (cachedList[j].GetComponent<MagnetField>() != null) continue;
 
                 ProcessPair(cachedList[i], cachedList[j], contactsThisFrame);
             }
         }
 
-        // 接触Exit判定: 前フレームにあって今フレームにないペアを除去
+        // Entity ↔ Field 割り当て（nearest-wins）
+        AssignFieldsToEntities();
+
+        // 接触Exit判定
         activeContacts.IntersectWith(contactsThisFrame);
+    }
+
+    /// <summary>
+    /// 各EntityにGetStrengthAtが最大のフィールドを割り当てる（nearest-wins）。
+    /// </summary>
+    private void AssignFieldsToEntities()
+    {
+        for (int i = 0; i < cachedList.Count; i++)
+        {
+            var mag = cachedList[i];
+            var entity = mag.GetComponent<Entity>();
+            if (entity == null) continue;
+
+            MagnetField best = null;
+            float bestStrength = 0f;
+
+            for (int j = 0; j < cachedFields.Count; j++)
+            {
+                float s = cachedFields[j].GetStrengthAt(entity.transform.position);
+                if (s > bestStrength)
+                {
+                    bestStrength = s;
+                    best = cachedFields[j];
+                }
+            }
+
+            entity.magnetField = best;
+        }
     }
 
     private void ProcessPair(Magnetizable a, Magnetizable b, HashSet<long> contactsThisFrame)
@@ -80,15 +148,39 @@ public class MagnetManager : Singleton<MagnetManager>
         bool isOpposite = a.Pole != b.Pole && a.Pole != MagneticPole.None && b.Pole != MagneticPole.None;
         bool isSame = a.Pole == b.Pole;
 
+        // 質量非対称: 軽い方が多く動く
+        float massA = a.mass;
+        float massB = b.mass;
+        float ratioA, ratioB;
+
+        if (float.IsInfinity(massA) && float.IsInfinity(massB))
+        {
+            ratioA = 0f; ratioB = 0f; // 両方固定 → どちらも動かない
+        }
+        else if (float.IsInfinity(massA))
+        {
+            ratioA = 0f; ratioB = 1f;
+        }
+        else if (float.IsInfinity(massB))
+        {
+            ratioA = 1f; ratioB = 0f;
+        }
+        else
+        {
+            float totalMass = massA + massB;
+            ratioA = massB / totalMass;
+            ratioB = massA / totalMass;
+        }
+
         if (isOpposite)
         {
-            a.ApplyForce(dirAtoB * forceMagnitude);
-            b.ApplyForce(-dirAtoB * forceMagnitude);
+            a.ApplyForce(dirAtoB * forceMagnitude * ratioA);
+            b.ApplyForce(-dirAtoB * forceMagnitude * ratioB);
         }
         else if (isSame)
         {
-            a.ApplyForce(-dirAtoB * forceMagnitude);
-            b.ApplyForce(dirAtoB * forceMagnitude);
+            a.ApplyForce(-dirAtoB * forceMagnitude * ratioA);
+            b.ApplyForce(dirAtoB * forceMagnitude * ratioB);
         }
 
         // 接触判定（異極のみ、snapDistance内）
@@ -115,6 +207,33 @@ public class MagnetManager : Singleton<MagnetManager>
         int idB = b.GetInstanceID();
         if (idA > idB) (idA, idB) = (idB, idA);
         return ((long)idA << 32) | (uint)idB;
+    }
+
+    /// <summary>
+    /// フィールド消滅時の爆発処理。蓄積ダメージを範囲内Entityに適用。
+    /// </summary>
+    private void HandleFieldExplosion(MagnetField field)
+    {
+        if (field == null || field.StoredDamage <= 0f) return;
+
+        float radius = field.OuterRadius;
+        Vector3 center = field.Center;
+        float damage = field.StoredDamage;
+
+        // 範囲内の全Entityにダメージ
+        for (int i = 0; i < cachedList.Count; i++)
+        {
+            var entity = cachedList[i].GetComponent<Entity>();
+            if (entity == null || entity.health == null) continue;
+
+            float dist = Vector3.Distance(entity.transform.position, center);
+            if (dist > radius) continue;
+
+            // 距離減衰ダメージ
+            float damageRatio = 1f - dist / radius;
+            int finalDamage = Mathf.Max(1, Mathf.RoundToInt(damage * damageRatio));
+            entity.health.Damage(finalDamage);
+        }
     }
 
     public float GetMagnetRange()

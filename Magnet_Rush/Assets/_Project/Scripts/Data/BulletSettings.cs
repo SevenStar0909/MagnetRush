@@ -17,6 +17,10 @@ public class BulletSettings : ScriptableObject
     [Tooltip("ONの場合、敵に当たっても弾を消さず壁と同じくくっつく")]
     public bool useFallbackMode = false;
 
+    [Header("磁力場")]
+    [Tooltip("弾着弾時に生成するMagnetFieldの設定")]
+    public MagnetFieldSettings bulletFieldSettings;
+
     [Header("弾マテリアル")]
     public Material sMaterial;
     public Material nMaterial;

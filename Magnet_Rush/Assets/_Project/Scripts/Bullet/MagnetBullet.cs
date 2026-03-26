@@ -90,8 +90,6 @@ public class MagnetBullet : MonoBehaviour
             if (magnetizable != null)
             {
                 magnetizable.SetPole(Pole);
-                // パターン2対象に可視化を追加（MagnetFieldVisualizerに委譲）
-                ShowFieldVisualization(other.gameObject);
             }
 
             OnImpact?.Invoke();
@@ -108,23 +106,31 @@ public class MagnetBullet : MonoBehaviour
 
         // 弾自身のMagnetizableを有効化（磁力源として機能させる）
         var mag = GetComponent<Magnetizable>();
-        if (mag != null) mag.SetPole(Pole);
+        if (mag != null)
+        {
+            mag.SetPole(Pole);
+            mag.mass = Mathf.Infinity; // 壁に固定 = 無限質量
+        }
 
-        // パターン1: 磁力範囲を可視化（MagnetFieldVisualizerに委譲）
-        ShowFieldVisualization(gameObject);
+        // MagnetField を生成（MagnetFieldVisualizerの代替）
+        CreateMagnetField();
 
         OnImpact?.Invoke();
     }
 
     /// <summary>
-    /// 対象にMagnetFieldVisualizerを追加して磁力範囲を可視化する。
+    /// 弾のGOにMagnetFieldを追加して磁力場を生成する。
     /// </summary>
-    private void ShowFieldVisualization(GameObject target)
+    private void CreateMagnetField()
     {
-        float fallback = settings != null ? settings.defaultMagnetRange : 5f;
-        float range = MagnetManager.Instance != null ? MagnetManager.Instance.GetMagnetRange() : fallback;
-        var visualizer = target.AddComponent<MagnetFieldVisualizer>();
-        visualizer.Show(Pole, range);
+        if (settings == null || settings.bulletFieldSettings == null) return;
+
+        var field = gameObject.AddComponent<MagnetField>();
+        field.Initialize(Pole, settings.bulletFieldSettings);
+
+        // MagnetManagerに登録
+        if (MagnetManager.Instance != null)
+            MagnetManager.Instance.RegisterField(field);
     }
 
     void OnDestroy()

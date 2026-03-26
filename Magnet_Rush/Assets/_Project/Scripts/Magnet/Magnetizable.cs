@@ -9,9 +9,13 @@ public class Magnetizable : MonoBehaviour
 {
     [SerializeField] private MagneticPole pole = MagneticPole.None;
     [SerializeField] private bool isActive;
+    [SerializeField] private float initialMass = 1f;
 
     public MagneticPole Pole => pole;
     public bool IsActive => isActive;
+
+    /// <summary>質量。壁に固定された弾はInfinity。力の分配に使用。</summary>
+    public float mass { get; set; } = 1f;
 
     public event Action<MagneticPole> OnPoleChanged;
 
@@ -27,6 +31,7 @@ public class Magnetizable : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         magnetTarget = GetComponent<IMagnetTarget>();
+        mass = initialMass > 0f ? initialMass : (rb != null ? rb.mass : 1f);
     }
 
     void OnEnable()
