@@ -26,6 +26,9 @@ public class EnemyMeleeAI : MonoBehaviour
 
     private void Update()
     {
+        // 磁力移動モード中は AI 処理をスキップ
+        if (enemyBase.IsMagnetControlled) return;
+
         if (player == null || agent == null || data == null)
         {
             return;

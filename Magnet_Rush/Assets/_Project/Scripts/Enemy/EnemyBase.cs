@@ -15,15 +15,20 @@ public class EnemyBase : Entity
     [SerializeField] private Transform player;
 
     protected NavMeshAgent agent;
+    private MagneticMover m_mover;
 
     public EnemySettings StatusData => statusData;
     public Transform Player => player;
     public NavMeshAgent Agent => agent;
 
+    /// <summary>MagneticMover が磁力移動モード中かどうか。AI はこの間スキップされる。</summary>
+    public bool IsMagnetControlled => m_mover != null && m_mover.IsMagnetActive;
+
     protected override void Awake()
     {
         base.Awake();
         agent = GetComponent<NavMeshAgent>();
+        m_mover = GetComponent<MagneticMover>();
 
         if (player == null)
         {
@@ -54,8 +59,10 @@ public class EnemyBase : Entity
 
     void Update()
     {
-        // NavMeshAgentが移動を管理するのでApplyMovement/ApplyGravityは呼ばない
-        // 磁力等の外部力だけ適用
+        // MagneticMover がアクティブなら Rigidbody で物理移動中 → externalVelocity パスは不要
+        if (IsMagnetControlled) return;
+
+        // MagneticMover なしの敵は従来通り externalVelocity で磁力適用
         if (externalVelocity.sqrMagnitude > 0.01f && agent != null)
         {
             agent.Move(externalVelocity * Time.deltaTime);
