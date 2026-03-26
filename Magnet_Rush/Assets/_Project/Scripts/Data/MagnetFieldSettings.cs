@@ -21,6 +21,13 @@ public class MagnetFieldSettings : ScriptableObject
     [Tooltip("0=永続")]
     public float lifetime = 12f;
 
+    [Header("Box")]
+    public Vector3 size = new Vector3(2f, 2f, 2f);
+
+    [Header("Cylinder")]
+    public float cylinderHeight = 4f;
+    public float cylinderRadius = 1f;
+
     [Header("ダメージ蓄積")]
     public bool accumulateDamage = true;
     public float maxStoredDamage = 200f;

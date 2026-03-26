@@ -29,6 +29,14 @@ public class MagnetField : MonoBehaviour, IMagnetField
     public float StoredDamage => storedDamage;
     public float OuterRadius => settings != null ? settings.outerRadius : 8f;
 
+    // --- 形状プロパティ ---
+    public FieldShape Shape => settings != null ? settings.shape : FieldShape.Sphere;
+    public Vector3 Size => settings != null ? Vector3.Scale(settings.size, transform.lossyScale) : Vector3.one;
+    public float CylinderHeight => settings != null ? settings.cylinderHeight * transform.lossyScale.y : 4f;
+    public float CylinderRadius => settings != null ? settings.cylinderRadius * Mathf.Max(transform.lossyScale.x, transform.lossyScale.z) : 1f;
+    public Vector3 Top => Center + transform.up * (CylinderHeight * 0.5f);
+    public Vector3 Bottom => Center - transform.up * (CylinderHeight * 0.5f);
+
     /// <summary>
     /// フィールドを初期化する。MagnetBullet.StickToSurface等から呼ぶ。
     /// </summary>
@@ -41,28 +49,38 @@ public class MagnetField : MonoBehaviour, IMagnetField
 
     /// <summary>
     /// 形状の最近接面から point への方向ベクトル（正規化済み）。
-    /// Sphere: 中心 → point の方向。
     /// </summary>
     public Vector3 GetFieldDirection(Vector3 point)
     {
-        // プロトではSphereのみ実装
-        Vector3 dir = (point - Center).normalized;
+        Vector3 dir = Shape switch
+        {
+            FieldShape.Box => (point - BoundsHelper.NearestPointOnBox(Center, Size, transform.rotation, point)).normalized,
+            FieldShape.Cylinder => (point - BoundsHelper.NearestPointOnFiniteLine(Top, Bottom, point)).normalized,
+            _ => (point - Center).normalized
+        };
+
         return dir == Vector3.zero ? Vector3.up : dir;
     }
 
     /// <summary>
-    /// point での磁力強度（0〜1）。inner内=1、inner〜outer=lerp、outer外=0。
+    /// point での磁力強度（0〜1）。表面からの距離でinner/outer減衰。
     /// </summary>
     public float GetStrengthAt(Vector3 point)
     {
         if (settings == null) return 0f;
 
-        float distance = Vector3.Distance(point, Center);
-        if (distance <= settings.innerRadius) return 1f;
-        if (distance >= settings.outerRadius) return 0f;
+        Vector3 nearestSurface = Shape switch
+        {
+            FieldShape.Box => BoundsHelper.NearestPointOnBox(Center, Size, transform.rotation, point),
+            FieldShape.Cylinder => BoundsHelper.NearestPointOnFiniteLine(Top, Bottom, point),
+            _ => Center
+        };
 
-        // inner〜outer で線形補間
-        return 1f - (distance - settings.innerRadius) / (settings.outerRadius - settings.innerRadius);
+        float dist = Vector3.Distance(point, nearestSurface);
+        if (dist <= settings.innerRadius) return 1f;
+        if (dist >= settings.outerRadius) return 0f;
+
+        return 1f - (dist - settings.innerRadius) / (settings.outerRadius - settings.innerRadius);
     }
 
     /// <summary>
@@ -116,14 +134,55 @@ public class MagnetField : MonoBehaviour, IMagnetField
             ? new Color(1f, 0.2f, 0.2f, 0.5f)
             : new Color(0.2f, 0.4f, 1f, 0.5f);
 
-        // inner radius（実線）
         Gizmos.color = color;
-        Gizmos.DrawWireSphere(Center, settings.innerRadius);
 
-        // outer radius（半透明）
-        color.a = 0.2f;
-        Gizmos.color = color;
-        Gizmos.DrawWireSphere(Center, settings.outerRadius);
+        switch (Shape)
+        {
+            case FieldShape.Box:
+                var matrix = Matrix4x4.TRS(Center, transform.rotation, Vector3.one);
+                Gizmos.matrix = matrix;
+                Gizmos.DrawWireCube(Vector3.zero, Size);
+                color.a = 0.2f;
+                Gizmos.color = color;
+                var outerSize = Size + Vector3.one * settings.outerRadius * 2f;
+                Gizmos.DrawWireCube(Vector3.zero, outerSize);
+                Gizmos.matrix = Matrix4x4.identity;
+                break;
+
+            case FieldShape.Cylinder:
+                DrawWireCircle(Top, transform.up, CylinderRadius);
+                DrawWireCircle(Bottom, transform.up, CylinderRadius);
+                Gizmos.DrawLine(Top + transform.right * CylinderRadius, Bottom + transform.right * CylinderRadius);
+                Gizmos.DrawLine(Top - transform.right * CylinderRadius, Bottom - transform.right * CylinderRadius);
+                Gizmos.DrawLine(Top + transform.forward * CylinderRadius, Bottom + transform.forward * CylinderRadius);
+                Gizmos.DrawLine(Top - transform.forward * CylinderRadius, Bottom - transform.forward * CylinderRadius);
+                color.a = 0.2f;
+                Gizmos.color = color;
+                DrawWireCircle(Top, transform.up, CylinderRadius + settings.outerRadius);
+                DrawWireCircle(Bottom, transform.up, CylinderRadius + settings.outerRadius);
+                break;
+
+            default:
+                Gizmos.DrawWireSphere(Center, settings.innerRadius);
+                color.a = 0.2f;
+                Gizmos.color = color;
+                Gizmos.DrawWireSphere(Center, settings.outerRadius);
+                break;
+        }
+    }
+
+    void DrawWireCircle(Vector3 center, Vector3 normal, float radius, int segments = 32)
+    {
+        var rot = Quaternion.LookRotation(normal);
+        var prev = center + rot * (Vector3.up * radius);
+
+        for (int i = 1; i <= segments; i++)
+        {
+            float angle = (float)i / segments * Mathf.PI * 2f;
+            var next = center + rot * (new Vector3(Mathf.Sin(angle), Mathf.Cos(angle), 0f) * radius);
+            Gizmos.DrawLine(prev, next);
+            prev = next;
+        }
     }
 #endif
 }
