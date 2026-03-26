@@ -186,13 +186,13 @@ public class MagnetManager : Singleton<MagnetManager>
 
         if (isOpposite)
         {
-            a.ApplyForce(dirAtoB * forceMagnitude * ratioA);
-            b.ApplyForce(-dirAtoB * forceMagnitude * ratioB);
+            a.ApplyForce(dirAtoB * forceMagnitude * ratioA, b.transform.position);
+            b.ApplyForce(-dirAtoB * forceMagnitude * ratioB, a.transform.position);
         }
         else if (isSame)
         {
-            a.ApplyForce(-dirAtoB * forceMagnitude * ratioA);
-            b.ApplyForce(dirAtoB * forceMagnitude * ratioB);
+            a.ApplyForce(-dirAtoB * forceMagnitude * ratioA, b.transform.position);
+            b.ApplyForce(dirAtoB * forceMagnitude * ratioB, a.transform.position);
         }
 
         // 接触判定（異極のみ、snapDistance内）

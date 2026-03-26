@@ -25,12 +25,14 @@ public class Magnetizable : MonoBehaviour
     // キャッシュ（力の適用先判別用）
     private Rigidbody rb;
     private IMagnetTarget magnetTarget;
+    private IMagneticResponse magneticResponse;
     private float totalForceThisFrame;
 
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
         magnetTarget = GetComponent<IMagnetTarget>();
+        magneticResponse = GetComponent<IMagneticResponse>();
         mass = initialMass > 0f ? initialMass : (rb != null ? rb.mass : 1f);
     }
 
@@ -73,16 +75,25 @@ public class Magnetizable : MonoBehaviour
     /// <summary>磁力接触コールバックを発火する（MagnetManagerから呼ばれる）。</summary>
     public void NotifyContact(Magnetizable other)
     {
+        if (magneticResponse != null && magneticResponse.IsResponseActive)
+            magneticResponse.OnMagnetContact(this, other);
+
         OnMagnetContact?.Invoke(other);
     }
 
     /// <summary>
-    /// 力を適用する。IMagnetTarget → Rigidbody → 無視の優先順で判別。
+    /// 力を適用する。IMagneticResponse → IMagnetTarget → Rigidbody の優先順で判別。
     /// 同時にtotalForceThisFrameに蓄積する。
     /// </summary>
-    public void ApplyForce(Vector3 force)
+    public void ApplyForce(Vector3 force, Vector3 sourcePosition)
     {
         totalForceThisFrame += force.magnitude;
+
+        if (magneticResponse != null && magneticResponse.IsResponseActive)
+        {
+            magneticResponse.OnMagnetForce(force, sourcePosition);
+            return;
+        }
 
         if (magnetTarget != null)
         {
@@ -96,6 +107,9 @@ public class Magnetizable : MonoBehaviour
             return;
         }
     }
+
+    /// <summary>旧シグネチャの後方互換オーバーロード。</summary>
+    public void ApplyForce(Vector3 force) => ApplyForce(force, transform.position);
 
     void LateUpdate()
     {
