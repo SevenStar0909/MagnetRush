@@ -26,13 +26,18 @@ public class Magnetizable : MonoBehaviour
     private Rigidbody rb;
     private IMagnetTarget magnetTarget;
     private IMagneticResponse magneticResponse;
+    private Entity m_cachedEntity;
     private float totalForceThisFrame;
+
+    /// <summary>同一GOのEntityキャッシュ。MagnetManagerのフィールド割り当てで使用。</summary>
+    public Entity CachedEntity => m_cachedEntity;
 
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
         magnetTarget = GetComponent<IMagnetTarget>();
         magneticResponse = GetComponent<IMagneticResponse>();
+        m_cachedEntity = GetComponent<Entity>();
         mass = initialMass > 0f ? initialMass : (rb != null ? rb.mass : 1f);
     }
 

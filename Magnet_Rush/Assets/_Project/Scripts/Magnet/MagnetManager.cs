@@ -128,7 +128,7 @@ public class MagnetManager : Singleton<MagnetManager>
         // まず全Entityのフィールドをクリア
         for (int i = 0; i < cachedList.Count; i++)
         {
-            var entity = cachedList[i].GetComponent<Entity>();
+            var entity = cachedList[i].CachedEntity;
             if (entity != null)
                 entity.magnetField = null;
         }
@@ -222,9 +222,10 @@ public class MagnetManager : Singleton<MagnetManager>
         }
 
         // 接触判定（異極のみ、snapDistance内）
+        // snapDistance内ではSnapResolverのSmoothDampが位置を制御するため、
+        // 上で適用した力は実質無視される（意図的な設計：吸着フェーズでは滑らかな接近を優先）
         if (isOpposite && distance < settings.snapDistance)
         {
-            // スプリング接近 + 接触固定
             m_snapResolver?.Resolve(a, b, Time.fixedDeltaTime);
 
             long pairKey = GetPairKey(a, b);
