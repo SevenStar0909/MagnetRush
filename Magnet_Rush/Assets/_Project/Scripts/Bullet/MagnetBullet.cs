@@ -119,12 +119,11 @@ public class MagnetBullet : MonoBehaviour
 
         if (targetMag != null)
         {
-            // パターン2: 弾が消え、オブジェクト自体が磁力源になる
             MagnetizeTarget(other, targetMag);
         }
         else
         {
-            // パターン1: 弾がくっつき、弾が磁力源になる
+            Debug.Log($"[Bullet] → Pattern1: StickToSurface({other.name})");
             StickToSurface(other);
         }
     }
