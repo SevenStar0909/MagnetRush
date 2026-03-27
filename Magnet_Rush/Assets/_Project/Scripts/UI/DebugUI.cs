@@ -9,6 +9,10 @@ using TMPro;
 /// </summary>
 public class DebugUI : MonoBehaviour
 {
+#if !DEBUG && !UNITY_EDITOR
+    void Awake() { gameObject.SetActive(false); }
+#endif
+
     [SerializeField] private GameObject panel;
     [SerializeField] private Slider forceSlider;
     [SerializeField] private Slider rangeSlider;

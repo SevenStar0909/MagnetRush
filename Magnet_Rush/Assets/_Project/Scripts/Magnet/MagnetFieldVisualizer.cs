@@ -19,6 +19,9 @@ public class MagnetFieldVisualizer : MonoBehaviour
     /// </summary>
     public void Show(MagneticPole pole, float range)
     {
+#if !DEBUG && !UNITY_EDITOR
+        return;
+#endif
         Hide();
 
         Color color = pole == MagneticPole.S
