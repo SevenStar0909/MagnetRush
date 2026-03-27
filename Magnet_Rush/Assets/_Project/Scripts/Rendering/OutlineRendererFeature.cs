@@ -2,11 +2,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
+using UnityEngine.Rendering.RenderGraphModule;
 
 /// <summary>
 /// 磁化オブジェクトに Edge Detection アウトラインを描画する Renderer Feature。
-/// Pass1: Magnetized レイヤーのオブジェクトの法線を専用RTに描画
-/// Pass2: Roberts Cross エッジ検出で全辺にアウトライン
+/// Unity 6 RenderGraph 対応。
 /// </summary>
 public class OutlineRendererFeature : ScriptableRendererFeature
 {
@@ -38,12 +38,18 @@ public class OutlineRendererFeature : ScriptableRendererFeature
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
     {
         if (normalsMaterial == null || edgeDetectionMaterial == null) return;
-
         renderer.EnqueuePass(m_normalsPass);
         renderer.EnqueuePass(m_edgePass);
     }
 
-    /// <summary>Magnetized レイヤーのオブジェクトをビュー空間法線で描画するパス。</summary>
+    protected override void Dispose(bool disposing)
+    {
+        m_normalsPass?.Cleanup();
+    }
+
+    // ─────────────────────────────────────────────
+    // Pass 1: Magnetized レイヤーの法線を専用RTに描画
+    // ─────────────────────────────────────────────
     class NormalsPrePass : ScriptableRenderPass
     {
         private readonly LayerMask m_layerMask;
@@ -54,7 +60,6 @@ public class OutlineRendererFeature : ScriptableRendererFeature
             new ShaderTagId("UniversalForwardOnly"),
             new ShaderTagId("SRPDefaultUnlit")
         };
-
         private RTHandle m_normalsRT;
 
         public NormalsPrePass(LayerMask layerMask, Material normalsMaterial)
@@ -63,45 +68,60 @@ public class OutlineRendererFeature : ScriptableRendererFeature
             m_normalsMaterial = normalsMaterial;
         }
 
-        public override void OnCameraSetup(CommandBuffer cmd, ref RenderingData renderingData)
+        public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
         {
-            var desc = renderingData.cameraData.cameraTargetDescriptor;
+            var cameraData = frameData.Get<UniversalCameraData>();
+            var renderingData = frameData.Get<UniversalRenderingData>();
+            var lightData = frameData.Get<UniversalLightData>();
+
+            var desc = cameraData.cameraTargetDescriptor;
             desc.colorFormat = RenderTextureFormat.ARGBFloat;
-            desc.depthBufferBits = 0;
+            desc.depthBufferBits = 24;
 
             RenderingUtils.ReAllocateHandleIfNeeded(ref m_normalsRT, desc, name: "_ViewSpaceNormals");
 
-            ConfigureTarget(m_normalsRT);
-            ConfigureClear(ClearFlag.Color, Color.clear);
-        }
-
-        public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
-        {
-            var cmd = CommandBufferPool.Get("NormalsPrePass");
-
-            var drawingSettings = CreateDrawingSettings(m_shaderTagIds, ref renderingData, SortingCriteria.CommonOpaque);
+            // RendererList を RenderGraph で事前作成
+            var drawingSettings = RenderingUtils.CreateDrawingSettings(
+                m_shaderTagIds, renderingData, cameraData, lightData, SortingCriteria.CommonOpaque);
             drawingSettings.overrideMaterial = m_normalsMaterial;
-
             var filteringSettings = new FilteringSettings(RenderQueueRange.opaque, m_layerMask);
+            var rlParams = new RendererListParams(renderingData.cullResults, drawingSettings, filteringSettings);
+            var rendererListHandle = renderGraph.CreateRendererList(rlParams);
 
-            context.DrawRenderers(renderingData.cullResults, ref drawingSettings, ref filteringSettings);
+            using (var builder = renderGraph.AddUnsafePass<NormalsPassData>("NormalsPrePass", out var passData))
+            {
+                passData.normalsRT = m_normalsRT;
+                passData.rendererList = rendererListHandle;
 
-            cmd.SetGlobalTexture("_ViewSpaceNormals", m_normalsRT);
-            context.ExecuteCommandBuffer(cmd);
-            CommandBufferPool.Release(cmd);
+                builder.UseRendererList(rendererListHandle);
+                builder.AllowPassCulling(false);
+
+                builder.SetRenderFunc<NormalsPassData>(static (data, ctx) =>
+                {
+                    var cmd = CommandBufferHelpers.GetNativeCommandBuffer(ctx.cmd);
+                    cmd.SetRenderTarget(data.normalsRT);
+                    cmd.ClearRenderTarget(true, true, Color.clear);
+                    cmd.DrawRendererList(data.rendererList);
+                    cmd.SetGlobalTexture("_ViewSpaceNormals", data.normalsRT);
+                });
+            }
         }
 
-        public override void OnCameraCleanup(CommandBuffer cmd)
+        class NormalsPassData
         {
+            public RTHandle normalsRT;
+            public RendererListHandle rendererList;
         }
 
-        public void Dispose()
+        public void Cleanup()
         {
             m_normalsRT?.Release();
         }
     }
 
-    /// <summary>フルスクリーン Roberts Cross エッジ検出パス。</summary>
+    // ─────────────────────────────────────────────
+    // Pass 2: フルスクリーン Roberts Cross エッジ検出
+    // ─────────────────────────────────────────────
     class EdgeDetectionPass : ScriptableRenderPass
     {
         private readonly Material m_material;
@@ -110,8 +130,6 @@ public class OutlineRendererFeature : ScriptableRendererFeature
         private readonly float m_normalThreshold;
         private readonly Color m_colorS;
         private readonly Color m_colorN;
-
-        private RTHandle m_tempRT;
 
         public EdgeDetectionPass(Material material, float thickness,
             float depthThreshold, float normalThreshold, Color colorS, Color colorN)
@@ -124,16 +142,9 @@ public class OutlineRendererFeature : ScriptableRendererFeature
             m_colorN = colorN;
         }
 
-        public override void OnCameraSetup(CommandBuffer cmd, ref RenderingData renderingData)
+        public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
         {
-            var desc = renderingData.cameraData.cameraTargetDescriptor;
-            desc.depthBufferBits = 0;
-            RenderingUtils.ReAllocateHandleIfNeeded(ref m_tempRT, desc, name: "_EdgeDetectionTemp");
-        }
-
-        public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
-        {
-            var cmd = CommandBufferPool.Get("EdgeDetection");
+            var resourceData = frameData.Get<UniversalResourceData>();
 
             m_material.SetFloat("_OutlineThickness", m_thickness);
             m_material.SetFloat("_DepthThreshold", m_depthThreshold);
@@ -141,24 +152,35 @@ public class OutlineRendererFeature : ScriptableRendererFeature
             m_material.SetColor("_OutlineColorS", m_colorS);
             m_material.SetColor("_OutlineColorN", m_colorN);
 
-            var source = renderingData.cameraData.renderer.cameraColorTargetHandle;
+            var source = resourceData.activeColorTexture;
+            var desc = renderGraph.GetTextureDesc(source);
+            desc.name = "_EdgeDetectionTemp";
+            var tempTex = renderGraph.CreateTexture(desc);
 
-            Blitter.BlitCameraTexture(cmd, source, m_tempRT, m_material, 0);
-            Blitter.BlitCameraTexture(cmd, m_tempRT, source);
+            using (var builder = renderGraph.AddUnsafePass<BlitPassData>("EdgeDetection", out var passData))
+            {
+                passData.material = m_material;
+                passData.source = source;
+                passData.temp = tempTex;
 
-            context.ExecuteCommandBuffer(cmd);
-            CommandBufferPool.Release(cmd);
+                builder.UseTexture(source, AccessFlags.ReadWrite);
+                builder.UseTexture(tempTex, AccessFlags.ReadWrite);
+                builder.AllowPassCulling(false);
+
+                builder.SetRenderFunc<BlitPassData>(static (data, ctx) =>
+                {
+                    var cmd = CommandBufferHelpers.GetNativeCommandBuffer(ctx.cmd);
+                    Blitter.BlitCameraTexture(cmd, data.source, data.temp, data.material, 0);
+                    Blitter.BlitCameraTexture(cmd, data.temp, data.source);
+                });
+            }
         }
 
-        public void Dispose()
+        class BlitPassData
         {
-            m_tempRT?.Release();
+            public Material material;
+            public TextureHandle source;
+            public TextureHandle temp;
         }
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        m_normalsPass?.Dispose();
-        m_edgePass?.Dispose();
     }
 }

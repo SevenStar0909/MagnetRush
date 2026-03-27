@@ -60,8 +60,7 @@ public class AimController : MonoBehaviour
         // 入力があればMove、なければIdleに戻る
         if (states != null)
         {
-            var playerInput = GetComponent<PlayerInputHandler>();
-            if (playerInput != null && playerInput.MoveInput.sqrMagnitude > 0.01f)
+            if (input != null && input.MoveInput.sqrMagnitude > 0.01f)
                 states.Change<MovePlayerState>();
             else
                 states.Change<IdlePlayerState>();

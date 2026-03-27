@@ -24,6 +24,9 @@ public class PlayerSettings : ScriptableObject
     public float cameraDistance = 5f;
     public Vector3 shoulderOffset;
 
+    [Header("射撃")]
+    public float firePointHeight = 1.2f;
+
     [Header("Aim")]
     public float aimReleaseGraceTime = 0.15f;
     public float aimTimeScale = 0.3f;

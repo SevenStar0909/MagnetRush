@@ -6,6 +6,7 @@ using UnityEngine;
 public class ShootingController : MonoBehaviour
 {
     [SerializeField] private BulletSettings bulletSettings;
+    [SerializeField] private PlayerSettings playerSettings;
     [SerializeField] private Transform firePoint;
 
     private PlayerInputHandler input;
@@ -66,7 +67,8 @@ public class ShootingController : MonoBehaviour
         }
 
         // 発射位置から着弾点への方向
-        Vector3 spawnPos = firePoint != null ? firePoint.position : transform.position + Vector3.up * 1.2f;
+        float height = playerSettings != null ? playerSettings.firePointHeight : 1.2f;
+        Vector3 spawnPos = firePoint != null ? firePoint.position : transform.position + Vector3.up * height;
         Vector3 direction = (targetPoint - spawnPos).normalized;
 
         // 弾を生成・初期化

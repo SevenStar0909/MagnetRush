@@ -1,28 +1,5 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &-4282602078403273473
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 91f9c0a7c737f1f4a93d033408fe5cd4, type: 3}
-  m_Name: MagnetOutline
-  m_EditorClassIdentifier: Assembly-CSharp::OutlineRendererFeature
-  m_Active: 1
-  outlineLayerMask:
-    serializedVersion: 2
-    m_Bits: 4096
-  normalsMaterial: {fileID: 2100000, guid: 426f5f8983ee79e4da69d3f36be04c52, type: 2}
-  edgeDetectionMaterial: {fileID: 2100000, guid: b9afae233f8fa1045aa127df316e450e, type: 2}
-  outlineThickness: 1
-  depthThreshold: 0.5
-  normalThreshold: 0.4
-  outlineColorS: {r: 0.2, g: 0.4, b: 1, a: 1}
-  outlineColorN: {r: 1, g: 0.2, b: 0.2, a: 1}
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -49,8 +26,7 @@ MonoBehaviour:
     probeVolumeBlendStatesCS: {fileID: 7200000, guid: b9a23f869c4fd45f19c5ada54dd82176, type: 3}
   m_RendererFeatures:
   - {fileID: 7833122117494664109}
-  - {fileID: 0}
-  m_RendererFeatureMap: ad6b866f10d7b46c2e27fdffffffffff
+  m_RendererFeatureMap: 58cd000000000000
   m_UseNativeRenderPass: 1
   xrSystemData: {fileID: 0}
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
