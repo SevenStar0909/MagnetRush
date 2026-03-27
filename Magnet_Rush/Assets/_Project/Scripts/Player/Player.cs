@@ -72,7 +72,7 @@ public class Player : Entity
 
     void Update()
     {
-        float dt = Time.deltaTime;
+        float dt = Mathf.Min(Time.deltaTime, Time.fixedDeltaTime * 3f);
         UpdateMagneticInfluence();
         states.Step(dt);
         UpdateGround();
