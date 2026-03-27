@@ -47,6 +47,9 @@ public class OutlineRendererFeature : ScriptableRendererFeature
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
     {
         if (m_normalsMaterial == null || m_edgeDetectionMaterial == null) return;
+        if (renderingData.cameraData.cameraType == CameraType.SceneView) return;
+        if (renderingData.cameraData.cameraType == CameraType.Preview) return;
+
         renderer.EnqueuePass(m_normalsPass);
         renderer.EnqueuePass(m_edgePass);
     }
@@ -85,11 +88,11 @@ public class OutlineRendererFeature : ScriptableRendererFeature
 
             var desc = cameraData.cameraTargetDescriptor;
             desc.colorFormat = RenderTextureFormat.ARGBFloat;
-            desc.depthBufferBits = 24;
+            desc.depthBufferBits = 0;
+            desc.msaaSamples = 1;
 
             RenderingUtils.ReAllocateHandleIfNeeded(ref m_normalsRT, desc, name: "_ViewSpaceNormals");
 
-            // RendererList を RenderGraph で事前作成
             var drawingSettings = RenderingUtils.CreateDrawingSettings(
                 m_shaderTagIds, renderingData, cameraData, lightData, SortingCriteria.CommonOpaque);
             drawingSettings.overrideMaterial = m_normalsMaterial;
@@ -109,7 +112,7 @@ public class OutlineRendererFeature : ScriptableRendererFeature
                 {
                     var cmd = CommandBufferHelpers.GetNativeCommandBuffer(ctx.cmd);
                     cmd.SetRenderTarget(data.normalsRT);
-                    cmd.ClearRenderTarget(true, true, Color.clear);
+                    cmd.ClearRenderTarget(false, true, Color.clear);
                     cmd.DrawRendererList(data.rendererList);
                     cmd.SetGlobalTexture("_ViewSpaceNormals", data.normalsRT);
                 });
@@ -179,8 +182,14 @@ public class OutlineRendererFeature : ScriptableRendererFeature
                 builder.SetRenderFunc<BlitPassData>(static (data, ctx) =>
                 {
                     var cmd = CommandBufferHelpers.GetNativeCommandBuffer(ctx.cmd);
-                    Blitter.BlitCameraTexture(cmd, data.source, data.temp, data.material, 0);
-                    Blitter.BlitCameraTexture(cmd, data.temp, data.source);
+
+                    // source → temp（エッジ検出マテリアル適用）
+                    cmd.SetRenderTarget(data.temp);
+                    Blitter.BlitTexture(cmd, data.source, new Vector4(1, 1, 0, 0), data.material, 0);
+
+                    // temp → source（書き戻し）
+                    cmd.SetRenderTarget(data.source);
+                    Blitter.BlitTexture(cmd, data.temp, new Vector4(1, 1, 0, 0), 0, false);
                 });
             }
         }

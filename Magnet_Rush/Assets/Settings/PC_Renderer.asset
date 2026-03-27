@@ -12,17 +12,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 91f9c0a7c737f1f4a93d033408fe5cd4, type: 3}
   m_Name: OutlineRendererFeature
   m_EditorClassIdentifier: Assembly-CSharp::OutlineRendererFeature
-  m_Active: 0
-  outlineLayerMask:
+  m_Active: 1
+  m_outlineLayerMask:
     serializedVersion: 2
     m_Bits: 4096
-  normalsMaterial: {fileID: 2100000, guid: 426f5f8983ee79e4da69d3f36be04c52, type: 2}
-  edgeDetectionMaterial: {fileID: 2100000, guid: b9afae233f8fa1045aa127df316e450e, type: 2}
-  outlineThickness: 1
-  depthThreshold: 0.5
-  normalThreshold: 0.4
-  outlineColorS: {r: 0.2, g: 0.4, b: 1, a: 1}
-  outlineColorN: {r: 1, g: 0.2, b: 0.2, a: 1}
+  m_normalsMaterial: {fileID: 2100000, guid: 426f5f8983ee79e4da69d3f36be04c52, type: 2}
+  m_edgeDetectionMaterial: {fileID: 2100000, guid: b9afae233f8fa1045aa127df316e450e, type: 2}
+  m_outlineThickness: 1
+  m_depthThreshold: 0.5
+  m_normalThreshold: 0.4
+  m_outlineColorS: {r: 0.2, g: 0.4, b: 1, a: 1}
+  m_outlineColorN: {r: 1, g: 0.2, b: 0.2, a: 1}
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0

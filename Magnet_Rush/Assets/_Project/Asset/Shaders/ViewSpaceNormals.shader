@@ -14,6 +14,8 @@ Shader "Hidden/MagnetRush/ViewSpaceNormals"
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 
+            float _PoleID; // 0.0=N極, 1.0=S極
+
             struct Attributes
             {
                 float4 positionOS : POSITION;
@@ -38,7 +40,7 @@ Shader "Hidden/MagnetRush/ViewSpaceNormals"
             half4 frag(Varyings input) : SV_Target
             {
                 float3 normal = normalize(input.normalVS);
-                return half4(normal * 0.5 + 0.5, 1.0);
+                return half4(normal * 0.5 + 0.5, _PoleID);
             }
             ENDHLSL
         }

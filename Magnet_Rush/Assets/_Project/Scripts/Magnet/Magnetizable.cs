@@ -34,6 +34,9 @@ public class Magnetizable : MonoBehaviour
     private Entity m_cachedEntity;
     private float m_totalForceThisFrame;
     private int m_originalLayer;
+    private Renderer m_renderer;
+    private MaterialPropertyBlock m_mpb;
+    private static readonly int s_poleIDProperty = Shader.PropertyToID("_PoleID");
 
     /// <summary>同一GOのEntityキャッシュ。MagnetManagerのフィールド割り当てで使用。</summary>
     public Entity CachedEntity => m_cachedEntity;
@@ -44,6 +47,8 @@ public class Magnetizable : MonoBehaviour
         m_magnetTarget = GetComponent<IMagnetTarget>();
         m_magneticResponse = GetComponent<IMagneticResponse>();
         m_cachedEntity = GetComponent<Entity>();
+        m_renderer = GetComponent<Renderer>();
+        m_mpb = new MaterialPropertyBlock();
         mass = m_initialMass > 0f ? m_initialMass : (m_rb != null ? m_rb.mass : 1f);
         m_originalLayer = gameObject.layer;
     }
@@ -70,7 +75,14 @@ public class Magnetizable : MonoBehaviour
 
         // Magnetized レイヤーに切り替え → Edge Detection の対象になる
         if (m_isActive)
+        {
             gameObject.layer = LayerMask.NameToLayer("Magnetized");
+            if (m_renderer != null)
+            {
+                m_mpb.SetFloat(s_poleIDProperty, newPole == MagneticPole.S ? 1f : 0f);
+                m_renderer.SetPropertyBlock(m_mpb);
+            }
+        }
 
         OnPoleChanged?.Invoke(m_pole);
     }

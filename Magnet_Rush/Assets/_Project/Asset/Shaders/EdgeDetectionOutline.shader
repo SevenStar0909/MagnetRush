@@ -22,15 +22,12 @@ Shader "Hidden/MagnetRush/EdgeDetectionOutline"
             Cull Off
 
             HLSLPROGRAM
-            #pragma vertex vert
+            #pragma vertex Vert
             #pragma fragment frag
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
-
-            TEXTURE2D(_MainTex);
-            SAMPLER(sampler_MainTex);
-            float4 _MainTex_TexelSize;
+            #include "Packages/com.unity.render-pipelines.core/Runtime/Utilities/Blit.hlsl"
 
             TEXTURE2D(_ViewSpaceNormals);
             SAMPLER(sampler_ViewSpaceNormals);
@@ -43,32 +40,12 @@ Shader "Hidden/MagnetRush/EdgeDetectionOutline"
                 float _NormalThreshold;
             CBUFFER_END
 
-            struct Attributes
-            {
-                float4 positionOS : POSITION;
-                float2 uv : TEXCOORD0;
-            };
-
-            struct Varyings
-            {
-                float4 positionCS : SV_POSITION;
-                float2 uv : TEXCOORD0;
-            };
-
-            Varyings vert(Attributes input)
-            {
-                Varyings output;
-                output.positionCS = TransformObjectToHClip(input.positionOS.xyz);
-                output.uv = input.uv;
-                return output;
-            }
-
             half4 frag(Varyings input) : SV_Target
             {
-                float2 uv = input.uv;
-                half4 sceneColor = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, uv);
+                float2 uv = input.texcoord;
+                half4 sceneColor = SAMPLE_TEXTURE2D(_BlitTexture, sampler_LinearClamp, uv);
 
-                float2 texelSize = _MainTex_TexelSize.xy * _OutlineThickness;
+                float2 texelSize = _BlitTexture_TexelSize.xy * _OutlineThickness;
 
                 // Roberts Cross: 4つの対角サンプル
                 float2 uvBL = uv + float2(-texelSize.x, -texelSize.y);
@@ -96,22 +73,37 @@ Shader "Hidden/MagnetRush/EdgeDetectionOutline"
                 float depthDiff1 = d3 - d2;
                 float edgeDepth = sqrt(depthDiff0 * depthDiff0 + depthDiff1 * depthDiff1) * 100.0;
 
-                // エッジ判定
+                // ペアごとの磁化マスク（BL-TR, BR-TL の各ペアで少なくとも1つが磁化領域）
+                float mask0 = step(0.01, length(n0));
+                float mask1 = step(0.01, length(n1));
+                float mask2 = step(0.01, length(n2));
+                float mask3 = step(0.01, length(n3));
+                float pairMask0 = max(mask0, mask1);
+                float pairMask1 = max(mask2, mask3);
+
+                // 深度エッジ: ペア内に磁化ピクセルがある場合のみ有効
+                float maskedDepthEdge = sqrt(
+                    depthDiff0 * depthDiff0 * pairMask0 +
+                    depthDiff1 * depthDiff1 * pairMask1
+                ) * 100.0;
+
+                // 法線エッジ: 非磁化ピクセルは法線=(0,0,0)なので自然にマスクされる
                 float edge = max(
-                    edgeDepth > _DepthThreshold ? 1.0 : 0.0,
+                    maskedDepthEdge > _DepthThreshold ? 1.0 : 0.0,
                     edgeNormal > _NormalThreshold ? 1.0 : 0.0
                 );
 
-                // 法線テクスチャが描画されてないピクセル（磁化されてないオブジェクト）はスキップ
-                float4 centerNormal = SAMPLE_TEXTURE2D(_ViewSpaceNormals, sampler_ViewSpaceNormals, uv);
-                float hasMagnetized = step(0.01, length(centerNormal.rgb - float3(0.5, 0.5, 0.5)));
-
                 // 極性色（アルファに極性IDを格納：0.0=N極, 1.0=S極）
-                float poleId = centerNormal.a;
+                float4 centerNormal = SAMPLE_TEXTURE2D(_ViewSpaceNormals, sampler_ViewSpaceNormals, uv);
+                float poleId = max(max(SAMPLE_TEXTURE2D(_ViewSpaceNormals, sampler_ViewSpaceNormals, uvBL).a,
+                                       SAMPLE_TEXTURE2D(_ViewSpaceNormals, sampler_ViewSpaceNormals, uvTR).a),
+                                   max(SAMPLE_TEXTURE2D(_ViewSpaceNormals, sampler_ViewSpaceNormals, uvBR).a,
+                                       SAMPLE_TEXTURE2D(_ViewSpaceNormals, sampler_ViewSpaceNormals, uvTL).a));
+                // centerNormalのアルファも考慮
+                poleId = max(poleId, centerNormal.a);
                 float4 outlineColor = lerp(_OutlineColorN, _OutlineColorS, poleId);
 
-                // 磁化オブジェクト上のエッジのみ描画
-                float finalEdge = edge * hasMagnetized;
+                float finalEdge = edge;
 
                 return lerp(sceneColor, outlineColor, finalEdge);
             }
