@@ -1,9 +1,10 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System;
 
 /// <summary>
 /// 磁力の影響を受けることを示すコンポーネント。
 /// MagnetManagerに自動登録され、力の適用はオブジェクト種別に応じて自動判別する。
+/// 磁化時はレイヤーを "Magnetized" に変更し、Edge Detection アウトラインの対象になる。
 /// </summary>
 public class Magnetizable : MonoBehaviour
 {
@@ -22,17 +23,13 @@ public class Magnetizable : MonoBehaviour
     /// <summary>磁化オブジェクト同士が接触距離に入った時に発火。</summary>
     public event Action<Magnetizable> OnMagnetContact;
 
-    // キャッシュ（力の適用先判別用）
+    // キャッシュ
     private Rigidbody rb;
     private IMagnetTarget magnetTarget;
     private IMagneticResponse magneticResponse;
     private Entity m_cachedEntity;
     private float totalForceThisFrame;
-
-    // アウトライン
-    private static Material s_outlineMatS;
-    private static Material s_outlineMatN;
-    private MeshRenderer m_renderer;
+    private int m_originalLayer;
 
     /// <summary>同一GOのEntityキャッシュ。MagnetManagerのフィールド割り当てで使用。</summary>
     public Entity CachedEntity => m_cachedEntity;
@@ -43,13 +40,8 @@ public class Magnetizable : MonoBehaviour
         magnetTarget = GetComponent<IMagnetTarget>();
         magneticResponse = GetComponent<IMagneticResponse>();
         m_cachedEntity = GetComponent<Entity>();
-        m_renderer = GetComponent<MeshRenderer>();
         mass = initialMass > 0f ? initialMass : (rb != null ? rb.mass : 1f);
-
-        if (s_outlineMatS == null && MagnetManager.Instance != null && MagnetManager.Instance.Settings != null)
-            s_outlineMatS = MagnetManager.Instance.Settings.outlineMatS;
-        if (s_outlineMatN == null && MagnetManager.Instance != null && MagnetManager.Instance.Settings != null)
-            s_outlineMatN = MagnetManager.Instance.Settings.outlineMatN;
+        m_originalLayer = gameObject.layer;
     }
 
     void OnEnable()
@@ -71,7 +63,11 @@ public class Magnetizable : MonoBehaviour
     {
         pole = newPole;
         isActive = newPole != MagneticPole.None;
-        UpdateOutline();
+
+        // Magnetized レイヤーに切り替え → Edge Detection の対象になる
+        if (isActive)
+            gameObject.layer = LayerMask.NameToLayer("Magnetized");
+
         OnPoleChanged?.Invoke(pole);
     }
 
@@ -79,68 +75,11 @@ public class Magnetizable : MonoBehaviour
     {
         pole = MagneticPole.None;
         isActive = false;
-        RemoveOutline();
+
+        // 元のレイヤーに戻す → アウトライン消える
+        gameObject.layer = m_originalLayer;
+
         OnPoleChanged?.Invoke(pole);
-    }
-
-    private void UpdateOutline()
-    {
-#if !DEBUG && !UNITY_EDITOR
-        return;
-#endif
-        if (m_renderer == null) return;
-
-        Material outlineMat = pole == MagneticPole.S ? s_outlineMatS : s_outlineMatN;
-        if (outlineMat == null) return;
-
-        var mats = m_renderer.sharedMaterials;
-
-        // 既にアウトラインがあれば差し替え、なければ追加
-        for (int i = 0; i < mats.Length; i++)
-        {
-            if (mats[i] == s_outlineMatS || mats[i] == s_outlineMatN)
-            {
-                mats[i] = outlineMat;
-                m_renderer.sharedMaterials = mats;
-                return;
-            }
-        }
-
-        // 新規追加
-        var newMats = new Material[mats.Length + 1];
-        mats.CopyTo(newMats, 0);
-        newMats[mats.Length] = outlineMat;
-        m_renderer.sharedMaterials = newMats;
-    }
-
-    private void RemoveOutline()
-    {
-#if !DEBUG && !UNITY_EDITOR
-        return;
-#endif
-        if (m_renderer == null) return;
-
-        var mats = m_renderer.sharedMaterials;
-        bool found = false;
-        for (int i = 0; i < mats.Length; i++)
-        {
-            if (mats[i] == s_outlineMatS || mats[i] == s_outlineMatN)
-            {
-                found = true;
-                break;
-            }
-        }
-
-        if (!found) return;
-
-        var newMats = new Material[mats.Length - 1];
-        int idx = 0;
-        for (int i = 0; i < mats.Length; i++)
-        {
-            if (mats[i] != s_outlineMatS && mats[i] != s_outlineMatN)
-                newMats[idx++] = mats[i];
-        }
-        m_renderer.sharedMaterials = newMats;
     }
 
     /// <summary>

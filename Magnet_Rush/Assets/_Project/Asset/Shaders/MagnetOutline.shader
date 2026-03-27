@@ -46,8 +46,9 @@ Shader "MagnetRush/MagnetOutline"
             Varyings vert(Attributes input)
             {
                 Varyings output;
-                // 法線方向にメッシュを膨らませる
-                float3 expandedPos = input.positionOS.xyz + input.normalOS * _OutlineWidth;
+                // オブジェクト中心からの方向で膨張（ハードエッジでも隙間が出ない）
+                float3 dir = normalize(input.positionOS.xyz);
+                float3 expandedPos = input.positionOS.xyz + dir * _OutlineWidth;
                 output.positionCS = TransformObjectToHClip(expandedPos);
                 return output;
             }
