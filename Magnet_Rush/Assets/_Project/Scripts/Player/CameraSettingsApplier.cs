@@ -1,23 +1,26 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 using Unity.Cinemachine;
 
 public class CameraSettingsApplier : MonoBehaviour
 {
-    [SerializeField] private PlayerSettings settings;
-    [SerializeField] private CinemachineCamera cinemachineCamera;
+    [FormerlySerializedAs("settings")]
+    [SerializeField] private PlayerSettings m_settings;
+    [FormerlySerializedAs("cinemachineCamera")]
+    [SerializeField] private CinemachineCamera m_cinemachineCamera;
 
-    private CinemachineOrbitalFollow orbitalFollow;
-    private float defaultFOV;
-    private Cinemachine3OrbitRig.Settings defaultOrbits;
+    private CinemachineOrbitalFollow m_orbitalFollow;
+    private float m_defaultFOV;
+    private Cinemachine3OrbitRig.Settings m_defaultOrbits;
 
     void Start()
     {
-        if (cinemachineCamera != null)
+        if (m_cinemachineCamera != null)
         {
-            orbitalFollow = cinemachineCamera.GetComponent<CinemachineOrbitalFollow>();
-            defaultFOV = cinemachineCamera.Lens.FieldOfView;
-            if (orbitalFollow != null)
-                defaultOrbits = orbitalFollow.Orbits;
+            m_orbitalFollow = m_cinemachineCamera.GetComponent<CinemachineOrbitalFollow>();
+            m_defaultFOV = m_cinemachineCamera.Lens.FieldOfView;
+            if (m_orbitalFollow != null)
+                m_defaultOrbits = m_orbitalFollow.Orbits;
         }
 
         Cursor.lockState = CursorLockMode.Locked;
@@ -29,31 +32,31 @@ public class CameraSettingsApplier : MonoBehaviour
     /// </summary>
     public void SetAimMode(bool aiming)
     {
-        if (orbitalFollow == null || settings == null) return;
+        if (m_orbitalFollow == null || m_settings == null) return;
 
         if (aiming)
         {
             // エイム時: Orbitsを縮小してカメラを寄せる
-            float scale = settings.aimCameraDistance / settings.cameraDistance;
-            var orbits = defaultOrbits;
+            float scale = m_settings.aimCameraDistance / m_settings.cameraDistance;
+            var orbits = m_defaultOrbits;
             orbits.Top = new Cinemachine3OrbitRig.Orbit
-                { Height = defaultOrbits.Top.Height, Radius = defaultOrbits.Top.Radius * scale };
+                { Height = m_defaultOrbits.Top.Height, Radius = m_defaultOrbits.Top.Radius * scale };
             orbits.Center = new Cinemachine3OrbitRig.Orbit
-                { Height = defaultOrbits.Center.Height, Radius = defaultOrbits.Center.Radius * scale };
+                { Height = m_defaultOrbits.Center.Height, Radius = m_defaultOrbits.Center.Radius * scale };
             orbits.Bottom = new Cinemachine3OrbitRig.Orbit
-                { Height = defaultOrbits.Bottom.Height, Radius = defaultOrbits.Bottom.Radius * scale };
-            orbitalFollow.Orbits = orbits;
+                { Height = m_defaultOrbits.Bottom.Height, Radius = m_defaultOrbits.Bottom.Radius * scale };
+            m_orbitalFollow.Orbits = orbits;
         }
         else
         {
-            orbitalFollow.Orbits = defaultOrbits;
+            m_orbitalFollow.Orbits = m_defaultOrbits;
         }
 
-        if (cinemachineCamera != null)
+        if (m_cinemachineCamera != null)
         {
-            var lens = cinemachineCamera.Lens;
-            lens.FieldOfView = aiming ? settings.aimFOV : defaultFOV;
-            cinemachineCamera.Lens = lens;
+            var lens = m_cinemachineCamera.Lens;
+            lens.FieldOfView = aiming ? m_settings.aimFOV : m_defaultFOV;
+            m_cinemachineCamera.Lens = lens;
         }
     }
 }

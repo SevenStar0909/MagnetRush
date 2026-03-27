@@ -1,5 +1,8 @@
 using UnityEngine;
 
+/// <summary>
+/// プレイヤー用のステートマシン。Idle/Move/Die/Aimステートを管理する。
+/// </summary>
 public class PlayerStateManager : EntityStateManager<Player>
 {
     void Awake()

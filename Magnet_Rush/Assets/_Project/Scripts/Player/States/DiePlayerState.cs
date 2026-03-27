@@ -1,8 +1,11 @@
 using UnityEngine;
 
+/// <summary>
+/// プレイヤーの死亡ステート。一定時間後にリスポーンする。
+/// </summary>
 public class DiePlayerState : EntityState<Player>
 {
-    private float respawnTimer;
+    private float m_respawnTimer;
 
     public override void Enter(Player entity, EntityStateManager<Player> manager)
     {
@@ -13,13 +16,13 @@ public class DiePlayerState : EntityState<Player>
         var collider = entity.GetComponent<Collider>();
         if (collider != null) collider.enabled = false;
 
-        respawnTimer = entity.Settings.respawnDelay;
+        m_respawnTimer = entity.Settings.respawnDelay;
     }
 
     public override void Step(float dt)
     {
-        respawnTimer -= dt;
-        if (respawnTimer <= 0f)
+        m_respawnTimer -= dt;
+        if (m_respawnTimer <= 0f)
         {
             Respawn();
         }
@@ -38,10 +41,7 @@ public class DiePlayerState : EntityState<Player>
         // スポーン地点にテレポート
         if (GameManager.Instance != null)
         {
-            var cc = entity.GetComponent<CharacterController>();
-            if (cc != null) cc.enabled = false;
             entity.transform.position = GameManager.Instance.GetSpawnPosition();
-            if (cc != null) cc.enabled = true;
         }
 
         entity.health.ResetHealth();

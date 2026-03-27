@@ -2,35 +2,35 @@ using UnityEngine;
 
 public abstract class Singleton<T> : MonoBehaviour where T : MonoBehaviour
 {
-    private static T _instance;
+    private static T s_instance;
 
     public static T Instance
     {
         get
         {
-            if (_instance == null)
+            if (s_instance == null)
             {
-                _instance = FindFirstObjectByType<T>();
+                s_instance = FindFirstObjectByType<T>();
             }
-            return _instance;
+            return s_instance;
         }
     }
 
     protected virtual void Awake()
     {
-        if (_instance != null && _instance != this)
+        if (s_instance != null && s_instance != this)
         {
             Destroy(gameObject);
             return;
         }
-        _instance = this as T;
+        s_instance = this as T;
     }
 
     protected virtual void OnDestroy()
     {
-        if (_instance == this)
+        if (s_instance == this)
         {
-            _instance = null;
+            s_instance = null;
         }
     }
 }

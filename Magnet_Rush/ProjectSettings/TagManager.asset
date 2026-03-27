@@ -8,6 +8,9 @@ TagManager:
   - Bullet
   - Wall
   - MagnetObject
+  - MagnetBullet
+  - Turret
+  - EnemyWeapon
   layers:
   - Default
   - TransparentFX
@@ -19,9 +22,9 @@ TagManager:
   - Wall
   - Player
   - Enemy
-  - 
-  - 
-  - 
+  - Bullet
+  - MagnetField
+  - Magnetized
   - 
   - 
   - 

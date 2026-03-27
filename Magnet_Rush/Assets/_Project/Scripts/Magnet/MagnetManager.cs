@@ -1,135 +1,332 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 /// <summary>
 /// 磁力システムの中枢。全Magnetizableを管理し、ペア間の引力/反発を計算・適用する。
+/// 接触距離に入った異極ペアにはOnMagnetContactを通知する。
 /// </summary>
 [DefaultExecutionOrder(-50)]
 public class MagnetManager : Singleton<MagnetManager>
 {
-    [SerializeField] private MagnetSettings settings;
+    [FormerlySerializedAs("settings")]
+    [SerializeField] private MagnetSettings m_settings;
 
-    private readonly HashSet<Magnetizable> registry = new();
+    private readonly HashSet<Magnetizable> m_registry = new();
+    private readonly List<Magnetizable> m_cachedList = new();
+    private bool m_listDirty = true;
+
+    // MagnetField レジストリ
+    private readonly HashSet<MagnetField> m_fieldRegistry = new();
+    private readonly List<MagnetField> m_cachedFields = new();
+    private bool m_fieldsDirty = true;
+
+    // 接触中ペアの追跡（Enter/Exit判定用）
+    private readonly HashSet<long> m_activeContacts = new();
+
+    // スナップ解決
+    private MagneticSnapResolver m_snapResolver;
+
+    protected override void Awake()
+    {
+        base.Awake();
+        m_snapResolver = new MagneticSnapResolver(m_settings);
+    }
+
+    public MagneticSnapResolver SnapResolver => m_snapResolver;
 
     public void Register(Magnetizable m)
     {
-        if (m != null) registry.Add(m);
+        if (m != null && m_registry.Add(m))
+            m_listDirty = true;
     }
 
     public void Unregister(Magnetizable m)
     {
-        if (m != null) registry.Remove(m);
+        if (m != null && m_registry.Remove(m))
+            m_listDirty = true;
     }
+
+    public void RegisterField(MagnetField f)
+    {
+        if (f != null && m_fieldRegistry.Add(f))
+        {
+            m_fieldsDirty = true;
+            f.OnFieldExpired += () =>
+            {
+                HandleFieldExplosion(f);
+                m_snapResolver?.ReleaseAllForField(f);
+            };
+        }
+    }
+
+    public void UnregisterField(MagnetField f)
+    {
+        if (f != null && m_fieldRegistry.Remove(f))
+            m_fieldsDirty = true;
+    }
+
+    /// <summary>弾道吸引用。アクティブなフィールド一覧を返す。</summary>
+    public List<MagnetField> GetActiveFields() => m_cachedFields;
 
     void FixedUpdate()
     {
-        // 破棄済みオブジェクトを除去
-        registry.RemoveWhere(m => m == null || !m.gameObject.activeInHierarchy);
+        m_snapResolver?.CleanupDestroyedJoints();
 
-        var list = new List<Magnetizable>(registry);
+        // 破棄済みオブジェクト除去
+        int removed = m_registry.RemoveWhere(m => m == null || !m.gameObject.activeInHierarchy);
+        if (removed > 0) m_listDirty = true;
 
-        // 全有効ペアをイテレート
-        for (int i = 0; i < list.Count; i++)
+        int removedFields = m_fieldRegistry.RemoveWhere(f => f == null);
+        if (removedFields > 0) m_fieldsDirty = true;
+
+        // キャッシュ更新（dirty時のみ）
+        if (m_listDirty)
         {
-            if (!list[i].IsActive) continue;
+            m_cachedList.Clear();
+            m_cachedList.AddRange(m_registry);
+            m_listDirty = false;
+        }
 
-            for (int j = i + 1; j < list.Count; j++)
+        if (m_fieldsDirty)
+        {
+            m_cachedFields.Clear();
+            m_cachedFields.AddRange(m_fieldRegistry);
+            m_fieldsDirty = false;
+        }
+
+        // 今フレームの接触ペアを追跡
+        var contactsThisFrame = new HashSet<long>();
+
+        // 全有効ペアをイテレート（点力計算）
+        for (int i = 0; i < m_cachedList.Count; i++)
+        {
+            if (!m_cachedList[i].IsActive) continue;
+
+            for (int j = i + 1; j < m_cachedList.Count; j++)
             {
-                if (!list[j].IsActive) continue;
+                if (!m_cachedList[j].IsActive) continue;
 
-                var pair = new MagnetPair(list[i], list[j]);
-                ProcessPair(pair);
+                ProcessPair(m_cachedList[i], m_cachedList[j], contactsThisFrame);
+            }
+        }
+
+        // Entity ↔ Field 割り当て（nearest-wins）
+        AssignFieldsToEntities();
+
+        // 接触Exit判定
+        m_activeContacts.IntersectWith(contactsThisFrame);
+    }
+
+    /// <summary>
+    /// 各Fieldのトリガー検知結果から、EntityにGetStrengthAtが最大のフィールドを割り当てる。
+    /// </summary>
+    private void AssignFieldsToEntities()
+    {
+        // まず全Entityのフィールドをクリア
+        for (int i = 0; i < m_cachedList.Count; i++)
+        {
+            var entity = m_cachedList[i].CachedEntity;
+            if (entity != null)
+                entity.magnetField = null;
+        }
+
+        // 各Fieldのトリガー検知済みEntityから最強フィールドを割り当て
+        for (int i = 0; i < m_cachedFields.Count; i++)
+        {
+            var field = m_cachedFields[i];
+            var entities = field.GetEntitiesInRange();
+
+            for (int j = 0; j < entities.Count; j++)
+            {
+                var entity = entities[j];
+                if (entity == null) continue;
+
+                float strength = field.GetStrengthAt(entity.transform.position);
+
+                if (entity.magnetField == null)
+                {
+                    entity.magnetField = field;
+                }
+                else
+                {
+                    float currentStrength = ((MagnetField)entity.magnetField).GetStrengthAt(entity.transform.position);
+                    if (strength > currentStrength)
+                        entity.magnetField = field;
+                }
             }
         }
     }
 
-    private void ProcessPair(MagnetPair pair)
+    private void ProcessPair(Magnetizable a, Magnetizable b, HashSet<long> contactsThisFrame)
     {
-        float distance = pair.Distance;
-        if (distance > settings.magnetRange || distance < 0.01f) return;
+        Vector3 delta = b.transform.position - a.transform.position;
+        float distance = delta.magnitude;
+        if (distance > m_settings.magnetRange || distance < 0.01f) return;
 
-        // F = magnetForce / (distance ^ forceDecayPower)
-        float forceMagnitude = settings.magnetForce / Mathf.Pow(distance, settings.forceDecayPower);
+        Vector3 dirAtoB = delta / distance;
 
-        // 合力上限
-        if (settings.maxForcePerObject > 0f)
+        // forceCurve 優先、未設定なら forceDecayPower にフォールバック
+        float forceMagnitude;
+        if (m_settings.forceCurve != null && m_settings.forceCurve.length > 0)
         {
-            forceMagnitude = Mathf.Min(forceMagnitude, settings.maxForcePerObject);
+            float normalizedDist = distance / m_settings.magnetRange;
+            forceMagnitude = m_settings.magnetForce * m_settings.forceCurve.Evaluate(normalizedDist);
+        }
+        else
+        {
+            forceMagnitude = m_settings.magnetForce / Mathf.Pow(distance, m_settings.forceDecayPower);
         }
 
-        Vector3 dirAtoB = pair.DirectionAtoB;
+        if (m_settings.maxForcePerObject > 0f)
+            forceMagnitude = Mathf.Min(forceMagnitude, m_settings.maxForcePerObject);
 
-        if (pair.IsOppositePole)
+        bool isOpposite = a.Pole != b.Pole && a.Pole != MagneticPole.None && b.Pole != MagneticPole.None;
+        bool isSame = a.Pole == b.Pole;
+
+        // 質量非対称: 軽い方が多く動く
+        float massA = a.mass;
+        float massB = b.mass;
+        float ratioA, ratioB;
+
+        if (float.IsInfinity(massA) && float.IsInfinity(massB))
         {
-            // 異極: 引力（互いに近づく）
-            pair.a.ApplyForce(dirAtoB * forceMagnitude);
-            pair.b.ApplyForce(-dirAtoB * forceMagnitude);
+            ratioA = 0f; ratioB = 0f; // 両方固定 → どちらも動かない
         }
-        else if (pair.IsSamePole)
+        else if (float.IsInfinity(massA))
         {
-            // 同極: 反発（互いに離れる）
-            pair.a.ApplyForce(-dirAtoB * forceMagnitude);
-            pair.b.ApplyForce(dirAtoB * forceMagnitude);
+            ratioA = 0f; ratioB = 1f;
         }
-    }
-
-    public float GetMagnetRange()
-    {
-        return settings != null ? settings.magnetRange : 10f;
-    }
-
-    void OnDrawGizmos()
-    {
-        if (!Application.isPlaying || settings == null) return;
-
-        foreach (var m in registry)
+        else if (float.IsInfinity(massB))
         {
-            if (m == null || !m.IsActive) continue;
-
-            // 磁力範囲を円エッジ×3で描画（水平・正面・側面）
-            Color color = m.Pole == MagneticPole.S
-                ? new Color(1f, 0.2f, 0.2f, 0.8f)
-                : new Color(0.2f, 0.4f, 1f, 0.8f);
-            Gizmos.color = color;
-
-            float r = settings.magnetRange;
-            Vector3 p = m.transform.position;
-
-            // 水平（赤道）
-            DrawCircle(p, Vector3.up, r, 32);
-            // 正面（経線）
-            DrawCircle(p, Vector3.forward, r, 32);
-            // 側面（経線）
-            DrawCircle(p, Vector3.right, r, 32);
-            // 斜め経線×2（球体感を出す）
-            DrawCircle(p, (Vector3.forward + Vector3.right).normalized, r, 32);
-            DrawCircle(p, (Vector3.forward - Vector3.right).normalized, r, 32);
-            // 上下の緯度線
-            DrawCircle(p + Vector3.up * r * 0.5f, Vector3.up, r * 0.866f, 24);
-            DrawCircle(p - Vector3.up * r * 0.5f, Vector3.up, r * 0.866f, 24);
+            ratioA = 1f; ratioB = 0f;
+        }
+        else
+        {
+            float totalMass = massA + massB;
+            ratioA = massB / totalMass;
+            ratioB = massA / totalMass;
         }
 
-        // ペア間のライン
-        var list = new List<Magnetizable>(registry);
-        for (int i = 0; i < list.Count; i++)
+        if (isOpposite)
         {
-            if (!list[i].IsActive) continue;
-            for (int j = i + 1; j < list.Count; j++)
+            a.ApplyForce(dirAtoB * forceMagnitude * ratioA, b.transform.position);
+            b.ApplyForce(-dirAtoB * forceMagnitude * ratioB, a.transform.position);
+        }
+        else if (isSame)
+        {
+            a.ApplyForce(-dirAtoB * forceMagnitude * ratioA, b.transform.position);
+            b.ApplyForce(dirAtoB * forceMagnitude * ratioB, a.transform.position);
+        }
+
+        // 接触判定（異極のみ、snapDistance内）
+        // snapDistance内ではSnapResolverのSmoothDampが位置を制御するため、
+        // 上で適用した力は実質無視される（意図的な設計：吸着フェーズでは滑らかな接近を優先）
+        if (isOpposite && distance < m_settings.snapDistance)
+        {
+            m_snapResolver?.Resolve(a, b, Time.fixedDeltaTime);
+
+            long pairKey = GetPairKey(a, b);
+            contactsThisFrame.Add(pairKey);
+
+            // Enter判定: 前フレームに接触していなかったら通知
+            if (m_activeContacts.Add(pairKey))
             {
-                if (!list[j].IsActive) continue;
-                var pair = new MagnetPair(list[i], list[j]);
-                if (pair.Distance > settings.magnetRange) continue;
-
-                // 引力=白、斥力=黄
-                Gizmos.color = pair.IsOppositePole ? Color.white : Color.yellow;
-                Gizmos.DrawLine(list[i].transform.position, list[j].transform.position);
+                a.NotifyContact(b);
+                b.NotifyContact(a);
             }
         }
     }
 
     /// <summary>
-    /// 指定した法線軸を中心に円を描画する。
+    /// 2つのMagnetizableからユニークなペアキーを生成する。
     /// </summary>
+    private static long GetPairKey(Magnetizable a, Magnetizable b)
+    {
+        int idA = a.GetInstanceID();
+        int idB = b.GetInstanceID();
+        if (idA > idB) (idA, idB) = (idB, idA);
+        return ((long)idA << 32) | (uint)idB;
+    }
+
+    /// <summary>
+    /// フィールド消滅時の爆発処理。蓄積ダメージを範囲内Entityに適用。
+    /// </summary>
+    private void HandleFieldExplosion(MagnetField field)
+    {
+        if (field == null || field.StoredDamage <= 0f) return;
+
+        float radius = field.OuterRadius;
+        Vector3 center = field.Center;
+        float damage = field.StoredDamage;
+
+        // 範囲内の全Entityにダメージ
+        for (int i = 0; i < m_cachedList.Count; i++)
+        {
+            var entity = m_cachedList[i].GetComponent<Entity>();
+            if (entity == null || entity.health == null) continue;
+
+            float dist = Vector3.Distance(entity.transform.position, center);
+            if (dist > radius) continue;
+
+            // 距離減衰ダメージ
+            float damageRatio = 1f - dist / radius;
+            int finalDamage = Mathf.Max(1, Mathf.RoundToInt(damage * damageRatio));
+            entity.health.Damage(finalDamage);
+        }
+    }
+
+    public float GetMagnetRange()
+    {
+        return m_settings != null ? m_settings.magnetRange : 10f;
+    }
+
+    public MagnetSettings Settings => m_settings;
+
+    void OnDrawGizmos()
+    {
+        if (m_settings == null) return;
+
+        foreach (var m in m_registry)
+        {
+            if (m == null || !m.IsActive) continue;
+
+            Color color = m.Pole == MagneticPole.S
+                ? new Color(0.2f, 0.4f, 1f, 0.8f)
+                : new Color(1f, 0.2f, 0.2f, 0.8f);
+            Gizmos.color = color;
+
+            float r = m_settings.magnetRange;
+            Vector3 p = m.transform.position;
+
+            DrawCircle(p, Vector3.up, r, 32);
+            DrawCircle(p, Vector3.forward, r, 32);
+            DrawCircle(p, Vector3.right, r, 32);
+            DrawCircle(p, (Vector3.forward + Vector3.right).normalized, r, 32);
+            DrawCircle(p, (Vector3.forward - Vector3.right).normalized, r, 32);
+            DrawCircle(p + Vector3.up * r * 0.5f, Vector3.up, r * 0.866f, 24);
+            DrawCircle(p - Vector3.up * r * 0.5f, Vector3.up, r * 0.866f, 24);
+        }
+
+        // ペア間のライン
+        for (int i = 0; i < m_cachedList.Count; i++)
+        {
+            if (!m_cachedList[i].IsActive) continue;
+            for (int j = i + 1; j < m_cachedList.Count; j++)
+            {
+                if (!m_cachedList[j].IsActive) continue;
+                float dist = Vector3.Distance(m_cachedList[i].transform.position, m_cachedList[j].transform.position);
+                if (dist > m_settings.magnetRange) continue;
+
+                bool isOpposite = m_cachedList[i].Pole != m_cachedList[j].Pole
+                    && m_cachedList[i].Pole != MagneticPole.None
+                    && m_cachedList[j].Pole != MagneticPole.None;
+                Gizmos.color = isOpposite ? Color.white : Color.yellow;
+                Gizmos.DrawLine(m_cachedList[i].transform.position, m_cachedList[j].transform.position);
+            }
+        }
+    }
+
     private void DrawCircle(Vector3 center, Vector3 normal, float radius, int segments)
     {
         Quaternion rot = Quaternion.LookRotation(normal);
