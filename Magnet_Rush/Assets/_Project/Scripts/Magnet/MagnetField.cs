@@ -60,11 +60,28 @@ public class MagnetField : MonoBehaviour, IMagnetField
         m_initialized = true;
     }
 
+    private GameObject m_triggerGO;
+
     private void SetupTriggerCollider()
     {
-        m_triggerCollider = gameObject.AddComponent<SphereCollider>();
+        // 専用の子GOにトリガーを配置し MagnetField レイヤーに設定
+        // 親GOのレイヤーを変えずに、Bullet レイヤーとの衝突を Layer Matrix で遮断できる
+        m_triggerGO = new GameObject("MagnetFieldTrigger");
+        m_triggerGO.transform.SetParent(transform, false);
+        m_triggerGO.layer = LayerMask.NameToLayer("MagnetField");
+
+        m_triggerCollider = m_triggerGO.AddComponent<SphereCollider>();
         m_triggerCollider.isTrigger = true;
         m_triggerCollider.radius = CalcTriggerRadius();
+
+        // Rigidbody が必要（トリガーイベント発火のため）。kinematic で物理影響なし
+        var rb = m_triggerGO.AddComponent<Rigidbody>();
+        rb.isKinematic = true;
+        rb.useGravity = false;
+
+        // ブリッジ: 子GOのトリガーイベントを親MagnetFieldに転送
+        var bridge = m_triggerGO.AddComponent<MagnetFieldTriggerBridge>();
+        bridge.Initialize(this);
     }
 
     private float CalcTriggerRadius()
@@ -130,7 +147,8 @@ public class MagnetField : MonoBehaviour, IMagnetField
     /// <summary>MagnetManagerから呼ばれるExit通知。</summary>
     public void NotifyObjectExit(Magnetizable m) => OnObjectExit?.Invoke(m);
 
-    void OnTriggerStay(Collider other)
+    /// <summary>ブリッジから呼ばれるトリガーStay。</summary>
+    public void HandleTriggerStay(Collider other)
     {
         if (!m_initialized) return;
 
@@ -144,7 +162,8 @@ public class MagnetField : MonoBehaviour, IMagnetField
             m_entitiesInRange.Add(entity);
     }
 
-    void OnTriggerExit(Collider other)
+    /// <summary>ブリッジから呼ばれるトリガーExit。</summary>
+    public void HandleTriggerExit(Collider other)
     {
         if (!m_initialized) return;
 
@@ -160,7 +179,8 @@ public class MagnetField : MonoBehaviour, IMagnetField
             OnObjectExit?.Invoke(mag);
     }
 
-    void OnTriggerEnter(Collider other)
+    /// <summary>ブリッジから呼ばれるトリガーEnter。</summary>
+    public void HandleTriggerEnter(Collider other)
     {
         if (!m_initialized) return;
 
@@ -180,8 +200,8 @@ public class MagnetField : MonoBehaviour, IMagnetField
         if (MagnetManager.Instance != null)
             MagnetManager.Instance.UnregisterField(this);
 
-        if (m_triggerCollider != null)
-            Destroy(m_triggerCollider);
+        if (m_triggerGO != null)
+            Destroy(m_triggerGO);
 
         m_entitiesInRange.Clear();
         m_entityCache.Clear();
@@ -196,20 +216,27 @@ public class MagnetField : MonoBehaviour, IMagnetField
 
         remainingLifetime -= Time.deltaTime;
         if (remainingLifetime <= 0f)
-        {
-            OnFieldExpired?.Invoke();
-            Destroy(gameObject);
-        }
+            ForceExpire();
+    }
+
+    /// <summary>
+    /// フィールドを強制期限切れにする。OnFieldExpired を発火してから自身を破棄する。
+    /// リロード時や外部からの明示的な停止に使用。
+    /// </summary>
+    public void ForceExpire()
+    {
+        OnFieldExpired?.Invoke();
+        Destroy(this);
     }
 
 #if UNITY_EDITOR
-    void OnDrawGizmosSelected()
+    void OnDrawGizmos()
     {
         if (settings == null) return;
 
         var color = pole == MagneticPole.S
-            ? new Color(1f, 0.2f, 0.2f, 0.5f)
-            : new Color(0.2f, 0.4f, 1f, 0.5f);
+            ? new Color(0.2f, 0.4f, 1f, 0.5f)
+            : new Color(1f, 0.2f, 0.2f, 0.5f);
 
         Gizmos.color = color;
 

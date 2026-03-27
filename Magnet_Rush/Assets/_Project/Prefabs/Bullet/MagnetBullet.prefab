@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 3656600434918196076}
   - component: {fileID: 2879769118934724529}
   - component: {fileID: 5553236534249928729}
-  m_Layer: 11
+  m_Layer: 10
   m_Name: MagnetBullet
   m_TagString: MagnetBullet
   m_Icon: {fileID: 0}
@@ -169,3 +169,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Magnetizable
   pole: 0
   isActive: 0
+  initialMass: 1

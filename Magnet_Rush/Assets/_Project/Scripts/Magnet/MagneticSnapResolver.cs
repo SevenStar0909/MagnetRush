@@ -18,7 +18,7 @@ public class MagneticSnapResolver
         m_settings = settings;
     }
 
-    /// <summary>スプリング接近処理。snapDistance内の異極ペアに対して毎フレーム呼ぶ。</summary>
+    /// <summary>snapDistance内の異極ペアを即座に固定する。</summary>
     public void Resolve(Magnetizable a, Magnetizable b, float dt)
     {
         if (a == null || b == null) return;
@@ -26,29 +26,8 @@ public class MagneticSnapResolver
         long key = MakePairKey(a, b);
         if (m_attachedPairs.Contains(key)) return;
 
-        Magnetizable mover = FindMover(a, b);
-        Magnetizable anchor = mover == a ? b : a;
-        if (mover == null) return;
-
-        Vector3 target = anchor.transform.position;
-
-        if (!m_velocities.ContainsKey(key))
-            m_velocities[key] = Vector3.zero;
-
-        var vel = m_velocities[key];
-        Vector3 newPos = Vector3.SmoothDamp(
-            mover.transform.position, target, ref vel, m_settings.snapSmoothTime, Mathf.Infinity, dt);
-        m_velocities[key] = vel;
-
-        var rb = mover.GetComponent<Rigidbody>();
-        if (rb != null && !rb.isKinematic)
-            rb.MovePosition(newPos);
-        else
-            mover.transform.position = newPos;
-
-        float dist = Vector3.Distance(newPos, target);
-        if (dist < m_settings.snapContactThreshold)
-            Snap(a, b);
+        // snapDistance 以内に入ったら即固定
+        Snap(a, b);
     }
 
     /// <summary>FixedJointで物理固定する。mass=Infinity側にJointを生成。</summary>

@@ -89,13 +89,15 @@ public class MagnetBullet : MonoBehaviour
     {
         if (IsStuck) return;
 
+        // トリガーコライダー（MagnetField の範囲検知用等）は無視。物理コライダーのみ反応
+        if (other.isTrigger) return;
+
         // 他の弾 — MagnetFieldを持つ弾にはダメージ蓄積
         if (other.CompareTag(GameTags.MagnetBullet))
         {
             var otherField = other.GetComponent<MagnetField>();
             if (otherField != null && settings != null)
             {
-                // 異極弾がフィールドに着弾 → ダメージ蓄積
                 bool isOpposite = Pole != otherField.Pole && Pole != MagneticPole.None && otherField.Pole != MagneticPole.None;
                 if (isOpposite)
                 {
@@ -107,34 +109,64 @@ public class MagnetBullet : MonoBehaviour
             return;
         }
 
-        // パターン1: 壁/タレット/その他の静的オブジェクトにくっつく
-        if (other.CompareTag(GameTags.Wall) || other.CompareTag(GameTags.Turret)
-            || other.CompareTag(GameTags.Untagged))
+        // プレイヤー自身は無視
+        if (other.CompareTag(GameTags.Player)) return;
+
+        // 対象に Magnetizable があるか → パターン分岐
+        var targetMag = other.GetComponent<Magnetizable>();
+
+        if (targetMag != null)
         {
-            StickToSurface(other);
+            // パターン2: 弾が消え、オブジェクト自体が磁力源になる
+            MagnetizeTarget(other, targetMag);
         }
-        // パターン2: 敵/敵武器/プレイヤーに当たると弾消去＋対象を磁化
-        else if (other.CompareTag(GameTags.Enemy) || other.CompareTag(GameTags.EnemyWeapon)
-                 || other.CompareTag(GameTags.Player))
+        else
         {
-            // フォールバック: 技術的に2が困難な場合は1の動作
-            if (settings != null && settings.useFallbackMode)
-            {
-                StickToSurface(other);
-                return;
-            }
-
-            var magnetizable = other.GetComponent<Magnetizable>();
-            if (magnetizable != null)
-            {
-                magnetizable.SetPole(Pole);
-            }
-
-            OnImpact?.Invoke();
-            Destroy(gameObject);
+            // パターン1: 弾がくっつき、弾が磁力源になる
+            StickToSurface(other);
         }
     }
 
+    /// <summary>
+    /// パターン2: 弾消滅 + 対象オブジェクトを磁化。
+    /// 対象から磁力オーラが出る。残弾は回復する。
+    /// </summary>
+    /// <summary>
+    /// パターン2: 弾消滅 + 対象オブジェクトを磁化。
+    /// 対象から磁力オーラが出る。残弾は回復する。
+    /// 対象が OnFieldExpired を聞いて自分で磁化解除する。
+    /// </summary>
+    private void MagnetizeTarget(Collider target, Magnetizable targetMag)
+    {
+        targetMag.SetPole(Pole);
+
+        if (target.GetComponent<MagnetField>() == null && settings != null && settings.bulletFieldSettings != null)
+        {
+            var field = target.gameObject.AddComponent<MagnetField>();
+            field.Initialize(Pole, settings.bulletFieldSettings);
+
+            if (MagnetManager.Instance != null)
+                MagnetManager.Instance.RegisterField(field);
+
+            var visualizer = target.gameObject.AddComponent<MagnetFieldVisualizer>();
+            visualizer.Show(Pole, settings.bulletFieldSettings.outerRadius);
+
+            // フィールド期限切れ → 対象の磁化解除 + Visualizer 除去
+            field.OnFieldExpired += () =>
+            {
+                targetMag.Deactivate();
+                if (visualizer != null) Destroy(visualizer);
+            };
+        }
+
+        OnImpact?.Invoke();
+        Destroy(gameObject);
+    }
+
+    /// <summary>
+    /// パターン1: 弾がくっつき、弾自身が磁力源。壁/天井/タレット用。
+    /// フィールド期限切れで弾ごと消える。
+    /// </summary>
     private void StickToSurface(Collider surface)
     {
         IsStuck = true;
@@ -142,33 +174,29 @@ public class MagnetBullet : MonoBehaviour
         rb.isKinematic = true;
         transform.SetParent(surface.transform);
 
-        // 弾自身のMagnetizableを有効化（磁力源として機能させる）
         var mag = GetComponent<Magnetizable>();
         if (mag != null)
         {
             mag.SetPole(Pole);
-            mag.mass = Mathf.Infinity; // 壁に固定 = 無限質量
+            mag.mass = Mathf.Infinity;
         }
 
-        // MagnetField を生成（MagnetFieldVisualizerの代替）
-        CreateMagnetField();
+        if (settings != null && settings.bulletFieldSettings != null)
+        {
+            var field = gameObject.AddComponent<MagnetField>();
+            field.Initialize(Pole, settings.bulletFieldSettings);
+
+            if (MagnetManager.Instance != null)
+                MagnetManager.Instance.RegisterField(field);
+
+            var visualizer = gameObject.AddComponent<MagnetFieldVisualizer>();
+            visualizer.Show(Pole, settings.bulletFieldSettings.outerRadius);
+
+            // フィールド期限切れ → 弾ごと消える
+            field.OnFieldExpired += () => Destroy(gameObject);
+        }
 
         OnImpact?.Invoke();
-    }
-
-    /// <summary>
-    /// 弾のGOにMagnetFieldを追加して磁力場を生成する。
-    /// </summary>
-    private void CreateMagnetField()
-    {
-        if (settings == null || settings.bulletFieldSettings == null) return;
-
-        var field = gameObject.AddComponent<MagnetField>();
-        field.Initialize(Pole, settings.bulletFieldSettings);
-
-        // MagnetManagerに登録
-        if (MagnetManager.Instance != null)
-            MagnetManager.Instance.RegisterField(field);
     }
 
     void OnDestroy()

@@ -22,8 +22,8 @@ public class MagnetFieldVisualizer : MonoBehaviour
         Hide();
 
         Color color = pole == MagneticPole.S
-            ? new Color(1f, 0.2f, 0.2f, 0.8f)
-            : new Color(0.2f, 0.4f, 1f, 0.8f);
+            ? new Color(0.2f, 0.4f, 1f, 0.8f)
+            : new Color(1f, 0.2f, 0.2f, 0.8f);
 
         Vector3 center = transform.position;
 

@@ -37,20 +37,34 @@ public class BulletManager : Singleton<BulletManager>
     }
 
     /// <summary>
-    /// 全弾を消去する（リロード）。
-    /// リスト変更中のイテレーション例外防止のためコピーしてからイテレートする。
+    /// 全磁力効果をリセットする（リロード）。
+    /// 弾の消去 + 全MagnetFieldの期限切れ発火（各自の後始末が走る）。
+    /// </summary>
+    /// <summary>
+    /// 全磁力効果をリセットする（リロード）。
+    /// 全MagnetFieldをForceExpire（後始末コールバック発火）してから弾リストをクリア。
     /// </summary>
     public void ClearAll()
     {
+        // 全MagnetFieldをForceExpire → 各自の後始末が走る
+        // パターン1: OnFieldExpired → Destroy(bulletGO)
+        // パターン2: OnFieldExpired → Deactivate + Destroy(visualizer)
+        var fields = FindObjectsByType<MagnetField>(FindObjectsSortMode.None);
+        foreach (var field in fields)
+        {
+            if (field != null)
+                field.ForceExpire();
+        }
+
+        // ForceExpireでパターン1の弾GOが消えるが、念のため残りも消す
         var copy = new List<MagnetBullet>(activeBullets);
         foreach (var bullet in copy)
         {
             if (bullet != null)
-            {
                 Destroy(bullet.gameObject);
-            }
         }
         activeBullets.Clear();
+
         OnBulletCountChanged?.Invoke(0);
     }
 }

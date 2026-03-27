@@ -101,13 +101,9 @@ public class MagnetManager : Singleton<MagnetManager>
         {
             if (!cachedList[i].IsActive) continue;
 
-            // MagnetFieldを持つ弾は点力スキップ（フィールドが力を管理）
-            if (cachedList[i].GetComponent<MagnetField>() != null) continue;
-
             for (int j = i + 1; j < cachedList.Count; j++)
             {
                 if (!cachedList[j].IsActive) continue;
-                if (cachedList[j].GetComponent<MagnetField>() != null) continue;
 
                 ProcessPair(cachedList[i], cachedList[j], contactsThisFrame);
             }
@@ -287,15 +283,15 @@ public class MagnetManager : Singleton<MagnetManager>
 
     void OnDrawGizmos()
     {
-        if (!Application.isPlaying || settings == null) return;
+        if (settings == null) return;
 
         foreach (var m in registry)
         {
             if (m == null || !m.IsActive) continue;
 
             Color color = m.Pole == MagneticPole.S
-                ? new Color(1f, 0.2f, 0.2f, 0.8f)
-                : new Color(0.2f, 0.4f, 1f, 0.8f);
+                ? new Color(0.2f, 0.4f, 1f, 0.8f)
+                : new Color(1f, 0.2f, 0.2f, 0.8f);
             Gizmos.color = color;
 
             float r = settings.magnetRange;

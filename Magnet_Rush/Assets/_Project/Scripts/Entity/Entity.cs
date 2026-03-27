@@ -86,9 +86,9 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
 
         if (rb != null)
         {
+            rb.isKinematic = true;
             rb.useGravity = false;
-            rb.freezeRotation = true;
-            rb.interpolation = RigidbodyInterpolation.Interpolate;
+            rb.interpolation = RigidbodyInterpolation.None;
         }
 
         var mainCam = Camera.main;
@@ -97,18 +97,39 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
     }
 
     /// <summary>
-    /// 全速度成分をRigidbody.MovePositionで適用する。
-    /// 適用後にexternalVelocityをリセットする。
+    /// 全速度成分を位置に適用する。適用後にexternalVelocityをリセットする。
+    /// kinematic Rigidbody なので transform.position で直接移動する
+    /// （rb.position は物理ステップまで transform に同期されずジッターの原因になる）。
     /// </summary>
     protected virtual void ApplyMovement(float dt)
     {
         Vector3 total = velocity + externalVelocity;
-        if (rb != null)
-        {
-            rb.MovePosition(rb.position + total * dt);
-        }
+        transform.position += total * dt;
+
+        if (IsGrounded)
+            ClampToGround();
+
         externalVelocity = Vector3.zero;
-        // IsGrounded は UpdateGround() のレイキャストで更新
+    }
+
+    /// <summary>
+    /// 接地中にキャラが地面に食い込まないようにクランプする。
+    /// </summary>
+    private void ClampToGround()
+    {
+        float height = capsuleCollider != null ? capsuleCollider.height : 2f;
+        float checkDist = height * 0.5f + 0.3f;
+
+        if (Physics.Raycast(transform.position, -transform.up, out var hit, checkDist,
+            Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+        {
+            Vector3 footPos = transform.position - transform.up * (height * 0.5f);
+            float penetration = Vector3.Dot(hit.point - footPos, hit.normal);
+            if (penetration > 0f)
+            {
+                transform.position += hit.normal * penetration;
+            }
+        }
     }
 
     /// <summary>
