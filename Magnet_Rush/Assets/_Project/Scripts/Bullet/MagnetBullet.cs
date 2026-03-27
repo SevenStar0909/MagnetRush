@@ -1,9 +1,9 @@
-using System;
+﻿using System;
 using UnityEngine;
 using UnityEngine.Serialization;
 
 /// <summary>
-/// 磁力弾。着弾時にパターン①（壁にくっつく）またはパターン②（弾消去＋磁化）を実行する。
+/// 磁力弾。着弾時にパターン1（壁にくっつく）またはパターン2（弾消去＋磁化）を実行する。
 /// 飛行中はMagnetFieldの影響で弾道が曲がる。
 /// </summary>
 [RequireComponent(typeof(Rigidbody))]
