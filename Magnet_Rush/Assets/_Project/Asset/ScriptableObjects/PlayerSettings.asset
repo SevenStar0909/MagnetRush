@@ -27,6 +27,7 @@ MonoBehaviour:
   cameraSensitivityY: 200
   cameraDistance: 5
   shoulderOffset: {x: 0.8, y: 0.3, z: 0}
+  firePointHeight: 1.2
   aimReleaseGraceTime: 0.15
   aimTimeScale: 0.3
   aimFOV: 40
@@ -36,3 +37,5 @@ MonoBehaviour:
   slopeUpwardForce: 15
   slopeDownwardForce: 25
   magnetResistance: 0.5
+  pullOrientationThreshold: 5
+  pullOrientationSpeed: 8

@@ -682,8 +682,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 95f654245a2004c43aa43166b44dd141, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyMeleeAttack
-  attackHitbox: {fileID: 409969461}
-  attackHitboxMeshRenderer: {fileID: 45631199}
+  m_attackHitbox: {fileID: 409969461}
+  m_attackHitboxMeshRenderer: {fileID: 45631199}
 --- !u!114 &1560589291
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -708,8 +708,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 21927bd79b6652248a42fd1ab4be3c25, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAIController
-  statusData: {fileID: 11400000, guid: 4ee3148f3a80a1949b743efb41c05d5b, type: 2}
-  player: {fileID: 0}
+  health: {fileID: 0}
+  velocity: {x: 0, y: 0, z: 0}
+  externalVelocity: {x: 0, y: 0, z: 0}
+  m_statusData: {fileID: 11400000, guid: 4ee3148f3a80a1949b743efb41c05d5b, type: 2}
+  m_player: {fileID: 0}
 --- !u!4 &1560589294
 Transform:
   m_ObjectHideFlags: 0
@@ -743,8 +746,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9f3c41d16bdd0614385e9dfda20f2372, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Magnetizable
-  pole: 0
-  isActive: 0
+  m_pole: 0
+  m_isActive: 0
+  m_initialMass: 1
 --- !u!4 &1567319727 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3310780425311466093, guid: 3c2f68b0a5548044da7bfdff022cc9ee, type: 3}

@@ -15,8 +15,9 @@ MonoBehaviour:
   shape: 0
   innerRadius: 3
   outerRadius: 8
-  strength: 20
   lifetime: 12
+  size: {x: 2, y: 2, z: 2}
+  cylinderHeight: 4
+  cylinderRadius: 1
   accumulateDamage: 1
   maxStoredDamage: 200
-  gravityOverrideThreshold: 0.5

@@ -154,7 +154,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4ca701d9fc9c83744a9b8e03ddb44d49, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MagnetBullet
-  settings: {fileID: 11400000, guid: 425ee2473071b7a4fa2afd4ccb6a162c, type: 2}
+  m_settings: {fileID: 11400000, guid: 425ee2473071b7a4fa2afd4ccb6a162c, type: 2}
 --- !u!114 &5553236534249928729
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -167,6 +167,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9f3c41d16bdd0614385e9dfda20f2372, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Magnetizable
-  pole: 0
-  isActive: 0
-  initialMass: 1
+  m_pole: 0
+  m_isActive: 0
+  m_initialMass: 1
