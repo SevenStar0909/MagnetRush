@@ -17,6 +17,17 @@ public class CameraSettingsApplier : MonoBehaviour
     {
         if (m_cinemachineCamera != null)
         {
+            // プレハブ間参照が切れるのでランタイムで自動設定
+            if (m_cinemachineCamera.Follow == null || m_cinemachineCamera.LookAt == null)
+            {
+                var player = GameObject.FindWithTag(GameTags.Player);
+                if (player != null)
+                {
+                    m_cinemachineCamera.Follow = player.transform;
+                    m_cinemachineCamera.LookAt = player.transform;
+                }
+            }
+
             m_orbitalFollow = m_cinemachineCamera.GetComponent<CinemachineOrbitalFollow>();
             m_defaultFOV = m_cinemachineCamera.Lens.FieldOfView;
             if (m_orbitalFollow != null)
