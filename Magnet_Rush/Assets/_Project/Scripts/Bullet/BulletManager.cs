@@ -12,16 +12,32 @@ public class BulletManager : Singleton<BulletManager>
 
     private readonly List<MagnetBullet> activeBullets = new();
 
+    /// <summary>
+    /// 同時に存在できる弾の最大数。
+    /// </summary>
     public int MaxBullets => settings != null ? settings.maxBullets : 4;
+
+    /// <summary>
+    /// 現在のアクティブな弾の数。
+    /// </summary>
     public int CurrentCount => activeBullets.Count;
 
+    /// <summary>
+    /// 弾数が変化したときに発火するイベント。引数は現在の弾数。
+    /// </summary>
     public event Action<int> OnBulletCountChanged;
 
+    /// <summary>
+    /// 弾数上限に達していなければtrueを返す。
+    /// </summary>
     public bool CanShoot()
     {
         return activeBullets.Count < MaxBullets;
     }
 
+    /// <summary>
+    /// 弾をアクティブリストに登録する。
+    /// </summary>
     public void Register(MagnetBullet bullet)
     {
         if (bullet == null || activeBullets.Contains(bullet)) return;
@@ -29,6 +45,9 @@ public class BulletManager : Singleton<BulletManager>
         OnBulletCountChanged?.Invoke(activeBullets.Count);
     }
 
+    /// <summary>
+    /// 弾をアクティブリストから解除する。
+    /// </summary>
     public void Unregister(MagnetBullet bullet)
     {
         if (bullet == null || !activeBullets.Contains(bullet)) return;

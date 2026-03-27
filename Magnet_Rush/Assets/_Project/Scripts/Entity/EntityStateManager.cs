@@ -21,6 +21,9 @@ public class EntityStateManager<T> : MonoBehaviour where T : Entity
         this.entity = entity;
     }
 
+    /// <summary>
+    /// ステートを辞書に登録する。
+    /// </summary>
     public void RegisterState(EntityState<T> state)
     {
         states[state.GetType()] = state;
@@ -35,6 +38,9 @@ public class EntityStateManager<T> : MonoBehaviour where T : Entity
     /// <summary>ステート変更時に発火。</summary>
     public event Action OnStateChanged;
 
+    /// <summary>
+    /// 指定したステートに遷移する。現在ステートのExit→新ステートのEnterを実行する。
+    /// </summary>
     public void Change<TState>() where TState : EntityState<T>
     {
         var type = typeof(TState);
@@ -81,6 +87,9 @@ public class EntityStateManager<T> : MonoBehaviour where T : Entity
         }
     }
 
+    /// <summary>
+    /// 現在のステートが指定した型かどうかを返す。
+    /// </summary>
     public bool IsCurrentOfType<TState>() where TState : EntityState<T>
     {
         return current != null && current.GetType() == typeof(TState);

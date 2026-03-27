@@ -1,5 +1,8 @@
 using UnityEngine;
 
+/// <summary>
+/// プレイヤーの死亡ステート。一定時間後にリスポーンする。
+/// </summary>
 public class DiePlayerState : EntityState<Player>
 {
     private float respawnTimer;

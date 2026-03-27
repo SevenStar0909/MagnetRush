@@ -25,6 +25,9 @@ public class Health : MonoBehaviour
         CurrentHealth = maxHealth;
     }
 
+    /// <summary>
+    /// ダメージを与える。クールダウン中・死亡中は無視される。
+    /// </summary>
     public void Damage(int amount)
     {
         if (IsDead) return;
@@ -41,6 +44,9 @@ public class Health : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// HPを回復する。最大HPを超えない。
+    /// </summary>
     public void Heal(int amount)
     {
         if (IsDead) return;
@@ -50,6 +56,9 @@ public class Health : MonoBehaviour
         OnHeal?.Invoke(amount);
     }
 
+    /// <summary>
+    /// HPを最大値にリセットする。ダメージクールダウンも解除する。
+    /// </summary>
     public void ResetHealth()
     {
         CurrentHealth = maxHealth;

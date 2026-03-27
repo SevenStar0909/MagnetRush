@@ -1,5 +1,8 @@
 ﻿using UnityEngine;
 
+/// <summary>
+/// プレイヤーエンティティ。入力・ステート・磁力の統合制御を行う。
+/// </summary>
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(CapsuleCollider))]
 [RequireComponent(typeof(PlayerInputHandler))]
@@ -8,10 +11,29 @@ public class Player : Entity
 {
     [SerializeField] private PlayerSettings settings;
 
+    /// <summary>
+    /// プレイヤーの入力ハンドラー。
+    /// </summary>
     public PlayerInputHandler input { get; private set; }
+
+    /// <summary>
+    /// プレイヤーイベントの発火用。
+    /// </summary>
     public PlayerEvents events { get; private set; }
+
+    /// <summary>
+    /// プレイヤーのステートマシン。
+    /// </summary>
     public PlayerStateManager states { get; private set; }
+
+    /// <summary>
+    /// プレイヤー設定（ScriptableObject）。
+    /// </summary>
     public PlayerSettings Settings => settings;
+
+    /// <summary>
+    /// 磁力影響を受けるコンポーネント。
+    /// </summary>
     public Magnetizable magnetizable { get; private set; }
 
     protected override void Awake()
@@ -91,11 +113,17 @@ public class Player : Entity
         }
     }
 
+    /// <summary>
+    /// 入力方向に加速し、進行方向を向く通常移動。
+    /// </summary>
     public void MoveWithInput(float dt)
     {
         AccelerateToInputDirection(dt);
     }
 
+    /// <summary>
+    /// エイム中のストレイフ移動。カメラ方向を向いたまま横移動する。
+    /// </summary>
     public void MoveWithInputStrafe(float dt)
     {
         Vector3 dir = GetCameraRelativeDirection(input.MoveInput);
@@ -112,6 +140,9 @@ public class Player : Entity
         }
     }
 
+    /// <summary>
+    /// 横移動速度を減速する。
+    /// </summary>
     public void SlowDown(float dt)
     {
         Decelerate(settings.deceleration, dt);

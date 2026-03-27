@@ -10,6 +10,9 @@ public class AimController : MonoBehaviour
 
     private PlayerInputHandler input;
     private PlayerStateManager states;
+    /// <summary>
+    /// エイム中かどうかを返す。
+    /// </summary>
     public bool IsAiming { get; private set; }
     private float aimReleaseGrace; // LT離しのジッター防止用タイマー
 
@@ -37,6 +40,9 @@ public class AimController : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// エイムモードを開始する。スロー＋カメラ変更を適用する。
+    /// </summary>
     public void StartAim()
     {
         IsAiming = true;
@@ -49,6 +55,9 @@ public class AimController : MonoBehaviour
             states.Change<AimPlayerState>();
     }
 
+    /// <summary>
+    /// エイムモードを終了する。タイムスケールとカメラを元に戻す。
+    /// </summary>
     public void StopAim()
     {
         IsAiming = false;

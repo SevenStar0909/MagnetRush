@@ -16,14 +16,34 @@ public class PlayerInputHandler : MonoBehaviour
     private InputAction m_switchPole;
     private InputAction m_reload;
 
-    // 公開プロパティ
+    /// <summary>
+    /// 移動入力のベクトル（左スティック）。
+    /// </summary>
     public Vector2 MoveInput => m_move.ReadValue<Vector2>();
+
+    /// <summary>
+    /// 視点入力のベクトル（右スティック）。
+    /// </summary>
     public Vector2 LookInput => m_look.ReadValue<Vector2>();
+
+    /// <summary>
+    /// エイムボタン（LT）が押されているかどうか。
+    /// </summary>
     public bool AimHeld => m_aim.ReadValue<float>() > 0.5f;
 
-    // ボタン入力（1フレームだけtrue）
+    /// <summary>
+    /// 攻撃ボタン（RT）が押されたフレームならtrueを返す。
+    /// </summary>
     public bool ConsumeFire() => m_attack.WasPressedThisFrame();
+
+    /// <summary>
+    /// 極性切替ボタン（Y）が押されたフレームならtrueを返す。
+    /// </summary>
     public bool ConsumeSwitchPole() => m_switchPole.WasPressedThisFrame();
+
+    /// <summary>
+    /// リロードボタンが押されたフレームならtrueを返す。
+    /// </summary>
     public bool ConsumeReload() => m_reload.WasPressedThisFrame();
 
     void Awake()

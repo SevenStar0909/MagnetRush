@@ -6,8 +6,14 @@ using UnityEngine;
 /// </summary>
 public class PolarityController : MonoBehaviour
 {
+    /// <summary>
+    /// 現在の磁極（SまたはN）。
+    /// </summary>
     public MagneticPole CurrentPole { get; private set; } = MagneticPole.S;
 
+    /// <summary>
+    /// 磁極が切り替わったときに発火するイベント。
+    /// </summary>
     public event Action<MagneticPole> OnPolarityChanged;
 
     private PlayerInputHandler input;
