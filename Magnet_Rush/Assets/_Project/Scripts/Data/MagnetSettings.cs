@@ -29,6 +29,12 @@ public class MagnetSettings : ScriptableObject
     [Tooltip("FixedJoint の破壊力（同極反発で分離）")]
     public float snapBreakForce = 100f;
 
+    [Header("アウトライン")]
+    [Tooltip("S極アウトラインマテリアル（青）")]
+    public Material outlineMatS;
+    [Tooltip("N極アウトラインマテリアル（赤）")]
+    public Material outlineMatN;
+
     [Header("移動変調")]
     [Tooltip("磁力場内での最高速度低下率(0=影響なし, 1=完全停止)")]
     [Range(0f, 1f)]
