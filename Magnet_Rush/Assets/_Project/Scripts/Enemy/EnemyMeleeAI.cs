@@ -5,73 +5,67 @@ using UnityEngine.AI;
 [RequireComponent(typeof(EnemyMeleeAttack))]
 public class EnemyMeleeAI : MonoBehaviour
 {
-    private EnemyBase enemyBase;
-    private EnemyMeleeAttack meleeAttack;
-    private NavMeshAgent agent;
-    private Transform player;
-    private EnemySettings data;
+    private EnemyBase m_enemyBase;
+    private EnemyMeleeAttack m_meleeAttack;
+    private NavMeshAgent m_agent;
+    private Transform m_player;
+    private EnemySettings m_data;
 
     private void Awake()
     {
-        //Debug.Log("[EnemyMeleeAI] Awake");
-        enemyBase = GetComponent<EnemyBase>();
-        meleeAttack = GetComponent<EnemyMeleeAttack>();
-    }
-
-    private void OnEnable()
-    {
-        //Debug.Log("[EnemyMeleeAI] OnEnable");
+        m_enemyBase = GetComponent<EnemyBase>();
+        m_meleeAttack = GetComponent<EnemyMeleeAttack>();
     }
 
     private void Start()
     {
-        //Debug.Log("[EnemyMeleeAI] Start");
-        agent = enemyBase.Agent;
-        player = enemyBase.Player;
-        data = enemyBase.StatusData;
+        m_agent = m_enemyBase.Agent;
+        m_player = m_enemyBase.Player;
+        m_data = m_enemyBase.StatusData;
     }
 
     private void Update()
     {
-        //Debug.Log("[EnemyMeleeAI] Update");
+        // ç£åŠ›ç§»å‹•ãƒ¢ãƒ¼ãƒ‰ä¸­ã¯ AI å‡¦ç†ã‚’ã‚¹ã‚­ãƒƒãƒ—
+        if (m_enemyBase.IsMagnetControlled) return;
 
-        if (player == null || agent == null || data == null)
+        if (m_player == null || m_agent == null || m_data == null)
         {
             return;
         }
 
-        float distance = Vector3.Distance(transform.position, player.position);
+        float distance = Vector3.Distance(transform.position, m_player.position);
 
-        // ƒvƒŒƒCƒ„[‚ª’ÇÕ”ÍˆÍŠO‚Ìê‡AˆÚ“®‚ğ’â~
-        if (distance > data.chaseRange)
+        // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãŒè¿½è·¡ç¯„å›²å¤–ã®å ´åˆã€ç§»å‹•ã‚’åœæ­¢
+        if (distance > m_data.chaseRange)
         {
-            agent.isStopped = true;
-            agent.ResetPath();
+            m_agent.isStopped = true;
+            m_agent.ResetPath();
             return;
         }
 
-        // ƒvƒŒƒCƒ„[‚ªUŒ‚”ÍˆÍ“à‚Ìê‡AUŒ‚‚ğ‚İ‚é
-        if (distance <= data.attackRange)
+        // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãŒæ”»æ’ƒç¯„å›²å†…ã®å ´åˆã€æ”»æ’ƒã‚’è©¦ã¿ã‚‹
+        if (distance <= m_data.attackRange)
         {
-            agent.isStopped = true;
-            agent.ResetPath();
+            m_agent.isStopped = true;
+            m_agent.ResetPath();
 
-            if (!meleeAttack.IsAttacking) // UŒ‚’†‚ÅƒvƒŒƒCƒ„[‚Ì•û‚ğŒü‚©‚È‚¢
+            if (!m_meleeAttack.IsAttacking) // æ”»æ’ƒä¸­ã§ãªã‘ã‚Œã°ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®æ–¹ã‚’å‘ã
             {
                 FacePlayer();
             }
-            meleeAttack.TryAttack();
+            m_meleeAttack.TryAttack();
         }
         else
         {
-            agent.isStopped = false;
-            agent.SetDestination(player.position);
+            m_agent.isStopped = false;
+            m_agent.SetDestination(m_player.position);
         }
     }
 
     private void FacePlayer()
     {
-        Vector3 lookTarget = player.position - transform.position;
+        Vector3 lookTarget = m_player.position - transform.position;
         lookTarget.y = 0f;
 
         if (lookTarget.sqrMagnitude <= 0.0001f)
@@ -84,7 +78,7 @@ public class EnemyMeleeAI : MonoBehaviour
         transform.rotation = Quaternion.Slerp(
             transform.rotation,
             targetRotation,
-            Time.deltaTime * 10f
+            Time.deltaTime * m_data.rotationSpeed
         );
     }
 }

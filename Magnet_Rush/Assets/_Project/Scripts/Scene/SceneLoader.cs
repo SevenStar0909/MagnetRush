@@ -1,16 +1,11 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-/*
- * ŠT—vFŠÈˆÕ“I‚ÈƒV[ƒ“ƒ[ƒhƒNƒ‰ƒX
- * ƒVƒ“ƒOƒ‹ƒgƒ“
- */
-public class SceneLoader : MonoBehaviour
+/// <summary>
+/// ã‚·ãƒ¼ãƒ³ãƒ­ãƒ¼ãƒ€ãƒ¼ã€‚ã‚·ãƒ³ã‚°ãƒ«ãƒˆãƒ³ã§ã‚·ãƒ¼ãƒ³é·ç§»ã‚’ç®¡ç†ã™ã‚‹ã€‚
+/// </summary>
+public class SceneLoader : Singleton<SceneLoader>
 {
-    // ƒCƒ“ƒXƒ^ƒ“ƒX‚ğæ“¾
-    public static SceneLoader Instance { get; private set; }
-
-    // ƒƒCƒ“‚ÌƒV[ƒ“‚Ìí—Ş‚ğ’è‹`
     public enum SceneType
     {
         Title,
@@ -18,70 +13,39 @@ public class SceneLoader : MonoBehaviour
         Result
     }
 
-    // ƒVƒ“ƒOƒ‹ƒgƒ“‚Ì‰Šú‰»
-    private void Awake()
+    protected override void Awake()
     {
-        if (Instance == null)
-        {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else
-        {
-            Destroy(gameObject);
-            return;
-        }
+        base.Awake();
+        DontDestroyOnLoad(gameObject);
     }
 
-    // Å‰‚Éƒ^ƒCƒgƒ‹ƒV[ƒ“‚ğƒ[ƒh
     private void Start()
     {
         LoadScene(SceneType.Title);
     }
 
-    // ƒV[ƒ“‚ªƒ[ƒh‚³‚ê‚½‚Æ‚«‚ÉŒÄ‚Ño‚³‚ê‚éƒCƒxƒ“ƒg‚ÉƒR[ƒ‹ƒoƒbƒN‚ğ“o˜^/‰ğœ
     private void OnEnable() => SceneManager.sceneLoaded += OnSceneLoaded;
     private void OnDisable() => SceneManager.sceneLoaded -= OnSceneLoaded;
 
-    /*
-     * ŠT—vFƒV[ƒ“‚ªƒ[ƒh‚³‚ê‚½‚Æ‚«‚ÉŒÄ‚Ño‚³‚ê‚éƒR[ƒ‹ƒoƒbƒNƒƒ\ƒbƒh
-     * ˆø”‡@Fscene ƒ[ƒh‚³‚ê‚½ƒV[ƒ“‚Ìî•ñ
-     * ˆø”‡AFmode ƒ[ƒhƒ‚[ƒhiƒVƒ“ƒOƒ‹‚©ƒAƒfƒBƒeƒBƒu‚©j
-     */
+    /// <summary>ã‚·ãƒ¼ãƒ³ãƒ­ãƒ¼ãƒ‰å®Œäº†æ™‚ã®ã‚³ãƒ¼ãƒ«ãƒãƒƒã‚¯ã€‚Singleãƒ¢ãƒ¼ãƒ‰ã®å ´åˆã®ã¿è¿½åŠ ã‚·ãƒ¼ãƒ³ã‚’ãƒ­ãƒ¼ãƒ‰ã€‚</summary>
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        // ƒƒCƒ“ƒV[ƒ“(Single)‚ªØ‚è‘Ö‚í‚Á‚½‚Ì‚İA’Ç‰ÁƒV[ƒ“‚ğƒ[ƒh‚·‚é
         if (mode == LoadSceneMode.Single)
         {
             LoadAdditiveScenes(scene.name);
         }
     }
 
-    /*
-     * ŠT—vFƒƒCƒ“ƒV[ƒ“‚É‰‚¶‚ÄA•K—v‚È’Ç‰ÁƒV[ƒ“‚ğƒ[ƒh‚·‚éƒƒ\ƒbƒh
-     * ˆø”FbaseSceneName Œ»İƒ[ƒh‚³‚ê‚½ƒƒCƒ“ƒV[ƒ“‚Ì–¼‘O
-     */
+    /// <summary>ãƒ¡ã‚¤ãƒ³ã‚·ãƒ¼ãƒ³ã«å¿œã˜ã¦è¿½åŠ ã‚·ãƒ¼ãƒ³ã‚’Additiveãƒ­ãƒ¼ãƒ‰ã™ã‚‹ã€‚</summary>
     private void LoadAdditiveScenes(string baseSceneName)
     {
-        // --- ‘SƒV[ƒ“‹¤’Ê‚Ì’Ç‰Áƒ[ƒh ---
-
-        //SceneManager.LoadScene("UIScene", LoadSceneMode.Additive);
-        //SceneManager.LoadScene("AudioScene", LoadSceneMode.Additive);
-
-        // --- “Á’è‚ÌƒV[ƒ“ŒÀ’è‚Ì’Ç‰Áƒ[ƒh ---
-
-        // ƒQ[ƒ€ƒV[ƒ“‚ªƒ[ƒh‚³‚ê‚½ê‡Aƒ}ƒbƒvƒV[ƒ“‚à’Ç‰Á‚Åƒ[ƒh‚·‚é
         if (baseSceneName == SceneType.Game.ToString())
         {
             SceneManager.LoadScene("MapScene", LoadSceneMode.Additive);
         }
     }
 
-    /*
-     * ŠT—vFƒV[ƒ“‚ğƒ[ƒh‚·‚éƒƒ\ƒbƒh
-     * ˆø”FSceneType - ƒ[ƒh‚µ‚½‚¢ƒV[ƒ“‚Ìí—Ş
-     * ‚±‚ÌŠÖ”‚Å‚ÍƒVƒ“ƒOƒ‹ƒ‚[ƒh‚ÅƒƒCƒ“ƒV[ƒ“‚ğØ‚è‘Ö‚¦‚é‚Æ“¯‚ÉA•K—v‚É‰‚¶‚Ä’Ç‰ÁƒV[ƒ“‚àƒ[ƒh‚·‚é
-     */
+    /// <summary>æŒ‡å®šã‚·ãƒ¼ãƒ³ã‚’Singleãƒ¢ãƒ¼ãƒ‰ã§ãƒ­ãƒ¼ãƒ‰ã™ã‚‹ã€‚</summary>
     public void LoadScene(SceneType sceneType)
     {
         SceneManager.LoadScene(sceneType.ToString(), LoadSceneMode.Single);

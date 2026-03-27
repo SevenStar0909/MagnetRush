@@ -1,15 +1,41 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
+/// <summary>
+/// プレイヤーエンティティ。入力・ステート・磁力の統合制御を行う。
+/// </summary>
+[RequireComponent(typeof(Rigidbody))]
+[RequireComponent(typeof(CapsuleCollider))]
 [RequireComponent(typeof(PlayerInputHandler))]
 [RequireComponent(typeof(PlayerEvents))]
 public class Player : Entity
 {
-    [SerializeField] private PlayerSettings settings;
+    [FormerlySerializedAs("settings")]
+    [SerializeField] private PlayerSettings m_settings;
 
+    /// <summary>
+    /// プレイヤーの入力ハンドラー。
+    /// </summary>
     public PlayerInputHandler input { get; private set; }
+
+    /// <summary>
+    /// プレイヤーイベントの発火用。
+    /// </summary>
     public PlayerEvents events { get; private set; }
+
+    /// <summary>
+    /// プレイヤーのステートマシン。
+    /// </summary>
     public PlayerStateManager states { get; private set; }
-    public PlayerSettings Settings => settings;
+
+    /// <summary>
+    /// プレイヤー設定（ScriptableObject）。
+    /// </summary>
+    public PlayerSettings Settings => m_settings;
+
+    /// <summary>
+    /// 磁力影響を受けるコンポーネント。
+    /// </summary>
     public Magnetizable magnetizable { get; private set; }
 
     protected override void Awake()
@@ -19,6 +45,10 @@ public class Player : Entity
         events = GetComponent<PlayerEvents>();
         states = GetComponent<PlayerStateManager>();
         magnetizable = GetComponent<Magnetizable>();
+
+        // SO値をEntity基底フィールドに反映
+        m_pullOrientationThreshold = m_settings.pullOrientationThreshold;
+        m_pullOrientationSpeed = m_settings.pullOrientationSpeed;
 
         // HP=0でDiePlayerStateに遷移
         if (health != null)
@@ -42,43 +72,89 @@ public class Player : Entity
 
     void Update()
     {
-        if (states.current != null)
-        {
-            states.current.Step(Time.deltaTime);
-        }
-
-        ApplyGravity(settings.gravity, settings.snapForce, Time.deltaTime);
-        ApplyMovement(Time.deltaTime);
+        float dt = Mathf.Min(Time.deltaTime, Time.fixedDeltaTime * 3f);
+        UpdateMagneticInfluence();
+        states.Step(dt);
+        UpdateGround();
+        UpdateMagneticOrientation(dt);
+        ApplyGravity(m_settings.gravity, m_settings.snapForce, dt);
+        ApplyMovement(dt);
     }
 
+    /// <summary>
+    /// 磁力場の影響度に応じてEntity multiplierを更新する。
+    /// 強い磁力を受けているほど移動が鈍くなる。
+    /// </summary>
+    private void UpdateMagneticInfluence()
+    {
+        if (magnetizable == null || MagnetManager.Instance == null
+            || MagnetManager.Instance.Settings == null)
+        {
+            topSpeedMultiplier = 1f;
+            turningDragMultiplier = 1f;
+            return;
+        }
+
+        float influence = magnetizable.GetInfluence(MagnetManager.Instance.Settings.maxForcePerObject);
+        float damping = MagnetManager.Instance.Settings.magnetSpeedDamping;
+
+        topSpeedMultiplier = 1f - influence * damping;
+        turningDragMultiplier = 1f + influence * damping;
+    }
+
+    /// <summary>
+    /// カメラ相対の入力方向に加速し、進行方向を向く。
+    /// </summary>
+    public void AccelerateToInputDirection(float dt)
+    {
+        var direction = GetCameraRelativeDirection(input.MoveInput);
+        if (direction.sqrMagnitude > 0.01f)
+        {
+            Accelerate(direction, m_settings.turningDrag, m_settings.acceleration, m_settings.topSpeed, dt);
+            FaceDirection(direction, m_settings.rotationSpeed, dt);
+        }
+    }
+
+    /// <summary>
+    /// 入力方向に加速し、進行方向を向く通常移動。
+    /// </summary>
     public void MoveWithInput(float dt)
     {
-        Vector3 dir = GetCameraRelativeDirection(input.MoveInput);
-        if (dir.sqrMagnitude > 0.01f)
-        {
-            Accelerate(dir, settings.acceleration, settings.topSpeed, dt);
-            FaceDirection(dir, settings.rotationSpeed, dt);
-        }
+        AccelerateToInputDirection(dt);
     }
 
+    /// <summary>
+    /// エイム中のストレイフ移動。カメラ方向を向いたまま横移動する。
+    /// </summary>
     public void MoveWithInputStrafe(float dt)
     {
         Vector3 dir = GetCameraRelativeDirection(input.MoveInput);
-        float aimSpeed = settings.topSpeed * settings.aimMoveSpeedMultiplier;
+        float aimSpeed = m_settings.topSpeed * m_settings.aimMoveSpeedMultiplier;
         if (dir.sqrMagnitude > 0.01f)
         {
-            Accelerate(dir, settings.acceleration, aimSpeed, dt);
+            Accelerate(dir, m_settings.turningDrag, m_settings.acceleration, aimSpeed, dt);
         }
         if (cachedCameraTransform != null)
         {
             Vector3 camForward = cachedCameraTransform.forward;
             camForward.y = 0f;
-            FaceDirection(camForward, settings.rotationSpeed * 2f, dt);
+            FaceDirection(camForward, m_settings.rotationSpeed * 2f, dt, false);
         }
     }
 
+    /// <summary>
+    /// 横移動速度を減速する。
+    /// </summary>
     public void SlowDown(float dt)
     {
-        Decelerate(settings.deceleration, dt);
+        Decelerate(m_settings.deceleration, dt);
+    }
+
+    /// <summary>
+    /// 斜面での加減速を適用する
+    /// </summary>
+    public void RegularSlopeFactor(float dt)
+    {
+        SlopeFactor(m_settings.slopeUpwardForce, m_settings.slopeDownwardForce, dt);
     }
 }

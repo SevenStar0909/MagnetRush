@@ -1,20 +1,23 @@
 using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 /// <summary>
 /// ダメージクールダウン付きのHP管理。
 /// </summary>
 public class Health : MonoBehaviour
 {
-    [SerializeField] private int maxHealth = 3;
-    [SerializeField] private float damageCooldown = 1f;
+    [FormerlySerializedAs("maxHealth")]
+    [SerializeField] private int m_maxHealth = 3;
+    [FormerlySerializedAs("damageCooldown")]
+    [SerializeField] private float m_damageCooldown = 1f;
 
-    public int MaxHealth => maxHealth;
+    public int MaxHealth => m_maxHealth;
     public int CurrentHealth { get; private set; }
     public bool IsDead => CurrentHealth <= 0;
-    public bool IsRecovering => Time.time < lastDamageTime + damageCooldown;
+    public bool IsRecovering => Time.time < m_lastDamageTime + m_damageCooldown;
 
-    private float lastDamageTime = -999f;
+    private float m_lastDamageTime = -999f;
 
     public event Action<int> OnDamage;
     public event Action OnDie;
@@ -22,9 +25,12 @@ public class Health : MonoBehaviour
 
     void Awake()
     {
-        CurrentHealth = maxHealth;
+        CurrentHealth = m_maxHealth;
     }
 
+    /// <summary>
+    /// ダメージを与える。クールダウン中・死亡中は無視される。
+    /// </summary>
     public void Damage(int amount)
     {
         if (IsDead) return;
@@ -32,7 +38,7 @@ public class Health : MonoBehaviour
         if (amount <= 0) return;
 
         CurrentHealth = Mathf.Max(CurrentHealth - amount, 0);
-        lastDamageTime = Time.time;
+        m_lastDamageTime = Time.time;
         OnDamage?.Invoke(amount);
 
         if (IsDead)
@@ -41,18 +47,24 @@ public class Health : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// HPを回復する。最大HPを超えない。
+    /// </summary>
     public void Heal(int amount)
     {
         if (IsDead) return;
         if (amount <= 0) return;
 
-        CurrentHealth = Mathf.Min(CurrentHealth + amount, maxHealth);
+        CurrentHealth = Mathf.Min(CurrentHealth + amount, m_maxHealth);
         OnHeal?.Invoke(amount);
     }
 
+    /// <summary>
+    /// HPを最大値にリセットする。ダメージクールダウンも解除する。
+    /// </summary>
     public void ResetHealth()
     {
-        CurrentHealth = maxHealth;
-        lastDamageTime = -999f;
+        CurrentHealth = m_maxHealth;
+        m_lastDamageTime = -999f;
     }
 }

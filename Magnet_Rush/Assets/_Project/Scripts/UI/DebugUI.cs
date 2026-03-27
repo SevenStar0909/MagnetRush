@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
 using TMPro;
@@ -9,32 +10,43 @@ using TMPro;
 /// </summary>
 public class DebugUI : MonoBehaviour
 {
-    [SerializeField] private GameObject panel;
-    [SerializeField] private Slider forceSlider;
-    [SerializeField] private Slider rangeSlider;
-    [SerializeField] private TextMeshProUGUI forceLabel;
-    [SerializeField] private TextMeshProUGUI rangeLabel;
-    [SerializeField] private TextMeshProUGUI bulletListText;
-    [SerializeField] private MagnetSettings magnetSettings;
+#if !DEBUG && !UNITY_EDITOR
+    void Awake() { gameObject.SetActive(false); }
+#endif
+
+    [FormerlySerializedAs("panel")]
+    [SerializeField] private GameObject m_panel;
+    [FormerlySerializedAs("forceSlider")]
+    [SerializeField] private Slider m_forceSlider;
+    [FormerlySerializedAs("rangeSlider")]
+    [SerializeField] private Slider m_rangeSlider;
+    [FormerlySerializedAs("forceLabel")]
+    [SerializeField] private TextMeshProUGUI m_forceLabel;
+    [FormerlySerializedAs("rangeLabel")]
+    [SerializeField] private TextMeshProUGUI m_rangeLabel;
+    [FormerlySerializedAs("bulletListText")]
+    [SerializeField] private TextMeshProUGUI m_bulletListText;
+    [FormerlySerializedAs("magnetSettings")]
+    [SerializeField] private MagnetSettings m_magnetSettings;
 
     void Start()
     {
-        if (panel != null) panel.SetActive(false);
+        if (m_panel != null) m_panel.SetActive(false);
 
-        if (forceSlider != null && magnetSettings != null)
+        if (m_forceSlider != null && m_magnetSettings != null)
         {
-            forceSlider.minValue = 1f;
-            forceSlider.maxValue = 100f;
-            forceSlider.value = magnetSettings.magnetForce;
-            forceSlider.onValueChanged.AddListener(OnForceChanged);
+            m_forceSlider.minValue = 1f;
+            m_forceSlider.maxValue = 100f;
+            m_forceSlider.value = m_magnetSettings.magnetForce;
+            m_forceSlider.onValueChanged.AddListener(OnForceChanged);
         }
 
-        if (rangeSlider != null && magnetSettings != null)
+        if (m_rangeSlider != null && m_magnetSettings != null)
         {
-            rangeSlider.minValue = 1f;
-            rangeSlider.maxValue = 50f;
-            rangeSlider.value = magnetSettings.magnetRange;
-            rangeSlider.onValueChanged.AddListener(OnRangeChanged);
+            m_rangeSlider.minValue = 1f;
+            m_rangeSlider.maxValue = 50f;
+            m_rangeSlider.value = m_magnetSettings.magnetRange;
+            m_rangeSlider.onValueChanged.AddListener(OnRangeChanged);
         }
     }
 
@@ -42,7 +54,7 @@ public class DebugUI : MonoBehaviour
     {
         if (Keyboard.current != null && Keyboard.current.f1Key.wasPressedThisFrame)
         {
-            if (panel != null) panel.SetActive(!panel.activeSelf);
+            if (m_panel != null) m_panel.SetActive(!m_panel.activeSelf);
         }
 
         UpdateBulletList();
@@ -51,36 +63,36 @@ public class DebugUI : MonoBehaviour
 
     private void OnForceChanged(float value)
     {
-        if (magnetSettings != null) magnetSettings.magnetForce = Mathf.Clamp(value, 1f, 100f);
+        if (m_magnetSettings != null) m_magnetSettings.magnetForce = Mathf.Clamp(value, 1f, 100f);
     }
 
     private void OnRangeChanged(float value)
     {
-        if (magnetSettings != null) magnetSettings.magnetRange = Mathf.Clamp(value, 1f, 50f);
+        if (m_magnetSettings != null) m_magnetSettings.magnetRange = Mathf.Clamp(value, 1f, 50f);
     }
 
     private void UpdateLabels()
     {
-        if (magnetSettings == null) return;
-        if (forceLabel != null) forceLabel.text = $"磁力: {magnetSettings.magnetForce:F1}";
-        if (rangeLabel != null) rangeLabel.text = $"範囲: {magnetSettings.magnetRange:F1}";
+        if (m_magnetSettings == null) return;
+        if (m_forceLabel != null) m_forceLabel.text = $"磁力: {m_magnetSettings.magnetForce:F1}";
+        if (m_rangeLabel != null) m_rangeLabel.text = $"範囲: {m_magnetSettings.magnetRange:F1}";
     }
 
     private void UpdateBulletList()
     {
-        if (bulletListText == null || BulletManager.Instance == null) return;
+        if (m_bulletListText == null || BulletManager.Instance == null) return;
 
         // BulletManagerの内部カウントを使用（GetComponentsInChildrenは不正確）
         int count = BulletManager.Instance.CurrentCount;
         int max = BulletManager.Instance.MaxBullets;
-        bulletListText.text = count == 0
+        m_bulletListText.text = count == 0
             ? "弾: なし"
             : $"弾: {count}/{max}";
     }
 
     void OnDestroy()
     {
-        if (forceSlider != null) forceSlider.onValueChanged.RemoveListener(OnForceChanged);
-        if (rangeSlider != null) rangeSlider.onValueChanged.RemoveListener(OnRangeChanged);
+        if (m_forceSlider != null) m_forceSlider.onValueChanged.RemoveListener(OnForceChanged);
+        if (m_rangeSlider != null) m_rangeSlider.onValueChanged.RemoveListener(OnRangeChanged);
     }
 }

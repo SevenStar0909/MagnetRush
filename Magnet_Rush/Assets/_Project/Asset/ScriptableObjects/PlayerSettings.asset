@@ -12,8 +12,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5c78a0652301aff42b1cb9ae795437dd, type: 3}
   m_Name: PlayerSettings
   m_EditorClassIdentifier: Assembly-CSharp::PlayerSettings
-  moveSpeed: 6
+  topSpeed: 6
+  acceleration: 30
+  deceleration: 25
+  turningDrag: 20
+  rotationSpeed: 15
   gravity: -20
-  groundCheckRadius: 0.3
+  snapForce: 2
+  groundCheckDistance: 0.3
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 0
   cameraSensitivityX: 200
   cameraSensitivityY: 200
+  cameraDistance: 5
+  shoulderOffset: {x: 0.8, y: 0.3, z: 0}
+  firePointHeight: 1.2
+  aimReleaseGraceTime: 0.15
+  aimTimeScale: 0.3
+  aimFOV: 40
+  aimCameraDistance: 3
+  aimMoveSpeedMultiplier: 0.5
+  respawnDelay: 3
+  slopeUpwardForce: 15
+  slopeDownwardForce: 25
+  magnetResistance: 0.5
+  pullOrientationThreshold: 5
+  pullOrientationSpeed: 8

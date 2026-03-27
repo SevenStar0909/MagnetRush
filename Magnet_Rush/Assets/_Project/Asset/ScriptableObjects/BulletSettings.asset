@@ -15,7 +15,12 @@ MonoBehaviour:
   bulletSpeed: 30
   lifetime: 5
   maxBullets: 4
-  sMaterial: {fileID: 2100000, guid: 1307b26d0df2dc942b6ad31bf2a9b8f9, type: 2}
-  nMaterial: {fileID: 2100000, guid: 9aa70f660e3a6fc44aed386295504f32, type: 2}
-  sFieldMaterial: {fileID: 2100000, guid: eeed9ba718063d64e99bf889b849ea7d, type: 2}
-  nFieldMaterial: {fileID: 2100000, guid: a1902794c805b7d4cb4f52a64ce418d9, type: 2}
+  bulletPrefab: {fileID: 8315942439507660232, guid: ed61626232552c64bbcc0504138b8829, type: 3}
+  raycastDistance: 200
+  defaultMagnetRange: 5
+  useFallbackMode: 0
+  bulletFieldSettings: {fileID: 11400000, guid: 54d80a1a1e489384eb66331e0e8b2e77, type: 2}
+  fieldAttractionFactor: 5
+  bulletDamage: 10
+  sMaterial: {fileID: 2100000, guid: d8e9e3b7e4f6e6045876371a347e992c, type: 2}
+  nMaterial: {fileID: 2100000, guid: 7f66349f6d22cdb4891ce726b6d1a06d, type: 2}

@@ -1,35 +1,78 @@
 using UnityEngine;
-using TMPro;
+using UnityEngine.Serialization;
+using UnityEngine.UI;
 
 /// <summary>
-/// 残弾数UIの表示・更新。BulletManagerのイベントを購読する。
+/// 残弾数UIの表示・更新。スプライト切替方式（極性＋残弾数統合画像）。
+/// BulletManagerとPolarityControllerのイベントを購読する。
 /// </summary>
 public class AmmoUI : MonoBehaviour
 {
-    [SerializeField] private TextMeshProUGUI ammoText;
+    [FormerlySerializedAs("ammoImage")]
+    [SerializeField] private Image m_ammoImage;
+
+    [Header("S極 残弾スプライト (0〜4)")]
+    [FormerlySerializedAs("spritesS")]
+    [SerializeField] private Sprite[] m_spritesS;
+
+    [Header("N極 残弾スプライト (0〜4)")]
+    [FormerlySerializedAs("spritesN")]
+    [SerializeField] private Sprite[] m_spritesN;
+
+    private PolarityController m_polarityController;
+    private MagneticPole m_currentPole = MagneticPole.S;
+    private int m_currentRemaining = 4;
 
     void Start()
     {
+        var player = GameObject.FindWithTag(GameTags.Player);
+        if (player != null)
+        {
+            m_polarityController = player.GetComponent<PolarityController>();
+            if (m_polarityController != null)
+            {
+                m_polarityController.OnPolarityChanged += OnPolarityChanged;
+                m_currentPole = m_polarityController.CurrentPole;
+            }
+        }
+
         if (BulletManager.Instance != null)
         {
-            BulletManager.Instance.OnBulletCountChanged += UpdateDisplay;
-            UpdateDisplay(0);
+            BulletManager.Instance.OnBulletCountChanged += OnBulletCountChanged;
+            OnBulletCountChanged(0);
         }
+
+        UpdateSprite();
     }
 
     void OnDestroy()
     {
+        if (m_polarityController != null)
+            m_polarityController.OnPolarityChanged -= OnPolarityChanged;
+
         if (BulletManager.Instance != null)
-        {
-            BulletManager.Instance.OnBulletCountChanged -= UpdateDisplay;
-        }
+            BulletManager.Instance.OnBulletCountChanged -= OnBulletCountChanged;
     }
 
-    private void UpdateDisplay(int currentCount)
+    private void OnPolarityChanged(MagneticPole pole)
     {
-        if (ammoText == null) return;
+        m_currentPole = pole;
+        UpdateSprite();
+    }
+
+    private void OnBulletCountChanged(int usedCount)
+    {
         int max = BulletManager.Instance != null ? BulletManager.Instance.MaxBullets : 4;
-        int remaining = max - currentCount;
-        ammoText.text = $"残弾: {remaining}/{max}";
+        m_currentRemaining = Mathf.Clamp(max - usedCount, 0, max);
+        UpdateSprite();
+    }
+
+    private void UpdateSprite()
+    {
+        if (m_ammoImage == null) return;
+
+        Sprite[] sprites = m_currentPole == MagneticPole.S ? m_spritesS : m_spritesN;
+        if (sprites != null && m_currentRemaining >= 0 && m_currentRemaining < sprites.Length)
+            m_ammoImage.sprite = sprites[m_currentRemaining];
     }
 }

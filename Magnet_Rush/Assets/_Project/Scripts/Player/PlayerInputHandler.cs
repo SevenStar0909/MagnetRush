@@ -1,75 +1,73 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 
 /// <summary>
-/// Input System入力をバッファリングする。
-/// ボタン入力はConsumeパターンで1回だけ読み取り可能。
+/// Input System入力をポーリングで読み取る。
+/// InputActionAssetを直接参照する方式。
 /// </summary>
-[RequireComponent(typeof(PlayerInput))]
 public class PlayerInputHandler : MonoBehaviour
 {
-    public Vector2 MoveInput { get; private set; }
-    public Vector2 LookInput { get; private set; }
-    public bool AimHeld { get; private set; }
+    [FormerlySerializedAs("actions")]
+    [SerializeField] private InputActionAsset m_actions;
 
-    // ボタン入力バッファ（Consumeで読み取り後にリセット）
-    private bool fireBuffer;
-    private bool switchPoleBuffer;
-    private bool reloadBuffer;
+    private InputAction m_move;
+    private InputAction m_look;
+    private InputAction m_attack;
+    private InputAction m_aim;
+    private InputAction m_switchPole;
+    private InputAction m_reload;
 
-    /// <summary>射撃入力を消費する。1回呼ぶとfalseに戻る。</summary>
-    public bool ConsumeFire()
+    /// <summary>
+    /// 移動入力のベクトル（左スティック）。
+    /// </summary>
+    public Vector2 MoveInput => m_move.ReadValue<Vector2>();
+
+    /// <summary>
+    /// 視点入力のベクトル（右スティック）。
+    /// </summary>
+    public Vector2 LookInput => m_look.ReadValue<Vector2>();
+
+    /// <summary>
+    /// エイムボタン（LT）が押されているかどうか。
+    /// </summary>
+    public bool AimHeld => m_aim.ReadValue<float>() > 0.5f;
+
+    /// <summary>
+    /// 攻撃ボタン（RT）が押されたフレームならtrueを返す。
+    /// </summary>
+    public bool ConsumeFire() => m_attack.WasPressedThisFrame();
+
+    /// <summary>
+    /// 極性切替ボタン（Y）が押されたフレームならtrueを返す。
+    /// </summary>
+    public bool ConsumeSwitchPole() => m_switchPole.WasPressedThisFrame();
+
+    /// <summary>
+    /// リロードボタンが押されたフレームならtrueを返す。
+    /// </summary>
+    public bool ConsumeReload() => m_reload.WasPressedThisFrame();
+
+    void Awake()
     {
-        if (!fireBuffer) return false;
-        fireBuffer = false;
-        return true;
+        if (m_actions == null)
+        {
+            // PlayerInputコンポーネントからアクションを取得（フォールバック）
+            var playerInput = GetComponent<PlayerInput>();
+            if (playerInput != null) m_actions = playerInput.actions;
+        }
+
+        if (m_actions != null)
+        {
+            m_move = m_actions["Move"];
+            m_look = m_actions["Look"];
+            m_attack = m_actions["Attack"];
+            m_aim = m_actions["Aim"];
+            m_switchPole = m_actions["SwitchPole"];
+            m_reload = m_actions["Reload"];
+        }
     }
 
-    /// <summary>磁極切替入力を消費する。</summary>
-    public bool ConsumeSwitchPole()
-    {
-        if (!switchPoleBuffer) return false;
-        switchPoleBuffer = false;
-        return true;
-    }
-
-    /// <summary>リロード入力を消費する。</summary>
-    public bool ConsumeReload()
-    {
-        if (!reloadBuffer) return false;
-        reloadBuffer = false;
-        return true;
-    }
-
-    // InputSystemメッセージ
-
-    public void OnMove(InputValue value)
-    {
-        MoveInput = value.Get<Vector2>();
-    }
-
-    public void OnLook(InputValue value)
-    {
-        LookInput = value.Get<Vector2>();
-    }
-
-    public void OnAttack(InputValue value)
-    {
-        if (value.isPressed) fireBuffer = true;
-    }
-
-    public void OnAim(InputValue value)
-    {
-        AimHeld = value.isPressed;
-    }
-
-    public void OnSwitchPole(InputValue value)
-    {
-        if (value.isPressed) switchPoleBuffer = true;
-    }
-
-    public void OnReload(InputValue value)
-    {
-        if (value.isPressed) reloadBuffer = true;
-    }
+    void OnEnable() => m_actions?.Enable();
+    void OnDisable() => m_actions?.Disable();
 }

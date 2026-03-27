@@ -6,25 +6,31 @@ using UnityEngine;
 /// </summary>
 public class PolarityController : MonoBehaviour
 {
+    /// <summary>
+    /// 現在の磁極（SまたはN）。
+    /// </summary>
     public MagneticPole CurrentPole { get; private set; } = MagneticPole.S;
 
+    /// <summary>
+    /// 磁極が切り替わったときに発火するイベント。
+    /// </summary>
     public event Action<MagneticPole> OnPolarityChanged;
 
-    private PlayerInputHandler input;
-    private PlayerEvents events;
+    private PlayerInputHandler m_input;
+    private PlayerEvents m_events;
 
     void Awake()
     {
-        input = GetComponent<PlayerInputHandler>();
-        events = GetComponent<PlayerEvents>();
+        m_input = GetComponent<PlayerInputHandler>();
+        m_events = GetComponent<PlayerEvents>();
     }
 
     void Update()
     {
-        if (!input.ConsumeSwitchPole()) return;
+        if (!m_input.ConsumeSwitchPole()) return;
 
         CurrentPole = CurrentPole == MagneticPole.S ? MagneticPole.N : MagneticPole.S;
         OnPolarityChanged?.Invoke(CurrentPole);
-        events?.FirePolaritySwitch(CurrentPole);
+        m_events?.FirePolaritySwitch(CurrentPole);
     }
 }
