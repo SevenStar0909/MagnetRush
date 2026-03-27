@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
@@ -59,9 +59,7 @@ public class OutlineRendererFeature : ScriptableRendererFeature
         m_normalsPass?.Cleanup();
     }
 
-    // ─────────────────────────────────────────────
-    // Pass 1: Magnetized レイヤーの法線を専用RTに描画
-    // ─────────────────────────────────────────────
+    //  Magnetized レイヤーの法線を専用RTに描画
     class NormalsPrePass : ScriptableRenderPass
     {
         private readonly LayerMask m_layerMask;
@@ -73,6 +71,7 @@ public class OutlineRendererFeature : ScriptableRendererFeature
             new ShaderTagId("SRPDefaultUnlit")
         };
         private RTHandle m_normalsRT;
+        private RTHandle m_depthRT;
 
         public NormalsPrePass(LayerMask layerMask, Material normalsMaterial)
         {
@@ -86,12 +85,19 @@ public class OutlineRendererFeature : ScriptableRendererFeature
             var renderingData = frameData.Get<UniversalRenderingData>();
             var lightData = frameData.Get<UniversalLightData>();
 
-            var desc = cameraData.cameraTargetDescriptor;
-            desc.colorFormat = RenderTextureFormat.ARGBFloat;
-            desc.depthBufferBits = 0;
-            desc.msaaSamples = 1;
+            // 法線テクスチャ
+            var colorDesc = cameraData.cameraTargetDescriptor;
+            colorDesc.colorFormat = RenderTextureFormat.ARGBFloat;
+            colorDesc.depthBufferBits = 0;
+            colorDesc.msaaSamples = 1;
+            RenderingUtils.ReAllocateHandleIfNeeded(ref m_normalsRT, colorDesc, name: "_ViewSpaceNormals");
 
-            RenderingUtils.ReAllocateHandleIfNeeded(ref m_normalsRT, desc, name: "_ViewSpaceNormals");
+            // 磁化オブジェクト専用深度テクスチャ
+            var depthDesc = cameraData.cameraTargetDescriptor;
+            depthDesc.colorFormat = RenderTextureFormat.Depth;
+            depthDesc.depthBufferBits = 32;
+            depthDesc.msaaSamples = 1;
+            RenderingUtils.ReAllocateHandleIfNeeded(ref m_depthRT, depthDesc, name: "_MagnetizedDepthTexture");
 
             var drawingSettings = RenderingUtils.CreateDrawingSettings(
                 m_shaderTagIds, renderingData, cameraData, lightData, SortingCriteria.CommonOpaque);
@@ -103,6 +109,7 @@ public class OutlineRendererFeature : ScriptableRendererFeature
             using (var builder = renderGraph.AddUnsafePass<NormalsPassData>("NormalsPrePass", out var passData))
             {
                 passData.normalsRT = m_normalsRT;
+                passData.depthRT = m_depthRT;
                 passData.rendererList = rendererListHandle;
 
                 builder.UseRendererList(rendererListHandle);
@@ -111,10 +118,11 @@ public class OutlineRendererFeature : ScriptableRendererFeature
                 builder.SetRenderFunc<NormalsPassData>(static (data, ctx) =>
                 {
                     var cmd = CommandBufferHelpers.GetNativeCommandBuffer(ctx.cmd);
-                    cmd.SetRenderTarget(data.normalsRT);
-                    cmd.ClearRenderTarget(false, true, Color.clear);
+                    cmd.SetRenderTarget(data.normalsRT, data.depthRT);
+                    cmd.ClearRenderTarget(true, true, Color.clear);
                     cmd.DrawRendererList(data.rendererList);
                     cmd.SetGlobalTexture("_ViewSpaceNormals", data.normalsRT);
+                    cmd.SetGlobalTexture("_MagnetizedDepthTexture", data.depthRT);
                 });
             }
         }
@@ -122,18 +130,18 @@ public class OutlineRendererFeature : ScriptableRendererFeature
         class NormalsPassData
         {
             public RTHandle normalsRT;
+            public RTHandle depthRT;
             public RendererListHandle rendererList;
         }
 
         public void Cleanup()
         {
             m_normalsRT?.Release();
+            m_depthRT?.Release();
         }
     }
 
-    // ─────────────────────────────────────────────
-    // Pass 2: フルスクリーン Roberts Cross エッジ検出
-    // ─────────────────────────────────────────────
+    // フルスクリーン Roberts Cross エッジ検出
     class EdgeDetectionPass : ScriptableRenderPass
     {
         private readonly Material m_material;

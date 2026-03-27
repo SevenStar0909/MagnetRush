@@ -26,11 +26,13 @@ Shader "Hidden/MagnetRush/EdgeDetectionOutline"
             #pragma fragment frag
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
-            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
             #include "Packages/com.unity.render-pipelines.core/Runtime/Utilities/Blit.hlsl"
 
             TEXTURE2D(_ViewSpaceNormals);
             SAMPLER(sampler_ViewSpaceNormals);
+
+            TEXTURE2D(_MagnetizedDepthTexture);
+            SAMPLER(sampler_MagnetizedDepthTexture);
 
             CBUFFER_START(UnityPerMaterial)
                 float4 _OutlineColorS;
@@ -63,33 +65,19 @@ Shader "Hidden/MagnetRush/EdgeDetectionOutline"
                 float3 normalDiff1 = n3 - n2;
                 float edgeNormal = sqrt(dot(normalDiff0, normalDiff0) + dot(normalDiff1, normalDiff1));
 
-                // 深度エッジ検出
-                float d0 = SampleSceneDepth(uvBL);
-                float d1 = SampleSceneDepth(uvTR);
-                float d2 = SampleSceneDepth(uvBR);
-                float d3 = SampleSceneDepth(uvTL);
+                // 磁化オブジェクト専用深度からサンプル（他オブジェクトのオクルージョンエッジを排除）
+                float d0 = SAMPLE_TEXTURE2D(_MagnetizedDepthTexture, sampler_MagnetizedDepthTexture, uvBL).r;
+                float d1 = SAMPLE_TEXTURE2D(_MagnetizedDepthTexture, sampler_MagnetizedDepthTexture, uvTR).r;
+                float d2 = SAMPLE_TEXTURE2D(_MagnetizedDepthTexture, sampler_MagnetizedDepthTexture, uvBR).r;
+                float d3 = SAMPLE_TEXTURE2D(_MagnetizedDepthTexture, sampler_MagnetizedDepthTexture, uvTL).r;
 
                 float depthDiff0 = d1 - d0;
                 float depthDiff1 = d3 - d2;
                 float edgeDepth = sqrt(depthDiff0 * depthDiff0 + depthDiff1 * depthDiff1) * 100.0;
 
-                // ペアごとの磁化マスク（BL-TR, BR-TL の各ペアで少なくとも1つが磁化領域）
-                float mask0 = step(0.01, length(n0));
-                float mask1 = step(0.01, length(n1));
-                float mask2 = step(0.01, length(n2));
-                float mask3 = step(0.01, length(n3));
-                float pairMask0 = max(mask0, mask1);
-                float pairMask1 = max(mask2, mask3);
-
-                // 深度エッジ: ペア内に磁化ピクセルがある場合のみ有効
-                float maskedDepthEdge = sqrt(
-                    depthDiff0 * depthDiff0 * pairMask0 +
-                    depthDiff1 * depthDiff1 * pairMask1
-                ) * 100.0;
-
-                // 法線エッジ: 非磁化ピクセルは法線=(0,0,0)なので自然にマスクされる
+                // エッジ判定（深度も法線も磁化オブジェクトのみのデータなのでマスク不要）
                 float edge = max(
-                    maskedDepthEdge > _DepthThreshold ? 1.0 : 0.0,
+                    edgeDepth > _DepthThreshold ? 1.0 : 0.0,
                     edgeNormal > _NormalThreshold ? 1.0 : 0.0
                 );
 

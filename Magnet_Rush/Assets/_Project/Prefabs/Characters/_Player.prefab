@@ -1,0 +1,341 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &194716850494653123
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7640701815771579218}
+  m_Layer: 0
+  m_Name: FirePoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7640701815771579218
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 194716850494653123}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.2, z: 0.5}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3464475560410884668}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2828125983795468775
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 525279597465324906}
+  m_Layer: 0
+  m_Name: SpawnPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &525279597465324906
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2828125983795468775}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 1, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2118634250300634044}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &6188001065769693201
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2118634250300634044}
+  m_Layer: 0
+  m_Name: _Player
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2118634250300634044
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6188001065769693201}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 3464475560410884668}
+  - {fileID: 525279597465324906}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1001 &2154422029343889489
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 2118634250300634044}
+    m_Modifications:
+    - target: {fileID: 236777371198881234, guid: 3c2f68b0a5548044da7bfdff022cc9ee, type: 3}
+      propertyPath: m_actions
+      value: 
+      objectReference: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+    - target: {fileID: 3310780425311466093, guid: 3c2f68b0a5548044da7bfdff022cc9ee, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3310780425311466093, guid: 3c2f68b0a5548044da7bfdff022cc9ee, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 1.26
+      objectReference: {fileID: 0}
+    - target: {fileID: 3310780425311466093, guid: 3c2f68b0a5548044da7bfdff022cc9ee, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.048
+      objectReference: {fileID: 0}
+    - target: {fileID: 3310780425311466093, guid: 3c2f68b0a5548044da7bfdff022cc9ee, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3310780425311466093, guid: 3c2f68b0a5548044da7bfdff022cc9ee, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3310780425311466093, guid: 3c2f68b0a5548044da7bfdff022cc9ee, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3310780425311466093, guid: 3c2f68b0a5548044da7bfdff022cc9ee, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3310780425311466093, guid: 3c2f68b0a5548044da7bfdff022cc9ee, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3310780425311466093, guid: 3c2f68b0a5548044da7bfdff022cc9ee, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3310780425311466093, guid: 3c2f68b0a5548044da7bfdff022cc9ee, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4877007147656353374, guid: 3c2f68b0a5548044da7bfdff022cc9ee, type: 3}
+      propertyPath: m_Name
+      value: Player
+      objectReference: {fileID: 0}
+    - target: {fileID: 4877007147656353374, guid: 3c2f68b0a5548044da7bfdff022cc9ee, type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 5792353818699100823, guid: 3c2f68b0a5548044da7bfdff022cc9ee, type: 3}
+    - {fileID: 1601968799644404217, guid: 3c2f68b0a5548044da7bfdff022cc9ee, type: 3}
+    m_RemovedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 3310780425311466093, guid: 3c2f68b0a5548044da7bfdff022cc9ee, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7640701815771579218}
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 4877007147656353374, guid: 3c2f68b0a5548044da7bfdff022cc9ee, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6319710119425980639}
+    - targetCorrespondingSourceObject: {fileID: 4877007147656353374, guid: 3c2f68b0a5548044da7bfdff022cc9ee, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8086048467686625939}
+    - targetCorrespondingSourceObject: {fileID: 4877007147656353374, guid: 3c2f68b0a5548044da7bfdff022cc9ee, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3330470758991226330}
+    - targetCorrespondingSourceObject: {fileID: 4877007147656353374, guid: 3c2f68b0a5548044da7bfdff022cc9ee, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3986405755900009369}
+    - targetCorrespondingSourceObject: {fileID: 4877007147656353374, guid: 3c2f68b0a5548044da7bfdff022cc9ee, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7891901257409057726}
+    - targetCorrespondingSourceObject: {fileID: 4877007147656353374, guid: 3c2f68b0a5548044da7bfdff022cc9ee, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5320340779850616240}
+    - targetCorrespondingSourceObject: {fileID: 4877007147656353374, guid: 3c2f68b0a5548044da7bfdff022cc9ee, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8868500342735457388}
+    - targetCorrespondingSourceObject: {fileID: 4877007147656353374, guid: 3c2f68b0a5548044da7bfdff022cc9ee, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8048516840769174503}
+    - targetCorrespondingSourceObject: {fileID: 4877007147656353374, guid: 3c2f68b0a5548044da7bfdff022cc9ee, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2038707362745126978}
+  m_SourcePrefab: {fileID: 100100000, guid: 3c2f68b0a5548044da7bfdff022cc9ee, type: 3}
+--- !u!4 &3464475560410884668 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3310780425311466093, guid: 3c2f68b0a5548044da7bfdff022cc9ee, type: 3}
+  m_PrefabInstance: {fileID: 2154422029343889489}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &6793846349764267535 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4877007147656353374, guid: 3c2f68b0a5548044da7bfdff022cc9ee, type: 3}
+  m_PrefabInstance: {fileID: 2154422029343889489}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &6319710119425980639
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6793846349764267535}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 21430a5baa125a846b3890234515ba9a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MagnetRush.Player.PlayerEvents
+--- !u!114 &8086048467686625939
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6793846349764267535}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e6594f79a3932ea4d8bb7a7e3c6875a9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MagnetRush.Player.Player
+  health: {fileID: 0}
+  velocity: {x: 0, y: 0, z: 0}
+  externalVelocity: {x: 0, y: 0, z: 0}
+  m_settings: {fileID: 11400000, guid: d645a9ba3befda14d8a96f9af1142f3f, type: 2}
+--- !u!114 &3330470758991226330
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6793846349764267535}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 21d975a99f0064f4cbbc4f8ebfc0aaea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MagnetRush.Player.PlayerStateManager
+--- !u!114 &3986405755900009369
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6793846349764267535}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f7eb2ea83aeed54c8fa7e632b84756a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MagnetRush.Entity.Health
+  m_maxHealth: 3
+  m_damageCooldown: 1
+--- !u!114 &7891901257409057726
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6793846349764267535}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9f3c41d16bdd0614385e9dfda20f2372, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Magnetizable
+  m_pole: 0
+  m_isActive: 0
+  m_initialMass: 1
+--- !u!114 &5320340779850616240
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6793846349764267535}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 53d0e41791b64a844b2de789549f36f6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MagnetRush.Player.ShootingController
+  m_bulletSettings: {fileID: 11400000, guid: 425ee2473071b7a4fa2afd4ccb6a162c, type: 2}
+  m_playerSettings: {fileID: 11400000, guid: d645a9ba3befda14d8a96f9af1142f3f, type: 2}
+  m_firePoint: {fileID: 7640701815771579218}
+--- !u!114 &8868500342735457388
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6793846349764267535}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c3e1c545df00ac54b9bc05bdf8aeb891, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MagnetRush.Player.AimController
+  m_settings: {fileID: 11400000, guid: d645a9ba3befda14d8a96f9af1142f3f, type: 2}
+  m_cameraSettings: {fileID: 0}
+--- !u!114 &8048516840769174503
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6793846349764267535}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 11997346b0569054fa35f713113e20d0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MagnetRush.Player.PolarityController
+--- !u!54 &2038707362745126978
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6793846349764267535}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 0
+  m_IsKinematic: 0
+  m_Interpolate: 1
+  m_Constraints: 112
+  m_CollisionDetection: 0
