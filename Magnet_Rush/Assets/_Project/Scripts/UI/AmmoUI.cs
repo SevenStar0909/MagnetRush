@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 /// <summary>
@@ -7,28 +8,31 @@ using UnityEngine.UI;
 /// </summary>
 public class AmmoUI : MonoBehaviour
 {
-    [SerializeField] private Image ammoImage;
+    [FormerlySerializedAs("ammoImage")]
+    [SerializeField] private Image m_ammoImage;
 
     [Header("S極 残弾スプライト (0〜4)")]
-    [SerializeField] private Sprite[] spritesS;
+    [FormerlySerializedAs("spritesS")]
+    [SerializeField] private Sprite[] m_spritesS;
 
     [Header("N極 残弾スプライト (0〜4)")]
-    [SerializeField] private Sprite[] spritesN;
+    [FormerlySerializedAs("spritesN")]
+    [SerializeField] private Sprite[] m_spritesN;
 
-    private PolarityController polarityController;
-    private MagneticPole currentPole = MagneticPole.S;
-    private int currentRemaining = 4;
+    private PolarityController m_polarityController;
+    private MagneticPole m_currentPole = MagneticPole.S;
+    private int m_currentRemaining = 4;
 
     void Start()
     {
         var player = GameObject.FindWithTag(GameTags.Player);
         if (player != null)
         {
-            polarityController = player.GetComponent<PolarityController>();
-            if (polarityController != null)
+            m_polarityController = player.GetComponent<PolarityController>();
+            if (m_polarityController != null)
             {
-                polarityController.OnPolarityChanged += OnPolarityChanged;
-                currentPole = polarityController.CurrentPole;
+                m_polarityController.OnPolarityChanged += OnPolarityChanged;
+                m_currentPole = m_polarityController.CurrentPole;
             }
         }
 
@@ -43,8 +47,8 @@ public class AmmoUI : MonoBehaviour
 
     void OnDestroy()
     {
-        if (polarityController != null)
-            polarityController.OnPolarityChanged -= OnPolarityChanged;
+        if (m_polarityController != null)
+            m_polarityController.OnPolarityChanged -= OnPolarityChanged;
 
         if (BulletManager.Instance != null)
             BulletManager.Instance.OnBulletCountChanged -= OnBulletCountChanged;
@@ -52,23 +56,23 @@ public class AmmoUI : MonoBehaviour
 
     private void OnPolarityChanged(MagneticPole pole)
     {
-        currentPole = pole;
+        m_currentPole = pole;
         UpdateSprite();
     }
 
     private void OnBulletCountChanged(int usedCount)
     {
         int max = BulletManager.Instance != null ? BulletManager.Instance.MaxBullets : 4;
-        currentRemaining = Mathf.Clamp(max - usedCount, 0, max);
+        m_currentRemaining = Mathf.Clamp(max - usedCount, 0, max);
         UpdateSprite();
     }
 
     private void UpdateSprite()
     {
-        if (ammoImage == null) return;
+        if (m_ammoImage == null) return;
 
-        Sprite[] sprites = currentPole == MagneticPole.S ? spritesS : spritesN;
-        if (sprites != null && currentRemaining >= 0 && currentRemaining < sprites.Length)
-            ammoImage.sprite = sprites[currentRemaining];
+        Sprite[] sprites = m_currentPole == MagneticPole.S ? m_spritesS : m_spritesN;
+        if (sprites != null && m_currentRemaining >= 0 && m_currentRemaining < sprites.Length)
+            m_ammoImage.sprite = sprites[m_currentRemaining];
     }
 }

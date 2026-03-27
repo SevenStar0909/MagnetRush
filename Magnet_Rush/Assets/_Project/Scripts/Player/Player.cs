@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+using UnityEngine;
+using UnityEngine.Serialization;
 
 /// <summary>
 /// プレイヤーエンティティ。入力・ステート・磁力の統合制御を行う。
@@ -9,7 +10,8 @@
 [RequireComponent(typeof(PlayerEvents))]
 public class Player : Entity
 {
-    [SerializeField] private PlayerSettings settings;
+    [FormerlySerializedAs("settings")]
+    [SerializeField] private PlayerSettings m_settings;
 
     /// <summary>
     /// プレイヤーの入力ハンドラー。
@@ -29,7 +31,7 @@ public class Player : Entity
     /// <summary>
     /// プレイヤー設定（ScriptableObject）。
     /// </summary>
-    public PlayerSettings Settings => settings;
+    public PlayerSettings Settings => m_settings;
 
     /// <summary>
     /// 磁力影響を受けるコンポーネント。
@@ -45,8 +47,8 @@ public class Player : Entity
         magnetizable = GetComponent<Magnetizable>();
 
         // SO値をEntity基底フィールドに反映
-        m_pullOrientationThreshold = settings.pullOrientationThreshold;
-        m_pullOrientationSpeed = settings.pullOrientationSpeed;
+        m_pullOrientationThreshold = m_settings.pullOrientationThreshold;
+        m_pullOrientationSpeed = m_settings.pullOrientationSpeed;
 
         // HP=0でDiePlayerStateに遷移
         if (health != null)
@@ -75,7 +77,7 @@ public class Player : Entity
         states.Step(dt);
         UpdateGround();
         UpdateMagneticOrientation(dt);
-        ApplyGravity(settings.gravity, settings.snapForce, dt);
+        ApplyGravity(m_settings.gravity, m_settings.snapForce, dt);
         ApplyMovement(dt);
     }
 
@@ -108,8 +110,8 @@ public class Player : Entity
         var direction = GetCameraRelativeDirection(input.MoveInput);
         if (direction.sqrMagnitude > 0.01f)
         {
-            Accelerate(direction, settings.turningDrag, settings.acceleration, settings.topSpeed, dt);
-            FaceDirection(direction, settings.rotationSpeed, dt);
+            Accelerate(direction, m_settings.turningDrag, m_settings.acceleration, m_settings.topSpeed, dt);
+            FaceDirection(direction, m_settings.rotationSpeed, dt);
         }
     }
 
@@ -127,16 +129,16 @@ public class Player : Entity
     public void MoveWithInputStrafe(float dt)
     {
         Vector3 dir = GetCameraRelativeDirection(input.MoveInput);
-        float aimSpeed = settings.topSpeed * settings.aimMoveSpeedMultiplier;
+        float aimSpeed = m_settings.topSpeed * m_settings.aimMoveSpeedMultiplier;
         if (dir.sqrMagnitude > 0.01f)
         {
-            Accelerate(dir, settings.turningDrag, settings.acceleration, aimSpeed, dt);
+            Accelerate(dir, m_settings.turningDrag, m_settings.acceleration, aimSpeed, dt);
         }
         if (cachedCameraTransform != null)
         {
             Vector3 camForward = cachedCameraTransform.forward;
             camForward.y = 0f;
-            FaceDirection(camForward, settings.rotationSpeed * 2f, dt, false);
+            FaceDirection(camForward, m_settings.rotationSpeed * 2f, dt, false);
         }
     }
 
@@ -145,7 +147,7 @@ public class Player : Entity
     /// </summary>
     public void SlowDown(float dt)
     {
-        Decelerate(settings.deceleration, dt);
+        Decelerate(m_settings.deceleration, dt);
     }
 
     /// <summary>
@@ -153,6 +155,6 @@ public class Player : Entity
     /// </summary>
     public void RegularSlopeFactor(float dt)
     {
-        SlopeFactor(settings.slopeUpwardForce, settings.slopeDownwardForce, dt);
+        SlopeFactor(m_settings.slopeUpwardForce, m_settings.slopeDownwardForce, dt);
     }
 }

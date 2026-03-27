@@ -7,12 +7,12 @@ using UnityEngine;
 /// </summary>
 public class MagnetFieldVisualizer : MonoBehaviour
 {
-    private readonly List<GameObject> rings = new();
-    private static Material sharedLineMaterial;
+    private readonly List<GameObject> m_rings = new();
+    private static Material s_sharedLineMaterial;
 
-    private const int Segments = 48;
-    private static readonly float[] Latitudes = { -60f, -30f, 0f, 30f, 60f };
-    private const int MeridianCount = 4;
+    private const int k_Segments = 48;
+    private static readonly float[] s_latitudes = { -60f, -30f, 0f, 30f, 60f };
+    private const int k_MeridianCount = 4;
 
     /// <summary>
     /// 指定位置にワイヤーフレーム球を生成する。
@@ -31,7 +31,7 @@ public class MagnetFieldVisualizer : MonoBehaviour
         Vector3 center = transform.position;
 
         // 緯度線×5
-        foreach (float lat in Latitudes)
+        foreach (float lat in s_latitudes)
         {
             float rad = lat * Mathf.Deg2Rad;
             float h = Mathf.Sin(rad) * range;
@@ -40,7 +40,7 @@ public class MagnetFieldVisualizer : MonoBehaviour
         }
 
         // 経線×4
-        for (int i = 0; i < MeridianCount; i++)
+        for (int i = 0; i < k_MeridianCount; i++)
         {
             float angle = i * 45f * Mathf.Deg2Rad;
             Vector3 normal = new Vector3(Mathf.Sin(angle), 0f, Mathf.Cos(angle));
@@ -53,11 +53,11 @@ public class MagnetFieldVisualizer : MonoBehaviour
     /// </summary>
     public void Hide()
     {
-        foreach (var ring in rings)
+        foreach (var ring in m_rings)
         {
             if (ring != null) Destroy(ring);
         }
-        rings.Clear();
+        m_rings.Clear();
     }
 
     private void CreateRing(Vector3 worldPosition, Color color, Vector3 normal, float radius)
@@ -65,20 +65,20 @@ public class MagnetFieldVisualizer : MonoBehaviour
         var ringGO = new GameObject("MagnetRing");
         ringGO.transform.position = worldPosition;
         ringGO.transform.rotation = Quaternion.identity;
-        rings.Add(ringGO);
+        m_rings.Add(ringGO);
 
         var lr = ringGO.AddComponent<LineRenderer>();
         lr.useWorldSpace = false;
         lr.loop = true;
         lr.widthMultiplier = 0.05f;
 
-        if (sharedLineMaterial == null)
-            sharedLineMaterial = new Material(Shader.Find("Sprites/Default"));
-        lr.material = sharedLineMaterial;
+        if (s_sharedLineMaterial == null)
+            s_sharedLineMaterial = new Material(Shader.Find("Sprites/Default"));
+        lr.material = s_sharedLineMaterial;
         lr.startColor = color;
         lr.endColor = color;
 
-        lr.positionCount = Segments;
+        lr.positionCount = k_Segments;
 
         Vector3 up = normal.normalized;
         Vector3 forward = Mathf.Abs(Vector3.Dot(up, Vector3.up)) < 0.99f
@@ -86,9 +86,9 @@ public class MagnetFieldVisualizer : MonoBehaviour
             : Vector3.Cross(up, Vector3.forward).normalized;
         Vector3 right = Vector3.Cross(up, forward).normalized;
 
-        for (int i = 0; i < Segments; i++)
+        for (int i = 0; i < k_Segments; i++)
         {
-            float angle = (float)i / Segments * Mathf.PI * 2f;
+            float angle = (float)i / k_Segments * Mathf.PI * 2f;
             Vector3 point = forward * (Mathf.Cos(angle) * radius) + right * (Mathf.Sin(angle) * radius);
             lr.SetPosition(i, point);
         }

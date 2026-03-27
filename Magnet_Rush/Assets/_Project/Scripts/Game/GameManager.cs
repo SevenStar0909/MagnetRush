@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 
 /// <summary>
 /// ゲーム全体の管理。リスタート、リスポーン、テレポートを担当する。
@@ -8,7 +9,8 @@ using UnityEngine.InputSystem;
 [DefaultExecutionOrder(-100)]
 public class GameManager : Singleton<GameManager>
 {
-    [SerializeField] private Transform spawnPoint;
+    [FormerlySerializedAs("spawnPoint")]
+    [SerializeField] private Transform m_spawnPoint;
 
     protected override void Awake()
     {
@@ -47,9 +49,9 @@ public class GameManager : Singleton<GameManager>
     public void TeleportToStart()
     {
         var player = GameObject.FindWithTag(GameTags.Player);
-        if (player != null && spawnPoint != null)
+        if (player != null && m_spawnPoint != null)
         {
-            player.transform.position = spawnPoint.position;
+            player.transform.position = m_spawnPoint.position;
         }
     }
 
@@ -58,6 +60,6 @@ public class GameManager : Singleton<GameManager>
     /// </summary>
     public Vector3 GetSpawnPosition()
     {
-        return spawnPoint != null ? spawnPoint.position : Vector3.up;
+        return m_spawnPoint != null ? m_spawnPoint.position : Vector3.up;
     }
 }

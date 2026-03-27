@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 using System;
 
 /// <summary>
@@ -8,12 +9,15 @@ using System;
 /// </summary>
 public class Magnetizable : MonoBehaviour
 {
-    [SerializeField] private MagneticPole pole = MagneticPole.None;
-    [SerializeField] private bool isActive;
-    [SerializeField] private float initialMass = 1f;
+    [FormerlySerializedAs("pole")]
+    [SerializeField] private MagneticPole m_pole = MagneticPole.None;
+    [FormerlySerializedAs("isActive")]
+    [SerializeField] private bool m_isActive;
+    [FormerlySerializedAs("initialMass")]
+    [SerializeField] private float m_initialMass = 1f;
 
-    public MagneticPole Pole => pole;
-    public bool IsActive => isActive;
+    public MagneticPole Pole => m_pole;
+    public bool IsActive => m_isActive;
 
     /// <summary>質量。壁に固定された弾はInfinity。力の分配に使用。</summary>
     public float mass { get; set; } = 1f;
@@ -24,11 +28,11 @@ public class Magnetizable : MonoBehaviour
     public event Action<Magnetizable> OnMagnetContact;
 
     // キャッシュ
-    private Rigidbody rb;
-    private IMagnetTarget magnetTarget;
-    private IMagneticResponse magneticResponse;
+    private Rigidbody m_rb;
+    private IMagnetTarget m_magnetTarget;
+    private IMagneticResponse m_magneticResponse;
     private Entity m_cachedEntity;
-    private float totalForceThisFrame;
+    private float m_totalForceThisFrame;
     private int m_originalLayer;
 
     /// <summary>同一GOのEntityキャッシュ。MagnetManagerのフィールド割り当てで使用。</summary>
@@ -36,11 +40,11 @@ public class Magnetizable : MonoBehaviour
 
     void Awake()
     {
-        rb = GetComponent<Rigidbody>();
-        magnetTarget = GetComponent<IMagnetTarget>();
-        magneticResponse = GetComponent<IMagneticResponse>();
+        m_rb = GetComponent<Rigidbody>();
+        m_magnetTarget = GetComponent<IMagnetTarget>();
+        m_magneticResponse = GetComponent<IMagneticResponse>();
         m_cachedEntity = GetComponent<Entity>();
-        mass = initialMass > 0f ? initialMass : (rb != null ? rb.mass : 1f);
+        mass = m_initialMass > 0f ? m_initialMass : (m_rb != null ? m_rb.mass : 1f);
         m_originalLayer = gameObject.layer;
     }
 
@@ -61,25 +65,25 @@ public class Magnetizable : MonoBehaviour
 
     public void SetPole(MagneticPole newPole)
     {
-        pole = newPole;
-        isActive = newPole != MagneticPole.None;
+        m_pole = newPole;
+        m_isActive = newPole != MagneticPole.None;
 
         // Magnetized レイヤーに切り替え → Edge Detection の対象になる
-        if (isActive)
+        if (m_isActive)
             gameObject.layer = LayerMask.NameToLayer("Magnetized");
 
-        OnPoleChanged?.Invoke(pole);
+        OnPoleChanged?.Invoke(m_pole);
     }
 
     public void Deactivate()
     {
-        pole = MagneticPole.None;
-        isActive = false;
+        m_pole = MagneticPole.None;
+        m_isActive = false;
 
         // 元のレイヤーに戻す → アウトライン消える
         gameObject.layer = m_originalLayer;
 
-        OnPoleChanged?.Invoke(pole);
+        OnPoleChanged?.Invoke(m_pole);
     }
 
     /// <summary>
@@ -89,41 +93,41 @@ public class Magnetizable : MonoBehaviour
     public float GetInfluence(float maxForce)
     {
         if (maxForce <= 0f) return 0f;
-        return Mathf.Clamp01(totalForceThisFrame / maxForce);
+        return Mathf.Clamp01(m_totalForceThisFrame / maxForce);
     }
 
     /// <summary>磁力接触コールバックを発火する（MagnetManagerから呼ばれる）。</summary>
     public void NotifyContact(Magnetizable other)
     {
-        if (magneticResponse != null && magneticResponse.IsResponseActive)
-            magneticResponse.OnMagnetContact(this, other);
+        if (m_magneticResponse != null && m_magneticResponse.IsResponseActive)
+            m_magneticResponse.OnMagnetContact(this, other);
 
         OnMagnetContact?.Invoke(other);
     }
 
     /// <summary>
     /// 力を適用する。IMagneticResponse → IMagnetTarget → Rigidbody の優先順で判別。
-    /// 同時にtotalForceThisFrameに蓄積する。
+    /// 同時にm_totalForceThisFrameに蓄積する。
     /// </summary>
     public void ApplyForce(Vector3 force, Vector3 sourcePosition)
     {
-        totalForceThisFrame += force.magnitude;
+        m_totalForceThisFrame += force.magnitude;
 
-        if (magneticResponse != null && magneticResponse.IsResponseActive)
+        if (m_magneticResponse != null && m_magneticResponse.IsResponseActive)
         {
-            magneticResponse.OnMagnetForce(force, sourcePosition);
+            m_magneticResponse.OnMagnetForce(force, sourcePosition);
             return;
         }
 
-        if (magnetTarget != null)
+        if (m_magnetTarget != null)
         {
-            magnetTarget.ApplyMagnetForce(force);
+            m_magnetTarget.ApplyMagnetForce(force);
             return;
         }
 
-        if (rb != null && !rb.isKinematic)
+        if (m_rb != null && !m_rb.isKinematic)
         {
-            rb.AddForce(force, ForceMode.Force);
+            m_rb.AddForce(force, ForceMode.Force);
             return;
         }
     }
@@ -133,6 +137,6 @@ public class Magnetizable : MonoBehaviour
 
     void LateUpdate()
     {
-        totalForceThisFrame = 0f;
+        m_totalForceThisFrame = 0f;
     }
 }

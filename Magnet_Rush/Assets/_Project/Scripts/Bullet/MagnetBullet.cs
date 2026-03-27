@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 /// <summary>
 /// 磁力弾。着弾時にパターン①（壁にくっつく）またはパターン②（弾消去＋磁化）を実行する。
@@ -9,7 +10,8 @@ using UnityEngine;
 [RequireComponent(typeof(SphereCollider))]
 public class MagnetBullet : MonoBehaviour
 {
-    [SerializeField] private BulletSettings settings;
+    [FormerlySerializedAs("settings")]
+    [SerializeField] private BulletSettings m_settings;
 
     public MagneticPole Pole { get; private set; }
     public bool IsStuck { get; private set; }
@@ -17,28 +19,28 @@ public class MagnetBullet : MonoBehaviour
     /// <summary>弾が何かに着弾した時に発火するコールバック。</summary>
     public event Action OnImpact;
 
-    private Rigidbody rb;
-    private float timer;
-    private bool registered;
+    private Rigidbody m_rb;
+    private float m_timer;
+    private bool m_registered;
 
     void Awake()
     {
-        rb = GetComponent<Rigidbody>();
+        m_rb = GetComponent<Rigidbody>();
     }
 
     public void Initialize(MagneticPole pole, Vector3 direction)
     {
         Pole = pole;
-        rb.isKinematic = false;
-        rb.useGravity = false;
-        rb.linearVelocity = direction.normalized * settings.bulletSpeed;
-        timer = settings.lifetime;
+        m_rb.isKinematic = false;
+        m_rb.useGravity = false;
+        m_rb.linearVelocity = direction.normalized * m_settings.bulletSpeed;
+        m_timer = m_settings.lifetime;
 
         // ビジュアル切替（S=赤、N=青）
         var renderer = GetComponent<MeshRenderer>();
-        if (renderer != null && settings != null)
+        if (renderer != null && m_settings != null)
         {
-            Material mat = pole == MagneticPole.S ? settings.sMaterial : settings.nMaterial;
+            Material mat = pole == MagneticPole.S ? m_settings.sMaterial : m_settings.nMaterial;
             if (mat != null) renderer.material = mat;
         }
 
@@ -46,7 +48,7 @@ public class MagnetBullet : MonoBehaviour
         if (BulletManager.Instance != null)
         {
             BulletManager.Instance.Register(this);
-            registered = true;
+            m_registered = true;
         }
     }
 
@@ -55,8 +57,8 @@ public class MagnetBullet : MonoBehaviour
         if (IsStuck) return;
 
         // timeScaleの影響を受けない（エイム中に寿命が短くならない）
-        timer -= Time.unscaledDeltaTime;
-        if (timer <= 0f)
+        m_timer -= Time.unscaledDeltaTime;
+        if (m_timer <= 0f)
         {
             Destroy(gameObject);
         }
@@ -64,7 +66,7 @@ public class MagnetBullet : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (IsStuck || rb == null || settings == null) return;
+        if (IsStuck || m_rb == null || m_settings == null) return;
         if (MagnetManager.Instance == null) return;
 
         var fields = MagnetManager.Instance.GetActiveFields();
@@ -79,9 +81,9 @@ public class MagnetBullet : MonoBehaviour
             // 極性判定: 異極=吸引、同極=反発
             bool attract = Pole != field.Pole && field.Pole != MagneticPole.None && Pole != MagneticPole.None;
             Vector3 toCenter = (field.Center - transform.position).normalized;
-            float pull = strength * settings.fieldAttractionFactor;
+            float pull = strength * m_settings.fieldAttractionFactor;
 
-            rb.linearVelocity += (attract ? toCenter : -toCenter) * pull * Time.fixedDeltaTime;
+            m_rb.linearVelocity += (attract ? toCenter : -toCenter) * pull * Time.fixedDeltaTime;
         }
     }
 
@@ -96,12 +98,12 @@ public class MagnetBullet : MonoBehaviour
         if (other.CompareTag(GameTags.MagnetBullet))
         {
             var otherField = other.GetComponent<MagnetField>();
-            if (otherField != null && settings != null)
+            if (otherField != null && m_settings != null)
             {
                 bool isOpposite = Pole != otherField.Pole && Pole != MagneticPole.None && otherField.Pole != MagneticPole.None;
                 if (isOpposite)
                 {
-                    otherField.AccumulateDamage(settings.bulletDamage);
+                    otherField.AccumulateDamage(m_settings.bulletDamage);
                     OnImpact?.Invoke();
                     Destroy(gameObject);
                 }
@@ -140,16 +142,16 @@ public class MagnetBullet : MonoBehaviour
     {
         targetMag.SetPole(Pole);
 
-        if (target.GetComponent<MagnetField>() == null && settings != null && settings.bulletFieldSettings != null)
+        if (target.GetComponent<MagnetField>() == null && m_settings != null && m_settings.bulletFieldSettings != null)
         {
             var field = target.gameObject.AddComponent<MagnetField>();
-            field.Initialize(Pole, settings.bulletFieldSettings);
+            field.Initialize(Pole, m_settings.bulletFieldSettings);
 
             if (MagnetManager.Instance != null)
                 MagnetManager.Instance.RegisterField(field);
 
             var visualizer = target.gameObject.AddComponent<MagnetFieldVisualizer>();
-            visualizer.Show(Pole, settings.bulletFieldSettings.outerRadius);
+            visualizer.Show(Pole, m_settings.bulletFieldSettings.outerRadius);
 
             // フィールド期限切れ → 対象の磁化解除 + Visualizer 除去
             field.OnFieldExpired += () =>
@@ -170,8 +172,8 @@ public class MagnetBullet : MonoBehaviour
     private void StickToSurface(Collider surface)
     {
         IsStuck = true;
-        rb.linearVelocity = Vector3.zero;
-        rb.isKinematic = true;
+        m_rb.linearVelocity = Vector3.zero;
+        m_rb.isKinematic = true;
         transform.SetParent(surface.transform);
 
         var mag = GetComponent<Magnetizable>();
@@ -181,16 +183,16 @@ public class MagnetBullet : MonoBehaviour
             mag.mass = Mathf.Infinity;
         }
 
-        if (settings != null && settings.bulletFieldSettings != null)
+        if (m_settings != null && m_settings.bulletFieldSettings != null)
         {
             var field = gameObject.AddComponent<MagnetField>();
-            field.Initialize(Pole, settings.bulletFieldSettings);
+            field.Initialize(Pole, m_settings.bulletFieldSettings);
 
             if (MagnetManager.Instance != null)
                 MagnetManager.Instance.RegisterField(field);
 
             var visualizer = gameObject.AddComponent<MagnetFieldVisualizer>();
-            visualizer.Show(Pole, settings.bulletFieldSettings.outerRadius);
+            visualizer.Show(Pole, m_settings.bulletFieldSettings.outerRadius);
 
             // フィールド期限切れ → 弾ごと消える
             field.OnFieldExpired += () => Destroy(gameObject);
@@ -202,10 +204,10 @@ public class MagnetBullet : MonoBehaviour
     void OnDestroy()
     {
         // BulletManager解除（二重呼出ガード）
-        if (registered && BulletManager.Instance != null)
+        if (m_registered && BulletManager.Instance != null)
         {
             BulletManager.Instance.Unregister(this);
-            registered = false;
+            m_registered = false;
         }
     }
 }

@@ -16,21 +16,21 @@ public class PolarityController : MonoBehaviour
     /// </summary>
     public event Action<MagneticPole> OnPolarityChanged;
 
-    private PlayerInputHandler input;
-    private PlayerEvents events;
+    private PlayerInputHandler m_input;
+    private PlayerEvents m_events;
 
     void Awake()
     {
-        input = GetComponent<PlayerInputHandler>();
-        events = GetComponent<PlayerEvents>();
+        m_input = GetComponent<PlayerInputHandler>();
+        m_events = GetComponent<PlayerEvents>();
     }
 
     void Update()
     {
-        if (!input.ConsumeSwitchPole()) return;
+        if (!m_input.ConsumeSwitchPole()) return;
 
         CurrentPole = CurrentPole == MagneticPole.S ? MagneticPole.N : MagneticPole.S;
         OnPolarityChanged?.Invoke(CurrentPole);
-        events?.FirePolaritySwitch(CurrentPole);
+        m_events?.FirePolaritySwitch(CurrentPole);
     }
 }

@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 /// <summary>
 /// 磁力場コンポーネント。形状ベースの方向計算、減衰、ダメージ蓄積、ライフタイムを管理する。
@@ -9,11 +10,12 @@ using UnityEngine;
 /// </summary>
 public class MagnetField : MonoBehaviour, IMagnetField
 {
-    [SerializeField] private MagnetFieldSettings settings;
+    [FormerlySerializedAs("settings")]
+    [SerializeField] private MagnetFieldSettings m_settings;
 
-    private MagneticPole pole;
-    private float remainingLifetime;
-    private float storedDamage;
+    private MagneticPole m_pole;
+    private float m_remainingLifetime;
+    private float m_storedDamage;
     private bool m_initialized;
     private SphereCollider m_triggerCollider;
 
@@ -22,7 +24,7 @@ public class MagnetField : MonoBehaviour, IMagnetField
     private readonly List<Entity> m_entitiesInRange = new();
 
     // --- IMagnetField ---
-    public MagneticPole Pole => pole;
+    public MagneticPole Pole => m_pole;
     public int Priority => 0;
     public Vector3 Center => transform.position;
     public bool IsDestroyed => this == null;
@@ -33,15 +35,15 @@ public class MagnetField : MonoBehaviour, IMagnetField
     public event Action<Magnetizable> OnObjectExit;
 
     // --- Public API ---
-    public MagnetFieldSettings Settings => settings;
-    public float StoredDamage => storedDamage;
-    public float OuterRadius => settings != null ? settings.outerRadius : 8f;
+    public MagnetFieldSettings Settings => m_settings;
+    public float StoredDamage => m_storedDamage;
+    public float OuterRadius => m_settings != null ? m_settings.outerRadius : 8f;
 
     // --- 形状プロパティ ---
-    public FieldShape Shape => settings != null ? settings.shape : FieldShape.Sphere;
-    public Vector3 Size => settings != null ? Vector3.Scale(settings.size, transform.lossyScale) : Vector3.one;
-    public float CylinderHeight => settings != null ? settings.cylinderHeight * transform.lossyScale.y : 4f;
-    public float CylinderRadius => settings != null ? settings.cylinderRadius * Mathf.Max(transform.lossyScale.x, transform.lossyScale.z) : 1f;
+    public FieldShape Shape => m_settings != null ? m_settings.shape : FieldShape.Sphere;
+    public Vector3 Size => m_settings != null ? Vector3.Scale(m_settings.size, transform.lossyScale) : Vector3.one;
+    public float CylinderHeight => m_settings != null ? m_settings.cylinderHeight * transform.lossyScale.y : 4f;
+    public float CylinderRadius => m_settings != null ? m_settings.cylinderRadius * Mathf.Max(transform.lossyScale.x, transform.lossyScale.z) : 1f;
     public Vector3 Top => Center + transform.up * (CylinderHeight * 0.5f);
     public Vector3 Bottom => Center - transform.up * (CylinderHeight * 0.5f);
 
@@ -53,9 +55,9 @@ public class MagnetField : MonoBehaviour, IMagnetField
     /// </summary>
     public void Initialize(MagneticPole fieldPole, MagnetFieldSettings fieldSettings)
     {
-        pole = fieldPole;
-        settings = fieldSettings;
-        remainingLifetime = settings.lifetime;
+        m_pole = fieldPole;
+        m_settings = fieldSettings;
+        m_remainingLifetime = m_settings.lifetime;
         SetupTriggerCollider();
         m_initialized = true;
     }
@@ -86,13 +88,13 @@ public class MagnetField : MonoBehaviour, IMagnetField
 
     private float CalcTriggerRadius()
     {
-        if (settings == null) return 8f;
+        if (m_settings == null) return 8f;
 
         return Shape switch
         {
-            FieldShape.Box => settings.size.magnitude * 0.5f + settings.outerRadius,
-            FieldShape.Cylinder => Mathf.Max(settings.cylinderHeight * 0.5f, settings.cylinderRadius) + settings.outerRadius,
-            _ => settings.outerRadius
+            FieldShape.Box => m_settings.size.magnitude * 0.5f + m_settings.outerRadius,
+            FieldShape.Cylinder => Mathf.Max(m_settings.cylinderHeight * 0.5f, m_settings.cylinderRadius) + m_settings.outerRadius,
+            _ => m_settings.outerRadius
         };
     }
 
@@ -116,7 +118,7 @@ public class MagnetField : MonoBehaviour, IMagnetField
     /// </summary>
     public float GetStrengthAt(Vector3 point)
     {
-        if (settings == null) return 0f;
+        if (m_settings == null) return 0f;
 
         Vector3 nearestSurface = Shape switch
         {
@@ -126,10 +128,10 @@ public class MagnetField : MonoBehaviour, IMagnetField
         };
 
         float dist = Vector3.Distance(point, nearestSurface);
-        if (dist <= settings.innerRadius) return 1f;
-        if (dist >= settings.outerRadius) return 0f;
+        if (dist <= m_settings.innerRadius) return 1f;
+        if (dist >= m_settings.outerRadius) return 0f;
 
-        return 1f - (dist - settings.innerRadius) / (settings.outerRadius - settings.innerRadius);
+        return 1f - (dist - m_settings.innerRadius) / (m_settings.outerRadius - m_settings.innerRadius);
     }
 
     /// <summary>
@@ -137,8 +139,8 @@ public class MagnetField : MonoBehaviour, IMagnetField
     /// </summary>
     public void AccumulateDamage(float amount)
     {
-        if (settings == null || !settings.accumulateDamage) return;
-        storedDamage = Mathf.Min(storedDamage + amount, settings.maxStoredDamage);
+        if (m_settings == null || !m_settings.accumulateDamage) return;
+        m_storedDamage = Mathf.Min(m_storedDamage + amount, m_settings.maxStoredDamage);
     }
 
     /// <summary>MagnetManagerから呼ばれるEnter通知。</summary>
@@ -209,13 +211,13 @@ public class MagnetField : MonoBehaviour, IMagnetField
 
     void Update()
     {
-        if (settings == null) return;
+        if (m_settings == null) return;
 
         // lifetime=0 は永続（タイマー不動）
-        if (settings.lifetime <= 0f) return;
+        if (m_settings.lifetime <= 0f) return;
 
-        remainingLifetime -= Time.deltaTime;
-        if (remainingLifetime <= 0f)
+        m_remainingLifetime -= Time.deltaTime;
+        if (m_remainingLifetime <= 0f)
             ForceExpire();
     }
 
@@ -232,9 +234,9 @@ public class MagnetField : MonoBehaviour, IMagnetField
 #if UNITY_EDITOR
     void OnDrawGizmos()
     {
-        if (settings == null) return;
+        if (m_settings == null) return;
 
-        var color = pole == MagneticPole.S
+        var color = m_pole == MagneticPole.S
             ? new Color(0.2f, 0.4f, 1f, 0.5f)
             : new Color(1f, 0.2f, 0.2f, 0.5f);
 
@@ -248,7 +250,7 @@ public class MagnetField : MonoBehaviour, IMagnetField
                 Gizmos.DrawWireCube(Vector3.zero, Size);
                 color.a = 0.2f;
                 Gizmos.color = color;
-                var outerSize = Size + Vector3.one * settings.outerRadius * 2f;
+                var outerSize = Size + Vector3.one * m_settings.outerRadius * 2f;
                 Gizmos.DrawWireCube(Vector3.zero, outerSize);
                 Gizmos.matrix = Matrix4x4.identity;
                 break;
@@ -262,15 +264,15 @@ public class MagnetField : MonoBehaviour, IMagnetField
                 Gizmos.DrawLine(Top - transform.forward * CylinderRadius, Bottom - transform.forward * CylinderRadius);
                 color.a = 0.2f;
                 Gizmos.color = color;
-                DrawWireCircle(Top, transform.up, CylinderRadius + settings.outerRadius);
-                DrawWireCircle(Bottom, transform.up, CylinderRadius + settings.outerRadius);
+                DrawWireCircle(Top, transform.up, CylinderRadius + m_settings.outerRadius);
+                DrawWireCircle(Bottom, transform.up, CylinderRadius + m_settings.outerRadius);
                 break;
 
             default:
-                Gizmos.DrawWireSphere(Center, settings.innerRadius);
+                Gizmos.DrawWireSphere(Center, m_settings.innerRadius);
                 color.a = 0.2f;
                 Gizmos.color = color;
-                Gizmos.DrawWireSphere(Center, settings.outerRadius);
+                Gizmos.DrawWireSphere(Center, m_settings.outerRadius);
                 break;
         }
     }

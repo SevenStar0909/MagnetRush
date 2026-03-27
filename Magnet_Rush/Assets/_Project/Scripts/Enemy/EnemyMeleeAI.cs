@@ -5,67 +5,67 @@ using UnityEngine.AI;
 [RequireComponent(typeof(EnemyMeleeAttack))]
 public class EnemyMeleeAI : MonoBehaviour
 {
-    private EnemyBase enemyBase;
-    private EnemyMeleeAttack meleeAttack;
-    private NavMeshAgent agent;
-    private Transform player;
-    private EnemySettings data;
+    private EnemyBase m_enemyBase;
+    private EnemyMeleeAttack m_meleeAttack;
+    private NavMeshAgent m_agent;
+    private Transform m_player;
+    private EnemySettings m_data;
 
     private void Awake()
     {
-        enemyBase = GetComponent<EnemyBase>();
-        meleeAttack = GetComponent<EnemyMeleeAttack>();
+        m_enemyBase = GetComponent<EnemyBase>();
+        m_meleeAttack = GetComponent<EnemyMeleeAttack>();
     }
 
     private void Start()
     {
-        agent = enemyBase.Agent;
-        player = enemyBase.Player;
-        data = enemyBase.StatusData;
+        m_agent = m_enemyBase.Agent;
+        m_player = m_enemyBase.Player;
+        m_data = m_enemyBase.StatusData;
     }
 
     private void Update()
     {
         // 磁力移動モード中は AI 処理をスキップ
-        if (enemyBase.IsMagnetControlled) return;
+        if (m_enemyBase.IsMagnetControlled) return;
 
-        if (player == null || agent == null || data == null)
+        if (m_player == null || m_agent == null || m_data == null)
         {
             return;
         }
 
-        float distance = Vector3.Distance(transform.position, player.position);
+        float distance = Vector3.Distance(transform.position, m_player.position);
 
         // プレイヤーが追跡範囲外の場合、移動を停止
-        if (distance > data.chaseRange)
+        if (distance > m_data.chaseRange)
         {
-            agent.isStopped = true;
-            agent.ResetPath();
+            m_agent.isStopped = true;
+            m_agent.ResetPath();
             return;
         }
 
         // プレイヤーが攻撃範囲内の場合、攻撃を試みる
-        if (distance <= data.attackRange)
+        if (distance <= m_data.attackRange)
         {
-            agent.isStopped = true;
-            agent.ResetPath();
+            m_agent.isStopped = true;
+            m_agent.ResetPath();
 
-            if (!meleeAttack.IsAttacking) // 攻撃中でなければプレイヤーの方を向く
+            if (!m_meleeAttack.IsAttacking) // 攻撃中でなければプレイヤーの方を向く
             {
                 FacePlayer();
             }
-            meleeAttack.TryAttack();
+            m_meleeAttack.TryAttack();
         }
         else
         {
-            agent.isStopped = false;
-            agent.SetDestination(player.position);
+            m_agent.isStopped = false;
+            m_agent.SetDestination(m_player.position);
         }
     }
 
     private void FacePlayer()
     {
-        Vector3 lookTarget = player.position - transform.position;
+        Vector3 lookTarget = m_player.position - transform.position;
         lookTarget.y = 0f;
 
         if (lookTarget.sqrMagnitude <= 0.0001f)
@@ -78,7 +78,7 @@ public class EnemyMeleeAI : MonoBehaviour
         transform.rotation = Quaternion.Slerp(
             transform.rotation,
             targetRotation,
-            Time.deltaTime * data.rotationSpeed
+            Time.deltaTime * m_data.rotationSpeed
         );
     }
 }

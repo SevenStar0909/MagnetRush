@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 /// <summary>
@@ -6,32 +7,37 @@ using UnityEngine.UI;
 /// </summary>
 public class ReticleUI : MonoBehaviour
 {
-    [SerializeField] private Image reticleImage;
+    [FormerlySerializedAs("reticleImage")]
+    [SerializeField] private Image m_reticleImage;
 
     [Header("Hipfire (通常時)")]
-    [SerializeField] private Sprite hipfireS;
-    [SerializeField] private Sprite hipfireN;
+    [FormerlySerializedAs("hipfireS")]
+    [SerializeField] private Sprite m_hipfireS;
+    [FormerlySerializedAs("hipfireN")]
+    [SerializeField] private Sprite m_hipfireN;
 
     [Header("Aim (エイム時)")]
-    [SerializeField] private Sprite aimS;
-    [SerializeField] private Sprite aimN;
+    [FormerlySerializedAs("aimS")]
+    [SerializeField] private Sprite m_aimS;
+    [FormerlySerializedAs("aimN")]
+    [SerializeField] private Sprite m_aimN;
 
-    private AimController aimController;
-    private PolarityController polarityController;
-    private MagneticPole currentPole = MagneticPole.S;
+    private AimController m_aimController;
+    private PolarityController m_polarityController;
+    private MagneticPole m_currentPole = MagneticPole.S;
 
     void Start()
     {
         var player = GameObject.FindWithTag(GameTags.Player);
         if (player != null)
         {
-            aimController = player.GetComponent<AimController>();
-            polarityController = player.GetComponent<PolarityController>();
+            m_aimController = player.GetComponent<AimController>();
+            m_polarityController = player.GetComponent<PolarityController>();
 
-            if (polarityController != null)
+            if (m_polarityController != null)
             {
-                polarityController.OnPolarityChanged += OnPolarityChanged;
-                currentPole = polarityController.CurrentPole;
+                m_polarityController.OnPolarityChanged += OnPolarityChanged;
+                m_currentPole = m_polarityController.CurrentPole;
             }
         }
 
@@ -40,8 +46,8 @@ public class ReticleUI : MonoBehaviour
 
     void OnDestroy()
     {
-        if (polarityController != null)
-            polarityController.OnPolarityChanged -= OnPolarityChanged;
+        if (m_polarityController != null)
+            m_polarityController.OnPolarityChanged -= OnPolarityChanged;
     }
 
     void Update()
@@ -51,19 +57,19 @@ public class ReticleUI : MonoBehaviour
 
     private void OnPolarityChanged(MagneticPole pole)
     {
-        currentPole = pole;
+        m_currentPole = pole;
         UpdateSprite();
     }
 
     private void UpdateSprite()
     {
-        if (reticleImage == null) return;
+        if (m_reticleImage == null) return;
 
-        bool aiming = aimController != null && aimController.IsAiming;
+        bool aiming = m_aimController != null && m_aimController.IsAiming;
 
         if (aiming)
-            reticleImage.sprite = currentPole == MagneticPole.S ? aimS : aimN;
+            m_reticleImage.sprite = m_currentPole == MagneticPole.S ? m_aimS : m_aimN;
         else
-            reticleImage.sprite = currentPole == MagneticPole.S ? hipfireS : hipfireN;
+            m_reticleImage.sprite = m_currentPole == MagneticPole.S ? m_hipfireS : m_hipfireN;
     }
 }

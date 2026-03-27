@@ -1,32 +1,35 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 /// <summary>
 /// LT入力でエイムモード（スロー＋カメラ寄り＋FOV変更）を制御する。
 /// </summary>
 public class AimController : MonoBehaviour
 {
-    [SerializeField] private PlayerSettings settings;
-    [SerializeField] private CameraSettingsApplier cameraSettings;
+    [FormerlySerializedAs("settings")]
+    [SerializeField] private PlayerSettings m_settings;
+    [FormerlySerializedAs("cameraSettings")]
+    [SerializeField] private CameraSettingsApplier m_cameraSettings;
 
-    private PlayerInputHandler input;
-    private PlayerStateManager states;
+    private PlayerInputHandler m_input;
+    private PlayerStateManager m_states;
     /// <summary>
     /// エイム中かどうかを返す。
     /// </summary>
     public bool IsAiming { get; private set; }
-    private float aimReleaseGrace; // LT離しのジッター防止用タイマー
+    private float m_aimReleaseGrace; // LT離しのジッター防止用タイマー
 
     void Awake()
     {
-        input = GetComponent<PlayerInputHandler>();
-        states = GetComponent<PlayerStateManager>();
+        m_input = GetComponent<PlayerInputHandler>();
+        m_states = GetComponent<PlayerStateManager>();
     }
 
     void Update()
     {
-        if (input.AimHeld)
+        if (m_input.AimHeld)
         {
-            aimReleaseGrace = settings.aimReleaseGraceTime;
+            m_aimReleaseGrace = m_settings.aimReleaseGraceTime;
             if (!IsAiming) StartAim();
         }
         else
@@ -34,8 +37,8 @@ public class AimController : MonoBehaviour
             // LTが離されても猶予時間内は解除しない（RT押下時のジッター防止）
             if (IsAiming)
             {
-                aimReleaseGrace -= Time.unscaledDeltaTime;
-                if (aimReleaseGrace <= 0f) StopAim();
+                m_aimReleaseGrace -= Time.unscaledDeltaTime;
+                if (m_aimReleaseGrace <= 0f) StopAim();
             }
         }
     }
@@ -46,13 +49,13 @@ public class AimController : MonoBehaviour
     public void StartAim()
     {
         IsAiming = true;
-        Time.timeScale = settings.aimTimeScale;
+        Time.timeScale = m_settings.aimTimeScale;
 
-        if (cameraSettings != null)
-            cameraSettings.SetAimMode(true);
+        if (m_cameraSettings != null)
+            m_cameraSettings.SetAimMode(true);
 
-        if (states != null)
-            states.Change<AimPlayerState>();
+        if (m_states != null)
+            m_states.Change<AimPlayerState>();
     }
 
     /// <summary>
@@ -63,16 +66,16 @@ public class AimController : MonoBehaviour
         IsAiming = false;
         Time.timeScale = 1f;
 
-        if (cameraSettings != null)
-            cameraSettings.SetAimMode(false);
+        if (m_cameraSettings != null)
+            m_cameraSettings.SetAimMode(false);
 
         // 入力があればMove、なければIdleに戻る
-        if (states != null)
+        if (m_states != null)
         {
-            if (input != null && input.MoveInput.sqrMagnitude > 0.01f)
-                states.Change<MovePlayerState>();
+            if (m_input != null && m_input.MoveInput.sqrMagnitude > 0.01f)
+                m_states.Change<MovePlayerState>();
             else
-                states.Change<IdlePlayerState>();
+                m_states.Change<IdlePlayerState>();
         }
     }
 

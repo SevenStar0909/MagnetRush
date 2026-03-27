@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -7,8 +7,8 @@ using UnityEngine;
 /// </summary>
 public class EntityStateManager<T> : MonoBehaviour where T : Entity
 {
-    private readonly Dictionary<Type, EntityState<T>> states = new();
-    private T entity;
+    private readonly Dictionary<Type, EntityState<T>> m_states = new();
+    private T m_entity;
 
     public EntityState<T> current { get; private set; }
     public EntityState<T> last { get; private set; }
@@ -18,7 +18,7 @@ public class EntityStateManager<T> : MonoBehaviour where T : Entity
     /// </summary>
     public void Initialize(T entity)
     {
-        this.entity = entity;
+        m_entity = entity;
     }
 
     /// <summary>
@@ -26,7 +26,7 @@ public class EntityStateManager<T> : MonoBehaviour where T : Entity
     /// </summary>
     public void RegisterState(EntityState<T> state)
     {
-        states[state.GetType()] = state;
+        m_states[state.GetType()] = state;
     }
 
     /// <summary>ステート進入時に発火。引数は新ステートのType。</summary>
@@ -44,7 +44,7 @@ public class EntityStateManager<T> : MonoBehaviour where T : Entity
     public void Change<TState>() where TState : EntityState<T>
     {
         var type = typeof(TState);
-        if (!states.TryGetValue(type, out var next))
+        if (!m_states.TryGetValue(type, out var next))
         {
             Debug.LogError($"State {type.Name} not registered.");
             return;
@@ -58,7 +58,7 @@ public class EntityStateManager<T> : MonoBehaviour where T : Entity
         }
 
         current = next;
-        current.Enter(entity, this);
+        current.Enter(m_entity, this);
         OnStateEnter?.Invoke(current.GetType());
         OnStateChanged?.Invoke();
     }

@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.Rendering.RenderGraphModule;
+using UnityEngine.Serialization;
 
 /// <summary>
 /// 磁化オブジェクトに Edge Detection アウトラインを描画する Renderer Feature。
@@ -11,33 +12,41 @@ using UnityEngine.Rendering.RenderGraphModule;
 public class OutlineRendererFeature : ScriptableRendererFeature
 {
     [Header("設定")]
-    [SerializeField] private LayerMask outlineLayerMask = 0;
-    [SerializeField] private Material normalsMaterial;
-    [SerializeField] private Material edgeDetectionMaterial;
+    [FormerlySerializedAs("outlineLayerMask")]
+    [SerializeField] private LayerMask m_outlineLayerMask = 0;
+    [FormerlySerializedAs("normalsMaterial")]
+    [SerializeField] private Material m_normalsMaterial;
+    [FormerlySerializedAs("edgeDetectionMaterial")]
+    [SerializeField] private Material m_edgeDetectionMaterial;
 
     [Header("パラメータ")]
-    [SerializeField] private float outlineThickness = 1.0f;
-    [SerializeField] private float depthThreshold = 0.5f;
-    [SerializeField] private float normalThreshold = 0.4f;
-    [SerializeField] private Color outlineColorS = new Color(0.2f, 0.4f, 1f, 1f);
-    [SerializeField] private Color outlineColorN = new Color(1f, 0.2f, 0.2f, 1f);
+    [FormerlySerializedAs("outlineThickness")]
+    [SerializeField] private float m_outlineThickness = 1.0f;
+    [FormerlySerializedAs("depthThreshold")]
+    [SerializeField] private float m_depthThreshold = 0.5f;
+    [FormerlySerializedAs("normalThreshold")]
+    [SerializeField] private float m_normalThreshold = 0.4f;
+    [FormerlySerializedAs("outlineColorS")]
+    [SerializeField] private Color m_outlineColorS = new Color(0.2f, 0.4f, 1f, 1f);
+    [FormerlySerializedAs("outlineColorN")]
+    [SerializeField] private Color m_outlineColorN = new Color(1f, 0.2f, 0.2f, 1f);
 
     private NormalsPrePass m_normalsPass;
     private EdgeDetectionPass m_edgePass;
 
     public override void Create()
     {
-        m_normalsPass = new NormalsPrePass(outlineLayerMask, normalsMaterial);
+        m_normalsPass = new NormalsPrePass(m_outlineLayerMask, m_normalsMaterial);
         m_normalsPass.renderPassEvent = RenderPassEvent.AfterRenderingOpaques;
 
-        m_edgePass = new EdgeDetectionPass(edgeDetectionMaterial, outlineThickness,
-            depthThreshold, normalThreshold, outlineColorS, outlineColorN);
+        m_edgePass = new EdgeDetectionPass(m_edgeDetectionMaterial, m_outlineThickness,
+            m_depthThreshold, m_normalThreshold, m_outlineColorS, m_outlineColorN);
         m_edgePass.renderPassEvent = RenderPassEvent.AfterRenderingOpaques + 1;
     }
 
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
     {
-        if (normalsMaterial == null || edgeDetectionMaterial == null) return;
+        if (m_normalsMaterial == null || m_edgeDetectionMaterial == null) return;
         renderer.EnqueuePass(m_normalsPass);
         renderer.EnqueuePass(m_edgePass);
     }

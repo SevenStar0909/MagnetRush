@@ -1,5 +1,6 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 
 /// <summary>
 /// Input System入力をポーリングで読み取る。
@@ -7,7 +8,8 @@ using UnityEngine.InputSystem;
 /// </summary>
 public class PlayerInputHandler : MonoBehaviour
 {
-    [SerializeField] private InputActionAsset actions;
+    [FormerlySerializedAs("actions")]
+    [SerializeField] private InputActionAsset m_actions;
 
     private InputAction m_move;
     private InputAction m_look;
@@ -48,24 +50,24 @@ public class PlayerInputHandler : MonoBehaviour
 
     void Awake()
     {
-        if (actions == null)
+        if (m_actions == null)
         {
             // PlayerInputコンポーネントからアクションを取得（フォールバック）
             var playerInput = GetComponent<PlayerInput>();
-            if (playerInput != null) actions = playerInput.actions;
+            if (playerInput != null) m_actions = playerInput.actions;
         }
 
-        if (actions != null)
+        if (m_actions != null)
         {
-            m_move = actions["Move"];
-            m_look = actions["Look"];
-            m_attack = actions["Attack"];
-            m_aim = actions["Aim"];
-            m_switchPole = actions["SwitchPole"];
-            m_reload = actions["Reload"];
+            m_move = m_actions["Move"];
+            m_look = m_actions["Look"];
+            m_attack = m_actions["Attack"];
+            m_aim = m_actions["Aim"];
+            m_switchPole = m_actions["SwitchPole"];
+            m_reload = m_actions["Reload"];
         }
     }
 
-    void OnEnable() => actions?.Enable();
-    void OnDisable() => actions?.Disable();
+    void OnEnable() => m_actions?.Enable();
+    void OnDisable() => m_actions?.Disable();
 }

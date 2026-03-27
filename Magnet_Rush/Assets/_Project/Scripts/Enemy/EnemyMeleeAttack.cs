@@ -1,95 +1,98 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 [RequireComponent(typeof(EnemyBase))]
 public class EnemyMeleeAttack : MonoBehaviour
 {
     [Header("Attack Hitbox")]
-    [SerializeField] private CapsuleCollider attackHitbox;
-    [SerializeField] private MeshRenderer attackHitboxMeshRenderer;
+    [FormerlySerializedAs("attackHitbox")]
+    [SerializeField] private CapsuleCollider m_attackHitbox;
+    [FormerlySerializedAs("attackHitboxMeshRenderer")]
+    [SerializeField] private MeshRenderer m_attackHitboxMeshRenderer;
 
-    private EnemyBase enemyBase;
-    private EnemySettings data;
+    private EnemyBase m_enemyBase;
+    private EnemySettings m_data;
 
-    private float attackTimer;
-    private bool isAttacking;
-    public bool IsAttacking => isAttacking;
+    private float m_attackTimer;
+    private bool m_isAttacking;
+    public bool IsAttacking => m_isAttacking;
 
     private void Awake()
     {
-        enemyBase = GetComponent<EnemyBase>();
+        m_enemyBase = GetComponent<EnemyBase>();
 
-        if (attackHitbox != null)
+        if (m_attackHitbox != null)
         {
-            attackHitbox.enabled = false;
+            m_attackHitbox.enabled = false;
         }
 
-        if (attackHitboxMeshRenderer != null)
+        if (m_attackHitboxMeshRenderer != null)
         {
-            attackHitboxMeshRenderer.enabled = false;
+            m_attackHitboxMeshRenderer.enabled = false;
         }
     }
 
     private void Start()
     {
-        data = enemyBase.StatusData;
-        attackTimer = data.attackInterval;
+        m_data = m_enemyBase.StatusData;
+        m_attackTimer = m_data.attackInterval;
 
 
-        float atkR = data.attackRange;
+        float atkR = m_data.attackRange;
 
-        attackHitbox.height = atkR;
-        attackHitbox.center = new Vector3(0f, atkR / 2f, 0f);
-        attackHitboxMeshRenderer.transform.localPosition = new Vector3(0f, 0f, atkR / 2f);
-        attackHitboxMeshRenderer.transform.localScale = new Vector3(1f, atkR / 2f, 1f);
+        m_attackHitbox.height = atkR;
+        m_attackHitbox.center = new Vector3(0f, atkR / 2f, 0f);
+        m_attackHitboxMeshRenderer.transform.localPosition = new Vector3(0f, 0f, atkR / 2f);
+        m_attackHitboxMeshRenderer.transform.localScale = new Vector3(1f, atkR / 2f, 1f);
 
     }
 
     private void Update()
     {
-        attackTimer += Time.deltaTime;
+        m_attackTimer += Time.deltaTime;
     }
 
     public void TryAttack()
     {
-        if (data == null) return;
-        if (isAttacking) return;
-        if (attackTimer < data.attackInterval) return;
+        if (m_data == null) return;
+        if (m_isAttacking) return;
+        if (m_attackTimer < m_data.attackInterval) return;
 
         StartCoroutine(AttackRoutine());
     }
 
     private IEnumerator AttackRoutine()
     {
-        isAttacking = true;
-        attackTimer = 0f;
+        m_isAttacking = true;
+        m_attackTimer = 0f;
 
-        if (attackHitbox != null)
+        if (m_attackHitbox != null)
         {
-            attackHitbox.enabled = true;
-            attackHitboxMeshRenderer.enabled = true;
+            m_attackHitbox.enabled = true;
+            m_attackHitboxMeshRenderer.enabled = true;
         }
 
-        yield return new WaitForSeconds(data.attackHitboxDuration);
+        yield return new WaitForSeconds(m_data.attackHitboxDuration);
 
-        if (attackHitbox != null)
+        if (m_attackHitbox != null)
         {
-            attackHitbox.enabled = false;
-            attackHitboxMeshRenderer.enabled = false;
+            m_attackHitbox.enabled = false;
+            m_attackHitboxMeshRenderer.enabled = false;
         }
 
-        isAttacking = false;
+        m_isAttacking = false;
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (attackHitbox == null) return;
-        if (!attackHitbox.enabled) return;
+        if (m_attackHitbox == null) return;
+        if (!m_attackHitbox.enabled) return;
 
         if (other.CompareTag(GameTags.Player))
         {
             var health = other.GetComponent<Health>();
-            if (health != null) health.Damage(data.attackDamage);
+            if (health != null) health.Damage(m_data.attackDamage);
         }
     }
 

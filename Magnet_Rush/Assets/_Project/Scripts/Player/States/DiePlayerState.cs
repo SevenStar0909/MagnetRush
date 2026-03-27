@@ -5,7 +5,7 @@ using UnityEngine;
 /// </summary>
 public class DiePlayerState : EntityState<Player>
 {
-    private float respawnTimer;
+    private float m_respawnTimer;
 
     public override void Enter(Player entity, EntityStateManager<Player> manager)
     {
@@ -16,13 +16,13 @@ public class DiePlayerState : EntityState<Player>
         var collider = entity.GetComponent<Collider>();
         if (collider != null) collider.enabled = false;
 
-        respawnTimer = entity.Settings.respawnDelay;
+        m_respawnTimer = entity.Settings.respawnDelay;
     }
 
     public override void Step(float dt)
     {
-        respawnTimer -= dt;
-        if (respawnTimer <= 0f)
+        m_respawnTimer -= dt;
+        if (m_respawnTimer <= 0f)
         {
             Respawn();
         }

@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Serialization;
 
 /// <summary>
 /// 敵の基底クラス。Entityを継承しHealth・IMagnetTargetを共有する。
@@ -9,16 +10,18 @@ using UnityEngine.AI;
 public class EnemyBase : Entity
 {
     [Header("Data")]
-    [SerializeField] private EnemySettings statusData;
+    [FormerlySerializedAs("statusData")]
+    [SerializeField] private EnemySettings m_statusData;
 
     [Header("References")]
-    [SerializeField] private Transform player;
+    [FormerlySerializedAs("player")]
+    [SerializeField] private Transform m_player;
 
     protected NavMeshAgent agent;
     private MagneticMover m_mover;
 
-    public EnemySettings StatusData => statusData;
-    public Transform Player => player;
+    public EnemySettings StatusData => m_statusData;
+    public Transform Player => m_player;
     public NavMeshAgent Agent => agent;
 
     /// <summary>MagneticMover が磁力移動モード中かどうか。AI はこの間スキップされる。</summary>
@@ -30,11 +33,11 @@ public class EnemyBase : Entity
         agent = GetComponent<NavMeshAgent>();
         m_mover = GetComponent<MagneticMover>();
 
-        if (player == null)
+        if (m_player == null)
         {
             GameObject playerObj = GameObject.FindWithTag(GameTags.Player);
             if (playerObj != null)
-                player = playerObj.transform;
+                m_player = playerObj.transform;
         }
 
         // Health.OnDie → Die()
@@ -50,10 +53,10 @@ public class EnemyBase : Entity
 
     protected virtual void Start()
     {
-        if (agent != null && statusData != null)
+        if (agent != null && m_statusData != null)
         {
-            agent.speed = statusData.moveSpeed;
-            agent.stoppingDistance = statusData.stopDistance;
+            agent.speed = m_statusData.moveSpeed;
+            agent.stoppingDistance = m_statusData.stopDistance;
         }
     }
 
