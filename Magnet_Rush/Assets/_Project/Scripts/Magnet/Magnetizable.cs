@@ -127,7 +127,7 @@ public class Magnetizable : MonoBehaviour
 
         if (m_rb != null && !m_rb.isKinematic)
         {
-            m_rb.AddForce(force, ForceMode.Force);
+            m_rb.AddForce(force, ForceMode.Acceleration);
             return;
         }
     }
