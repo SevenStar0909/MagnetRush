@@ -16,11 +16,21 @@ public class SceneLoader : Singleton<SceneLoader>
     protected override void Awake()
     {
         base.Awake();
+        transform.SetParent(null);
         DontDestroyOnLoad(gameObject);
     }
 
     private void Start()
     {
+        string current = SceneManager.GetActiveScene().name;
+
+        // テストシーン・メンバーシーンではタイトル遷移せずMapSceneだけ読み込む
+        if (current.Contains("Test") || current.Contains("NS_"))
+        {
+            LoadAdditiveScenes(current);
+            return;
+        }
+
         LoadScene(SceneType.Title);
     }
 
@@ -39,7 +49,9 @@ public class SceneLoader : Singleton<SceneLoader>
     /// <summary>メインシーンに応じて追加シーンをAdditiveロードする。</summary>
     private void LoadAdditiveScenes(string baseSceneName)
     {
-        if (baseSceneName == SceneType.Game.ToString())
+        if (baseSceneName == SceneType.Game.ToString()
+            || baseSceneName.Contains("Test")
+            || baseSceneName.Contains("NS_"))
         {
             SceneManager.LoadScene("MapScene", LoadSceneMode.Additive);
         }
