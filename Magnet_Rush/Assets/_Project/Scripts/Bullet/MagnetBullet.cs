@@ -16,6 +16,8 @@ public class MagnetBullet : MonoBehaviour
     [Header("Magnet Effects")]
     [SerializeField] private GameObject m_nEffect; // N極用エフェクト（赤）
     [SerializeField] private GameObject m_sEffect; // S極用エフェクト（青）
+    [SerializeField, Tooltip("エフェクトの大きさの倍率")]
+    private float m_effectScaleMultiplier = 1.3f;
 
     public MagneticPole Pole { get; private set; }
     public bool IsStuck { get; private set; }
@@ -48,9 +50,8 @@ public class MagnetBullet : MonoBehaviour
             if (mat != null) renderer.material = mat;
         }
 
-        // 発射時にエフェクトを描画
-        if (m_nEffect != null) m_nEffect.SetActive(Pole == MagneticPole.N);
-        if (m_sEffect != null) m_sEffect.SetActive(Pole == MagneticPole.S);
+        // 発射時にエフェクトを初期化して描画
+        InitializeEffects(pole);
 
         // BulletManager登録
         if (BulletManager.Instance != null)
@@ -59,6 +60,30 @@ public class MagnetBullet : MonoBehaviour
             m_registered = true;
         }
     }
+
+    private void InitializeEffects(MagneticPole pole)
+    {
+        // N極エフェクトを子オブジェクトとして生成
+        if (m_nEffect != null && pole == MagneticPole.N)
+        {
+            m_nEffect = Instantiate(m_nEffect, transform);
+            m_nEffect.transform.localPosition = Vector3.zero;
+            m_nEffect.transform.localRotation = Quaternion.identity;
+            m_nEffect.transform.localScale = Vector3.one * m_effectScaleMultiplier;
+            m_nEffect.SetActive(true);
+        }
+
+        // S極エフェクトを子オブジェクトとして生成
+        if (m_sEffect != null && pole == MagneticPole.S)
+        {
+            m_sEffect = Instantiate(m_sEffect, transform);
+            m_sEffect.transform.localPosition = Vector3.zero;
+            m_sEffect.transform.localRotation = Quaternion.identity;
+            m_sEffect.transform.localScale = Vector3.one * m_effectScaleMultiplier;
+            m_sEffect.SetActive(true);
+        }
+    }
+
 
     void Update()
     {
