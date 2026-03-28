@@ -29,6 +29,10 @@ public class MagnetBullet : MonoBehaviour
     private float m_timer;
     private bool m_registered;
 
+    // 生成したエフェクトのインスタンスを保持する変数
+    private GameObject m_nEffectInstance;
+    private GameObject m_sEffectInstance;
+
     void Awake()
     {
         m_rb = GetComponent<Rigidbody>();
@@ -66,21 +70,21 @@ public class MagnetBullet : MonoBehaviour
         // N極エフェクトを子オブジェクトとして生成
         if (m_nEffect != null && pole == MagneticPole.N)
         {
-            m_nEffect = Instantiate(m_nEffect, transform);
-            m_nEffect.transform.localPosition = Vector3.zero;
-            m_nEffect.transform.localRotation = Quaternion.identity;
-            m_nEffect.transform.localScale = Vector3.one * m_effectScaleMultiplier;
-            m_nEffect.SetActive(true);
+            m_nEffectInstance = Instantiate(m_nEffect, transform);
+            m_nEffectInstance.transform.localPosition = Vector3.zero;
+            m_nEffectInstance.transform.localRotation = Quaternion.identity;
+            m_nEffectInstance.transform.localScale = Vector3.one * m_effectScaleMultiplier;
+            m_nEffectInstance.SetActive(true);
         }
 
         // S極エフェクトを子オブジェクトとして生成
         if (m_sEffect != null && pole == MagneticPole.S)
         {
-            m_sEffect = Instantiate(m_sEffect, transform);
-            m_sEffect.transform.localPosition = Vector3.zero;
-            m_sEffect.transform.localRotation = Quaternion.identity;
-            m_sEffect.transform.localScale = Vector3.one * m_effectScaleMultiplier;
-            m_sEffect.SetActive(true);
+            m_sEffectInstance = Instantiate(m_sEffect, transform);
+            m_sEffectInstance.transform.localPosition = Vector3.zero;
+            m_sEffectInstance.transform.localRotation = Quaternion.identity;
+            m_sEffectInstance.transform.localScale = Vector3.one * m_effectScaleMultiplier;
+            m_sEffectInstance.SetActive(true);
         }
     }
 
