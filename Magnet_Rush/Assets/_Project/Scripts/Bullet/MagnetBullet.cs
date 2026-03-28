@@ -13,6 +13,10 @@ public class MagnetBullet : MonoBehaviour
     [FormerlySerializedAs("settings")]
     [SerializeField] private BulletSettings m_settings;
 
+    [Header("Magnet Effects")]
+    [SerializeField] private GameObject m_nEffect; // N極用エフェクト（赤）
+    [SerializeField] private GameObject m_sEffect; // S極用エフェクト（青）
+
     public MagneticPole Pole { get; private set; }
     public bool IsStuck { get; private set; }
 
@@ -43,6 +47,10 @@ public class MagnetBullet : MonoBehaviour
             Material mat = pole == MagneticPole.S ? m_settings.sMaterial : m_settings.nMaterial;
             if (mat != null) renderer.material = mat;
         }
+
+        // 発射時にエフェクトを描画
+        if (m_nEffect != null) m_nEffect.SetActive(Pole == MagneticPole.N);
+        if (m_sEffect != null) m_sEffect.SetActive(Pole == MagneticPole.S);
 
         // BulletManager登録
         if (BulletManager.Instance != null)
