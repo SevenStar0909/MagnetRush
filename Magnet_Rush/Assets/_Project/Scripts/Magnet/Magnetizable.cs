@@ -86,13 +86,16 @@ public class Magnetizable : MonoBehaviour
 
     private void InitializeEffects()
     {
+        // オブジェクトの実際の見た目のサイズ（Bounds）を取得し、それに倍率を掛けた目標の大きさを計算
+        Vector3 targetScale = CalculateEffectScale();
+
         // N極エフェクトを子オブジェクトとして生成
         if (m_nEffect != null)
         {
             m_nEffectInstance = Instantiate(m_nEffect, transform);
             m_nEffectInstance.transform.localPosition = Vector3.zero;
             m_nEffectInstance.transform.localRotation = Quaternion.identity;
-            m_nEffectInstance.transform.localScale = Vector3.one * m_effectScaleMultiplier;
+            m_nEffectInstance.transform.localScale = targetScale;
             m_nEffectInstance.SetActive(false);
         }
 
@@ -102,9 +105,30 @@ public class Magnetizable : MonoBehaviour
             m_sEffectInstance = Instantiate(m_sEffect, transform);
             m_sEffectInstance.transform.localPosition = Vector3.zero;
             m_sEffectInstance.transform.localRotation = Quaternion.identity;
-            m_sEffectInstance.transform.localScale = Vector3.one * m_effectScaleMultiplier;
+            m_sEffectInstance.transform.localScale = targetScale;
             m_sEffectInstance.SetActive(false);
         }
+    }
+
+    /// <summary>
+    /// オブジェクトの実際の表面サイズ（Bounds）から、親のスケール歪みを相殺したエフェクト用スケールを計算する
+    /// </summary>
+    private Vector3 CalculateEffectScale()
+    {
+        if (m_renderer == null) return Vector3.one * m_effectScaleMultiplier;
+
+        // Rendererから実際のワールドサイズ（AABB）を取得
+        Vector3 boundsSize = m_renderer.bounds.size;
+        Vector3 parentLossyScale = transform.lossyScale;
+
+        // ゼロ割り算を防ぐための安全処理
+        float scaleX = Mathf.Abs(parentLossyScale.x) > 0.001f ? (boundsSize.x * m_effectScaleMultiplier) / parentLossyScale.x : m_effectScaleMultiplier;
+        float scaleY = Mathf.Abs(parentLossyScale.y) > 0.001f ? (boundsSize.y * m_effectScaleMultiplier) / parentLossyScale.y : m_effectScaleMultiplier;
+        float scaleZ = Mathf.Abs(parentLossyScale.z) > 0.001f ? (boundsSize.z * m_effectScaleMultiplier) / parentLossyScale.z : m_effectScaleMultiplier;
+
+        // 最大の辺を基準にして、パーティクルが歪まないように均等な倍率（一番大きいサイズに合わせる）で返す
+        float maxScale = Mathf.Max(scaleX, scaleY, scaleZ);
+        return new Vector3(maxScale, maxScale, maxScale);
     }
 
     public void SetPole(MagneticPole newPole)
