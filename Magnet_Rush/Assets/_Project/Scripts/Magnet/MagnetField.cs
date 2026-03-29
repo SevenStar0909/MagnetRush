@@ -17,6 +17,7 @@ public class MagnetField : MonoBehaviour, IMagnetField
     private float m_remainingLifetime;
     private float m_storedDamage;
     private bool m_initialized;
+    private bool m_expired;
     private SphereCollider m_triggerCollider;
 
     // トリガー検知用キャッシュ（GravityFieldパターン）
@@ -31,13 +32,9 @@ public class MagnetField : MonoBehaviour, IMagnetField
 
     // --- Events ---
     public event Action OnFieldExpired;
-    public event Action<Magnetizable> OnObjectEnter;
-    public event Action<Magnetizable> OnObjectExit;
-
-    // --- Public API ---
-    public MagnetFieldSettings Settings => m_settings;
     public float StoredDamage => m_storedDamage;
-    public float OuterRadius => m_settings != null ? m_settings.outerRadius : 8f;
+    public float InnerRadius => m_settings != null ? m_settings.innerRadius : 3f;
+    public float OuterRadius => m_settings != null ? m_settings.EffectiveOuterRadius : 8f;
 
     // --- 形状プロパティ ---
     public FieldShape Shape => m_settings != null ? m_settings.shape : FieldShape.Sphere;
@@ -60,6 +57,10 @@ public class MagnetField : MonoBehaviour, IMagnetField
         m_remainingLifetime = m_settings.lifetime;
         SetupTriggerCollider();
         m_initialized = true;
+
+        // sibling の Magnetizable にフィールド参照を登録
+        var mag = GetComponent<Magnetizable>();
+        if (mag != null) mag.SetField(this);
     }
 
     private GameObject m_triggerGO;
@@ -92,9 +93,9 @@ public class MagnetField : MonoBehaviour, IMagnetField
 
         return Shape switch
         {
-            FieldShape.Box => m_settings.size.magnitude * 0.5f + m_settings.outerRadius,
-            FieldShape.Cylinder => Mathf.Max(m_settings.cylinderHeight * 0.5f, m_settings.cylinderRadius) + m_settings.outerRadius,
-            _ => m_settings.outerRadius
+            FieldShape.Box => m_settings.size.magnitude * 0.5f + m_settings.EffectiveOuterRadius,
+            FieldShape.Cylinder => Mathf.Max(m_settings.cylinderHeight * 0.5f, m_settings.cylinderRadius) + m_settings.EffectiveOuterRadius,
+            _ => m_settings.EffectiveOuterRadius
         };
     }
 
@@ -129,9 +130,9 @@ public class MagnetField : MonoBehaviour, IMagnetField
 
         float dist = Vector3.Distance(point, nearestSurface);
         if (dist <= m_settings.innerRadius) return 1f;
-        if (dist >= m_settings.outerRadius) return 0f;
+        if (dist >= m_settings.EffectiveOuterRadius) return 0f;
 
-        return 1f - (dist - m_settings.innerRadius) / (m_settings.outerRadius - m_settings.innerRadius);
+        return 1f - (dist - m_settings.innerRadius) / (m_settings.EffectiveOuterRadius - m_settings.innerRadius);
     }
 
     /// <summary>
@@ -142,12 +143,6 @@ public class MagnetField : MonoBehaviour, IMagnetField
         if (m_settings == null || !m_settings.accumulateDamage) return;
         m_storedDamage = Mathf.Min(m_storedDamage + amount, m_settings.maxStoredDamage);
     }
-
-    /// <summary>MagnetManagerから呼ばれるEnter通知。</summary>
-    public void NotifyObjectEnter(Magnetizable m) => OnObjectEnter?.Invoke(m);
-
-    /// <summary>MagnetManagerから呼ばれるExit通知。</summary>
-    public void NotifyObjectExit(Magnetizable m) => OnObjectExit?.Invoke(m);
 
     /// <summary>ブリッジから呼ばれるトリガーStay。</summary>
     public void HandleTriggerStay(Collider other)
@@ -176,19 +171,12 @@ public class MagnetField : MonoBehaviour, IMagnetField
             m_entityCache.Remove(other);
         }
 
-        var mag = other.GetComponent<Magnetizable>();
-        if (mag != null)
-            OnObjectExit?.Invoke(mag);
     }
 
     /// <summary>ブリッジから呼ばれるトリガーEnter。</summary>
     public void HandleTriggerEnter(Collider other)
     {
         if (!m_initialized) return;
-
-        var mag = other.GetComponent<Magnetizable>();
-        if (mag != null)
-            OnObjectEnter?.Invoke(mag);
     }
 
     void OnEnable()
@@ -227,68 +215,9 @@ public class MagnetField : MonoBehaviour, IMagnetField
     /// </summary>
     public void ForceExpire()
     {
+        if (m_expired) return;
+        m_expired = true;
         OnFieldExpired?.Invoke();
         Destroy(this);
     }
-
-#if UNITY_EDITOR
-    void OnDrawGizmos()
-    {
-        if (m_settings == null) return;
-
-        var color = m_pole == MagneticPole.S
-            ? new Color(0.2f, 0.4f, 1f, 0.5f)
-            : new Color(1f, 0.2f, 0.2f, 0.5f);
-
-        Gizmos.color = color;
-
-        switch (Shape)
-        {
-            case FieldShape.Box:
-                var matrix = Matrix4x4.TRS(Center, transform.rotation, Vector3.one);
-                Gizmos.matrix = matrix;
-                Gizmos.DrawWireCube(Vector3.zero, Size);
-                color.a = 0.2f;
-                Gizmos.color = color;
-                var outerSize = Size + Vector3.one * m_settings.outerRadius * 2f;
-                Gizmos.DrawWireCube(Vector3.zero, outerSize);
-                Gizmos.matrix = Matrix4x4.identity;
-                break;
-
-            case FieldShape.Cylinder:
-                DrawWireCircle(Top, transform.up, CylinderRadius);
-                DrawWireCircle(Bottom, transform.up, CylinderRadius);
-                Gizmos.DrawLine(Top + transform.right * CylinderRadius, Bottom + transform.right * CylinderRadius);
-                Gizmos.DrawLine(Top - transform.right * CylinderRadius, Bottom - transform.right * CylinderRadius);
-                Gizmos.DrawLine(Top + transform.forward * CylinderRadius, Bottom + transform.forward * CylinderRadius);
-                Gizmos.DrawLine(Top - transform.forward * CylinderRadius, Bottom - transform.forward * CylinderRadius);
-                color.a = 0.2f;
-                Gizmos.color = color;
-                DrawWireCircle(Top, transform.up, CylinderRadius + m_settings.outerRadius);
-                DrawWireCircle(Bottom, transform.up, CylinderRadius + m_settings.outerRadius);
-                break;
-
-            default:
-                Gizmos.DrawWireSphere(Center, m_settings.innerRadius);
-                color.a = 0.2f;
-                Gizmos.color = color;
-                Gizmos.DrawWireSphere(Center, m_settings.outerRadius);
-                break;
-        }
-    }
-
-    void DrawWireCircle(Vector3 center, Vector3 normal, float radius, int segments = 32)
-    {
-        var rot = Quaternion.LookRotation(normal);
-        var prev = center + rot * (Vector3.up * radius);
-
-        for (int i = 1; i <= segments; i++)
-        {
-            float angle = (float)i / segments * Mathf.PI * 2f;
-            var next = center + rot * (new Vector3(Mathf.Sin(angle), Mathf.Cos(angle), 0f) * radius);
-            Gizmos.DrawLine(prev, next);
-            prev = next;
-        }
-    }
-#endif
 }

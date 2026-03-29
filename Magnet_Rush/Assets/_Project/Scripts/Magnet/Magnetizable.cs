@@ -36,10 +36,20 @@ public class Magnetizable : MonoBehaviour
     private int m_originalLayer;
     private Renderer m_renderer;
     private MaterialPropertyBlock m_mpb;
+    private MagnetField m_cachedField;
     private static readonly int s_poleIDProperty = Shader.PropertyToID("_PoleID");
 
     /// <summary>同一GOのEntityキャッシュ。MagnetManagerのフィールド割り当てで使用。</summary>
     public Entity CachedEntity => m_cachedEntity;
+
+    /// <summary>フィールドのinnerRadius。フィールドがなければ0を返す。</summary>
+    public float FieldInnerRadius => m_cachedField != null ? m_cachedField.InnerRadius : 0f;
+
+    /// <summary>フィールドのouterRadius。フィールドがなければ0を返す。</summary>
+    public float FieldOuterRadius => m_cachedField != null ? m_cachedField.OuterRadius : 0f;
+
+    /// <summary>MagnetFieldが自身を登録する。</summary>
+    public void SetField(MagnetField field) => m_cachedField = field;
 
     void Awake()
     {
@@ -143,9 +153,6 @@ public class Magnetizable : MonoBehaviour
             return;
         }
     }
-
-    /// <summary>旧シグネチャの後方互換オーバーロード。</summary>
-    public void ApplyForce(Vector3 force) => ApplyForce(force, transform.position);
 
     void LateUpdate()
     {

@@ -7,10 +7,12 @@ using UnityEngine;
 public class PlayerEvents : MonoBehaviour
 {
     public event Action OnShoot;
+    public event Action OnSelfShoot;
     public event Action<MagneticPole> OnPolaritySwitch;
     public event Action OnReload;
 
     public void FireShoot() => OnShoot?.Invoke();
+    public void FireSelfShoot() => OnSelfShoot?.Invoke();
     public void FirePolaritySwitch(MagneticPole pole) => OnPolaritySwitch?.Invoke(pole);
     public void FireReload() => OnReload?.Invoke();
 }
