@@ -25,7 +25,7 @@ public class SceneLoader : Singleton<SceneLoader>
         string current = SceneManager.GetActiveScene().name;
 
         // テストシーン・メンバーシーンではタイトル遷移せずMapSceneだけ読み込む
-        if (current.Contains("Test") || current.Contains("NS_"))
+        if (current.Contains("Test") || current.Contains("NS_") || current.Contains("NishigoriTaiki_"))
         {
             LoadAdditiveScenes(current);
             return;
@@ -51,7 +51,8 @@ public class SceneLoader : Singleton<SceneLoader>
     {
         if (baseSceneName == SceneType.Game.ToString()
             || baseSceneName.Contains("Test")
-            || baseSceneName.Contains("NS_"))
+            || baseSceneName.Contains("NS_")
+            || baseSceneName.Contains("NishigoriTaiki_"))
         {
             SceneManager.LoadScene("MapScene", LoadSceneMode.Additive);
         }
