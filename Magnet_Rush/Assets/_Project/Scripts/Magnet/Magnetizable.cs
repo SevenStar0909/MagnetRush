@@ -42,14 +42,22 @@ public class Magnetizable : MonoBehaviour
     private int m_originalLayer;
     private Renderer m_renderer;
     private MaterialPropertyBlock m_mpb;
-    private static readonly int s_poleIDProperty = Shader.PropertyToID("_PoleID");
-
-    // 生成したエフェクトのインスタンスを保持する変数
+    private MagnetField m_cachedField;
     private GameObject m_nEffectInstance;
     private GameObject m_sEffectInstance;
+    private static readonly int s_poleIDProperty = Shader.PropertyToID("_PoleID");
 
     /// <summary>同一GOのEntityキャッシュ。MagnetManagerのフィールド割り当てで使用。</summary>
     public Entity CachedEntity => m_cachedEntity;
+
+    /// <summary>フィールドのinnerRadius。フィールドがなければ0を返す。</summary>
+    public float FieldInnerRadius => m_cachedField != null ? m_cachedField.InnerRadius : 0f;
+
+    /// <summary>フィールドのouterRadius。フィールドがなければ0を返す。</summary>
+    public float FieldOuterRadius => m_cachedField != null ? m_cachedField.OuterRadius : 0f;
+
+    /// <summary>MagnetFieldが自身を登録する。</summary>
+    public void SetField(MagnetField field) => m_cachedField = field;
 
     void Awake()
     {
@@ -82,6 +90,40 @@ public class Magnetizable : MonoBehaviour
             MagnetManager.Instance.SnapResolver?.ReleaseAllFor(this);
             MagnetManager.Instance.Unregister(this);
         }
+    }
+
+    public void SetPole(MagneticPole newPole)
+    {
+        m_pole = newPole;
+        m_isActive = newPole != MagneticPole.None;
+
+        // Magnetized レイヤーに切り替え → Edge Detection の対象になる
+        if (m_isActive)
+        {
+            gameObject.layer = LayerMask.NameToLayer("Magnetized");
+            if (m_renderer != null)
+            {
+                m_mpb.SetFloat(s_poleIDProperty, newPole == MagneticPole.S ? 1f : 0f);
+                m_renderer.SetPropertyBlock(m_mpb);
+            }
+        }
+
+        UpdateEffects();
+
+        OnPoleChanged?.Invoke(m_pole);
+    }
+
+    public void Deactivate()
+    {
+        m_pole = MagneticPole.None;
+        m_isActive = false;
+
+        // 元のレイヤーに戻す → アウトライン消える
+        gameObject.layer = m_originalLayer;
+
+        UpdateEffects();
+
+        OnPoleChanged?.Invoke(m_pole);
     }
 
     private void InitializeEffects()
@@ -129,40 +171,6 @@ public class Magnetizable : MonoBehaviour
         // 最大の辺を基準にして、パーティクルが歪まないように均等な倍率（一番大きいサイズに合わせる）で返す
         float maxScale = Mathf.Max(scaleX, scaleY, scaleZ);
         return new Vector3(maxScale, maxScale, maxScale);
-    }
-
-    public void SetPole(MagneticPole newPole)
-    {
-        m_pole = newPole;
-        m_isActive = newPole != MagneticPole.None;
-
-        // Magnetized レイヤーに切り替え → Edge Detection の対象になる
-        if (m_isActive)
-        {
-            gameObject.layer = LayerMask.NameToLayer("Magnetized");
-            if (m_renderer != null)
-            {
-                m_mpb.SetFloat(s_poleIDProperty, newPole == MagneticPole.S ? 1f : 0f);
-                m_renderer.SetPropertyBlock(m_mpb);
-            }
-        }
-
-        UpdateEffects();
-
-        OnPoleChanged?.Invoke(m_pole);
-    }
-
-    public void Deactivate()
-    {
-        m_pole = MagneticPole.None;
-        m_isActive = false;
-
-        // 元のレイヤーに戻す → アウトライン消える
-        gameObject.layer = m_originalLayer;
-
-        UpdateEffects();
-
-        OnPoleChanged?.Invoke(m_pole);
     }
 
     /// <summary>
@@ -226,9 +234,6 @@ public class Magnetizable : MonoBehaviour
             return;
         }
     }
-
-    /// <summary>旧シグネチャの後方互換オーバーロード。</summary>
-    public void ApplyForce(Vector3 force) => ApplyForce(force, transform.position);
 
     void LateUpdate()
     {
