@@ -16,6 +16,12 @@ public class Magnetizable : MonoBehaviour
     [FormerlySerializedAs("initialMass")]
     [SerializeField] private float m_initialMass = 1f;
 
+    [Header("Effects")]
+    [SerializeField] private GameObject m_nEffect;
+    [SerializeField] private GameObject m_sEffect;
+    [SerializeField, Tooltip("エフェクトの大きさの倍率")]
+    private float m_effectScaleMultiplier = 1.3f;
+
     public MagneticPole Pole => m_pole;
     public bool IsActive => m_isActive;
 
@@ -37,6 +43,8 @@ public class Magnetizable : MonoBehaviour
     private Renderer m_renderer;
     private MaterialPropertyBlock m_mpb;
     private MagnetField m_cachedField;
+    private GameObject m_nEffectInstance;
+    private GameObject m_sEffectInstance;
     private static readonly int s_poleIDProperty = Shader.PropertyToID("_PoleID");
 
     /// <summary>同一GOのEntityキャッシュ。MagnetManagerのフィールド割り当てで使用。</summary>
@@ -61,6 +69,8 @@ public class Magnetizable : MonoBehaviour
         m_mpb = new MaterialPropertyBlock();
         mass = m_initialMass > 0f ? m_initialMass : (m_rb != null ? m_rb.mass : 1f);
         m_originalLayer = gameObject.layer;
+        InitializeEffects();
+        UpdateEffects();
     }
 
     void OnEnable()
@@ -94,6 +104,8 @@ public class Magnetizable : MonoBehaviour
             }
         }
 
+        UpdateEffects();
+
         OnPoleChanged?.Invoke(m_pole);
     }
 
@@ -105,7 +117,62 @@ public class Magnetizable : MonoBehaviour
         // 元のレイヤーに戻す → アウトライン消える
         gameObject.layer = m_originalLayer;
 
+        UpdateEffects();
+
         OnPoleChanged?.Invoke(m_pole);
+    }
+
+    private void InitializeEffects()
+    {
+        Vector3 targetScale = CalculateEffectScale();
+
+        if (m_nEffect != null)
+        {
+            m_nEffectInstance = Instantiate(m_nEffect, transform);
+            m_nEffectInstance.transform.localPosition = Vector3.zero;
+            m_nEffectInstance.transform.localRotation = Quaternion.identity;
+            m_nEffectInstance.transform.localScale = targetScale;
+            m_nEffectInstance.SetActive(false);
+        }
+
+        if (m_sEffect != null)
+        {
+            m_sEffectInstance = Instantiate(m_sEffect, transform);
+            m_sEffectInstance.transform.localPosition = Vector3.zero;
+            m_sEffectInstance.transform.localRotation = Quaternion.identity;
+            m_sEffectInstance.transform.localScale = targetScale;
+            m_sEffectInstance.SetActive(false);
+        }
+    }
+
+    /// <summary>
+    /// オブジェクトの表面サイズから、親のスケール歪みを相殺したエフェクト用スケールを計算する。
+    /// </summary>
+    private Vector3 CalculateEffectScale()
+    {
+        if (m_renderer == null) return Vector3.one * m_effectScaleMultiplier;
+
+        Vector3 boundsSize = m_renderer.bounds.size;
+        Vector3 parentLossyScale = transform.lossyScale;
+
+        float scaleX = Mathf.Abs(parentLossyScale.x) > 0.001f ? (boundsSize.x * m_effectScaleMultiplier) / parentLossyScale.x : m_effectScaleMultiplier;
+        float scaleY = Mathf.Abs(parentLossyScale.y) > 0.001f ? (boundsSize.y * m_effectScaleMultiplier) / parentLossyScale.y : m_effectScaleMultiplier;
+        float scaleZ = Mathf.Abs(parentLossyScale.z) > 0.001f ? (boundsSize.z * m_effectScaleMultiplier) / parentLossyScale.z : m_effectScaleMultiplier;
+
+        float maxScale = Mathf.Max(scaleX, scaleY, scaleZ);
+        return new Vector3(maxScale, maxScale, maxScale);
+    }
+
+    /// <summary>
+    /// 現在の極性に応じてエフェクトの表示状態を更新する。
+    /// </summary>
+    private void UpdateEffects()
+    {
+        if (m_nEffectInstance != null)
+            m_nEffectInstance.SetActive(m_pole == MagneticPole.N);
+
+        if (m_sEffectInstance != null)
+            m_sEffectInstance.SetActive(m_pole == MagneticPole.S);
     }
 
     /// <summary>

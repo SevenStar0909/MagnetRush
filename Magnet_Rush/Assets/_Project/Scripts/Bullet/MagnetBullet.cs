@@ -13,6 +13,12 @@ public class MagnetBullet : MonoBehaviour
     [FormerlySerializedAs("settings")]
     [SerializeField] private BulletSettings m_settings;
 
+    [Header("Magnet Effects")]
+    [SerializeField] private GameObject m_nEffect;
+    [SerializeField] private GameObject m_sEffect;
+    [SerializeField, Tooltip("エフェクトの大きさの倍率")]
+    private float m_effectScaleMultiplier = 1.3f;
+
     public MagneticPole Pole { get; private set; }
     public bool IsStuck { get; private set; }
     public bool IsSelfFire { get; private set; }
@@ -23,6 +29,8 @@ public class MagnetBullet : MonoBehaviour
     private Rigidbody m_rb;
     private float m_timer;
     private bool m_registered;
+    private GameObject m_nEffectInstance;
+    private GameObject m_sEffectInstance;
 
     void Awake()
     {
@@ -46,11 +54,35 @@ public class MagnetBullet : MonoBehaviour
             if (mat != null) renderer.material = mat;
         }
 
+        // 発射時にエフェクトを初期化して描画
+        InitializeEffects(pole);
+
         // BulletManager登録
         if (BulletManager.Instance != null)
         {
             BulletManager.Instance.Register(this);
             m_registered = true;
+        }
+    }
+
+    private void InitializeEffects(MagneticPole pole)
+    {
+        if (m_nEffect != null && pole == MagneticPole.N)
+        {
+            m_nEffectInstance = Instantiate(m_nEffect, transform);
+            m_nEffectInstance.transform.localPosition = Vector3.zero;
+            m_nEffectInstance.transform.localRotation = Quaternion.identity;
+            m_nEffectInstance.transform.localScale = Vector3.one * m_effectScaleMultiplier;
+            m_nEffectInstance.SetActive(true);
+        }
+
+        if (m_sEffect != null && pole == MagneticPole.S)
+        {
+            m_sEffectInstance = Instantiate(m_sEffect, transform);
+            m_sEffectInstance.transform.localPosition = Vector3.zero;
+            m_sEffectInstance.transform.localRotation = Quaternion.identity;
+            m_sEffectInstance.transform.localScale = Vector3.one * m_effectScaleMultiplier;
+            m_sEffectInstance.SetActive(true);
         }
     }
 
