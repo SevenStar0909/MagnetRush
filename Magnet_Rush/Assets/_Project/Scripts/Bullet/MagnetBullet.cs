@@ -66,7 +66,7 @@ public class MagnetBullet : MonoBehaviour
         var instance = Instantiate(prefab, transform);
         instance.transform.localPosition = Vector3.zero;
         instance.transform.localRotation = Quaternion.identity;
-        instance.transform.localScale = Vector3.one * m_settings.fireEffectScale;
+        instance.transform.localScale = WorldScale(m_settings.fireEffectScale, transform);
         instance.SetActive(true);
     }
 
@@ -237,8 +237,21 @@ public class MagnetBullet : MonoBehaviour
         var instance = Instantiate(prefab, parent);
         instance.transform.localPosition = Vector3.zero;
         instance.transform.localRotation = Quaternion.identity;
-        instance.transform.localScale = Vector3.one * m_settings.impactEffectScale;
+        instance.transform.localScale = WorldScale(m_settings.impactEffectScale, parent);
         return instance;
+    }
+
+    /// <summary>
+    /// 親のスケールに関係なく一定のワールドサイズになるlocalScaleを返す。
+    /// </summary>
+    private static Vector3 WorldScale(float size, Transform parent)
+    {
+        Vector3 l = parent.lossyScale;
+        return new Vector3(
+            Mathf.Abs(l.x) > 0.001f ? size / l.x : size,
+            Mathf.Abs(l.y) > 0.001f ? size / l.y : size,
+            Mathf.Abs(l.z) > 0.001f ? size / l.z : size
+        );
     }
 
     void OnDestroy()
