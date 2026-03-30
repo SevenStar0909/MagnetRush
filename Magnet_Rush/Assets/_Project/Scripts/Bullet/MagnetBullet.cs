@@ -13,8 +13,15 @@ public class MagnetBullet : MonoBehaviour
     [FormerlySerializedAs("settings")]
     [SerializeField] private BulletSettings m_settings;
 
+    [Header("Magnet Effects")]
+    [SerializeField] private GameObject m_nEffect; // N極用エフェクト（赤）
+    [SerializeField] private GameObject m_sEffect; // S極用エフェクト（青）
+    [SerializeField, Tooltip("エフェクトの大きさの倍率")]
+    private float m_effectScaleMultiplier = 1.3f;
+
     public MagneticPole Pole { get; private set; }
     public bool IsStuck { get; private set; }
+    public bool IsSelfFire { get; private set; }
 
     /// <summary>弾が何かに着弾した時に発火するコールバック。</summary>
     public event Action OnImpact;
@@ -22,15 +29,19 @@ public class MagnetBullet : MonoBehaviour
     private Rigidbody m_rb;
     private float m_timer;
     private bool m_registered;
+    // 生成したエフェクトのインスタンスを保持する変数
+    private GameObject m_nEffectInstance;
+    private GameObject m_sEffectInstance;
 
     void Awake()
     {
         m_rb = GetComponent<Rigidbody>();
     }
 
-    public void Initialize(MagneticPole pole, Vector3 direction)
+    public void Initialize(MagneticPole pole, Vector3 direction, bool isSelfFire = false)
     {
         Pole = pole;
+        IsSelfFire = isSelfFire;
         m_rb.isKinematic = false;
         m_rb.useGravity = false;
         m_rb.linearVelocity = direction.normalized * m_settings.bulletSpeed;
@@ -44,11 +55,37 @@ public class MagnetBullet : MonoBehaviour
             if (mat != null) renderer.material = mat;
         }
 
+        // 発射時にエフェクトを初期化して描画
+        InitializeEffects(pole);
+
         // BulletManager登録
         if (BulletManager.Instance != null)
         {
             BulletManager.Instance.Register(this);
             m_registered = true;
+        }
+    }
+
+    private void InitializeEffects(MagneticPole pole)
+    {
+        // N極エフェクトを子オブジェクトとして生成
+        if (m_nEffect != null && pole == MagneticPole.N)
+        {
+            m_nEffectInstance = Instantiate(m_nEffect, transform);
+            m_nEffectInstance.transform.localPosition = Vector3.zero;
+            m_nEffectInstance.transform.localRotation = Quaternion.identity;
+            m_nEffectInstance.transform.localScale = Vector3.one * m_effectScaleMultiplier;
+            m_nEffectInstance.SetActive(true);
+        }
+
+        // S極エフェクトを子オブジェクトとして生成
+        if (m_sEffect != null && pole == MagneticPole.S)
+        {
+            m_sEffectInstance = Instantiate(m_sEffect, transform);
+            m_sEffectInstance.transform.localPosition = Vector3.zero;
+            m_sEffectInstance.transform.localRotation = Quaternion.identity;
+            m_sEffectInstance.transform.localScale = Vector3.one * m_effectScaleMultiplier;
+            m_sEffectInstance.SetActive(true);
         }
     }
 
@@ -111,8 +148,8 @@ public class MagnetBullet : MonoBehaviour
             return;
         }
 
-        // プレイヤー自身は無視
-        if (other.CompareTag(GameTags.Player)) return;
+        // 通常弾はプレイヤーを無視。SelfFire弾のみプレイヤーに当たる
+        if (other.CompareTag(GameTags.Player) && !IsSelfFire) return;
 
         // 対象に Magnetizable があるか → パターン分岐
         var targetMag = other.GetComponent<Magnetizable>();
@@ -150,12 +187,12 @@ public class MagnetBullet : MonoBehaviour
                 MagnetManager.Instance.RegisterField(field);
 
             var visualizer = target.gameObject.AddComponent<MagnetFieldVisualizer>();
-            visualizer.Show(Pole, m_settings.bulletFieldSettings.outerRadius);
+            visualizer.Show(Pole, m_settings.bulletFieldSettings);
 
             // フィールド期限切れ → 対象の磁化解除 + Visualizer 除去
             field.OnFieldExpired += () =>
             {
-                targetMag.Deactivate();
+                if (targetMag != null) targetMag.Deactivate();
                 if (visualizer != null) Destroy(visualizer);
             };
         }
@@ -191,7 +228,7 @@ public class MagnetBullet : MonoBehaviour
                 MagnetManager.Instance.RegisterField(field);
 
             var visualizer = gameObject.AddComponent<MagnetFieldVisualizer>();
-            visualizer.Show(Pole, m_settings.bulletFieldSettings.outerRadius);
+            visualizer.Show(Pole, m_settings.bulletFieldSettings);
 
             // フィールド期限切れ → 弾ごと消える
             field.OnFieldExpired += () => Destroy(gameObject);

@@ -16,6 +16,12 @@ public class Magnetizable : MonoBehaviour
     [FormerlySerializedAs("initialMass")]
     [SerializeField] private float m_initialMass = 1f;
 
+    [Header("Effects")]
+    [SerializeField] private GameObject m_nEffect;
+    [SerializeField] private GameObject m_sEffect;
+    [SerializeField, Tooltip("エフェクトの大きさの倍率")]
+    private float m_effectScaleMultiplier = 1.3f;
+
     public MagneticPole Pole => m_pole;
     public bool IsActive => m_isActive;
 
@@ -36,10 +42,22 @@ public class Magnetizable : MonoBehaviour
     private int m_originalLayer;
     private Renderer m_renderer;
     private MaterialPropertyBlock m_mpb;
+    private MagnetField m_cachedField;
+    private GameObject m_nEffectInstance;
+    private GameObject m_sEffectInstance;
     private static readonly int s_poleIDProperty = Shader.PropertyToID("_PoleID");
 
     /// <summary>同一GOのEntityキャッシュ。MagnetManagerのフィールド割り当てで使用。</summary>
     public Entity CachedEntity => m_cachedEntity;
+
+    /// <summary>フィールドのinnerRadius。フィールドがなければ0を返す。</summary>
+    public float FieldInnerRadius => m_cachedField != null ? m_cachedField.InnerRadius : 0f;
+
+    /// <summary>フィールドのouterRadius。フィールドがなければ0を返す。</summary>
+    public float FieldOuterRadius => m_cachedField != null ? m_cachedField.OuterRadius : 0f;
+
+    /// <summary>MagnetFieldが自身を登録する。</summary>
+    public void SetField(MagnetField field) => m_cachedField = field;
 
     void Awake()
     {
@@ -51,6 +69,12 @@ public class Magnetizable : MonoBehaviour
         m_mpb = new MaterialPropertyBlock();
         mass = m_initialMass > 0f ? m_initialMass : (m_rb != null ? m_rb.mass : 1f);
         m_originalLayer = gameObject.layer;
+
+        // エフェクトの生成と初期設定
+        InitializeEffects();
+
+        // 初期状態のエフェクト反映
+        UpdateEffects();
     }
 
     void OnEnable()
@@ -84,6 +108,8 @@ public class Magnetizable : MonoBehaviour
             }
         }
 
+        UpdateEffects();
+
         OnPoleChanged?.Invoke(m_pole);
     }
 
@@ -95,7 +121,72 @@ public class Magnetizable : MonoBehaviour
         // 元のレイヤーに戻す → アウトライン消える
         gameObject.layer = m_originalLayer;
 
+        UpdateEffects();
+
         OnPoleChanged?.Invoke(m_pole);
+    }
+
+    private void InitializeEffects()
+    {
+        // オブジェクトの実際の見た目のサイズ（Bounds）を取得し、それに倍率を掛けた目標の大きさを計算
+        Vector3 targetScale = CalculateEffectScale();
+
+        // N極エフェクトを子オブジェクトとして生成
+        if (m_nEffect != null)
+        {
+            m_nEffectInstance = Instantiate(m_nEffect, transform);
+            m_nEffectInstance.transform.localPosition = Vector3.zero;
+            m_nEffectInstance.transform.localRotation = Quaternion.identity;
+            m_nEffectInstance.transform.localScale = targetScale;
+            m_nEffectInstance.SetActive(false);
+        }
+
+        // S極エフェクトを子オブジェクトとして生成
+        if (m_sEffect != null)
+        {
+            m_sEffectInstance = Instantiate(m_sEffect, transform);
+            m_sEffectInstance.transform.localPosition = Vector3.zero;
+            m_sEffectInstance.transform.localRotation = Quaternion.identity;
+            m_sEffectInstance.transform.localScale = targetScale;
+            m_sEffectInstance.SetActive(false);
+        }
+    }
+
+    /// <summary>
+    /// オブジェクトの実際の表面サイズ（Bounds）から、親のスケール歪みを相殺したエフェクト用スケールを計算する
+    /// </summary>
+    private Vector3 CalculateEffectScale()
+    {
+        if (m_renderer == null) return Vector3.one * m_effectScaleMultiplier;
+
+        // Rendererから実際のワールドサイズ（AABB）を取得
+        Vector3 boundsSize = m_renderer.bounds.size;
+        Vector3 parentLossyScale = transform.lossyScale;
+
+        // ゼロ割り算を防ぐための安全処理
+        float scaleX = Mathf.Abs(parentLossyScale.x) > 0.001f ? (boundsSize.x * m_effectScaleMultiplier) / parentLossyScale.x : m_effectScaleMultiplier;
+        float scaleY = Mathf.Abs(parentLossyScale.y) > 0.001f ? (boundsSize.y * m_effectScaleMultiplier) / parentLossyScale.y : m_effectScaleMultiplier;
+        float scaleZ = Mathf.Abs(parentLossyScale.z) > 0.001f ? (boundsSize.z * m_effectScaleMultiplier) / parentLossyScale.z : m_effectScaleMultiplier;
+
+        // 最大の辺を基準にして、パーティクルが歪まないように均等な倍率（一番大きいサイズに合わせる）で返す
+        float maxScale = Mathf.Max(scaleX, scaleY, scaleZ);
+        return new Vector3(maxScale, maxScale, maxScale);
+    }
+
+    /// <summary>
+    /// 現在の極性に応じてエフェクトの表示状態を更新する。
+    /// </summary>
+    private void UpdateEffects()
+    {
+        if (m_nEffectInstance != null)
+        {
+            m_nEffectInstance.SetActive(m_pole == MagneticPole.N);
+        }
+
+        if (m_sEffectInstance != null)
+        {
+            m_sEffectInstance.SetActive(m_pole == MagneticPole.S);
+        }
     }
 
     /// <summary>
@@ -143,9 +234,6 @@ public class Magnetizable : MonoBehaviour
             return;
         }
     }
-
-    /// <summary>旧シグネチャの後方互換オーバーロード。</summary>
-    public void ApplyForce(Vector3 force) => ApplyForce(force, transform.position);
 
     void LateUpdate()
     {
