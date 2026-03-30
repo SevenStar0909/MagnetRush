@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 [CreateAssetMenu(fileName = "BulletSettings", menuName = "MagnetRush/BulletSettings")]
 public class BulletSettings : ScriptableObject
@@ -28,4 +28,20 @@ public class BulletSettings : ScriptableObject
     [Header("弾マテリアル")]
     public Material sMaterial;
     public Material nMaterial;
+
+    [Header("発射時エフェクト")]
+    [Tooltip("N極 発射時エフェクトPrefab")]
+    public GameObject fireEffect_N;
+    [Tooltip("S極 発射時エフェクトPrefab")]
+    public GameObject fireEffect_S;
+    [Tooltip("発射時エフェクトの大きさの倍率")]
+    public float fireEffectScale = 1.3f;
+
+    [Header("着弾時エフェクト")]
+    [Tooltip("N極 着弾時エフェクトPrefab")]
+    public GameObject impactEffect_N;
+    [Tooltip("S極 着弾時エフェクトPrefab")]
+    public GameObject impactEffect_S;
+    [Tooltip("着弾時エフェクトの大きさの倍率")]
+    public float impactEffectScale = 1.3f;
 }

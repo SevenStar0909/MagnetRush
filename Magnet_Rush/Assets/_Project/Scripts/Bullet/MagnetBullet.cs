@@ -13,12 +13,6 @@ public class MagnetBullet : MonoBehaviour
     [FormerlySerializedAs("settings")]
     [SerializeField] private BulletSettings m_settings;
 
-    [Header("Magnet Effects")]
-    [SerializeField] private GameObject m_nEffect; // N極用エフェクト（赤）
-    [SerializeField] private GameObject m_sEffect; // S極用エフェクト（青）
-    [SerializeField, Tooltip("エフェクトの大きさの倍率")]
-    private float m_effectScaleMultiplier = 1.3f;
-
     public MagneticPole Pole { get; private set; }
     public bool IsStuck { get; private set; }
     public bool IsSelfFire { get; private set; }
@@ -29,9 +23,6 @@ public class MagnetBullet : MonoBehaviour
     private Rigidbody m_rb;
     private float m_timer;
     private bool m_registered;
-    // 生成したエフェクトのインスタンスを保持する変数
-    private GameObject m_nEffectInstance;
-    private GameObject m_sEffectInstance;
 
     void Awake()
     {
@@ -68,25 +59,15 @@ public class MagnetBullet : MonoBehaviour
 
     private void InitializeEffects(MagneticPole pole)
     {
-        // N極エフェクトを子オブジェクトとして生成
-        if (m_nEffect != null && pole == MagneticPole.N)
-        {
-            m_nEffectInstance = Instantiate(m_nEffect, transform);
-            m_nEffectInstance.transform.localPosition = Vector3.zero;
-            m_nEffectInstance.transform.localRotation = Quaternion.identity;
-            m_nEffectInstance.transform.localScale = Vector3.one * m_effectScaleMultiplier;
-            m_nEffectInstance.SetActive(true);
-        }
+        if (m_settings == null) return;
+        GameObject prefab = pole == MagneticPole.S ? m_settings.fireEffect_S : m_settings.fireEffect_N;
+        if (prefab == null) return;
 
-        // S極エフェクトを子オブジェクトとして生成
-        if (m_sEffect != null && pole == MagneticPole.S)
-        {
-            m_sEffectInstance = Instantiate(m_sEffect, transform);
-            m_sEffectInstance.transform.localPosition = Vector3.zero;
-            m_sEffectInstance.transform.localRotation = Quaternion.identity;
-            m_sEffectInstance.transform.localScale = Vector3.one * m_effectScaleMultiplier;
-            m_sEffectInstance.SetActive(true);
-        }
+        var instance = Instantiate(prefab, transform);
+        instance.transform.localPosition = Vector3.zero;
+        instance.transform.localRotation = Quaternion.identity;
+        instance.transform.localScale = WorldScale(m_settings.fireEffectScale, transform);
+        instance.SetActive(true);
     }
 
     void Update()
@@ -189,11 +170,15 @@ public class MagnetBullet : MonoBehaviour
             var visualizer = target.gameObject.AddComponent<MagnetFieldVisualizer>();
             visualizer.Show(Pole, m_settings.bulletFieldSettings);
 
-            // フィールド期限切れ → 対象の磁化解除 + Visualizer 除去
+            // 着弾エフェクトを対象に生成
+            var effectInstance = SpawnImpactEffect(target.transform);
+
+            // フィールド期限切れ → 対象の磁化解除 + Visualizer + エフェクト除去
             field.OnFieldExpired += () =>
             {
                 if (targetMag != null) targetMag.Deactivate();
                 if (visualizer != null) Destroy(visualizer);
+                if (effectInstance != null) Destroy(effectInstance);
             };
         }
 
@@ -230,11 +215,43 @@ public class MagnetBullet : MonoBehaviour
             var visualizer = gameObject.AddComponent<MagnetFieldVisualizer>();
             visualizer.Show(Pole, m_settings.bulletFieldSettings);
 
+            // 着弾エフェクトを弾自身に生成（弾の子なのでフィールド期限切れで一緒に消える）
+            SpawnImpactEffect(transform);
+
             // フィールド期限切れ → 弾ごと消える
             field.OnFieldExpired += () => Destroy(gameObject);
         }
 
         OnImpact?.Invoke();
+    }
+
+    /// <summary>
+    /// 着弾エフェクトを対象の子として生成する。
+    /// </summary>
+    private GameObject SpawnImpactEffect(Transform parent)
+    {
+        if (m_settings == null) return null;
+        GameObject prefab = Pole == MagneticPole.S ? m_settings.impactEffect_S : m_settings.impactEffect_N;
+        if (prefab == null) return null;
+
+        var instance = Instantiate(prefab, parent);
+        instance.transform.localPosition = Vector3.zero;
+        instance.transform.localRotation = Quaternion.identity;
+        instance.transform.localScale = WorldScale(m_settings.impactEffectScale, parent);
+        return instance;
+    }
+
+    /// <summary>
+    /// 親のスケールに関係なく一定のワールドサイズになるlocalScaleを返す。
+    /// </summary>
+    private static Vector3 WorldScale(float size, Transform parent)
+    {
+        Vector3 l = parent.lossyScale;
+        return new Vector3(
+            Mathf.Abs(l.x) > 0.001f ? size / l.x : size,
+            Mathf.Abs(l.y) > 0.001f ? size / l.y : size,
+            Mathf.Abs(l.z) > 0.001f ? size / l.z : size
+        );
     }
 
     void OnDestroy()
