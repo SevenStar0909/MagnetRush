@@ -176,6 +176,9 @@ MonoBehaviour:
   m_pole: 0
   m_isActive: 0
   m_initialMass: 1
+  m_nEffect: {fileID: 0}
+  m_sEffect: {fileID: 0}
+  m_effectScaleMultiplier: 1.3
 --- !u!114 &5284489176223668504
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -191,6 +194,7 @@ MonoBehaviour:
   m_bulletSettings: {fileID: 11400000, guid: 425ee2473071b7a4fa2afd4ccb6a162c, type: 2}
   m_playerSettings: {fileID: 11400000, guid: d645a9ba3befda14d8a96f9af1142f3f, type: 2}
   m_firePoint: {fileID: 7640701815771579218}
+  m_selfFireHeightOffset: 1
 --- !u!114 &5226289233227837273
 MonoBehaviour:
   m_ObjectHideFlags: 0
