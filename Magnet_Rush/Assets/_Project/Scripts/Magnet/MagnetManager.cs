@@ -162,21 +162,35 @@ public class MagnetManager : Singleton<MagnetManager>
     {
         Vector3 delta = b.transform.position - a.transform.position;
         float distance = delta.magnitude;
+
+        // ハードカットオフ（パフォーマンス用）
         if (distance > m_settings.magnetRange || distance < 0.01f) return;
+
+        // フィールド個別範囲で有効距離を決定（大きい方を採用）
+        float effectiveOuter = Mathf.Max(a.FieldOuterRadius, b.FieldOuterRadius);
+        float effectiveInner = Mathf.Max(a.FieldInnerRadius, b.FieldInnerRadius);
+
+        // フィールドがない場合はグローバル値にフォールバック
+        if (effectiveOuter <= 0f) effectiveOuter = m_settings.magnetRange;
+        if (effectiveInner <= 0f) effectiveInner = effectiveOuter * 0.8f;
+
+        // フィールド範囲外なら力を適用しない
+        if (distance > effectiveOuter) return;
 
         Vector3 dirAtoB = delta / distance;
 
-        // forceCurve 優先、未設定なら forceDecayPower にフォールバック
-        float forceMagnitude;
-        if (m_settings.forceCurve != null && m_settings.forceCurve.length > 0)
+        // inner/outer線形減衰: inner内=フルパワー、inner〜outer間=線形減衰、outer外=ゼロ
+        float strength;
+        if (distance <= effectiveInner)
         {
-            float normalizedDist = distance / m_settings.magnetRange;
-            forceMagnitude = m_settings.magnetForce * m_settings.forceCurve.Evaluate(normalizedDist);
+            strength = 1f;
         }
         else
         {
-            forceMagnitude = m_settings.magnetForce / Mathf.Pow(distance, m_settings.forceDecayPower);
+            strength = 1f - (distance - effectiveInner) / (effectiveOuter - effectiveInner);
         }
+
+        float forceMagnitude = m_settings.magnetForce * strength;
 
         if (m_settings.maxForcePerObject > 0f)
             forceMagnitude = Mathf.Min(forceMagnitude, m_settings.maxForcePerObject);
@@ -276,68 +290,6 @@ public class MagnetManager : Singleton<MagnetManager>
         }
     }
 
-    public float GetMagnetRange()
-    {
-        return m_settings != null ? m_settings.magnetRange : 10f;
-    }
-
     public MagnetSettings Settings => m_settings;
 
-    void OnDrawGizmos()
-    {
-        if (m_settings == null) return;
-
-        foreach (var m in m_registry)
-        {
-            if (m == null || !m.IsActive) continue;
-
-            Color color = m.Pole == MagneticPole.S
-                ? new Color(0.2f, 0.4f, 1f, 0.8f)
-                : new Color(1f, 0.2f, 0.2f, 0.8f);
-            Gizmos.color = color;
-
-            float r = m_settings.magnetRange;
-            Vector3 p = m.transform.position;
-
-            DrawCircle(p, Vector3.up, r, 32);
-            DrawCircle(p, Vector3.forward, r, 32);
-            DrawCircle(p, Vector3.right, r, 32);
-            DrawCircle(p, (Vector3.forward + Vector3.right).normalized, r, 32);
-            DrawCircle(p, (Vector3.forward - Vector3.right).normalized, r, 32);
-            DrawCircle(p + Vector3.up * r * 0.5f, Vector3.up, r * 0.866f, 24);
-            DrawCircle(p - Vector3.up * r * 0.5f, Vector3.up, r * 0.866f, 24);
-        }
-
-        // ペア間のライン
-        for (int i = 0; i < m_cachedList.Count; i++)
-        {
-            if (!m_cachedList[i].IsActive) continue;
-            for (int j = i + 1; j < m_cachedList.Count; j++)
-            {
-                if (!m_cachedList[j].IsActive) continue;
-                float dist = Vector3.Distance(m_cachedList[i].transform.position, m_cachedList[j].transform.position);
-                if (dist > m_settings.magnetRange) continue;
-
-                bool isOpposite = m_cachedList[i].Pole != m_cachedList[j].Pole
-                    && m_cachedList[i].Pole != MagneticPole.None
-                    && m_cachedList[j].Pole != MagneticPole.None;
-                Gizmos.color = isOpposite ? Color.white : Color.yellow;
-                Gizmos.DrawLine(m_cachedList[i].transform.position, m_cachedList[j].transform.position);
-            }
-        }
-    }
-
-    private void DrawCircle(Vector3 center, Vector3 normal, float radius, int segments)
-    {
-        Quaternion rot = Quaternion.LookRotation(normal);
-        Vector3 prev = center + rot * (Vector3.up * radius);
-
-        for (int i = 1; i <= segments; i++)
-        {
-            float angle = (float)i / segments * Mathf.PI * 2f;
-            Vector3 next = center + rot * (new Vector3(Mathf.Sin(angle), Mathf.Cos(angle), 0f) * radius);
-            Gizmos.DrawLine(prev, next);
-            prev = next;
-        }
-    }
 }
