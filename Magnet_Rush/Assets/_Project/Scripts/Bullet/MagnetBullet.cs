@@ -23,9 +23,6 @@ public class MagnetBullet : MonoBehaviour
     private Rigidbody m_rb;
     private float m_timer;
     private bool m_registered;
-    // 生成したエフェクトのインスタンスを保持する変数
-    private GameObject m_nEffectInstance;
-    private GameObject m_sEffectInstance;
 
     void Awake()
     {
@@ -71,11 +68,6 @@ public class MagnetBullet : MonoBehaviour
         instance.transform.localRotation = Quaternion.identity;
         instance.transform.localScale = Vector3.one * m_settings.fireEffectScale;
         instance.SetActive(true);
-
-        if (pole == MagneticPole.N)
-            m_nEffectInstance = instance;
-        else
-            m_sEffectInstance = instance;
     }
 
     void Update()
