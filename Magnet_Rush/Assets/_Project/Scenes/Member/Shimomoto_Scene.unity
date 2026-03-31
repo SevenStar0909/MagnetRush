@@ -155,6 +155,9 @@ MonoBehaviour:
   m_pole: 0
   m_isActive: 0
   m_initialMass: 1
+  m_nEffect: {fileID: 0}
+  m_sEffect: {fileID: 0}
+  m_effectScaleMultiplier: 1.3
 --- !u!54 &161737627
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -446,6 +449,9 @@ MonoBehaviour:
   m_pole: 0
   m_isActive: 0
   m_initialMass: 1
+  m_nEffect: {fileID: 0}
+  m_sEffect: {fileID: 0}
+  m_effectScaleMultiplier: 1.3
 --- !u!54 &1058490487
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -729,10 +735,50 @@ PrefabInstance:
       propertyPath: m_Name
       value: _Camera
       objectReference: {fileID: 0}
+    - target: {fileID: 1114434785543766310, guid: d88d1e89cc9e6a1458b81fe08ab3b4dc, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1114434785543766310, guid: d88d1e89cc9e6a1458b81fe08ab3b4dc, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 2.763529
+      objectReference: {fileID: 0}
+    - target: {fileID: 3674377531660714093, guid: d88d1e89cc9e6a1458b81fe08ab3b4dc, type: 3}
+      propertyPath: TargetOffset.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3674377531660714093, guid: d88d1e89cc9e6a1458b81fe08ab3b4dc, type: 3}
+      propertyPath: TargetOffset.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4789501717070249846, guid: d88d1e89cc9e6a1458b81fe08ab3b4dc, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4789501717070249846, guid: d88d1e89cc9e6a1458b81fe08ab3b4dc, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 2.763529
+      objectReference: {fileID: 0}
     - target: {fileID: 5554608176706901386, guid: d88d1e89cc9e6a1458b81fe08ab3b4dc, type: 3}
       propertyPath: Target.TrackingTarget
       value: 
       objectReference: {fileID: 1144573772107352254}
+    - target: {fileID: 6616475823130266433, guid: d88d1e89cc9e6a1458b81fe08ab3b4dc, type: 3}
+      propertyPath: Damping.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6616475823130266433, guid: d88d1e89cc9e6a1458b81fe08ab3b4dc, type: 3}
+      propertyPath: Damping.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6616475823130266433, guid: d88d1e89cc9e6a1458b81fe08ab3b4dc, type: 3}
+      propertyPath: Composition.ScreenPosition.x
+      value: -0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6616475823130266433, guid: d88d1e89cc9e6a1458b81fe08ab3b4dc, type: 3}
+      propertyPath: Composition.ScreenPosition.y
+      value: 0.1
+      objectReference: {fileID: 0}
     - target: {fileID: 8306166869299380518, guid: d88d1e89cc9e6a1458b81fe08ab3b4dc, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
