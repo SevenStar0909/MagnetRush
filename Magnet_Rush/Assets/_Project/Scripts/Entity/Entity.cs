@@ -8,6 +8,7 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
 {
     protected Rigidbody rb;
     protected CapsuleCollider capsuleCollider;
+    protected EntityController controller;
     [HideInInspector] public Health health;
     protected Transform cachedCameraTransform;
 
@@ -74,6 +75,10 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
     public float turningDragMultiplier { get; set; } = 1f;
     public float decelerationMultiplier { get; set; } = 1f;
 
+    // --- 重力設定（サブクラスからSO値で上書き） ---
+    protected float m_gravity = -20f;
+    protected float m_snapForce = 2f;
+
     // --- 磁力回転設定（サブクラスからSO値で上書き） ---
     protected float m_pullOrientationThreshold = 5f;
     protected float m_pullOrientationSpeed = 8f;
@@ -82,6 +87,7 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
     {
         rb = GetComponent<Rigidbody>();
         capsuleCollider = GetComponent<CapsuleCollider>();
+        controller = GetComponent<EntityController>();
         health = GetComponent<Health>();
 
         if (rb != null)
@@ -97,53 +103,47 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
     }
 
     /// <summary>
-    /// 全速度成分を位置に適用する。適用後にexternalVelocityをリセットする。
-    /// kinematic Rigidbody なので transform.position で直接移動する
-    /// （rb.position は物理ステップまで transform に同期されずジッターの原因になる）。
+    /// 共通物理ステップ: 接地判定 → 重力 → 移動。サブクラスのUpdate()から呼ぶ。
+    /// </summary>
+    protected void EntityStep(float dt)
+    {
+        UpdateGround();
+        ApplyGravity(dt);
+        UpdateMagneticOrientation(dt);
+        ApplyMovement(dt);
+    }
+
+    /// <summary>
+    /// 全速度成分を位置に適用する。EntityControllerがあればCollide-and-Slideで壁衝突を処理する。
     /// </summary>
     protected virtual void ApplyMovement(float dt)
     {
-        Vector3 total = velocity + externalVelocity;
-        transform.position += total * dt;
+        Vector3 motion = (velocity + externalVelocity) * dt;
 
-        if (IsGrounded)
-            ClampToGround();
+        if (controller != null)
+        {
+            transform.position = controller.Move(transform.position, motion);
+        }
+        else
+        {
+            transform.position += motion;
+        }
 
         externalVelocity = Vector3.zero;
     }
 
     /// <summary>
-    /// 接地中にキャラが地面に食い込まないようにクランプする。
+    /// 重力を適用する。接地時は地面にスナップする。m_gravity/m_snapForceを使用。
     /// </summary>
-    private void ClampToGround()
-    {
-        float height = capsuleCollider != null ? capsuleCollider.height : 2f;
-        float checkDist = height * 0.5f + 0.3f;
-
-        if (Physics.Raycast(transform.position, -transform.up, out var hit, checkDist,
-            Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
-        {
-            Vector3 footPos = transform.position - transform.up * (height * 0.5f);
-            float penetration = Vector3.Dot(hit.point - footPos, hit.normal);
-            if (penetration > 0f)
-            {
-                transform.position += hit.normal * penetration;
-            }
-        }
-    }
-
-    /// <summary>
-    /// 重力を適用する。接地時は地面にスナップする。
-    /// </summary>
-    protected void ApplyGravity(float gravity, float snapForce, float dt)
+    protected void ApplyGravity(float dt)
     {
         if (IsGrounded && verticalVelocity < 0f)
         {
-            verticalVelocity = -snapForce;
+            verticalVelocity = -m_snapForce;
         }
         else
         {
-            verticalVelocity += gravity * dt;
+            verticalVelocity += m_gravity * dt;
         }
     }
 

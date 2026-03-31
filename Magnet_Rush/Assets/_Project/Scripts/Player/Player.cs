@@ -47,6 +47,8 @@ public class Player : Entity
         magnetizable = GetComponent<Magnetizable>();
 
         // SO値をEntity基底フィールドに反映
+        m_gravity = m_settings.gravity;
+        m_snapForce = m_settings.snapForce;
         m_pullOrientationThreshold = m_settings.pullOrientationThreshold;
         m_pullOrientationSpeed = m_settings.pullOrientationSpeed;
 
@@ -75,10 +77,7 @@ public class Player : Entity
         float dt = Mathf.Min(Time.deltaTime, Time.fixedDeltaTime * 3f);
         UpdateMagneticInfluence();
         states.Step(dt);
-        UpdateGround();
-        UpdateMagneticOrientation(dt);
-        ApplyGravity(m_settings.gravity, m_settings.snapForce, dt);
-        ApplyMovement(dt);
+        EntityStep(dt);
     }
 
     /// <summary>
