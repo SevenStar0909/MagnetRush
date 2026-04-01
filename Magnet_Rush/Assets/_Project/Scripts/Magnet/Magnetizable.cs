@@ -5,7 +5,7 @@ using System;
 /// <summary>
 /// 磁力の影響を受けることを示すコンポーネント。
 /// MagnetManagerに自動登録され、力の適用はオブジェクト種別に応じて自動判別する。
-/// 磁化時はレイヤーを "Magnetized" に変更し、Edge Detection アウトラインの対象になる。
+/// 磁化時はRendering Layer Maskを設定し、Edge Detection アウトラインの対象になる。
 /// </summary>
 public class Magnetizable : MonoBehaviour
 {
@@ -33,10 +33,10 @@ public class Magnetizable : MonoBehaviour
     private IMagneticResponse m_magneticResponse;
     private Entity m_cachedEntity;
     private float m_totalForceThisFrame;
-    private int m_originalLayer;
     private Renderer m_renderer;
     private MaterialPropertyBlock m_mpb;
     private MagnetField m_cachedField;
+    private RigidbodyConstraints m_savedConstraints;
     private static readonly int s_poleIDProperty = Shader.PropertyToID("_PoleID");
 
     /// <summary>同一GOのEntityキャッシュ。MagnetManagerのフィールド割り当てで使用。</summary>
@@ -60,7 +60,7 @@ public class Magnetizable : MonoBehaviour
         m_renderer = GetComponent<Renderer>();
         m_mpb = new MaterialPropertyBlock();
         mass = m_initialMass > 0f ? m_initialMass : (m_rb != null ? m_rb.mass : 1f);
-        m_originalLayer = gameObject.layer;
+        if (m_rb != null) m_savedConstraints = m_rb.constraints;
     }
 
     void OnEnable()
@@ -83,15 +83,16 @@ public class Magnetizable : MonoBehaviour
         m_pole = newPole;
         m_isActive = newPole != MagneticPole.None;
 
-        // Magnetized レイヤーに切り替え → Edge Detection の対象になる
-        if (m_isActive)
+        // Rendering Layer Maskでアウトライン対象に設定
+        if (m_isActive && m_renderer != null)
         {
-            gameObject.layer = LayerMask.NameToLayer("Magnetized");
-            if (m_renderer != null)
-            {
-                m_mpb.SetFloat(s_poleIDProperty, newPole == MagneticPole.S ? 1f : 0f);
-                m_renderer.SetPropertyBlock(m_mpb);
-            }
+            m_renderer.renderingLayerMask |= RenderingLayers.Magnetized;
+            m_mpb.SetFloat(s_poleIDProperty, newPole == MagneticPole.S ? 1f : 0f);
+            m_renderer.SetPropertyBlock(m_mpb);
+        }
+        else if (m_isActive && m_renderer == null)
+        {
+            Debug.LogWarning($"[Magnetizable] {gameObject.name} にRendererがありません。アウトライン表示できません。");
         }
 
         OnPoleChanged?.Invoke(m_pole);
@@ -102,8 +103,16 @@ public class Magnetizable : MonoBehaviour
         m_pole = MagneticPole.None;
         m_isActive = false;
 
-        // 元のレイヤーに戻す → アウトライン消える
-        gameObject.layer = m_originalLayer;
+        // Rendering Layer Maskからアウトラインビットを解除
+        if (m_renderer != null)
+            m_renderer.renderingLayerMask &= ~RenderingLayers.Magnetized;
+
+        // 回転制約を復元
+        if (m_rb != null && m_savedConstraints != RigidbodyConstraints.None)
+        {
+            m_rb.constraints = m_savedConstraints;
+            m_savedConstraints = RigidbodyConstraints.None;
+        }
 
         OnPoleChanged?.Invoke(m_pole);
     }
@@ -149,7 +158,17 @@ public class Magnetizable : MonoBehaviour
 
         if (m_rb != null && !m_rb.isKinematic)
         {
-            m_rb.AddForce(force, ForceMode.Acceleration);
+            // 磁力中は回転制約を解除（角や辺でぶつかる自然な挙動のため）
+            if (m_isActive && m_rb.constraints != RigidbodyConstraints.None)
+            {
+                m_savedConstraints = m_rb.constraints;
+                m_rb.constraints = RigidbodyConstraints.None;
+            }
+
+            // ソース方向の表面最近点に力を適用（トルクが発生し回転する）
+            var col = GetComponent<Collider>();
+            Vector3 contactPoint = col != null ? col.ClosestPoint(sourcePosition) : transform.position;
+            m_rb.AddForceAtPosition(force * m_rb.mass, contactPoint, ForceMode.Force);
             return;
         }
     }

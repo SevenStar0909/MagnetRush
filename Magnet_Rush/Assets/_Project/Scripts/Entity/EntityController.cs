@@ -36,7 +36,7 @@ public class EntityController : MonoBehaviour
     [Tooltip("衝突判定用カプセルの高さ。")]
     private float m_height = 2f;
 
-    [Tooltip("衝突判定のレイヤーマスク。")]
+    [Tooltip("衝突判定のレイヤーマスク。Awakeで未設定なら自動でPhysicsLayers.MaskEntityCollisionを適用。")]
     public LayerMask collisionLayer = -5;
 
     private const int k_MaxCollisionSteps = 3;
@@ -73,6 +73,10 @@ public class EntityController : MonoBehaviour
 
     void Awake()
     {
+        // collisionLayerが未設定(0)または旧デフォルト(-5)の場合はPhysicsLayers値で上書き
+        if (collisionLayer == 0 || collisionLayer == -5)
+            collisionLayer = PhysicsLayers.MaskEntityCollision;
+
         DisableExistingCollider();
         InitializeCollider();
         InitializeRigidbody();
@@ -103,6 +107,8 @@ public class EntityController : MonoBehaviour
             m_rigidbody = gameObject.AddComponent<Rigidbody>();
 
         m_rigidbody.isKinematic = true;
+        m_rigidbody.useGravity = false;
+        m_rigidbody.interpolation = RigidbodyInterpolation.None;
     }
 
     private void RefreshCollider()

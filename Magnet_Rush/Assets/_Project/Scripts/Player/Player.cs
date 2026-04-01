@@ -51,6 +51,13 @@ public class Player : Entity
         m_snapForce = m_settings.snapForce;
         m_pullOrientationThreshold = m_settings.pullOrientationThreshold;
         m_pullOrientationSpeed = m_settings.pullOrientationSpeed;
+        m_groundCheckDistance = m_settings.groundCheckDistance;
+
+        if (m_settings.groundLayer == 0)
+            Debug.LogWarning("[Player] PlayerSettings.groundLayerが未設定。PhysicsLayers.MaskGroundCheckを使用。");
+        m_groundLayer = m_settings.groundLayer != 0
+            ? m_settings.groundLayer
+            : PhysicsLayers.MaskGroundCheck;
 
         // HP=0でDiePlayerStateに遷移
         if (health != null)
