@@ -6,5 +6,4 @@ public static class GameTags
     public const string Wall = "Wall";
     public const string Turret = "Turret";
     public const string MagnetBullet = "MagnetBullet";
-    public const string Untagged = "Untagged";
 }
