@@ -37,6 +37,10 @@ public class Magnetizable : MonoBehaviour
     private MaterialPropertyBlock m_mpb;
     private MagnetField m_cachedField;
     private RigidbodyConstraints m_savedConstraints;
+    private bool m_isSettling;
+    private float m_settlingTimer;
+    private const float k_SettlingDuration = 0.5f;
+    private const float k_AngularVelocityThreshold = 0.5f;
     private static readonly int s_poleIDProperty = Shader.PropertyToID("_PoleID");
 
     /// <summary>同一GOのEntityキャッシュ。MagnetManagerのフィールド割り当てで使用。</summary>
@@ -107,11 +111,11 @@ public class Magnetizable : MonoBehaviour
         if (m_renderer != null)
             m_renderer.renderingLayerMask &= ~RenderingLayers.Magnetized;
 
-        // 回転制約を復元
+        // 回転制約はすぐ復元せず、セトリングフェーズ開始
         if (m_rb != null && m_savedConstraints != RigidbodyConstraints.None)
         {
-            m_rb.constraints = m_savedConstraints;
-            m_savedConstraints = RigidbodyConstraints.None;
+            m_isSettling = true;
+            m_settlingTimer = k_SettlingDuration;
         }
 
         OnPoleChanged?.Invoke(m_pole);
@@ -170,6 +174,43 @@ public class Magnetizable : MonoBehaviour
             Vector3 contactPoint = col != null ? col.ClosestPoint(sourcePosition) : transform.position;
             m_rb.AddForceAtPosition(force * m_rb.mass, contactPoint, ForceMode.Force);
             return;
+        }
+    }
+
+    void Update()
+    {
+        if (!m_isSettling || m_rb == null) return;
+
+        m_settlingTimer -= Time.deltaTime;
+
+        // 直立方向へのトルクを適用（重力だけでは起き上がれないため）
+        Quaternion currentRot = m_rb.rotation;
+        Quaternion uprightRot = Quaternion.Euler(0f, currentRot.eulerAngles.y, 0f);
+        Quaternion deltaRot = uprightRot * Quaternion.Inverse(currentRot);
+        deltaRot.ToAngleAxis(out float angle, out Vector3 axis);
+
+        if (angle > 180f) angle -= 360f;
+
+        if (Mathf.Abs(angle) > 1f)
+        {
+            // 角度に比例したトルクで滑らかに戻す
+            m_rb.AddTorque(axis * (angle * Mathf.Deg2Rad * 10f), ForceMode.Acceleration);
+            // 角速度を減衰して振動防止
+            m_rb.angularVelocity *= 0.9f;
+        }
+
+        // ほぼ直立 + 角速度が十分低い、またはタイマー切れで完了
+        bool nearUpright = Mathf.Abs(angle) < 2f;
+        bool angularSlow = m_rb.angularVelocity.magnitude < k_AngularVelocityThreshold;
+        bool timedOut = m_settlingTimer <= 0f;
+
+        if ((nearUpright && angularSlow) || timedOut)
+        {
+            m_rb.rotation = uprightRot;
+            m_rb.angularVelocity = Vector3.zero;
+            m_rb.constraints = m_savedConstraints;
+            m_savedConstraints = RigidbodyConstraints.None;
+            m_isSettling = false;
         }
     }
 
