@@ -195,13 +195,20 @@ public class EntityController : MonoBehaviour
                     }
                 }
 
-                // 動的Rigidbodyの押し処理（水平パス）
+                // 動的Rigidbodyの押し処理（水平パス、移動方向がオブジェクトに向かっている場合のみ）
                 if (pushEnabled)
                 {
                     var hitRb = hit.collider.attachedRigidbody;
                     if (hitRb != null && !hitRb.isKinematic)
                     {
+                        // 衝突面に対して正面から押しているか判定（hit.normalベース）
                         Vector3 pushDir = new Vector3(moveDirection.x, 0f, moveDirection.z).normalized;
+                        Vector3 surfaceDir = new Vector3(-hit.normal.x, 0f, -hit.normal.z).normalized;
+                        float dot = Vector3.Dot(pushDir, surfaceDir);
+
+                        // 面に対して斜め（dot < 0.7 ≒ 45度以上ズレ）なら壁として扱う
+                        if (dot < 0.7f) goto wallHandling;
+
                         float pushAmount = new Vector3(fullMotion.x, 0f, fullMotion.z).magnitude;
 
                         if (pushDir.sqrMagnitude > 0.01f && pushAmount > 0.001f)
@@ -221,6 +228,7 @@ public class EntityController : MonoBehaviour
                 }
 
                 // 壁として止まる+スライド
+                wallHandling:
                 float safeDistance = hit.distance - skinWidth - radius;
                 Vector3 offset = moveDirection * safeDistance;
                 Vector3 leftover = motion - offset;
