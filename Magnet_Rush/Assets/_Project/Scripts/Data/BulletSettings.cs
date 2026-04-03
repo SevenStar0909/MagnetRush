@@ -1,16 +1,22 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 [CreateAssetMenu(fileName = "BulletSettings", menuName = "MagnetRush/BulletSettings")]
 public class BulletSettings : ScriptableObject
 {
     [Header("弾")]
+    [Tooltip("弾の飛行速度（m/s）")]
     public float bulletSpeed = 30f;
+    [Tooltip("弾の生存時間（秒）。この時間が経つと自動消滅")]
     public float lifetime = 5f;
+    [Tooltip("同時に存在できる弾の最大数。リロード（X）で全弾消去")]
     public int maxBullets = 4;
+    [Tooltip("弾のPrefab")]
     public GameObject bulletPrefab;
 
     [Header("射撃")]
+    [Tooltip("射撃レイキャストの最大距離")]
     public float raycastDistance = 200f;
+    [Tooltip("磁力場のデフォルト範囲（未使用）")]
     public float defaultMagnetRange = 5f;
 
     [Header("フォールバック")]
@@ -26,7 +32,9 @@ public class BulletSettings : ScriptableObject
     public float bulletDamage = 10f;
 
     [Header("弾マテリアル")]
+    [Tooltip("S極弾のマテリアル（赤）")]
     public Material sMaterial;
+    [Tooltip("N極弾のマテリアル（青）")]
     public Material nMaterial;
 
     [Header("発射時エフェクト")]

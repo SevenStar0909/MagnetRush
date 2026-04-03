@@ -3,8 +3,10 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "MagnetSettings", menuName = "MagnetRush/MagnetSettings")]
 public class MagnetSettings : ScriptableObject
 {
-    [Header("Force")]
+    [Header("磁力")]
+    [Tooltip("磁力の基本の強さ。inner範囲内でこの値がフルで適用される")]
     public float magnetForce = 15f;
+    [Tooltip("ペア検索のハードカットオフ距離（m）。この距離以上のペアは力を計算しない（パフォーマンス用）")]
     public float magnetRange = 10f;
 
     [Header("制限")]

@@ -109,8 +109,11 @@ public class MagnetBullet : MonoBehaviour
     {
         if (IsStuck) return;
 
-        // トリガーコライダー（MagnetField の範囲検知用等）は無視。物理コライダーのみ反応
-        if (other.isTrigger) return;
+        // トリガーコライダーは無視。SelfFire弾はプレイヤーのTriggerのみ許可
+        if (other.isTrigger)
+        {
+            if (!IsSelfFire || !other.CompareTag(GameTags.Player)) return;
+        }
 
         // 他の弾 — MagnetFieldを持つ弾にはダメージ蓄積
         if (other.CompareTag(GameTags.MagnetBullet))

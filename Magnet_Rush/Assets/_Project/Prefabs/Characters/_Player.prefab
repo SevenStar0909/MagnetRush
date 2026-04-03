@@ -84,6 +84,7 @@ GameObject:
   - component: {fileID: 2967279506434568754}
   - component: {fileID: 3617074708774836768}
   - component: {fileID: 5827321480477193096}
+  - component: {fileID: 1234567890123456789}
   m_Layer: 8
   m_Name: Player
   m_TagString: Player
@@ -240,8 +241,8 @@ Rigidbody:
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
   m_UseGravity: 0
-  m_IsKinematic: 0
-  m_Interpolate: 1
+  m_IsKinematic: 1
+  m_Interpolate: 0
   m_Constraints: 112
   m_CollisionDetection: 0
 --- !u!136 &5908818190509827592
@@ -370,3 +371,21 @@ Transform:
   - {fileID: 525279597465324906}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1234567890123456789
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5685355580797170966}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7aa81230da17ade4d8600a4b0b71a3ae, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  slopeLimit: 45
+  stepOffset: 0.3
+  skinWidth: 0.01
+  collisionLayer:
+    serializedVersion: 2
+    m_Bits: 4294967291

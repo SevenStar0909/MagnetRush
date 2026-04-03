@@ -74,7 +74,7 @@ public class ShootingController : MonoBehaviour
         Ray ray = m_mainCamera.ScreenPointToRay(screenCenter);
         Vector3 camForward = m_mainCamera.transform.forward;
 
-        int layerMask = ~(1 << gameObject.layer);
+        int layerMask = PhysicsLayers.MaskShootingRaycast;
         float maxDist = m_bulletSettings != null ? m_bulletSettings.raycastDistance : 200f;
 
         Vector3 targetPoint = CalculateTargetPoint(ray, camForward, spawnPos, layerMask, maxDist);

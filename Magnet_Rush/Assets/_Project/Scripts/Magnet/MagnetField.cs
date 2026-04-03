@@ -71,7 +71,7 @@ public class MagnetField : MonoBehaviour, IMagnetField
         // 親GOのレイヤーを変えずに、Bullet レイヤーとの衝突を Layer Matrix で遮断できる
         m_triggerGO = new GameObject("MagnetFieldTrigger");
         m_triggerGO.transform.SetParent(transform, false);
-        m_triggerGO.layer = LayerMask.NameToLayer("MagnetField");
+        m_triggerGO.layer = PhysicsLayers.MagnetField;
 
         m_triggerCollider = m_triggerGO.AddComponent<SphereCollider>();
         m_triggerCollider.isTrigger = true;
