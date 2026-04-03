@@ -201,13 +201,13 @@ public class EntityController : MonoBehaviour
                     var hitRb = hit.collider.attachedRigidbody;
                     if (hitRb != null && !hitRb.isKinematic)
                     {
-                        // 移動方向がオブジェクトの中心に向かっているか判定
-                        Vector3 toObject = (hitRb.transform.position - position).normalized;
+                        // 衝突面に対して正面から押しているか判定（hit.normalベース）
                         Vector3 pushDir = new Vector3(moveDirection.x, 0f, moveDirection.z).normalized;
-                        float dot = Vector3.Dot(pushDir, new Vector3(toObject.x, 0f, toObject.z).normalized);
+                        Vector3 surfaceDir = new Vector3(-hit.normal.x, 0f, -hit.normal.z).normalized;
+                        float dot = Vector3.Dot(pushDir, surfaceDir);
 
-                        // 横移動（dot < 0.5）なら押さず壁として扱う
-                        if (dot < 0.5f) goto wallHandling;
+                        // 面に対して斜め（dot < 0.7 ≒ 45度以上ズレ）なら壁として扱う
+                        if (dot < 0.7f) goto wallHandling;
 
                         float pushAmount = new Vector3(fullMotion.x, 0f, fullMotion.z).magnitude;
 
