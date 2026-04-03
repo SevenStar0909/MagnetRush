@@ -410,23 +410,24 @@ public class AutoBuildSystem : EditorWindow
     }
 
     /// <summary>
-    /// Googleドライブ内の既存ビルドを全削除する
+    /// Googleドライブ内の既存ビルドZIPのみを削除する。
+    /// ビルド命名規則（{productName}_Debug/Release_v*.zip）に一致するファイルだけ対象。
     /// </summary>
     private void CleanupGoogleDrive()
     {
         try
         {
+            string name = !string.IsNullOrEmpty(productName) ? productName : PlayerSettings.productName;
+            // ビルドZIPのパターン: ProductName_Debug_v1.2.3.zip / ProductName_Release_v1.2.3.zip
+            string debugPattern = $"{name}_Debug_v*.zip";
+            string releasePattern = $"{name}_Release_v*.zip";
+
             int deletedCount = 0;
 
-            foreach (string file in Directory.GetFiles(googleDriveFolder))
+            foreach (string file in Directory.GetFiles(googleDriveFolder, debugPattern)
+                .Concat(Directory.GetFiles(googleDriveFolder, releasePattern)))
             {
                 File.Delete(file);
-                deletedCount++;
-            }
-
-            foreach (string dir in Directory.GetDirectories(googleDriveFolder))
-            {
-                Directory.Delete(dir, true);
                 deletedCount++;
             }
 

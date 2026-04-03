@@ -12,21 +12,16 @@ public class PlayerInputHandler : MonoBehaviour
     [SerializeField] private InputActionAsset m_actions;
 
     private InputAction m_move;
-    private InputAction m_look;
     private InputAction m_attack;
     private InputAction m_aim;
     private InputAction m_switchPole;
     private InputAction m_reload;
+    private InputAction m_selfFire;
 
     /// <summary>
     /// 移動入力のベクトル（左スティック）。
     /// </summary>
     public Vector2 MoveInput => m_move.ReadValue<Vector2>();
-
-    /// <summary>
-    /// 視点入力のベクトル（右スティック）。
-    /// </summary>
-    public Vector2 LookInput => m_look.ReadValue<Vector2>();
 
     /// <summary>
     /// エイムボタン（LT）が押されているかどうか。
@@ -48,6 +43,11 @@ public class PlayerInputHandler : MonoBehaviour
     /// </summary>
     public bool ConsumeReload() => m_reload.WasPressedThisFrame();
 
+    /// <summary>
+    /// セルフファイアボタン（A / F）が押されたフレームならtrueを返す。
+    /// </summary>
+    public bool ConsumeSelfFire() => m_selfFire.WasPressedThisFrame();
+
     void Awake()
     {
         if (m_actions == null)
@@ -60,11 +60,11 @@ public class PlayerInputHandler : MonoBehaviour
         if (m_actions != null)
         {
             m_move = m_actions["Move"];
-            m_look = m_actions["Look"];
             m_attack = m_actions["Attack"];
             m_aim = m_actions["Aim"];
             m_switchPole = m_actions["SwitchPole"];
             m_reload = m_actions["Reload"];
+            m_selfFire = m_actions["SelfFire"];
         }
     }
 

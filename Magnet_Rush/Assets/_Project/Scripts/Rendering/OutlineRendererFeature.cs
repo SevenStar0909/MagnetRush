@@ -12,8 +12,7 @@ using UnityEngine.Serialization;
 public class OutlineRendererFeature : ScriptableRendererFeature
 {
     [Header("設定")]
-    [FormerlySerializedAs("outlineLayerMask")]
-    [SerializeField] private LayerMask m_outlineLayerMask = 0;
+    [SerializeField] private uint m_outlineRenderingLayerMask = 256;  // 1u << 8 = Magnetized
     [FormerlySerializedAs("normalsMaterial")]
     [SerializeField] private Material m_normalsMaterial;
     [FormerlySerializedAs("edgeDetectionMaterial")]
@@ -36,7 +35,7 @@ public class OutlineRendererFeature : ScriptableRendererFeature
 
     public override void Create()
     {
-        m_normalsPass = new NormalsPrePass(m_outlineLayerMask, m_normalsMaterial);
+        m_normalsPass = new NormalsPrePass(m_outlineRenderingLayerMask, m_normalsMaterial);
         m_normalsPass.renderPassEvent = RenderPassEvent.AfterRenderingOpaques;
 
         m_edgePass = new EdgeDetectionPass(m_edgeDetectionMaterial, m_outlineThickness,
@@ -59,10 +58,10 @@ public class OutlineRendererFeature : ScriptableRendererFeature
         m_normalsPass?.Cleanup();
     }
 
-    //  Magnetized レイヤーの法線を専用RTに描画
+    //  Rendering Layer Mask対象オブジェクトの法線を専用RTに描画
     class NormalsPrePass : ScriptableRenderPass
     {
-        private readonly LayerMask m_layerMask;
+        private readonly uint m_renderingLayerMask;
         private readonly Material m_normalsMaterial;
         private readonly List<ShaderTagId> m_shaderTagIds = new()
         {
@@ -73,9 +72,9 @@ public class OutlineRendererFeature : ScriptableRendererFeature
         private RTHandle m_normalsRT;
         private RTHandle m_depthRT;
 
-        public NormalsPrePass(LayerMask layerMask, Material normalsMaterial)
+        public NormalsPrePass(uint renderingLayerMask, Material normalsMaterial)
         {
-            m_layerMask = layerMask;
+            m_renderingLayerMask = renderingLayerMask;
             m_normalsMaterial = normalsMaterial;
         }
 
@@ -102,7 +101,9 @@ public class OutlineRendererFeature : ScriptableRendererFeature
             var drawingSettings = RenderingUtils.CreateDrawingSettings(
                 m_shaderTagIds, renderingData, cameraData, lightData, SortingCriteria.CommonOpaque);
             drawingSettings.overrideMaterial = m_normalsMaterial;
-            var filteringSettings = new FilteringSettings(RenderQueueRange.opaque, m_layerMask);
+            // Physics LayerフィルタリングはRendering Layer Maskに移行済み。全Physics Layer通過。
+            var filteringSettings = new FilteringSettings(RenderQueueRange.opaque, ~0);
+            filteringSettings.renderingLayerMask = m_renderingLayerMask;
             var rlParams = new RendererListParams(renderingData.cullResults, drawingSettings, filteringSettings);
             var rendererListHandle = renderGraph.CreateRendererList(rlParams);
 

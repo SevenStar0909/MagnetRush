@@ -3,9 +3,29 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// エンティティステートを管理する。ステートはRegisterState()で登録される
+/// EntityStateManagerの非ジェネリック基底クラス。
+/// EntityStateManagerListenerがイベントを購読するために使用。
 /// </summary>
-public class EntityStateManager<T> : MonoBehaviour where T : Entity
+public abstract class EntityStateManagerBase : MonoBehaviour
+{
+    /// <summary>ステート進入時に発火。引数は新ステートのType。</summary>
+    public event Action<Type> OnStateEnter;
+
+    /// <summary>ステート退出時に発火。引数は旧ステートのType。</summary>
+    public event Action<Type> OnStateExit;
+
+    /// <summary>ステート変更時に発火。</summary>
+    public event Action OnStateChanged;
+
+    protected void InvokeStateEnter(Type type) => OnStateEnter?.Invoke(type);
+    protected void InvokeStateExit(Type type) => OnStateExit?.Invoke(type);
+    protected void InvokeStateChanged() => OnStateChanged?.Invoke();
+}
+
+/// <summary>
+/// エンティティステートを管理する。ステートはRegisterState()で登録される。
+/// </summary>
+public class EntityStateManager<T> : EntityStateManagerBase where T : Entity
 {
     private readonly Dictionary<Type, EntityState<T>> m_states = new();
     private T m_entity;
@@ -29,15 +49,6 @@ public class EntityStateManager<T> : MonoBehaviour where T : Entity
         m_states[state.GetType()] = state;
     }
 
-    /// <summary>ステート進入時に発火。引数は新ステートのType。</summary>
-    public event Action<Type> OnStateEnter;
-
-    /// <summary>ステート退出時に発火。引数は旧ステートのType。</summary>
-    public event Action<Type> OnStateExit;
-
-    /// <summary>ステート変更時に発火。</summary>
-    public event Action OnStateChanged;
-
     /// <summary>
     /// 指定したステートに遷移する。現在ステートのExit→新ステートのEnterを実行する。
     /// </summary>
@@ -53,19 +64,18 @@ public class EntityStateManager<T> : MonoBehaviour where T : Entity
         if (current != null)
         {
             current.Exit();
-            OnStateExit?.Invoke(current.GetType());
+            InvokeStateExit(current.GetType());
             last = current;
         }
 
         current = next;
         current.Enter(m_entity, this);
-        OnStateEnter?.Invoke(current.GetType());
-        OnStateChanged?.Invoke();
+        InvokeStateEnter(current.GetType());
+        InvokeStateChanged();
     }
 
     /// <summary>
     /// 現在ステートのStepを実行し、timeSinceEnteredを更新する。
-    /// Player.Update()から呼び出す。
     /// </summary>
     public void Step(float dt)
     {

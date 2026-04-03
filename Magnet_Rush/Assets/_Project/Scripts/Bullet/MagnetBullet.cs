@@ -15,6 +15,7 @@ public class MagnetBullet : MonoBehaviour
 
     public MagneticPole Pole { get; private set; }
     public bool IsStuck { get; private set; }
+    public bool IsSelfFire { get; private set; }
 
     /// <summary>弾が何かに着弾した時に発火するコールバック。</summary>
     public event Action OnImpact;
@@ -28,9 +29,10 @@ public class MagnetBullet : MonoBehaviour
         m_rb = GetComponent<Rigidbody>();
     }
 
-    public void Initialize(MagneticPole pole, Vector3 direction)
+    public void Initialize(MagneticPole pole, Vector3 direction, bool isSelfFire = false)
     {
         Pole = pole;
+        IsSelfFire = isSelfFire;
         m_rb.isKinematic = false;
         m_rb.useGravity = false;
         m_rb.linearVelocity = direction.normalized * m_settings.bulletSpeed;
@@ -44,12 +46,28 @@ public class MagnetBullet : MonoBehaviour
             if (mat != null) renderer.material = mat;
         }
 
+        // 発射時にエフェクトを初期化して描画
+        InitializeEffects(pole);
+
         // BulletManager登録
         if (BulletManager.Instance != null)
         {
             BulletManager.Instance.Register(this);
             m_registered = true;
         }
+    }
+
+    private void InitializeEffects(MagneticPole pole)
+    {
+        if (m_settings == null) return;
+        GameObject prefab = pole == MagneticPole.S ? m_settings.fireEffect_S : m_settings.fireEffect_N;
+        if (prefab == null) return;
+
+        var instance = Instantiate(prefab, transform);
+        instance.transform.localPosition = Vector3.zero;
+        instance.transform.localRotation = Quaternion.identity;
+        instance.transform.localScale = WorldScale(m_settings.fireEffectScale, transform);
+        instance.SetActive(true);
     }
 
     void Update()
@@ -91,8 +109,11 @@ public class MagnetBullet : MonoBehaviour
     {
         if (IsStuck) return;
 
-        // トリガーコライダー（MagnetField の範囲検知用等）は無視。物理コライダーのみ反応
-        if (other.isTrigger) return;
+        // トリガーコライダーは無視。SelfFire弾はプレイヤーのTriggerのみ許可
+        if (other.isTrigger)
+        {
+            if (!IsSelfFire || !other.CompareTag(GameTags.Player)) return;
+        }
 
         // 他の弾 — MagnetFieldを持つ弾にはダメージ蓄積
         if (other.CompareTag(GameTags.MagnetBullet))
@@ -111,8 +132,8 @@ public class MagnetBullet : MonoBehaviour
             return;
         }
 
-        // プレイヤー自身は無視
-        if (other.CompareTag(GameTags.Player)) return;
+        // 通常弾はプレイヤーを無視。SelfFire弾のみプレイヤーに当たる
+        if (other.CompareTag(GameTags.Player) && !IsSelfFire) return;
 
         // 対象に Magnetizable があるか → パターン分岐
         var targetMag = other.GetComponent<Magnetizable>();
@@ -150,13 +171,17 @@ public class MagnetBullet : MonoBehaviour
                 MagnetManager.Instance.RegisterField(field);
 
             var visualizer = target.gameObject.AddComponent<MagnetFieldVisualizer>();
-            visualizer.Show(Pole, m_settings.bulletFieldSettings.outerRadius);
+            visualizer.Show(Pole, m_settings.bulletFieldSettings);
 
-            // フィールド期限切れ → 対象の磁化解除 + Visualizer 除去
+            // 着弾エフェクトを対象に生成
+            var effectInstance = SpawnImpactEffect(target.transform);
+
+            // フィールド期限切れ → 対象の磁化解除 + Visualizer + エフェクト除去
             field.OnFieldExpired += () =>
             {
-                targetMag.Deactivate();
+                if (targetMag != null) targetMag.Deactivate();
                 if (visualizer != null) Destroy(visualizer);
+                if (effectInstance != null) Destroy(effectInstance);
             };
         }
 
@@ -191,13 +216,45 @@ public class MagnetBullet : MonoBehaviour
                 MagnetManager.Instance.RegisterField(field);
 
             var visualizer = gameObject.AddComponent<MagnetFieldVisualizer>();
-            visualizer.Show(Pole, m_settings.bulletFieldSettings.outerRadius);
+            visualizer.Show(Pole, m_settings.bulletFieldSettings);
+
+            // 着弾エフェクトを弾自身に生成（弾の子なのでフィールド期限切れで一緒に消える）
+            SpawnImpactEffect(transform);
 
             // フィールド期限切れ → 弾ごと消える
             field.OnFieldExpired += () => Destroy(gameObject);
         }
 
         OnImpact?.Invoke();
+    }
+
+    /// <summary>
+    /// 着弾エフェクトを対象の子として生成する。
+    /// </summary>
+    private GameObject SpawnImpactEffect(Transform parent)
+    {
+        if (m_settings == null) return null;
+        GameObject prefab = Pole == MagneticPole.S ? m_settings.impactEffect_S : m_settings.impactEffect_N;
+        if (prefab == null) return null;
+
+        var instance = Instantiate(prefab, parent);
+        instance.transform.localPosition = Vector3.zero;
+        instance.transform.localRotation = Quaternion.identity;
+        instance.transform.localScale = WorldScale(m_settings.impactEffectScale, parent);
+        return instance;
+    }
+
+    /// <summary>
+    /// 親のスケールに関係なく一定のワールドサイズになるlocalScaleを返す。
+    /// </summary>
+    private static Vector3 WorldScale(float size, Transform parent)
+    {
+        Vector3 l = parent.lossyScale;
+        return new Vector3(
+            Mathf.Abs(l.x) > 0.001f ? size / l.x : size,
+            Mathf.Abs(l.y) > 0.001f ? size / l.y : size,
+            Mathf.Abs(l.z) > 0.001f ? size / l.z : size
+        );
     }
 
     void OnDestroy()
