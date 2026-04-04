@@ -393,7 +393,10 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
         if (IsGrounded) return;
         if (externalVelocity.sqrMagnitude < m_pullOrientationThreshold * m_pullOrientationThreshold) return;
 
-        FaceDirection(externalVelocity.normalized, m_pullOrientationSpeed, dt);
+        // 水平方向のみ回転（Y軸回転のみ）。上下に傾けるとtransform.upが狂い重力計算が破綻する
+        Vector3 horizontalDir = new Vector3(externalVelocity.x, 0f, externalVelocity.z);
+        if (horizontalDir.sqrMagnitude > 0.01f)
+            FaceDirection(horizontalDir.normalized, m_pullOrientationSpeed, dt);
     }
 
     /// <summary>
