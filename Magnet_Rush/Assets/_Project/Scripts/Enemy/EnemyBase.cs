@@ -17,8 +17,11 @@ public class EnemyBase : Entity
     [FormerlySerializedAs("player")]
     [SerializeField] private Transform m_player;
 
-    protected NavMeshAgent agent;
-    private MagneticMover m_mover;
+    protected NavMeshAgent agent; 
+    
+    [Header("Magnetic")]
+    [FormerlySerializedAs("MagneticMover")]
+    [SerializeField] private MagneticMover m_mover;
 
     public EnemySettings StatusData => m_statusData;
     public Transform Player => m_player;
@@ -31,7 +34,7 @@ public class EnemyBase : Entity
     {
         base.Awake();
         agent = GetComponent<NavMeshAgent>();
-        m_mover = GetComponent<MagneticMover>();
+        m_mover = GetComponentInChildren<MagneticMover>();
 
         if (m_player == null)
         {

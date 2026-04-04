@@ -32,7 +32,6 @@ public class EnemyMeleeAI : MonoBehaviour
 
         if (m_enemyBase.IsMagnetControlled)
         {
-            Debug.Log("m_enemyBase.IsMagnetControlled");
             return;
         }
 
