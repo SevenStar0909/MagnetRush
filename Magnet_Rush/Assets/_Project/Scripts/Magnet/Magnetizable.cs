@@ -180,10 +180,11 @@ public class Magnetizable : MonoBehaviour
     void Update()
     {
         if (!m_isSettling || m_rb == null) return;
+        // kinematic中はセトリング処理をスキップ（EntityControllerの押し処理中など）
+        if (m_rb.isKinematic) return;
 
         m_settlingTimer -= Time.deltaTime;
 
-        // 直立方向へのトルクを適用（重力だけでは起き上がれないため）
         Quaternion currentRot = m_rb.rotation;
         Quaternion uprightRot = Quaternion.Euler(0f, currentRot.eulerAngles.y, 0f);
         Quaternion deltaRot = uprightRot * Quaternion.Inverse(currentRot);
@@ -193,13 +194,10 @@ public class Magnetizable : MonoBehaviour
 
         if (Mathf.Abs(angle) > 1f)
         {
-            // 角度に比例したトルクで滑らかに戻す
             m_rb.AddTorque(axis * (angle * Mathf.Deg2Rad * 10f), ForceMode.Acceleration);
-            // 角速度を減衰して振動防止
             m_rb.angularVelocity *= 0.9f;
         }
 
-        // ほぼ直立 + 角速度が十分低い、またはタイマー切れで完了
         bool nearUpright = Mathf.Abs(angle) < 2f;
         bool angularSlow = m_rb.angularVelocity.magnitude < k_AngularVelocityThreshold;
         bool timedOut = m_settlingTimer <= 0f;
