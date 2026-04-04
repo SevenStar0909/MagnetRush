@@ -3,7 +3,7 @@ using UnityEngine;
 /// <summary>
 /// MagnetField のトリガー子GOに付けるブリッジ。
 /// OnTrigger イベントを親の MagnetField に転送する。
-/// MagnetField レイヤーに配置され、Bullet レイヤーとの衝突を Layer Matrix で遮断する。
+/// MagnetField レイヤーに配置。Layer Collision MatrixでGround/Wall/Bullet/Magnetizedとの衝突を遮断済み。
 /// </summary>
 public class MagnetFieldTriggerBridge : MonoBehaviour
 {

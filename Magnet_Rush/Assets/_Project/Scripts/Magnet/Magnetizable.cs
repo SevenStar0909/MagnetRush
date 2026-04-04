@@ -5,7 +5,7 @@ using System;
 /// <summary>
 /// 磁力の影響を受けることを示すコンポーネント。
 /// MagnetManagerに自動登録され、力の適用はオブジェクト種別に応じて自動判別する。
-/// 磁化時はレイヤーを "Magnetized" に変更し、Edge Detection アウトラインの対象になる。
+/// 磁化時はRendering Layer Maskを設定し、Edge Detection アウトラインの対象になる。
 /// </summary>
 public class Magnetizable : MonoBehaviour
 {
@@ -15,12 +15,6 @@ public class Magnetizable : MonoBehaviour
     [SerializeField] private bool m_isActive;
     [FormerlySerializedAs("initialMass")]
     [SerializeField] private float m_initialMass = 1f;
-
-    [Header("Effects")]
-    [SerializeField] private GameObject m_nEffect;
-    [SerializeField] private GameObject m_sEffect;
-    [SerializeField, Tooltip("エフェクトの大きさの倍率")]
-    private float m_effectScaleMultiplier = 1.3f;
 
     public MagneticPole Pole => m_pole;
     public bool IsActive => m_isActive;
@@ -39,12 +33,14 @@ public class Magnetizable : MonoBehaviour
     private IMagneticResponse m_magneticResponse;
     private Entity m_cachedEntity;
     private float m_totalForceThisFrame;
-    private int m_originalLayer;
     private Renderer m_renderer;
     private MaterialPropertyBlock m_mpb;
     private MagnetField m_cachedField;
-    private GameObject m_nEffectInstance;
-    private GameObject m_sEffectInstance;
+    private RigidbodyConstraints m_savedConstraints;
+    private bool m_isSettling;
+    private float m_settlingTimer;
+    private const float k_SettlingDuration = 0.5f;
+    private const float k_AngularVelocityThreshold = 0.5f;
     private static readonly int s_poleIDProperty = Shader.PropertyToID("_PoleID");
 
     /// <summary>同一GOのEntityキャッシュ。MagnetManagerのフィールド割り当てで使用。</summary>
@@ -68,13 +64,7 @@ public class Magnetizable : MonoBehaviour
         m_renderer = GetComponent<Renderer>();
         m_mpb = new MaterialPropertyBlock();
         mass = m_initialMass > 0f ? m_initialMass : (m_rb != null ? m_rb.mass : 1f);
-        m_originalLayer = gameObject.layer;
-
-        // エフェクトの生成と初期設定
-        InitializeEffects();
-
-        // 初期状態のエフェクト反映
-        UpdateEffects();
+        if (m_rb != null) m_savedConstraints = m_rb.constraints;
     }
 
     void OnEnable()
@@ -97,18 +87,17 @@ public class Magnetizable : MonoBehaviour
         m_pole = newPole;
         m_isActive = newPole != MagneticPole.None;
 
-        // Magnetized レイヤーに切り替え → Edge Detection の対象になる
-        if (m_isActive)
+        // Rendering Layer Maskでアウトライン対象に設定
+        if (m_isActive && m_renderer != null)
         {
-            gameObject.layer = LayerMask.NameToLayer("Magnetized");
-            if (m_renderer != null)
-            {
-                m_mpb.SetFloat(s_poleIDProperty, newPole == MagneticPole.S ? 1f : 0f);
-                m_renderer.SetPropertyBlock(m_mpb);
-            }
+            m_renderer.renderingLayerMask |= RenderingLayers.Magnetized;
+            m_mpb.SetFloat(s_poleIDProperty, newPole == MagneticPole.S ? 1f : 0f);
+            m_renderer.SetPropertyBlock(m_mpb);
         }
-
-        UpdateEffects();
+        else if (m_isActive && m_renderer == null)
+        {
+            Debug.LogWarning($"[Magnetizable] {gameObject.name} にRendererがありません。アウトライン表示できません。");
+        }
 
         OnPoleChanged?.Invoke(m_pole);
     }
@@ -118,75 +107,18 @@ public class Magnetizable : MonoBehaviour
         m_pole = MagneticPole.None;
         m_isActive = false;
 
-        // 元のレイヤーに戻す → アウトライン消える
-        gameObject.layer = m_originalLayer;
+        // Rendering Layer Maskからアウトラインビットを解除
+        if (m_renderer != null)
+            m_renderer.renderingLayerMask &= ~RenderingLayers.Magnetized;
 
-        UpdateEffects();
+        // 回転制約はすぐ復元せず、セトリングフェーズ開始
+        if (m_rb != null && m_savedConstraints != RigidbodyConstraints.None)
+        {
+            m_isSettling = true;
+            m_settlingTimer = k_SettlingDuration;
+        }
 
         OnPoleChanged?.Invoke(m_pole);
-    }
-
-    private void InitializeEffects()
-    {
-        // オブジェクトの実際の見た目のサイズ（Bounds）を取得し、それに倍率を掛けた目標の大きさを計算
-        Vector3 targetScale = CalculateEffectScale();
-
-        // N極エフェクトを子オブジェクトとして生成
-        if (m_nEffect != null)
-        {
-            m_nEffectInstance = Instantiate(m_nEffect, transform);
-            m_nEffectInstance.transform.localPosition = Vector3.zero;
-            m_nEffectInstance.transform.localRotation = Quaternion.identity;
-            m_nEffectInstance.transform.localScale = targetScale;
-            m_nEffectInstance.SetActive(false);
-        }
-
-        // S極エフェクトを子オブジェクトとして生成
-        if (m_sEffect != null)
-        {
-            m_sEffectInstance = Instantiate(m_sEffect, transform);
-            m_sEffectInstance.transform.localPosition = Vector3.zero;
-            m_sEffectInstance.transform.localRotation = Quaternion.identity;
-            m_sEffectInstance.transform.localScale = targetScale;
-            m_sEffectInstance.SetActive(false);
-        }
-    }
-
-    /// <summary>
-    /// オブジェクトの実際の表面サイズ（Bounds）から、親のスケール歪みを相殺したエフェクト用スケールを計算する
-    /// </summary>
-    private Vector3 CalculateEffectScale()
-    {
-        if (m_renderer == null) return Vector3.one * m_effectScaleMultiplier;
-
-        // Rendererから実際のワールドサイズ（AABB）を取得
-        Vector3 boundsSize = m_renderer.bounds.size;
-        Vector3 parentLossyScale = transform.lossyScale;
-
-        // ゼロ割り算を防ぐための安全処理
-        float scaleX = Mathf.Abs(parentLossyScale.x) > 0.001f ? (boundsSize.x * m_effectScaleMultiplier) / parentLossyScale.x : m_effectScaleMultiplier;
-        float scaleY = Mathf.Abs(parentLossyScale.y) > 0.001f ? (boundsSize.y * m_effectScaleMultiplier) / parentLossyScale.y : m_effectScaleMultiplier;
-        float scaleZ = Mathf.Abs(parentLossyScale.z) > 0.001f ? (boundsSize.z * m_effectScaleMultiplier) / parentLossyScale.z : m_effectScaleMultiplier;
-
-        // 最大の辺を基準にして、パーティクルが歪まないように均等な倍率（一番大きいサイズに合わせる）で返す
-        float maxScale = Mathf.Max(scaleX, scaleY, scaleZ);
-        return new Vector3(maxScale, maxScale, maxScale);
-    }
-
-    /// <summary>
-    /// 現在の極性に応じてエフェクトの表示状態を更新する。
-    /// </summary>
-    private void UpdateEffects()
-    {
-        if (m_nEffectInstance != null)
-        {
-            m_nEffectInstance.SetActive(m_pole == MagneticPole.N);
-        }
-
-        if (m_sEffectInstance != null)
-        {
-            m_sEffectInstance.SetActive(m_pole == MagneticPole.S);
-        }
     }
 
     /// <summary>
@@ -230,8 +162,55 @@ public class Magnetizable : MonoBehaviour
 
         if (m_rb != null && !m_rb.isKinematic)
         {
-            m_rb.AddForce(force, ForceMode.Acceleration);
+            // 磁力中は回転制約を解除（角や辺でぶつかる自然な挙動のため）
+            if (m_isActive && m_rb.constraints != RigidbodyConstraints.None)
+            {
+                m_savedConstraints = m_rb.constraints;
+                m_rb.constraints = RigidbodyConstraints.None;
+            }
+
+            // ソース方向の表面最近点に力を適用（トルクが発生し回転する）
+            var col = GetComponent<Collider>();
+            Vector3 contactPoint = col != null ? col.ClosestPoint(sourcePosition) : transform.position;
+            m_rb.AddForceAtPosition(force * m_rb.mass, contactPoint, ForceMode.Force);
             return;
+        }
+    }
+
+    void Update()
+    {
+        if (!m_isSettling || m_rb == null) return;
+
+        m_settlingTimer -= Time.deltaTime;
+
+        // 直立方向へのトルクを適用（重力だけでは起き上がれないため）
+        Quaternion currentRot = m_rb.rotation;
+        Quaternion uprightRot = Quaternion.Euler(0f, currentRot.eulerAngles.y, 0f);
+        Quaternion deltaRot = uprightRot * Quaternion.Inverse(currentRot);
+        deltaRot.ToAngleAxis(out float angle, out Vector3 axis);
+
+        if (angle > 180f) angle -= 360f;
+
+        if (Mathf.Abs(angle) > 1f)
+        {
+            // 角度に比例したトルクで滑らかに戻す
+            m_rb.AddTorque(axis * (angle * Mathf.Deg2Rad * 10f), ForceMode.Acceleration);
+            // 角速度を減衰して振動防止
+            m_rb.angularVelocity *= 0.9f;
+        }
+
+        // ほぼ直立 + 角速度が十分低い、またはタイマー切れで完了
+        bool nearUpright = Mathf.Abs(angle) < 2f;
+        bool angularSlow = m_rb.angularVelocity.magnitude < k_AngularVelocityThreshold;
+        bool timedOut = m_settlingTimer <= 0f;
+
+        if ((nearUpright && angularSlow) || timedOut)
+        {
+            m_rb.rotation = uprightRot;
+            m_rb.angularVelocity = Vector3.zero;
+            m_rb.constraints = m_savedConstraints;
+            m_savedConstraints = RigidbodyConstraints.None;
+            m_isSettling = false;
         }
     }
 
