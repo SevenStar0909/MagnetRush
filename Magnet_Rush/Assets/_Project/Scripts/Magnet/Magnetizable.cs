@@ -61,7 +61,7 @@ public class Magnetizable : MonoBehaviour
         m_magnetTarget = GetComponent<IMagnetTarget>();
         m_magneticResponse = GetComponent<IMagneticResponse>();
         m_cachedEntity = GetComponent<Entity>();
-        m_renderer = GetComponent<Renderer>();
+        m_renderer = GetComponentInChildren<Renderer>();
         m_mpb = new MaterialPropertyBlock();
         mass = m_initialMass > 0f ? m_initialMass : (m_rb != null ? m_rb.mass : 1f);
         if (m_rb != null) m_savedConstraints = m_rb.constraints;
