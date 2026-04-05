@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -6,8 +7,12 @@ using UnityEngine;
 /// </summary>
 public abstract class Entity : MonoBehaviour, IMagnetTarget
 {
+    [Header("Entity Events")]
+    public EntityEvents entityEvents;
+
     protected Rigidbody rb;
     protected CapsuleCollider capsuleCollider;
+    protected EntityController controller;
     [HideInInspector] public Health health;
     protected Transform cachedCameraTransform;
 
@@ -74,21 +79,102 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
     public float turningDragMultiplier { get; set; } = 1f;
     public float decelerationMultiplier { get; set; } = 1f;
 
+    // --- 重力設定（サブクラスからSO値で上書き） ---
+    protected float m_gravity = -20f;
+    protected float m_snapForce = 2f;
+
+    // --- 接地判定設定（サブクラスからSO値で上書き） ---
+    protected LayerMask m_groundLayer = -1;
+    protected float m_groundCheckDistance = 0.3f;
+
     // --- 磁力回転設定（サブクラスからSO値で上書き） ---
     protected float m_pullOrientationThreshold = 5f;
     protected float m_pullOrientationSpeed = 8f;
+
+    // --- 汎用プロパティ ---
+
+    /// <summary>Entityのカプセル高さ。controller > capsuleCollider > 2f の優先順で取得。</summary>
+    public float height => controller != null ? controller.height
+        : (capsuleCollider != null ? capsuleCollider.height : 2f);
+
+    /// <summary>Entityのカプセル半径。controller > capsuleCollider > 0.5f の優先順で取得。</summary>
+    public float radius => controller != null ? controller.radius
+        : (capsuleCollider != null ? capsuleCollider.radius : 0.5f);
+
+    /// <summary>transform.upを基準にしたローカル空間の前方向。斜面/磁力回転時も正しい方向を返す。</summary>
+    public virtual Vector3 localForward =>
+        Quaternion.FromToRotation(transform.up, Vector3.up) * transform.forward;
+
+    /// <summary>transform.upを基準にしたローカル空間の右方向。</summary>
+    public virtual Vector3 localRight =>
+        Quaternion.FromToRotation(transform.up, Vector3.up) * transform.right;
+
+    /// <summary>
+    /// Collider中心のワールド座標。足元ではなくカプセルの中心。
+    /// Platformer Projectでは`position`だが、transform.positionと紛らわしいので`centerPosition`。
+    /// </summary>
+    public Vector3 centerPosition
+    {
+        get
+        {
+            Vector3 c = controller != null ? controller.center
+                      : (capsuleCollider != null ? capsuleCollider.center : Vector3.zero);
+            return transform.position + transform.rotation * c;
+        }
+        set
+        {
+            Vector3 c = controller != null ? controller.center
+                      : (capsuleCollider != null ? capsuleCollider.center : Vector3.zero);
+            transform.position = value - transform.rotation * c;
+        }
+    }
+
+    // --- 汎用Physicsクエリ ---
+
+    protected Collider[] m_contactBuffer = new Collider[10];
+    private readonly List<IEntityContact> m_listenerCache = new();
+
+    /// <summary>Entity形状でCapsuleCast。hitが不要な場合用。</summary>
+    public virtual bool CapsuleCast(Vector3 direction, float distance,
+        int layer = 0, QueryTriggerInteraction trigger = QueryTriggerInteraction.Ignore)
+    {
+        return CapsuleCast(direction, distance, out _, layer, trigger);
+    }
+
+    /// <summary>Entity形状でCapsuleCast。layer=0は未指定（PhysicsLayers.MaskEntityCollisionを使用）。</summary>
+    public virtual bool CapsuleCast(Vector3 direction, float distance, out RaycastHit hit,
+        int layer = 0, QueryTriggerInteraction trigger = QueryTriggerInteraction.Ignore)
+    {
+        if (layer == 0) layer = PhysicsLayers.MaskEntityCollision;
+        var origin = centerPosition - direction * radius;
+        var offset = transform.up * (height * 0.5f - radius);
+        return Physics.CapsuleCast(origin + offset, origin - offset, radius,
+            direction, out hit, distance + radius, layer, trigger);
+    }
+
+    /// <summary>Entity位置でOverlapCapsule。接触判定に使用。</summary>
+    public virtual int OverlapEntity(Collider[] result, float skinOffset = 0)
+    {
+        var overlapRadius = radius + skinOffset;
+        var offset = (height + skinOffset) * 0.5f - radius;
+        var top = centerPosition + transform.up * offset;
+        var bottom = centerPosition - transform.up * offset;
+        return Physics.OverlapCapsuleNonAlloc(top, bottom, overlapRadius,
+            result, PhysicsLayers.MaskEntityCollision, QueryTriggerInteraction.Ignore);
+    }
 
     protected virtual void Awake()
     {
         rb = GetComponent<Rigidbody>();
         capsuleCollider = GetComponent<CapsuleCollider>();
+        controller = GetComponent<EntityController>();
         health = GetComponent<Health>();
 
-        if (rb != null)
+        // EntityControllerがない場合のみフォールバック（敵のNavMesh等）
+        if (controller == null && rb != null)
         {
             rb.isKinematic = true;
             rb.useGravity = false;
-            rb.interpolation = RigidbodyInterpolation.None;
         }
 
         var mainCam = Camera.main;
@@ -97,53 +183,84 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
     }
 
     /// <summary>
-    /// 全速度成分を位置に適用する。適用後にexternalVelocityをリセットする。
-    /// kinematic Rigidbody なので transform.position で直接移動する
-    /// （rb.position は物理ステップまで transform に同期されずジッターの原因になる）。
+    /// 共通物理ステップ: 接地判定 → 重力 → 移動。サブクラスのUpdate()から呼ぶ。
+    /// </summary>
+    protected void EntityStep(float dt)
+    {
+        UpdateGround();
+        HandleCeiling();
+        ApplyGravity(dt);
+        UpdateMagneticOrientation(dt);
+        ApplyMovement(dt);
+        HandleContacts();
+    }
+
+    /// <summary>
+    /// 接触中のColliderからIEntityContactを取得し、OnEntityContactを発火する。
+    /// Entity本体を変更せずにギミック反応を定義できる。
+    /// </summary>
+    protected void HandleContacts()
+    {
+        float skinOffset = controller != null ? controller.skinWidth + Physics.defaultContactOffset : 0.05f;
+        int overlaps = OverlapEntity(m_contactBuffer, skinOffset);
+
+        for (int i = 0; i < overlaps; i++)
+        {
+            if (m_contactBuffer[i].transform == transform) continue;
+
+            m_contactBuffer[i].GetComponents(m_listenerCache);
+            foreach (var listener in m_listenerCache)
+                listener.OnEntityContact(this);
+        }
+    }
+
+    /// <summary>
+    /// 上昇中に天井にぶつかったら垂直速度をゼロにする。
+    /// EntityControllerがある場合はMoveAndSlideが処理するため不要。
+    /// </summary>
+    protected void HandleCeiling()
+    {
+        if (controller != null) return;
+        if (verticalVelocity <= 0f) return;
+
+        float maxCeilingDist = height * 0.5f + 0.1f;
+        if (CapsuleCast(transform.up, maxCeilingDist, out _, PhysicsLayers.MaskGroundCheck))
+        {
+            verticalVelocity = 0f;
+        }
+    }
+
+    /// <summary>
+    /// 全速度成分を位置に適用する。EntityControllerがあればCollide-and-Slideで壁衝突を処理する。
     /// </summary>
     protected virtual void ApplyMovement(float dt)
     {
-        Vector3 total = velocity + externalVelocity;
-        transform.position += total * dt;
+        Vector3 motion = (velocity + externalVelocity) * dt;
 
-        if (IsGrounded)
-            ClampToGround();
+        if (controller != null)
+        {
+            transform.position = controller.Move(transform.position, motion);
+        }
+        else
+        {
+            transform.position += motion;
+        }
 
         externalVelocity = Vector3.zero;
     }
 
     /// <summary>
-    /// 接地中にキャラが地面に食い込まないようにクランプする。
+    /// 重力を適用する。接地時は地面にスナップする。m_gravity/m_snapForceを使用。
     /// </summary>
-    private void ClampToGround()
-    {
-        float height = capsuleCollider != null ? capsuleCollider.height : 2f;
-        float checkDist = height * 0.5f + 0.3f;
-
-        if (Physics.Raycast(transform.position, -transform.up, out var hit, checkDist,
-            Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
-        {
-            Vector3 footPos = transform.position - transform.up * (height * 0.5f);
-            float penetration = Vector3.Dot(hit.point - footPos, hit.normal);
-            if (penetration > 0f)
-            {
-                transform.position += hit.normal * penetration;
-            }
-        }
-    }
-
-    /// <summary>
-    /// 重力を適用する。接地時は地面にスナップする。
-    /// </summary>
-    protected void ApplyGravity(float gravity, float snapForce, float dt)
+    protected void ApplyGravity(float dt)
     {
         if (IsGrounded && verticalVelocity < 0f)
         {
-            verticalVelocity = -snapForce;
+            verticalVelocity = -m_snapForce;
         }
         else
         {
-            verticalVelocity += gravity * dt;
+            verticalVelocity += m_gravity * dt;
         }
     }
 
@@ -192,14 +309,12 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
     /// </summary>
     protected void UpdateGround()
     {
-        float height = capsuleCollider != null ? capsuleCollider.height : 2f;
-        float groundCheckDist = height * 0.5f + 0.3f;
+        bool wasGrounded = IsGrounded;
+        float groundCheckDist = height * 0.5f + m_groundCheckDistance;
 
-        // レイキャストで接地判定（cc.isGroundedの代替）
         if (Physics.Raycast(transform.position, -transform.up, out var hit, groundCheckDist,
-            Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+            m_groundLayer, QueryTriggerInteraction.Ignore))
         {
-            // 足元からの距離が十分近ければ接地
             float footDist = hit.distance - height * 0.5f;
             IsGrounded = footDist < 0.1f;
 
@@ -209,7 +324,6 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
                 groundNormal = hit.normal;
                 groundAngle = Vector3.Angle(Vector3.up, hit.normal);
                 localSlopeDirection = new Vector3(groundNormal.x, 0f, groundNormal.z).normalized;
-                return;
             }
         }
         else
@@ -217,9 +331,16 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
             IsGrounded = false;
         }
 
-        groundAngle = 0f;
-        groundNormal = Vector3.up;
-        localSlopeDirection = Vector3.zero;
+        if (!IsGrounded)
+        {
+            groundAngle = 0f;
+            groundNormal = Vector3.up;
+            localSlopeDirection = Vector3.zero;
+        }
+
+        // 接地遷移イベント
+        if (IsGrounded && !wasGrounded) entityEvents?.OnGroundEnter?.Invoke();
+        if (!IsGrounded && wasGrounded) entityEvents?.OnGroundExit?.Invoke();
     }
 
     /// <summary>
@@ -272,7 +393,10 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
         if (IsGrounded) return;
         if (externalVelocity.sqrMagnitude < m_pullOrientationThreshold * m_pullOrientationThreshold) return;
 
-        FaceDirection(externalVelocity.normalized, m_pullOrientationSpeed, dt);
+        // 水平方向のみ回転（Y軸回転のみ）。上下に傾けるとtransform.upが狂い重力計算が破綻する
+        Vector3 horizontalDir = new Vector3(externalVelocity.x, 0f, externalVelocity.z);
+        if (horizontalDir.sqrMagnitude > 0.01f)
+            FaceDirection(horizontalDir.normalized, m_pullOrientationSpeed, dt);
     }
 
     /// <summary>

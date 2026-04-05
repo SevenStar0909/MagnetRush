@@ -21,8 +21,8 @@ public class GameManager : Singleton<GameManager>
 
     void Update()
     {
-        // Rキーでリスタート（Input System）
-        if (Keyboard.current != null && Keyboard.current.rKey.wasPressedThisFrame)
+        // F5キーでリスタート
+        if (Keyboard.current != null && Keyboard.current.f5Key.wasPressedThisFrame)
         {
             Restart();
         }
@@ -40,7 +40,7 @@ public class GameManager : Singleton<GameManager>
     public void Restart()
     {
         Time.timeScale = 1f;
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
     /// <summary>
