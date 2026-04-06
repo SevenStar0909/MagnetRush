@@ -1421,6 +1421,28 @@ public class GitFlowWindow : EditorWindow
     /// <returns>true: 続行可, false: 中断すべき（保護ブランチに未コミット変更あり）</returns>
     private bool AutoCommit(string reason)
     {
+        // 未保存シーンを検出して保存
+        for (int i = 0; i < UnityEngine.SceneManagement.SceneManager.sceneCount; i++)
+        {
+            var scene = UnityEngine.SceneManagement.SceneManager.GetSceneAt(i);
+            if (scene.isDirty)
+            {
+                bool save = EditorUtility.DisplayDialog(
+                    "未保存のシーン",
+                    $"{scene.name} に未保存の変更があります。\n保存してからコミットしますか？",
+                    "保存してコミット", "キャンセル");
+                if (!save)
+                {
+                    Log("情報", "未保存シーンがあるため操作をキャンセルしました。");
+                    return false;
+                }
+                EditorSceneManager.SaveOpenScenes();
+                AssetDatabase.SaveAssets();
+                Log("情報", "未保存のシーンを保存しました。");
+                break;
+            }
+        }
+
         var (code, output) = RunGit("status --porcelain");
         if (code != 0)
         {
