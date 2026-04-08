@@ -27,7 +27,7 @@ public class WeaponManager : Singleton<WeaponManager>
     }
 
     // 指定した位置と半径内で最も近い拾える武器を見つける。拾える武器がない場合はnullを返す。
-    public WeaponStateController FindNearestPickableWeapon(Vector3 position, float searchRadius)
+    public WeaponStateController FindNearestPickableWeapon(Vector3 position, float searchRadius, bool excludeMagnetAffected = false)
     {
         WeaponStateController nearestWeapon = null;
         float nearestSqr = searchRadius * searchRadius;
@@ -37,6 +37,7 @@ public class WeaponManager : Singleton<WeaponManager>
             WeaponStateController weapon = m_activeWeapons[i];
             if (weapon == null) continue;
             if (!weapon.CanBePickedUp) continue;
+            if (excludeMagnetAffected && weapon.IsMagnetAffected) continue;
 
             float sqr = (weapon.transform.position - position).sqrMagnitude;
             if (sqr > nearestSqr) continue;
