@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -38,14 +38,19 @@ public class EnemyMeleeAttack : MonoBehaviour
         m_data = m_enemyBase.StatusData;
         m_attackTimer = m_data.attackInterval;
 
+        if (m_attackHitbox != null)
+        {
+            float atkR = m_data.attackRange;
+            m_attackHitbox.height = atkR;
+            m_attackHitbox.center = new Vector3(0f, atkR / 2f, 0f);
+        }
 
-        float atkR = m_data.attackRange;
-
-        m_attackHitbox.height = atkR;
-        m_attackHitbox.center = new Vector3(0f, atkR / 2f, 0f);
-        m_attackHitboxMeshRenderer.transform.localPosition = new Vector3(0f, 0f, atkR / 2f);
-        m_attackHitboxMeshRenderer.transform.localScale = new Vector3(1f, atkR / 2f, 1f);
-
+        if (m_attackHitboxMeshRenderer != null)
+        {
+            float atkR = m_data.attackRange;
+            m_attackHitboxMeshRenderer.transform.localPosition = new Vector3(0f, 0f, atkR / 2f);
+            m_attackHitboxMeshRenderer.transform.localScale = new Vector3(1f, atkR / 2f, 1f);
+        }
     }
 
     private void Update()
@@ -56,6 +61,7 @@ public class EnemyMeleeAttack : MonoBehaviour
     public void TryAttack()
     {
         if (m_data == null) return;
+        if (!m_enemyBase.HasWeapon) return;
         if (m_isAttacking) return;
         if (m_attackTimer < m_data.attackInterval) return;
 
@@ -67,9 +73,19 @@ public class EnemyMeleeAttack : MonoBehaviour
         m_isAttacking = true;
         m_attackTimer = 0f;
 
+        WeaponStateController weapon = m_enemyBase.EquippedWeapon;
+        if (weapon != null)
+        {
+            weapon.BeginAttackWindow();
+        }
+
         if (m_attackHitbox != null)
         {
             m_attackHitbox.enabled = true;
+        }
+
+        if (m_attackHitboxMeshRenderer != null)
+        {
             m_attackHitboxMeshRenderer.enabled = true;
         }
 
@@ -78,7 +94,16 @@ public class EnemyMeleeAttack : MonoBehaviour
         if (m_attackHitbox != null)
         {
             m_attackHitbox.enabled = false;
+        }
+
+        if (m_attackHitboxMeshRenderer != null)
+        {
             m_attackHitboxMeshRenderer.enabled = false;
+        }
+
+        if (weapon != null)
+        {
+            weapon.EndAttackWindow();
         }
 
         m_isAttacking = false;
@@ -88,6 +113,7 @@ public class EnemyMeleeAttack : MonoBehaviour
     {
         if (m_attackHitbox == null) return;
         if (!m_attackHitbox.enabled) return;
+        if (!m_enemyBase.HasWeapon) return;
 
         if (other.CompareTag(GameTags.Player))
         {
@@ -95,5 +121,4 @@ public class EnemyMeleeAttack : MonoBehaviour
             if (health != null) health.Damage(m_data.attackDamage);
         }
     }
-
 }

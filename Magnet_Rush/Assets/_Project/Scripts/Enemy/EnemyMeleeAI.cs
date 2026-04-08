@@ -11,6 +11,8 @@ public class EnemyMeleeAI : MonoBehaviour
     private Transform m_player;
     private EnemySettings m_data;
 
+    private WeaponStateController m_targetWeapon;
+
     private void Awake()
     {
         m_enemyBase = GetComponent<EnemyBase>();
@@ -27,9 +29,6 @@ public class EnemyMeleeAI : MonoBehaviour
     private void Update()
     {
         // 磁力移動モード中は AI 処理をスキップ
-
-        Debug.Log($"m_enemyBase.IsMagnetControlled: {m_enemyBase.IsMagnetControlled}", gameObject);
-
         if (m_enemyBase.IsMagnetControlled)
         {
             return;
@@ -37,6 +36,13 @@ public class EnemyMeleeAI : MonoBehaviour
 
         if (m_player == null || m_agent == null || m_data == null)
         {
+            return;
+        }
+
+        // 武器が無い間は武器探索・取得を優先
+        if (!m_enemyBase.HasWeapon)
+        {
+            HandleWeaponSearchAndPickup();
             return;
         }
 
@@ -60,6 +66,7 @@ public class EnemyMeleeAI : MonoBehaviour
             {
                 FacePlayer();
             }
+
             m_meleeAttack.TryAttack();
         }
         else
@@ -67,6 +74,47 @@ public class EnemyMeleeAI : MonoBehaviour
             m_agent.isStopped = false;
             m_agent.SetDestination(m_player.position);
         }
+    }
+
+    private void HandleWeaponSearchAndPickup()
+    {
+        if (m_targetWeapon == null || !m_targetWeapon.CanBePickedUp)
+        {
+            if (WeaponManager.Instance == null)
+            {
+                m_agent.isStopped = true;
+                m_agent.ResetPath();
+                return;
+            }
+
+            m_targetWeapon = WeaponManager.Instance.FindNearestPickableWeapon(transform.position, m_data.chaseRange);
+        }
+
+        if (m_targetWeapon == null)
+        {
+            m_agent.isStopped = true;
+            m_agent.ResetPath();
+            return;
+        }
+
+        float distanceToWeapon = Vector3.Distance(transform.position, m_targetWeapon.transform.position);
+
+        if (distanceToWeapon <= m_data.stopDistance + 0.1f)
+        {
+            m_agent.isStopped = true;
+            m_agent.ResetPath();
+
+            bool equipped = m_enemyBase.TryEquipWeapon(m_targetWeapon);
+            if (equipped)
+            {
+                m_targetWeapon = null;
+            }
+
+            return;
+        }
+
+        m_agent.isStopped = false;
+        m_agent.SetDestination(m_targetWeapon.transform.position);
     }
 
     private void FacePlayer()
@@ -78,7 +126,6 @@ public class EnemyMeleeAI : MonoBehaviour
         {
             return;
         }
-
 
         Quaternion targetRotation = Quaternion.LookRotation(lookTarget);
         transform.rotation = Quaternion.Slerp(
