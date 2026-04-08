@@ -23,12 +23,15 @@ public class WeaponStateController : MonoBehaviour
     //[SerializeField] private Collider m_pickupTrigger;
     [SerializeField] private Collider m_attackTrigger;
 
+    [Header("Owned Pose")]
+    [SerializeField] private Vector3 m_ownedLocalEulerOffset = new Vector3(0f, -90f, 0f);
+
     [Header("State")]
     [SerializeField] private WeaponOwnerState m_state = WeaponOwnerState.Unowned;
 
-    [Header("Equip Move")] // [NEW]
-    [SerializeField] private float m_equipMoveSpeed = 12f;      // [NEW] 手元へ吸い寄せる移動速度
-    [SerializeField] private float m_equipArriveDistance = 0.05f; // [NEW] この距離以内で装備完了
+    [Header("Equip Move")]
+    [SerializeField] private float m_equipMoveSpeed = 12f;
+    [SerializeField] private float m_equipArriveDistance = 0.05f;
 
     private Rigidbody m_rb;
     private Magnetizable m_magnetizable;
@@ -37,18 +40,18 @@ public class WeaponStateController : MonoBehaviour
     private Transform m_ownerHand;
     private float m_nextPickupAllowedTime;
 
-    // [NEW] Equipping中の仮所持者
     private GameObject m_pendingOwner;
-
-    // [NEW] Equipping中の目標手元
     private Transform m_pendingHand;
 
-    public WeaponOwnerState State => m_state;
-    public GameObject Owner => m_owner;
+    public WeaponOwnerState State => m_state;           // 現在の所持状態。
+    public GameObject Owner => m_owner;                 // 所持者。無主状態ではnull。
+    public Collider AttackTrigger => m_attackTrigger;   // 攻撃判定トリガー。攻撃ウィンドウ中のみ有効化される。
+    public Transform GripPoint => m_gripPoint;          // 手の位置合わせに使うポイント。装備時にここを手ソケットに合わせる。
+    public bool HasOwner => m_state == WeaponOwnerState.Owned || m_state == WeaponOwnerState.Equipping; // 装備中も含む所持状態。
+    public bool IsMagnetAffected => m_magnetizable != null && m_magnetizable.IsActive;    // 磁力影響を受けているか。
 
-    // [CHANGED] Equipping中も「他人から見れば確保済み」とみなすならこう
-    public bool HasOwner => m_state == WeaponOwnerState.Owned || m_state == WeaponOwnerState.Equipping;
 
+    // 拾える条件：無主状態、クールダウン完了、（設定があれば）磁力影響なし。
     public bool CanBePickedUp
     {
         get
@@ -75,7 +78,6 @@ public class WeaponStateController : MonoBehaviour
 
     private void Update()
     {
-        // [NEW] 装備中の遷移処理
         if (m_state == WeaponOwnerState.Equipping)
         {
             UpdateEquipping();
@@ -86,9 +88,6 @@ public class WeaponStateController : MonoBehaviour
             CheckForcedDropByMagnet();
     }
 
-    // [NEW]
-    // 無主状態から装備中状態へ移行する。
-    // この時点ではまだ完全装備ではなく、手元へ移動中。
     public bool TryStartEquip(GameObject newOwner, Transform handSocket)
     {
         if (!CanBePickedUp) return false;
@@ -107,9 +106,6 @@ public class WeaponStateController : MonoBehaviour
 
         SetPhysicsCollidersEnabled(false);
 
-        //if (m_pickupTrigger != null)
-        //    m_pickupTrigger.enabled = false;
-
         if (m_attackTrigger != null)
             m_attackTrigger.enabled = false;
 
@@ -118,8 +114,6 @@ public class WeaponStateController : MonoBehaviour
         return true;
     }
 
-    // [NEW]
-    // Equipping中の移動演出。
     private void UpdateEquipping()
     {
         if (m_pendingOwner == null || m_pendingHand == null)
@@ -141,8 +135,6 @@ public class WeaponStateController : MonoBehaviour
         }
     }
 
-    // [NEW]
-    // 装備中から正式な所持状態へ移行する。
     private void CompleteEquip()
     {
         m_owner = m_pendingOwner;
@@ -156,6 +148,9 @@ public class WeaponStateController : MonoBehaviour
         AlignToHand(m_ownerHand);
         transform.SetParent(m_ownerHand, true);
 
+        // 装備時の向き補正（斧刃を前に向ける）
+        transform.localRotation = transform.localRotation * Quaternion.Euler(m_ownedLocalEulerOffset);
+
         if (m_rb != null)
         {
             m_rb.isKinematic = true;
@@ -167,8 +162,6 @@ public class WeaponStateController : MonoBehaviour
             m_attackTrigger.enabled = false;
     }
 
-    // [NEW]
-    // 装備中が中断された場合、無主状態へ戻す。
     public void CancelEquip()
     {
         m_pendingOwner = null;
@@ -176,8 +169,6 @@ public class WeaponStateController : MonoBehaviour
         Drop();
     }
 
-    // [CHANGED]
-    // 以前の即時装備を残したい場合はラッパーにする。
     public bool TryEquipTo(GameObject newOwner, Transform handSocket)
     {
         return TryStartEquip(newOwner, handSocket);
@@ -187,8 +178,6 @@ public class WeaponStateController : MonoBehaviour
     {
         m_owner = null;
         m_ownerHand = null;
-
-        // [NEW]
         m_pendingOwner = null;
         m_pendingHand = null;
 
@@ -209,9 +198,6 @@ public class WeaponStateController : MonoBehaviour
         }
 
         SetPhysicsCollidersEnabled(true);
-
-        //if (m_pickupTrigger != null)
-        //    m_pickupTrigger.enabled = true;
 
         if (m_attackTrigger != null)
             m_attackTrigger.enabled = false;

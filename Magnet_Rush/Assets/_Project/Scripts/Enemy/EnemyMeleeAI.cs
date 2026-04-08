@@ -39,16 +39,19 @@ public class EnemyMeleeAI : MonoBehaviour
             return;
         }
 
-        // 武器が無い間は武器探索・取得を優先
+        // 武器が無い場合は、まず武器取得を試みる。
+        // 取れない場合は空手でプレイヤーを追跡・攻撃する。
         if (!m_enemyBase.HasWeapon)
         {
-            HandleWeaponSearchAndPickup();
-            return;
+            bool isHandlingWeapon = HandleWeaponSearchAndPickup();
+            if (isHandlingWeapon)
+            {
+                return;
+            }
         }
 
         float distance = Vector3.Distance(transform.position, m_player.position);
 
-        // プレイヤーが追跡範囲外の場合、移動を停止
         if (distance > m_data.chaseRange)
         {
             m_agent.isStopped = true;
@@ -56,7 +59,6 @@ public class EnemyMeleeAI : MonoBehaviour
             return;
         }
 
-        // プレイヤーが攻撃範囲内の場合、攻撃を試みる
         if (distance <= m_data.attackRange)
         {
             m_agent.isStopped = true;
@@ -76,31 +78,39 @@ public class EnemyMeleeAI : MonoBehaviour
         }
     }
 
-    private void HandleWeaponSearchAndPickup()
+    private bool HandleWeaponSearchAndPickup()
     {
-        if (m_targetWeapon == null || !m_targetWeapon.CanBePickedUp)
+        // 現在ターゲットが無効なら再探索
+        if (m_targetWeapon == null || !m_targetWeapon.CanBePickedUp || m_targetWeapon.IsMagnetAffected)
         {
             if (WeaponManager.Instance == null)
             {
-                m_agent.isStopped = true;
-                m_agent.ResetPath();
-                return;
+                m_targetWeapon = null;
+                return false; // 武器探索不可 → 空手行動へフォールバック
             }
 
-            m_targetWeapon = WeaponManager.Instance.FindNearestPickableWeapon(transform.position, m_data.chaseRange);
+            m_targetWeapon = WeaponManager.Instance.FindNearestPickableWeapon(
+                transform.position,
+                m_data.chaseRange,
+                true);
         }
 
+        // 武器が見つからない → 空手行動へフォールバック
         if (m_targetWeapon == null)
         {
-            m_agent.isStopped = true;
-            m_agent.ResetPath();
-            return;
+            return false;
         }
 
         float distanceToWeapon = Vector3.Distance(transform.position, m_targetWeapon.transform.position);
 
         if (distanceToWeapon <= m_data.stopDistance + 0.1f)
         {
+            if (!m_targetWeapon.CanBePickedUp || m_targetWeapon.IsMagnetAffected)
+            {
+                m_targetWeapon = null;
+                return false;
+            }
+
             m_agent.isStopped = true;
             m_agent.ResetPath();
 
@@ -110,11 +120,12 @@ public class EnemyMeleeAI : MonoBehaviour
                 m_targetWeapon = null;
             }
 
-            return;
+            return true;
         }
 
         m_agent.isStopped = false;
         m_agent.SetDestination(m_targetWeapon.transform.position);
+        return true;
     }
 
     private void FacePlayer()

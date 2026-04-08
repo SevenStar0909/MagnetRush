@@ -179,6 +179,37 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!1 &5747292427090194916
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 248068794771929252}
+  m_Layer: 9
+  m_Name: Hand_R
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &248068794771929252
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5747292427090194916}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4630226825425554802}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6044810200242208032
 GameObject:
   m_ObjectHideFlags: 0
@@ -309,6 +340,7 @@ Transform:
   - {fileID: 9062611734526088656}
   - {fileID: 3884165942968563849}
   - {fileID: 4953411500840794254}
+  - {fileID: 248068794771929252}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
 --- !u!114 &7292421887379303148
@@ -335,6 +367,7 @@ MonoBehaviour:
   externalVelocity: {x: 0, y: 0, z: 0}
   m_statusData: {fileID: 11400000, guid: 4ee3148f3a80a1949b743efb41c05d5b, type: 2}
   m_player: {fileID: 0}
+  m_weaponHandSocket: {fileID: 0}
   m_mover: {fileID: 0}
 --- !u!114 &2017535009340470646
 MonoBehaviour:
@@ -362,6 +395,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyMeleeAttack
   m_attackHitbox: {fileID: 779674132170559637}
   m_attackHitboxMeshRenderer: {fileID: 4177156730884542892}
+  m_weaponSwingAngle: 90
+  m_weaponSwingForwardDuration: 0.12
+  m_weaponSwingReturnDuration: 0.12
 --- !u!114 &4035754179591038178
 MonoBehaviour:
   m_ObjectHideFlags: 0
