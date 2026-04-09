@@ -122,14 +122,35 @@ public class WeaponStateController : MonoBehaviour
             return;
         }
 
-        Vector3 toTarget = m_pendingHand.position - m_gripPoint.position;
-        transform.position += toTarget.normalized * m_equipMoveSpeed * Time.deltaTime;
+        if (m_gripPoint == null)
+        {
+            CancelEquip();
+            return;
+        }
 
+        // 1) GripPoint tp Socket 
+        Vector3 currentGrip = m_gripPoint.position;
+        Vector3 nextGrip = Vector3.MoveTowards(
+            currentGrip,
+            m_pendingHand.position,
+            m_equipMoveSpeed * Time.deltaTime);
+
+        transform.position += nextGrip - currentGrip;
+
+        // 2) GripPoint rt Socket
         Quaternion targetRotation = m_pendingHand.rotation * Quaternion.Inverse(m_gripPoint.localRotation);
-        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, m_equipMoveSpeed * Time.deltaTime);
 
+        // 3) Apply rotation around GripPoint
+        Quaternion currentRotation = transform.rotation;
+        float rotateT = Mathf.Clamp01(m_equipMoveSpeed * Time.deltaTime);
+        Quaternion nextRotation = Quaternion.Slerp(currentRotation, targetRotation, rotateT);
+        Quaternion worldDelta = nextRotation * Quaternion.Inverse(currentRotation);
+        RotateAroundGripPoint(worldDelta);
+
+        // 4) Check arrival
         float remain = Vector3.Distance(m_gripPoint.position, m_pendingHand.position);
-        if (remain <= m_equipArriveDistance)
+        float angleRemain = Quaternion.Angle(transform.rotation, targetRotation);
+        if (remain <= m_equipArriveDistance && angleRemain <= 1f)
         {
             CompleteEquip();
         }
@@ -147,9 +168,6 @@ public class WeaponStateController : MonoBehaviour
 
         AlignToHand(m_ownerHand);
         transform.SetParent(m_ownerHand, true);
-
-        // 装備時の向き補正（斧刃を前に向ける）
-        transform.localRotation = transform.localRotation * Quaternion.Euler(m_ownedLocalEulerOffset);
 
         if (m_rb != null)
         {
@@ -235,11 +253,31 @@ public class WeaponStateController : MonoBehaviour
     {
         if (m_gripPoint == null || handSocket == null) return;
 
+        // GripPoint alien to hand socket
         Quaternion deltaRot = handSocket.rotation * Quaternion.Inverse(m_gripPoint.rotation);
         transform.rotation = deltaRot * transform.rotation;
 
         Vector3 deltaPos = handSocket.position - m_gripPoint.position;
         transform.position += deltaPos;
+
+        // Apply additional local Euler offset if specified
+        // これにより、手ソケットの回転に対して武器がさらにローカルオフセット分だけ回転する。
+        // 例えば、手ソケットが前を向いているときに、武器を横向きにしたい場合など。
+        if (m_ownedLocalEulerOffset.sqrMagnitude > 0.0001f)
+        {
+            Quaternion localOffset = Quaternion.Euler(m_ownedLocalEulerOffset);
+            Quaternion worldDelta = handSocket.rotation * localOffset * Quaternion.Inverse(handSocket.rotation);
+            RotateAroundGripPoint(worldDelta);
+        }
+    }
+
+    private void RotateAroundGripPoint(Quaternion worldDelta)
+    {
+        if (m_gripPoint == null) return;
+
+        Vector3 pivot = m_gripPoint.position;
+        transform.position = pivot + worldDelta * (transform.position - pivot);
+        transform.rotation = worldDelta * transform.rotation;
     }
 
     private void SetPhysicsCollidersEnabled(bool enabled)
