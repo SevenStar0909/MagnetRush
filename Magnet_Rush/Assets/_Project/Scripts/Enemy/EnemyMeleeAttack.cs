@@ -16,6 +16,8 @@ public class EnemyMeleeAttack : MonoBehaviour
     [SerializeField] private float m_weaponSwingAngle = 90f;
     [SerializeField] private float m_weaponSwingForwardDuration = 0.12f;
     [SerializeField] private float m_weaponSwingReturnDuration = 0.12f;
+   // [SerializeField] private float m_weaponPreSwingYawOffset = -12f;
+   // [SerializeField] private float m_weaponPreSwingYawDuration = 0.06f;
 
     private EnemyBase m_enemyBase;
     private EnemySettings m_data;
@@ -79,6 +81,7 @@ public class EnemyMeleeAttack : MonoBehaviour
         StartCoroutine(AttackRoutine());
     }
 
+    // 攻撃後は親相対姿勢を優先復元して武器ズレを防ぐ
     private IEnumerator AttackRoutine()
     {
         m_isAttacking = true;
@@ -89,27 +92,27 @@ public class EnemyMeleeAttack : MonoBehaviour
         m_attackHitbox = m_unarmedAttackHitbox;
         m_attackHitboxMeshRenderer = m_unarmedAttackHitboxMeshRenderer;
 
-        WeaponStateController weapon = m_enemyBase.EquippedWeapon;
-        bool hasWeaponNow = m_enemyBase.HasWeapon && weapon != null;
+        WeaponStateController weapon = m_enemyBase.HasWeapon ? m_enemyBase.EquippedWeapon : null;
+        Transform weaponTransform = weapon != null ? weapon.transform : null;
+        Transform gripPoint = weapon != null ? weapon.GripPoint : null;
 
-        if (hasWeaponNow)
+        if (weapon != null)
         {
             ResolveAttackHitboxFromWeapon(weapon);
             weapon.BeginAttackWindow();
         }
 
-        if (m_attackHitbox != null)
-            m_attackHitbox.enabled = true;
+        if (m_attackHitbox != null) m_attackHitbox.enabled = true;
+        if (m_attackHitboxMeshRenderer != null) m_attackHitboxMeshRenderer.enabled = true;
 
-        if (m_attackHitboxMeshRenderer != null)
-            m_attackHitboxMeshRenderer.enabled = true;
-
-        Transform weaponTransform = hasWeaponNow ? weapon.transform : null;
-        Transform gripPoint = hasWeaponNow ? weapon.GripPoint : null;
-
-        // 武器がある場合は、グリップポイントを中心に武器を振るアニメーションを再生しつつ、攻撃ヒットの判定も行う。武器がない場合は、単純に攻撃ヒットの判定だけ行う。
+        // 武器がある場合は、グリップポイントを中心に武器を振るアニメーションを再生しつつ、攻撃ヒットの判定も行う。
+        // 武器がない場合は、単純に攻撃ヒットの判定だけ行う。
         if (weaponTransform != null)
         {
+            Transform startParent = weaponTransform.parent;
+            Vector3 startLocalPosition = weaponTransform.localPosition;
+            Quaternion startLocalRotation = weaponTransform.localRotation;
+
             Vector3 startPosition = weaponTransform.position;
             Quaternion startRotation = weaponTransform.rotation;
 
@@ -141,8 +144,17 @@ public class EnemyMeleeAttack : MonoBehaviour
                 weaponTransform, pivotWorld, startPosition, startRotation,
                 axisWorld, signedForwardAngle, 0f, m_weaponSwingReturnDuration, false);
 
-            weaponTransform.position = startPosition;
-            weaponTransform.rotation = startRotation;
+            // 攻撃前の手ソケット相対姿勢を優先して復元（ズレ防止）
+            if (startParent != null && weaponTransform.parent == startParent)
+            {
+                weaponTransform.localPosition = startLocalPosition;
+                weaponTransform.localRotation = startLocalRotation;
+            }
+            else
+            {
+                weaponTransform.position = startPosition;
+                weaponTransform.rotation = startRotation;
+            }
         }
         else
         {
@@ -206,18 +218,21 @@ public class EnemyMeleeAttack : MonoBehaviour
 
     // 武器をグリップポイントを中心に回転させる。pivotWorld はグリップポイントのワールド位置、axisWorld は回転軸のワールド方向。
     private static void ApplyWeaponPoseAroundGrip(
-        Transform weaponTransform,
-        Vector3 pivotWorld,
-        Vector3 startPosition,
-        Quaternion startRotation,
-        Vector3 axisWorld,
-        float angle)
+        Transform weaponTransform,  // 回転させる武器のTransform
+        Vector3 pivotWorld,         // グリップポイントのワールド位置
+        Vector3 startPosition,      // 武器の回転開始前のワールド位置
+        Quaternion startRotation,   // 武器の回転開始前のワールド回転
+        Vector3 axisWorld,          // 回転軸のワールド方向
+        float angle)                // 回転させる角度（度数）
     {
         Quaternion delta = Quaternion.AngleAxis(angle, axisWorld);
         weaponTransform.position = pivotWorld + delta * (startPosition - pivotWorld);
         weaponTransform.rotation = delta * startRotation;
     }
 
+    // 武器から攻撃用のヒットボックスを探して設定する。
+    // 武器のAttackTriggerがCapsuleColliderならそれを使い、そうでなければ子オブジェクトから名前に"attack"を含むCapsuleColliderを探す。
+    // それもなければ最初に見つかったCapsuleColliderを使う。
     private void ResolveAttackHitboxFromWeapon(WeaponStateController weapon)
     {
         if (weapon == null) return;
