@@ -1,7 +1,7 @@
 using UnityEngine;
 
 [DisallowMultipleComponent]
-[RequireComponent(typeof(EnemyBase))]
+[RequireComponent(typeof(EnemyTurretBase))]
 [RequireComponent(typeof(Magnetizable))]
 public class EnemyTurretMagneticAim : MonoBehaviour, IMagneticResponse
 {
@@ -14,21 +14,22 @@ public class EnemyTurretMagneticAim : MonoBehaviour, IMagneticResponse
     [SerializeField] private float m_aimToPlayerRange = 20f;
     [Tooltip("探索更新間隔（秒）")]
     [SerializeField] private float m_targetRefreshInterval = 0.1f;
-    [Tooltip("回転速度（度/秒）。0以下ならEnemySettings.rotationSpeedを使用。")]
-    [SerializeField] private float m_rotationSpeedOverride = 0f;
+    [Tooltip("回転速度（度/秒）")]
+    [SerializeField] private float m_rotationSpeed = 120f;
 
-    private EnemyBase m_enemyBase;
-    private EnemySettings m_data;
+    private EnemyTurretBase m_turretBase;
     private Magnetizable m_selfMagnetizable;
     private Magnetizable m_currentTarget;
     private float m_refreshTimer;
     private Vector3 m_initialLocalEuler;
 
     public bool IsResponseActive => m_selfMagnetizable != null && m_selfMagnetizable.IsActive;
+    public bool HasAimTarget { get; private set; }
+    public Vector3 CurrentAimDirection { get; private set; } = Vector3.forward;
 
     private void Awake()
     {
-        m_enemyBase = GetComponent<EnemyBase>();
+        m_turretBase = GetComponent<EnemyTurretBase>();
         m_selfMagnetizable = GetComponent<Magnetizable>();
 
         if (m_yawPivot == null)
@@ -37,22 +38,10 @@ public class EnemyTurretMagneticAim : MonoBehaviour, IMagneticResponse
         m_initialLocalEuler = m_yawPivot.localEulerAngles;
     }
 
-    private void Start()
-    {
-        m_data = m_enemyBase != null ? m_enemyBase.StatusData : null;
-
-        // 砲台は移動しない
-        if (m_enemyBase != null && m_enemyBase.Agent != null)
-        {
-            m_enemyBase.Agent.isStopped = true;
-            m_enemyBase.Agent.updatePosition = false;
-            m_enemyBase.Agent.updateRotation = false;
-            m_enemyBase.Agent.ResetPath();
-        }
-    }
-
     private void Update()
     {
+        HasAimTarget = false;
+
         if (!IsResponseActive)
         {
             FacePlayerWhenNotMagnetized();
@@ -71,35 +60,36 @@ public class EnemyTurretMagneticAim : MonoBehaviour, IMagneticResponse
 
         Vector3 toTarget = m_currentTarget.transform.position - m_yawPivot.position;
         toTarget.y = 0f;
-
         if (toTarget.sqrMagnitude <= 0.0001f)
             return;
 
         bool isOppositePole = IsOppositePole(m_currentTarget);
         Vector3 desiredWorldDir = isOppositePole ? toTarget.normalized : (-toTarget.normalized);
 
+        HasAimTarget = true;
+        CurrentAimDirection = desiredWorldDir;
         RotateYawOnly(desiredWorldDir);
     }
 
     private void FacePlayerWhenNotMagnetized()
     {
-        if (m_enemyBase == null || m_enemyBase.Player == null)
+        if (m_turretBase == null || m_turretBase.Player == null)
             return;
 
-        Vector3 toPlayer = m_enemyBase.Player.position - m_yawPivot.position;
+        Vector3 toPlayer = m_turretBase.Player.position - m_yawPivot.position;
         toPlayer.y = 0f;
 
-        if (toPlayer.sqrMagnitude <= 0.0001f)
+        float sqrDist = toPlayer.sqrMagnitude;
+        if (sqrDist <= 0.0001f)
             return;
 
-        if (m_aimToPlayerRange > 0f)
-        {
-            float sqrDist = toPlayer.sqrMagnitude;
-            if (sqrDist > m_aimToPlayerRange * m_aimToPlayerRange)
-                return;
-        }
+        if (m_aimToPlayerRange > 0f && sqrDist > m_aimToPlayerRange * m_aimToPlayerRange)
+            return;
 
-        RotateYawOnly(toPlayer.normalized);
+        Vector3 dir = toPlayer.normalized;
+        HasAimTarget = true;
+        CurrentAimDirection = dir;
+        RotateYawOnly(dir);
     }
 
     private void RotateYawOnly(Vector3 desiredWorldDir)
@@ -113,26 +103,14 @@ public class EnemyTurretMagneticAim : MonoBehaviour, IMagneticResponse
             return;
 
         float targetYaw = Mathf.Atan2(localDir.x, localDir.z) * Mathf.Rad2Deg;
-        float speed = ResolveRotationSpeed();
         float currentYaw = m_yawPivot.localEulerAngles.y;
-        float nextYaw = Mathf.MoveTowardsAngle(currentYaw, targetYaw, speed * Time.deltaTime);
+        float nextYaw = Mathf.MoveTowardsAngle(currentYaw, targetYaw, Mathf.Max(1f, m_rotationSpeed) * Time.deltaTime);
 
         m_yawPivot.localRotation = Quaternion.Euler(
             m_initialLocalEuler.x,
             nextYaw,
             m_initialLocalEuler.z
         );
-    }
-
-    private float ResolveRotationSpeed()
-    {
-        if (m_rotationSpeedOverride > 0f)
-            return m_rotationSpeedOverride;
-
-        if (m_data != null && m_data.rotationSpeed > 0f)
-            return m_data.rotationSpeed;
-
-        return 120f;
     }
 
     private bool IsOppositePole(Magnetizable other)
@@ -142,7 +120,6 @@ public class EnemyTurretMagneticAim : MonoBehaviour, IMagneticResponse
 
         MagneticPole selfPole = m_selfMagnetizable.Pole;
         MagneticPole otherPole = other.Pole;
-
         if (selfPole == MagneticPole.None || otherPole == MagneticPole.None)
             return false;
 
@@ -194,9 +171,6 @@ public class EnemyTurretMagneticAim : MonoBehaviour, IMagneticResponse
         return 10f;
     }
 
-    // 固定砲台なので位置移動には応答しない（IMagneticResponse実装で移動を抑止）
     public void OnMagnetForce(Vector3 force, Vector3 sourcePosition) { }
-
-    // 今回は接触時の特別処理なし
     public void OnMagnetContact(Magnetizable self, Magnetizable other) { }
 }
