@@ -16,13 +16,35 @@ public class EnemyBase : Entity
     [Header("References")]
     [FormerlySerializedAs("player")]
     [SerializeField] private Transform m_player;
+    [SerializeField] private Transform m_weaponHandSocket;
 
     protected NavMeshAgent agent;
-    private MagneticMover m_mover;
+
+    [Header("Magnetic")]
+    [FormerlySerializedAs("MagneticMover")]
+    [SerializeField] private MagneticMover m_mover;
+
+    private WeaponStateController m_equippedWeapon;
 
     public EnemySettings StatusData => m_statusData;
     public Transform Player => m_player;
     public NavMeshAgent Agent => agent;
+    public Transform WeaponHandSocket => m_weaponHandSocket;
+    public WeaponStateController EquippedWeapon => m_equippedWeapon;
+
+    public bool HasWeapon
+    {
+        get
+        {
+            if (m_equippedWeapon == null) return false;
+
+            if (m_equippedWeapon.State == WeaponStateController.WeaponOwnerState.Equipping)
+                return true;
+
+            return m_equippedWeapon.State == WeaponStateController.WeaponOwnerState.Owned
+                && m_equippedWeapon.Owner == gameObject;
+        }
+    }
 
     /// <summary>MagneticMover が磁力移動モード中かどうか。AI はこの間スキップされる。</summary>
     public bool IsMagnetControlled => m_mover != null && m_mover.IsMagnetActive;
@@ -31,7 +53,7 @@ public class EnemyBase : Entity
     {
         base.Awake();
         agent = GetComponent<NavMeshAgent>();
-        m_mover = GetComponent<MagneticMover>();
+        m_mover = GetComponentInChildren<MagneticMover>();
 
         if (m_player == null)
         {
@@ -62,6 +84,8 @@ public class EnemyBase : Entity
 
     void Update()
     {
+        ValidateWeaponState();
+
         // MagneticMover がアクティブなら Rigidbody で物理移動中 → externalVelocity パスは不要
         if (IsMagnetControlled) return;
 
@@ -70,6 +94,35 @@ public class EnemyBase : Entity
         {
             agent.Move(externalVelocity * Time.deltaTime);
             externalVelocity = Vector3.zero;
+        }
+    }
+
+    public bool TryEquipWeapon(WeaponStateController weapon)
+    {
+        if (weapon == null) return false;
+        if (m_weaponHandSocket == null) return false;
+
+        bool started = weapon.TryStartEquip(gameObject, m_weaponHandSocket);
+        if (!started) return false;
+
+        m_equippedWeapon = weapon;
+        return true;
+    }
+
+    private void ValidateWeaponState()
+    {
+        if (m_equippedWeapon == null) return;
+
+        if (m_equippedWeapon.State == WeaponStateController.WeaponOwnerState.Unowned)
+        {
+            m_equippedWeapon = null;
+            return;
+        }
+
+        if (m_equippedWeapon.State == WeaponStateController.WeaponOwnerState.Owned
+            && m_equippedWeapon.Owner != gameObject)
+        {
+            m_equippedWeapon = null;
         }
     }
 
