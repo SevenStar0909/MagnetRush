@@ -35,7 +35,6 @@ public class Magnetizable : MonoBehaviour
     private float m_totalForceThisFrame;
     private Renderer m_renderer;
     private MaterialPropertyBlock m_mpb;
-    private Collider m_collider;
     private MagnetField m_cachedField;
     private RigidbodyConstraints m_savedConstraints;
     private bool m_isSettling;
@@ -62,8 +61,7 @@ public class Magnetizable : MonoBehaviour
         m_magnetTarget = GetComponent<IMagnetTarget>();
         m_magneticResponse = GetComponent<IMagneticResponse>();
         m_cachedEntity = GetComponent<Entity>();
-        m_renderer = GetComponentInChildren<Renderer>();
-        m_collider = GetComponent<Collider>();
+        m_renderer = GetComponent<Renderer>();
         m_mpb = new MaterialPropertyBlock();
         mass = m_initialMass > 0f ? m_initialMass : (m_rb != null ? m_rb.mass : 1f);
         if (m_rb != null) m_savedConstraints = m_rb.constraints;
@@ -172,7 +170,8 @@ public class Magnetizable : MonoBehaviour
             }
 
             // ソース方向の表面最近点に力を適用（トルクが発生し回転する）
-            Vector3 contactPoint = m_collider != null ? m_collider.ClosestPoint(sourcePosition) : transform.position;
+            var col = GetComponent<Collider>();
+            Vector3 contactPoint = col != null ? col.ClosestPoint(sourcePosition) : transform.position;
             m_rb.AddForceAtPosition(force * m_rb.mass, contactPoint, ForceMode.Force);
             return;
         }
