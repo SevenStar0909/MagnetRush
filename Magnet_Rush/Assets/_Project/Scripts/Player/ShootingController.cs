@@ -74,12 +74,11 @@ public class ShootingController : MonoBehaviour
         Ray ray = m_mainCamera.ScreenPointToRay(screenCenter);
         Vector3 camForward = m_mainCamera.transform.forward;
 
-        // レイヤーマスクから "MagnetField" レイヤーを除外
-        int bulletLayer = LayerMask.NameToLayer("MagnetField");
+        // MagnetFieldレイヤーを除外
         int layerMask = PhysicsLayers.MaskShootingRaycast;
-        if (bulletLayer != -1)
+        if (PhysicsLayers.MagnetField >= 0)
         {
-            layerMask &= ~(1 << bulletLayer);
+            layerMask &= ~(1 << PhysicsLayers.MagnetField);
         }
         float maxDist = m_bulletSettings != null ? m_bulletSettings.raycastDistance : 200f;
 

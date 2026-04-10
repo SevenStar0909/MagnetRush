@@ -2,7 +2,7 @@ using UnityEditor;
 using UnityEngine;
 
 /// <summary>
-/// MagnetRushプロジェクトガイド。Tools > MagnetRush ガイド で開く。
+/// MagnetRushプロジェクトガイド。MagnetRush > ガイド で開く。
 /// チームメンバー向けのシステム説明・操作方法リファレンス。
 /// </summary>
 public class MagnetRushGuide : EditorWindow
@@ -14,7 +14,7 @@ public class MagnetRushGuide : EditorWindow
         "概要", "操作", "磁力システム", "弾・射撃", "Entity", "レベル設計", "デバッグ"
     };
 
-    [MenuItem("Tools/MagnetRush ガイド")]
+    [MenuItem("MagnetRush/ガイド")]
     static void Open()
     {
         var window = GetWindow<MagnetRushGuide>("MagnetRush ガイド");
@@ -113,7 +113,7 @@ public class MagnetRushGuide : EditorWindow
 
         Section("力の適用順");
         Bullet("① IMagneticResponse（カスタム応答）");
-        Bullet("② IMagnetTarget（旧式インターフェース）");
+        Bullet("② IMagnetTarget（Entity基底が実装。ApplyMagnetForce）");
         Bullet("③ Rigidbody.AddForceAtPosition（物理オブジェクト）");
         Bullet("③の場合、表面最近点に力を適用 → トルクで回転する");
 

@@ -121,8 +121,8 @@ public class DebugActionMenu : MonoBehaviour
         Register("プレイヤー", "HP全回復", () =>
         {
             var player = FindAnyObjectByType<Player>();
-            if (player != null && player.health != null)
-                player.health.ResetHealth();
+            if (player != null && player.m_health != null)
+                player.m_health.ResetHealth();
         });
 
         // 弾
@@ -138,8 +138,8 @@ public class DebugActionMenu : MonoBehaviour
             var enemies = FindObjectsByType<EnemyBase>(FindObjectsSortMode.None);
             foreach (var enemy in enemies)
             {
-                if (enemy.health != null)
-                    enemy.health.Damage(9999);
+                if (enemy.m_health != null)
+                    enemy.m_health.Damage(9999);
             }
         });
 

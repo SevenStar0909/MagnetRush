@@ -34,7 +34,7 @@ public class Magnetizable : MonoBehaviour
     private IMagneticResponse m_magneticResponse;
     private Entity m_cachedEntity;
     private float m_totalForceThisFrame;
-    private Renderer m_renderer;
+    private Renderer[] m_renderers;
     private MaterialPropertyBlock m_mpb;
     private Collider m_collider;
     private MagnetField m_cachedField;
@@ -63,7 +63,7 @@ public class Magnetizable : MonoBehaviour
         m_magnetTarget = GetComponent<IMagnetTarget>();
         m_magneticResponse = GetComponent<IMagneticResponse>();
         m_cachedEntity = GetComponent<Entity>();
-        m_renderer = GetComponentInChildren<Renderer>();
+        m_renderers = GetComponentsInChildren<Renderer>(true);
         m_collider = GetComponent<Collider>();
         m_mpb = new MaterialPropertyBlock();
         mass = m_initialMass > 0f ? m_initialMass : (m_rb != null ? m_rb.mass : 1f);
@@ -90,14 +90,22 @@ public class Magnetizable : MonoBehaviour
         m_pole = newPole;
         m_isActive = newPole != MagneticPole.None;
 
-        // Rendering Layer Maskでアウトライン対象に設定
-        if (m_isActive && m_renderer != null)
+        // Awakeで取得できなかった場合のフォールバック
+        if (m_renderers == null || m_renderers.Length == 0)
+            m_renderers = GetComponentsInChildren<Renderer>(true);
+
+        // 全Rendererにアウトラインを適用
+        if (m_isActive && m_renderers.Length > 0)
         {
-            m_renderer.renderingLayerMask |= RenderingLayers.Magnetized;
             m_mpb.SetFloat(s_poleIDProperty, newPole == MagneticPole.S ? 1f : 0f);
-            m_renderer.SetPropertyBlock(m_mpb);
+            for (int i = 0; i < m_renderers.Length; i++)
+            {
+                if (m_renderers[i] == null) continue;
+                m_renderers[i].renderingLayerMask |= RenderingLayers.Magnetized;
+                m_renderers[i].SetPropertyBlock(m_mpb);
+            }
         }
-        else if (m_isActive && m_renderer == null)
+        else if (m_isActive)
         {
             Debug.LogWarning($"[Magnetizable] {gameObject.name} にRendererがありません。アウトライン表示できません。");
         }
@@ -110,9 +118,19 @@ public class Magnetizable : MonoBehaviour
         m_pole = MagneticPole.None;
         m_isActive = false;
 
-        // Rendering Layer Maskからアウトラインビットを解除
-        if (m_renderer != null)
-            m_renderer.renderingLayerMask &= ~RenderingLayers.Magnetized;
+        // 磁化解除時にbrokenペアをクリア（次回磁化で再スナップ可能にする）
+        if (MagnetManager.Instance != null)
+            MagnetManager.Instance.SnapResolver?.ClearBrokenFor(this);
+
+        // 全Rendererからアウトラインビットを解除
+        if (m_renderers != null)
+        {
+            for (int i = 0; i < m_renderers.Length; i++)
+            {
+                if (m_renderers[i] != null)
+                    m_renderers[i].renderingLayerMask &= ~RenderingLayers.Magnetized;
+            }
+        }
 
         // 回転制約はすぐ復元せず、セトリングフェーズ開始
         if (m_rb != null && m_savedConstraints != RigidbodyConstraints.None)

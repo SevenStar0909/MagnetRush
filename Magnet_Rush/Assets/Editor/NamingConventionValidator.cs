@@ -111,6 +111,24 @@ public class NamingConventionWindow : EditorWindow
             if (!path.EndsWith(".cs")) continue;
             ScanFile(path);
         }
+
+        LogIssuesToConsole();
+    }
+
+    void LogIssuesToConsole()
+    {
+        if (m_issues.Count == 0)
+        {
+            Debug.Log("[命名規則] スキャン完了。問題なし。");
+            return;
+        }
+
+        foreach (var issue in m_issues)
+        {
+            Debug.LogWarning($"[命名規則] {issue.filePath}:{issue.lineNumber} — {issue.rule}");
+        }
+
+        Debug.Log($"[命名規則] スキャン完了: {m_issues.Count} 件の問題");
     }
 
     void ScanFile(string assetPath)
@@ -138,6 +156,10 @@ public class NamingConventionWindow : EditorWindow
 
             // private/protectedフィールドの m_ プレフィックスチェック
             // パターン: (private|protected) Type fieldName;
+            // プロパティ行は除外
+            if (line.Contains("=>") || line.Contains("{ get"))
+                goto checkPublic;
+
             var privateFieldMatch = Regex.Match(line,
                 @"(?:private|protected)\s+(?:readonly\s+)?(?:static\s+)?(\w+(?:<[^>]+>)?(?:\[\])?)\s+(\w+)\s*[;=]");
             if (privateFieldMatch.Success)
@@ -171,14 +193,15 @@ public class NamingConventionWindow : EditorWindow
                 }
             }
 
+            checkPublic:
             // publicフィールドの camelCase チェック
             var publicFieldMatch = Regex.Match(line,
                 @"public\s+(?:readonly\s+)?(\w+(?:<[^>]+>)?(?:\[\])?)\s+(\w+)\s*[;=]");
             if (publicFieldMatch.Success && !line.Contains(" const ") && !line.Contains(" static ") && !line.Contains(" event "))
             {
                 string fieldName = publicFieldMatch.Groups[2].Value;
-                // プロパティ（{get; 等）は除外
-                if (!line.Contains("{") && !char.IsLower(fieldName[0]) && fieldName != fieldName.ToUpper())
+                // プロパティ（{get;, =>, { get）を除外
+                if (!line.Contains("{") && !line.Contains("=>") && !char.IsLower(fieldName[0]) && fieldName != fieldName.ToUpper())
                 {
                     AddIssue(assetPath, i + 1, line, $"publicフィールドは camelCase: {ToCamelCase(fieldName)}");
                 }

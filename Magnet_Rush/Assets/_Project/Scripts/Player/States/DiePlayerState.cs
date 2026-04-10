@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 /// <summary>
 /// プレイヤーの死亡ステート。一定時間後にリスポーンする。
@@ -33,9 +33,9 @@ public class DiePlayerState : EntityState<Player>
 
     public override void Exit()
     {
-        entity.input.enabled = true;
+        m_entity.input.enabled = true;
 
-        var collider = entity.GetComponent<Collider>();
+        var collider = m_entity.GetComponent<Collider>();
         if (collider != null) collider.enabled = true;
     }
 
@@ -44,13 +44,13 @@ public class DiePlayerState : EntityState<Player>
         // スポーン地点にテレポート
         if (GameManager.Instance != null)
         {
-            entity.transform.position = GameManager.Instance.GetSpawnPosition();
+            m_entity.transform.position = GameManager.Instance.GetSpawnPosition();
         }
 
         // velocityを直接リセット（lateralVelocity/verticalVelocityはtransform.up経由の変換なので不完全になりうる）
-        entity.velocity = UnityEngine.Vector3.zero;
-        entity.externalVelocity = UnityEngine.Vector3.zero;
-        entity.health.ResetHealth();
-        manager.Change<IdlePlayerState>();
+        m_entity.velocity = UnityEngine.Vector3.zero;
+        m_entity.externalVelocity = UnityEngine.Vector3.zero;
+        m_entity.m_health.ResetHealth();
+        m_manager.Change<IdlePlayerState>();
     }
 }

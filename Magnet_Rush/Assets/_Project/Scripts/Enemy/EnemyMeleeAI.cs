@@ -34,7 +34,7 @@ public class EnemyMeleeAI : MonoBehaviour
             return;
         }
 
-        if (m_player == null || m_agent == null || m_data == null)
+        if (m_player == null || m_agent == null || !m_agent.enabled || m_data == null)
         {
             return;
         }

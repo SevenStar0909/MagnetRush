@@ -23,6 +23,9 @@ public class AimController : MonoBehaviour
     {
         m_input = GetComponent<PlayerInputHandler>();
         m_states = GetComponent<PlayerStateManager>();
+
+        if (m_cameraSettings == null)
+            m_cameraSettings = FindAnyObjectByType<CameraSettingsApplier>();
     }
 
     void Update()

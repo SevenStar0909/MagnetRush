@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -166,6 +166,9 @@ public class MagnetManager : Singleton<MagnetManager>
         // ハードカットオフ（パフォーマンス用）
         if (distance > m_settings.magnetRange || distance < 0.01f) return;
 
+        // 距離解除されたペアは力もスナップも完全スキップ（ワープ防止）
+        if (m_snapResolver != null && m_snapResolver.IsBroken(a, b)) return;
+
         // フィールド個別範囲で有効距離を決定（大きい方を採用）
         float effectiveOuter = Mathf.Max(a.FieldOuterRadius, b.FieldOuterRadius);
         float effectiveInner = Mathf.Max(a.FieldInnerRadius, b.FieldInnerRadius);
@@ -278,7 +281,7 @@ public class MagnetManager : Singleton<MagnetManager>
         for (int i = 0; i < m_cachedList.Count; i++)
         {
             var entity = m_cachedList[i].GetComponent<Entity>();
-            if (entity == null || entity.health == null) continue;
+            if (entity == null || entity.m_health == null) continue;
 
             float dist = Vector3.Distance(entity.transform.position, center);
             if (dist > radius) continue;
@@ -286,7 +289,7 @@ public class MagnetManager : Singleton<MagnetManager>
             // 距離減衰ダメージ
             float damageRatio = 1f - dist / radius;
             int finalDamage = Mathf.Max(1, Mathf.RoundToInt(damage * damageRatio));
-            entity.health.Damage(finalDamage);
+            entity.m_health.Damage(finalDamage);
         }
     }
 

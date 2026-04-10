@@ -3,8 +3,8 @@ using UnityEngine;
 
 /// <summary>
 /// 異極オブジェクトの吸い込み→固定を管理する。
-/// 臨界減衰スプリングでスムーズに接近し、FixedJointで物理固定する。
-/// MagnetManagerのフィールドとして保持される（MonoBehaviourではない）。
+/// FixedJointで物理固定し、距離超過で解除する。
+/// 解除されたペアはbrokenリストに入り、どちらかの磁化が解除されるまで再スナップ＋力適用を禁止する。
 /// </summary>
 public class MagneticSnapResolver
 {
@@ -13,20 +13,42 @@ public class MagneticSnapResolver
     private readonly Dictionary<long, Vector3> m_velocities = new();
     private readonly Dictionary<long, FixedJoint> m_joints = new();
 
+    // 距離解除されたペア。磁化が解除されるまで再スナップ＋力適用を禁止
+    private readonly HashSet<long> m_brokenPairs = new();
+
     public MagneticSnapResolver(MagnetSettings settings)
     {
         m_settings = settings;
     }
 
-    /// <summary>snapDistance内の異極ペアを即座に固定する。</summary>
+    /// <summary>ペアがbroken状態か。MagnetManagerがProcessPairで力をスキップするために使用。</summary>
+    public bool IsBroken(Magnetizable a, Magnetizable b)
+    {
+        return m_brokenPairs.Contains(MakePairKey(a, b));
+    }
+
+    /// <summary>指定Magnetizableに関連するbrokenペアを解除する。磁化解除時にMagnetizable.OnDisableから呼ぶ。</summary>
+    public void ClearBrokenFor(Magnetizable mag)
+    {
+        if (mag == null) return;
+        m_brokenPairs.RemoveWhere(key =>
+        {
+            int id = mag.GetInstanceID();
+            int high = (int)(key >> 32);
+            int low = (int)(key & 0xFFFFFFFF);
+            return high == id || low == id;
+        });
+    }
+
+    /// <summary>snapDistance内の異極ペアを固定する。brokenペアは再スナップしない。</summary>
     public void Resolve(Magnetizable a, Magnetizable b, float dt)
     {
         if (a == null || b == null) return;
 
         long key = MakePairKey(a, b);
         if (m_attachedPairs.Contains(key)) return;
+        if (m_brokenPairs.Contains(key)) return;
 
-        // snapDistance 以内に入ったら即固定
         Snap(a, b);
     }
 
@@ -105,11 +127,13 @@ public class MagneticSnapResolver
 
         foreach (var key in toRemove)
             Release(key);
+
+        ClearBrokenFor(mag);
     }
 
     public bool IsAttached(long pairKey) => m_attachedPairs.Contains(pairKey);
 
-    /// <summary>null化したJointや、磁力範囲外に出たJointを掃除する。</summary>
+    /// <summary>null化したJointや、磁力範囲外に出たJointを掃除する。距離解除ペアはbrokenリストに追加。</summary>
     public void CleanupDestroyedJoints()
     {
         float maxRange = m_settings != null ? m_settings.magnetRange : 10f;
@@ -120,7 +144,6 @@ public class MagneticSnapResolver
         {
             if (kvp.Value == null) { toRemove.Add(kvp.Key); continue; }
 
-            // Joint両端の距離が磁力範囲を超えたら解除
             Rigidbody connected = kvp.Value.connectedBody;
             if (connected == null) { toRemove.Add(kvp.Key); continue; }
 
@@ -135,15 +158,9 @@ public class MagneticSnapResolver
                 Object.Destroy(joint);
             m_joints.Remove(key);
             m_attachedPairs.Remove(key);
+            // 距離解除 → brokenリストに追加（磁化解除まで再スナップ＋力を禁止）
+            m_brokenPairs.Add(key);
         }
-    }
-
-    private Magnetizable FindMover(Magnetizable a, Magnetizable b)
-    {
-        if (float.IsInfinity(a.mass) && float.IsInfinity(b.mass)) return null;
-        if (float.IsInfinity(a.mass)) return b;
-        if (float.IsInfinity(b.mass)) return a;
-        return a.mass <= b.mass ? a : b;
     }
 
     private Magnetizable FindAnchor(Magnetizable a, Magnetizable b)
@@ -153,7 +170,7 @@ public class MagneticSnapResolver
         return a.mass > b.mass ? a : b;
     }
 
-    private static long MakePairKey(Magnetizable a, Magnetizable b)
+    public static long MakePairKey(Magnetizable a, Magnetizable b)
     {
         int idA = a.GetInstanceID();
         int idB = b.GetInstanceID();

@@ -42,7 +42,7 @@ public class FileLockWindow : EditorWindow
         LoadDatabase();
     }
 
-    [MenuItem("Tools/File Lock")]
+    [MenuItem("Tools/Git/File Lock")]
     static void ShowWindow()
     {
         GetWindow<FileLockWindow>("File Lock");

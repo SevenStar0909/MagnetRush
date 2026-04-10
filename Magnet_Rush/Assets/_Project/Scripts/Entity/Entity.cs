@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -10,11 +10,11 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
     [Header("Entity Events")]
     public EntityEvents entityEvents;
 
-    protected Rigidbody rb;
-    protected CapsuleCollider capsuleCollider;
-    protected EntityController controller;
-    [HideInInspector] public Health health;
-    protected Transform cachedCameraTransform;
+    protected Rigidbody m_rb;
+    protected CapsuleCollider m_capsuleCollider;
+    protected EntityController m_controller;
+    [HideInInspector] public Health m_health;
+    protected Transform m_cachedCameraTransform;
 
     /// <summary>ワールド空間の速度ベクトル。</summary>
     public Vector3 velocity;
@@ -68,7 +68,7 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
     public Vector3 groundNormal { get; protected set; } = Vector3.up;
     public Vector3 localSlopeDirection { get; protected set; }
 
-    protected readonly float slopingGroundAngle = 20f;
+    protected readonly float m_slopingGroundAngle = 20f;
 
     // --- 磁力場 ---
     /// <summary>現在支配的な磁力場。MagnetManagerが毎フレーム設定する。</summary>
@@ -93,13 +93,13 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
 
     // --- 汎用プロパティ ---
 
-    /// <summary>Entityのカプセル高さ。controller > capsuleCollider > 2f の優先順で取得。</summary>
-    public float height => controller != null ? controller.height
-        : (capsuleCollider != null ? capsuleCollider.height : 2f);
+    /// <summary>Entityのカプセル高さ。m_controller > m_capsuleCollider > 2f の優先順で取得。</summary>
+    public float height => m_controller != null ? m_controller.height
+        : (m_capsuleCollider != null ? m_capsuleCollider.height : 2f);
 
-    /// <summary>Entityのカプセル半径。controller > capsuleCollider > 0.5f の優先順で取得。</summary>
-    public float radius => controller != null ? controller.radius
-        : (capsuleCollider != null ? capsuleCollider.radius : 0.5f);
+    /// <summary>Entityのカプセル半径。m_controller > m_capsuleCollider > 0.5f の優先順で取得。</summary>
+    public float radius => m_controller != null ? m_controller.radius
+        : (m_capsuleCollider != null ? m_capsuleCollider.radius : 0.5f);
 
     /// <summary>transform.upを基準にしたローカル空間の前方向。斜面/磁力回転時も正しい方向を返す。</summary>
     public virtual Vector3 localForward =>
@@ -117,14 +117,14 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
     {
         get
         {
-            Vector3 c = controller != null ? controller.center
-                      : (capsuleCollider != null ? capsuleCollider.center : Vector3.zero);
+            Vector3 c = m_controller != null ? m_controller.center
+                      : (m_capsuleCollider != null ? m_capsuleCollider.center : Vector3.zero);
             return transform.position + transform.rotation * c;
         }
         set
         {
-            Vector3 c = controller != null ? controller.center
-                      : (capsuleCollider != null ? capsuleCollider.center : Vector3.zero);
+            Vector3 c = m_controller != null ? m_controller.center
+                      : (m_capsuleCollider != null ? m_capsuleCollider.center : Vector3.zero);
             transform.position = value - transform.rotation * c;
         }
     }
@@ -165,21 +165,21 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
 
     protected virtual void Awake()
     {
-        rb = GetComponent<Rigidbody>();
-        capsuleCollider = GetComponent<CapsuleCollider>();
-        controller = GetComponent<EntityController>();
-        health = GetComponent<Health>();
+        m_rb = GetComponent<Rigidbody>();
+        m_capsuleCollider = GetComponent<CapsuleCollider>();
+        m_controller = GetComponent<EntityController>();
+        m_health = GetComponent<Health>();
 
         // EntityControllerがない場合のみフォールバック（敵のNavMesh等）
-        if (controller == null && rb != null)
+        if (m_controller == null && m_rb != null)
         {
-            rb.isKinematic = true;
-            rb.useGravity = false;
+            m_rb.isKinematic = true;
+            m_rb.useGravity = false;
         }
 
         var mainCam = Camera.main;
         if (mainCam != null)
-            cachedCameraTransform = mainCam.transform;
+            m_cachedCameraTransform = mainCam.transform;
     }
 
     /// <summary>
@@ -201,7 +201,7 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
     /// </summary>
     protected void HandleContacts()
     {
-        float skinOffset = controller != null ? controller.skinWidth + Physics.defaultContactOffset : 0.05f;
+        float skinOffset = m_controller != null ? m_controller.skinWidth + Physics.defaultContactOffset : 0.05f;
         int overlaps = OverlapEntity(m_contactBuffer, skinOffset);
 
         for (int i = 0; i < overlaps; i++)
@@ -220,7 +220,7 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
     /// </summary>
     protected void HandleCeiling()
     {
-        if (controller != null) return;
+        if (m_controller != null) return;
         if (verticalVelocity <= 0f) return;
 
         float maxCeilingDist = height * 0.5f + 0.1f;
@@ -237,9 +237,9 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
     {
         Vector3 motion = (velocity + externalVelocity) * dt;
 
-        if (controller != null)
+        if (m_controller != null)
         {
-            transform.position = controller.Move(transform.position, motion);
+            transform.position = m_controller.Move(transform.position, motion);
         }
         else
         {
@@ -339,8 +339,8 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
         }
 
         // 接地遷移イベント
-        if (IsGrounded && !wasGrounded) entityEvents?.OnGroundEnter?.Invoke();
-        if (!IsGrounded && wasGrounded) entityEvents?.OnGroundExit?.Invoke();
+        if (IsGrounded && !wasGrounded) entityEvents?.onGroundEnter?.Invoke();
+        if (!IsGrounded && wasGrounded) entityEvents?.onGroundExit?.Invoke();
     }
 
     /// <summary>
@@ -348,7 +348,7 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
     /// </summary>
     public virtual bool OnSlopingGround()
     {
-        return IsGrounded && groundAngle > slopingGroundAngle;
+        return IsGrounded && groundAngle > m_slopingGroundAngle;
     }
 
     /// <summary>
@@ -423,15 +423,15 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
     protected Vector3 GetCameraRelativeDirection(Vector2 input, out float magnitude, bool localSpace = true)
     {
         magnitude = 0f;
-        if (cachedCameraTransform == null || input.sqrMagnitude < 0.01f)
+        if (m_cachedCameraTransform == null || input.sqrMagnitude < 0.01f)
             return Vector3.zero;
 
         // 2D入力を3D方向に変換
         Vector3 direction = new Vector3(input.x, 0f, input.y);
 
         // カメラのupをエンティティのupに合わせてから回転適用
-        var rotation = Quaternion.FromToRotation(cachedCameraTransform.up, transform.up);
-        direction = rotation * cachedCameraTransform.rotation * direction;
+        var rotation = Quaternion.FromToRotation(m_cachedCameraTransform.up, transform.up);
+        direction = rotation * m_cachedCameraTransform.rotation * direction;
 
         if (localSpace)
         {

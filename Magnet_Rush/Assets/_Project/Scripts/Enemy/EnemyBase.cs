@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.Serialization;
 
@@ -18,7 +18,7 @@ public class EnemyBase : Entity
     [SerializeField] private Transform m_player;
     [SerializeField] private Transform m_weaponHandSocket;
 
-    protected NavMeshAgent agent;
+    protected NavMeshAgent m_agent;
 
     [Header("Magnetic")]
     [FormerlySerializedAs("MagneticMover")]
@@ -28,7 +28,7 @@ public class EnemyBase : Entity
 
     public EnemySettings StatusData => m_statusData;
     public Transform Player => m_player;
-    public NavMeshAgent Agent => agent;
+    public NavMeshAgent Agent => m_agent;
     public Transform WeaponHandSocket => m_weaponHandSocket;
     public WeaponStateController EquippedWeapon => m_equippedWeapon;
 
@@ -52,7 +52,8 @@ public class EnemyBase : Entity
     protected override void Awake()
     {
         base.Awake();
-        agent = GetComponent<NavMeshAgent>();
+        m_agent = GetComponent<NavMeshAgent>();
+
         m_mover = GetComponentInChildren<MagneticMover>();
 
         if (m_player == null)
@@ -63,22 +64,30 @@ public class EnemyBase : Entity
         }
 
         // Health.OnDie → Die()
-        if (health != null)
-            health.OnDie += Die;
+        if (m_health != null)
+            m_health.OnDie += Die;
     }
 
     void OnDestroy()
     {
-        if (health != null)
-            health.OnDie -= Die;
+        if (m_health != null)
+            m_health.OnDie -= Die;
     }
 
     protected virtual void Start()
     {
-        if (agent != null && m_statusData != null)
+        // Additiveシーンの読み込み完了後にNavMeshが有効になるため、Startで確認してagentを有効化する
+        if (m_agent != null && !m_agent.enabled)
         {
-            agent.speed = m_statusData.moveSpeed;
-            agent.stoppingDistance = m_statusData.stopDistance;
+            bool hasNavMesh = NavMesh.SamplePosition(transform.position, out _, 10f, NavMesh.AllAreas);
+            if (hasNavMesh)
+                m_agent.enabled = true;
+        }
+
+        if (m_agent != null && m_agent.enabled && m_statusData != null)
+        {
+            m_agent.speed = m_statusData.moveSpeed;
+            m_agent.stoppingDistance = m_statusData.stopDistance;
         }
     }
 
@@ -90,9 +99,9 @@ public class EnemyBase : Entity
         if (IsMagnetControlled) return;
 
         // MagneticMover なしの敵は従来通り externalVelocity で磁力適用
-        if (externalVelocity.sqrMagnitude > 0.01f && agent != null)
+        if (externalVelocity.sqrMagnitude > 0.01f && m_agent != null && m_agent.enabled)
         {
-            agent.Move(externalVelocity * Time.deltaTime);
+            m_agent.Move(externalVelocity * Time.deltaTime);
             externalVelocity = Vector3.zero;
         }
     }

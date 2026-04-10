@@ -52,6 +52,15 @@ public static class GitStatusOverlay
             _ => Color.gray
         };
 
+        string tooltip = status switch
+        {
+            'M' => "変更あり (Modified)",
+            'A' => "新規追加 (Added)",
+            'D' => "削除済み (Deleted)",
+            '?' => "未追跡 (Untracked)",
+            _ => "不明"
+        };
+
         // 右上にステータスドットを描画
         float size = 8f;
         var dotRect = new Rect(rect.xMax - size - 2, rect.y + 2, size, size);
@@ -59,6 +68,9 @@ public static class GitStatusOverlay
         GUI.color = color;
         GUI.DrawTexture(dotRect, Texture2D.whiteTexture, ScaleMode.ScaleToFit);
         GUI.color = prevColor;
+
+        // ドット範囲にツールチップ
+        GUI.Label(dotRect, new GUIContent("", tooltip));
     }
 
     static char FindStatus(string assetPath)
@@ -128,9 +140,51 @@ public static class GitStatusOverlay
     }
 
     /// <summary>手動リフレッシュ用メニュー。</summary>
-    [MenuItem("Tools/Git Status/Refresh")]
-    static void ManualRefresh()
+    [MenuItem("Tools/Git/Status Refresh")]
+    internal static void ManualRefresh()
     {
         RefreshStatus();
+    }
+
+}
+
+public class GitStatusLegendWindow : EditorWindow
+{
+    [MenuItem("Tools/Git/Status 凡例")]
+    static void ShowLegend()
+    {
+        GetWindow<GitStatusLegendWindow>("Git Status 凡例");
+    }
+
+    void OnGUI()
+    {
+        EditorGUILayout.Space(8);
+        EditorGUILayout.LabelField("Projectウィンドウのドット色", EditorStyles.boldLabel);
+        EditorGUILayout.Space(4);
+
+        DrawLegendRow(new Color(1f, 0.8f, 0.2f), "黄", "変更あり (Modified)");
+        DrawLegendRow(new Color(0.3f, 0.9f, 0.3f), "緑", "新規追加 (Added)");
+        DrawLegendRow(new Color(1f, 0.3f, 0.3f), "赤", "削除済み (Deleted)");
+        DrawLegendRow(new Color(0.4f, 0.7f, 1f), "青", "未追跡 (Untracked)");
+
+        EditorGUILayout.Space(12);
+        if (GUILayout.Button("リフレッシュ", GUILayout.Height(28)))
+        {
+            GitStatusOverlay.ManualRefresh();
+        }
+        EditorGUILayout.Space(4);
+        EditorGUILayout.LabelField("自動更新: 10秒ごと", EditorStyles.miniLabel);
+    }
+
+    static void DrawLegendRow(Color color, string label, string desc)
+    {
+        EditorGUILayout.BeginHorizontal();
+        var rect = GUILayoutUtility.GetRect(14, 14, GUILayout.Width(14));
+        var prev = GUI.color;
+        GUI.color = color;
+        GUI.DrawTexture(rect, Texture2D.whiteTexture);
+        GUI.color = prev;
+        EditorGUILayout.LabelField($"{label} — {desc}");
+        EditorGUILayout.EndHorizontal();
     }
 }

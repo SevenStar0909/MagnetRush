@@ -154,7 +154,7 @@ public class GitFlowWindow : EditorWindow
     private bool wasIdleLastFrame;
     private const double IdleTimeoutSeconds = 30.0;
 
-    [MenuItem("Tools/Git Flow")]
+    [MenuItem("Tools/Git/Git Flow")]
     public static void ShowWindow()
     {
         GetWindow<GitFlowWindow>("Git Flow");

@@ -83,8 +83,8 @@ public class MagneticMover : MonoBehaviour, IMagneticResponse
 
         if (NavMesh.SamplePosition(transform.position, out var hit, 2f, NavMesh.AllAreas))
         {
-            m_rb.isKinematic = true;
             m_rb.linearVelocity = Vector3.zero;
+            m_rb.isKinematic = true;
             transform.position = hit.position;
             m_agent.enabled = true;
             m_isMagnetActive = false;
@@ -95,8 +95,8 @@ public class MagneticMover : MonoBehaviour, IMagneticResponse
             m_recoveryAttempts++;
             if (m_recoveryAttempts >= m_settings.maxRecoveryAttempts)
             {
-                m_rb.isKinematic = true;
                 m_rb.linearVelocity = Vector3.zero;
+                m_rb.isKinematic = true;
                 transform.position = m_lastValidNavMeshPos;
                 m_agent.enabled = true;
                 m_isMagnetActive = false;

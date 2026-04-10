@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Serialization;
 
 /// <summary>
@@ -60,17 +60,17 @@ public class Player : Entity
             : PhysicsLayers.MaskGroundCheck;
 
         // HP=0でDiePlayerStateに遷移
-        if (health != null)
+        if (m_health != null)
         {
-            health.OnDie += OnDie;
+            m_health.OnDie += OnDie;
         }
     }
 
     void OnDestroy()
     {
-        if (health != null)
+        if (m_health != null)
         {
-            health.OnDie -= OnDie;
+            m_health.OnDie -= OnDie;
         }
     }
 
@@ -143,9 +143,9 @@ public class Player : Entity
         {
             Accelerate(dir, m_settings.turningDrag, m_settings.acceleration, aimSpeed, dt);
         }
-        if (cachedCameraTransform != null)
+        if (m_cachedCameraTransform != null)
         {
-            Vector3 camForward = cachedCameraTransform.forward;
+            Vector3 camForward = m_cachedCameraTransform.forward;
             camForward.y = 0f;
             FaceDirection(camForward, m_settings.rotationSpeed * 2f, dt, false);
         }

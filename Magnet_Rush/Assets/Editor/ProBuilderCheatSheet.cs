@@ -15,7 +15,7 @@ public class ProBuilderCheatSheet : EditorWindow
         "Shape一覧", "UV・Mat", "レシピ", "Tips", "トラブル"
     };
 
-    [MenuItem("Tools/ProBuilderチートシート")]
+    [MenuItem("Tools/ProBuilder/チートシート")]
     static void Open()
     {
         var window = GetWindow<ProBuilderCheatSheet>("PB チートシート");

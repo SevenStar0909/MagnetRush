@@ -5,16 +5,16 @@
 /// </summary>
 public abstract class EntityState<T> where T : Entity
 {
-    protected T entity;
-    protected EntityStateManager<T> manager;
+    protected T m_entity;
+    protected EntityStateManager<T> m_manager;
 
     /// <summary>現在のステートに入ってからの経過時間。</summary>
     public float timeSinceEntered { get; set; }
 
     public virtual void Enter(T entity, EntityStateManager<T> manager)
     {
-        this.entity = entity;
-        this.manager = manager;
+        this.m_entity = entity;
+        this.m_manager = manager;
         timeSinceEntered = 0f;
     }
 
