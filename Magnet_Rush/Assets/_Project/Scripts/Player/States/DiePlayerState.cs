@@ -10,10 +10,13 @@ public class DiePlayerState : EntityState<Player>
     public override void Enter(Player entity, EntityStateManager<Player> manager)
     {
         base.Enter(entity, manager);
-        entity.lateralVelocity = Vector3.zero;
+
+        // 全速度を即座にゼロ化（重力蓄積を防ぐ）
+        entity.velocity = UnityEngine.Vector3.zero;
+        entity.externalVelocity = UnityEngine.Vector3.zero;
         entity.input.enabled = false;
 
-        var collider = entity.GetComponent<Collider>();
+        var collider = entity.GetComponent<UnityEngine.Collider>();
         if (collider != null) collider.enabled = false;
 
         m_respawnTimer = entity.Settings.respawnDelay;
@@ -44,10 +47,10 @@ public class DiePlayerState : EntityState<Player>
             entity.transform.position = GameManager.Instance.GetSpawnPosition();
         }
 
+        // velocityを直接リセット（lateralVelocity/verticalVelocityはtransform.up経由の変換なので不完全になりうる）
+        entity.velocity = UnityEngine.Vector3.zero;
+        entity.externalVelocity = UnityEngine.Vector3.zero;
         entity.health.ResetHealth();
-        entity.lateralVelocity = Vector3.zero;
-        entity.verticalVelocity = 0f;
-        entity.externalVelocity = Vector3.zero;
         manager.Change<IdlePlayerState>();
     }
 }

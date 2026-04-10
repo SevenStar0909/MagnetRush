@@ -99,9 +99,10 @@ public class WeaponStateController : MonoBehaviour
 
         if (m_rb != null)
         {
-            m_rb.isKinematic = true;
+            // kinematicにする前にvelocityをクリア（kinematic後の設定は警告になる）
             m_rb.linearVelocity = Vector3.zero;
             m_rb.angularVelocity = Vector3.zero;
+            m_rb.isKinematic = true;
         }
 
         SetPhysicsCollidersEnabled(false);
@@ -128,7 +129,7 @@ public class WeaponStateController : MonoBehaviour
             return;
         }
 
-        // 1) GripPoint tp Socket 
+        // 1) GripPoint tp Socket
         Vector3 currentGrip = m_gripPoint.position;
         Vector3 nextGrip = Vector3.MoveTowards(
             currentGrip,
@@ -171,9 +172,13 @@ public class WeaponStateController : MonoBehaviour
 
         if (m_rb != null)
         {
+            // 既にkinematicの場合はvelocity設定不要
+            if (!m_rb.isKinematic)
+            {
+                m_rb.linearVelocity = Vector3.zero;
+                m_rb.angularVelocity = Vector3.zero;
+            }
             m_rb.isKinematic = true;
-            m_rb.linearVelocity = Vector3.zero;
-            m_rb.angularVelocity = Vector3.zero;
         }
 
         if (m_attackTrigger != null)

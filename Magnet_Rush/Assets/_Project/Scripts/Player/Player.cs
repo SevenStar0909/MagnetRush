@@ -84,7 +84,10 @@ public class Player : Entity
         float dt = Mathf.Min(Time.deltaTime, Time.fixedDeltaTime * 3f);
         UpdateMagneticInfluence();
         states.Step(dt);
-        EntityStep(dt);
+
+        // 死亡中は重力・移動処理をスキップ（EntityStepがvelocityを上書きして落下するのを防ぐ）
+        if (!states.IsCurrentOfType<DiePlayerState>())
+            EntityStep(dt);
     }
 
     /// <summary>

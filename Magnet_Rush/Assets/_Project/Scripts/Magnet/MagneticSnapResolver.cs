@@ -109,17 +109,30 @@ public class MagneticSnapResolver
 
     public bool IsAttached(long pairKey) => m_attachedPairs.Contains(pairKey);
 
-    /// <summary>null化したJointを掃除する。</summary>
+    /// <summary>null化したJointや、磁力範囲外に出たJointを掃除する。</summary>
     public void CleanupDestroyedJoints()
     {
+        float maxRange = m_settings != null ? m_settings.magnetRange : 10f;
+        float maxRangeSqr = maxRange * maxRange;
+
         var toRemove = new List<long>();
         foreach (var kvp in m_joints)
         {
-            if (kvp.Value == null) toRemove.Add(kvp.Key);
+            if (kvp.Value == null) { toRemove.Add(kvp.Key); continue; }
+
+            // Joint両端の距離が磁力範囲を超えたら解除
+            Rigidbody connected = kvp.Value.connectedBody;
+            if (connected == null) { toRemove.Add(kvp.Key); continue; }
+
+            float sqrDist = (kvp.Value.transform.position - connected.transform.position).sqrMagnitude;
+            if (sqrDist > maxRangeSqr)
+                toRemove.Add(kvp.Key);
         }
 
         foreach (var key in toRemove)
         {
+            if (m_joints.TryGetValue(key, out var joint) && joint != null)
+                Object.Destroy(joint);
             m_joints.Remove(key);
             m_attachedPairs.Remove(key);
         }

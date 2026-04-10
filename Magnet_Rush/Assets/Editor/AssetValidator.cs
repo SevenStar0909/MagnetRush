@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
@@ -57,6 +59,14 @@ public class AssetValidator : EditorWindow, IPreprocessBuildWithReport
         {
             m_results.Clear();
             ValidateScriptableObjects();
+        }
+        if (GUILayout.Button("コード規約", EditorStyles.toolbarButton, GUILayout.Width(80)))
+        {
+            m_results.Clear();
+            ValidateCodeConventions();
+            if (m_results.Count == 0)
+                m_results.Add(new ValidationResult { category = "結果", message = "コード規約違反なし。", severity = MessageType.Info });
+            Repaint();
         }
         GUILayout.FlexibleSpace();
 
@@ -125,6 +135,8 @@ public class AssetValidator : EditorWindow, IPreprocessBuildWithReport
             ValidatePrefabs();
             EditorUtility.DisplayProgressBar("Asset Validator", "SOチェック中...", 0.7f);
             ValidateScriptableObjects();
+            EditorUtility.DisplayProgressBar("Asset Validator", "コード規約チェック中...", 0.8f);
+            ValidateCodeConventions();
             EditorUtility.DisplayProgressBar("Asset Validator", "ビルドシーンチェック中...", 0.9f);
             ValidateBuildScenes();
         }
@@ -136,6 +148,8 @@ public class AssetValidator : EditorWindow, IPreprocessBuildWithReport
         {
             EditorUtility.ClearProgressBar();
         }
+
+        LogResultsToConsole();
 
         if (m_results.Count == 0)
         {
@@ -280,6 +294,109 @@ public class AssetValidator : EditorWindow, IPreprocessBuildWithReport
         }
     }
 
+    // PhysicsLayers.cs と GameTags.cs は除外（定義元なので直接文字列を使う）
+    static readonly HashSet<string> k_ExcludedFiles = new HashSet<string>
+    {
+        "PhysicsLayers.cs",
+        "GameTags.cs",
+        "RenderingLayers.cs"
+    };
+
+    static readonly Regex s_nameToLayer = new Regex(@"NameToLayer\s*\(\s*""[^""]+""", RegexOptions.Compiled);
+    static readonly Regex s_compareTag = new Regex(@"CompareTag\s*\(\s*""[^""]+""", RegexOptions.Compiled);
+    static readonly Regex s_tagEquals = new Regex(@"\.tag\s*[!=]=\s*""[^""]+""", RegexOptions.Compiled);
+    // renderingLayerMask に直接数値リテラルを代入/演算しているパターン
+    static readonly Regex s_renderingLayerLiteral = new Regex(@"renderingLayerMask\s*[|&^]?=\s*\d+", RegexOptions.Compiled);
+
+    void ValidateCodeConventions()
+    {
+        string scriptsRoot = Path.Combine(Application.dataPath, "_Project", "Scripts");
+        if (!Directory.Exists(scriptsRoot)) return;
+
+        var csFiles = Directory.GetFiles(scriptsRoot, "*.cs", SearchOption.AllDirectories);
+
+        foreach (string filePath in csFiles)
+        {
+            string fileName = Path.GetFileName(filePath);
+            if (k_ExcludedFiles.Contains(fileName)) continue;
+
+            string[] lines = File.ReadAllLines(filePath);
+            string relativePath = "Assets" + filePath.Substring(Application.dataPath.Length).Replace('\\', '/');
+
+            for (int i = 0; i < lines.Length; i++)
+            {
+                string line = lines[i];
+
+                // コメント行はスキップ
+                string trimmed = line.TrimStart();
+                if (trimmed.StartsWith("//") || trimmed.StartsWith("*") || trimmed.StartsWith("///")) continue;
+
+                if (s_nameToLayer.IsMatch(line))
+                {
+                    m_results.Add(new ValidationResult
+                    {
+                        category = "コード規約: PhysicsLayers",
+                        message = $"{relativePath}:{i + 1} — NameToLayer(\"\") の直接使用。PhysicsLayers.XXX を使ってください",
+                        severity = MessageType.Warning
+                    });
+                }
+
+                if (s_compareTag.IsMatch(line))
+                {
+                    m_results.Add(new ValidationResult
+                    {
+                        category = "コード規約: GameTags",
+                        message = $"{relativePath}:{i + 1} — CompareTag(\"\") の直接使用。GameTags.XXX を使ってください",
+                        severity = MessageType.Warning
+                    });
+                }
+
+                if (s_tagEquals.IsMatch(line))
+                {
+                    m_results.Add(new ValidationResult
+                    {
+                        category = "コード規約: GameTags",
+                        message = $"{relativePath}:{i + 1} — .tag == \"\" の直接比較。GameTags.XXX を使ってください",
+                        severity = MessageType.Warning
+                    });
+                }
+
+                if (s_renderingLayerLiteral.IsMatch(line))
+                {
+                    m_results.Add(new ValidationResult
+                    {
+                        category = "コード規約: RenderingLayers",
+                        message = $"{relativePath}:{i + 1} — renderingLayerMask に数値リテラル直接指定。RenderingLayers.XXX を使ってください",
+                        severity = MessageType.Warning
+                    });
+                }
+            }
+        }
+    }
+
+    void LogResultsToConsole()
+    {
+        int errorCount = m_results.Count(r => r.severity == MessageType.Error);
+        int warningCount = m_results.Count(r => r.severity == MessageType.Warning);
+
+        if (errorCount == 0 && warningCount == 0)
+        {
+            Debug.Log("[AssetValidator] 全チェック完了。問題なし。");
+            return;
+        }
+
+        foreach (var result in m_results)
+        {
+            string msg = $"[AssetValidator] [{result.category}] {result.message}";
+            if (result.severity == MessageType.Error)
+                Debug.LogError(msg, result.targetObject);
+            else if (result.severity == MessageType.Warning)
+                Debug.LogWarning(msg, result.targetObject);
+        }
+
+        Debug.Log($"[AssetValidator] 完了: エラー {errorCount} 件 / 警告 {warningCount} 件");
+    }
+
     static string BuildPath(GameObject go)
     {
         string path = go.name;
@@ -326,5 +443,147 @@ public class AssetValidator : EditorWindow, IPreprocessBuildWithReport
             string message = string.Join("\n", errors);
             throw new BuildFailedException($"ビルド前チェック失敗:\n{message}");
         }
+    }
+
+    // --- PlayMode開始時の自動チェック ---
+
+    [InitializeOnLoadMethod]
+    static void RegisterPlayModeCheck()
+    {
+        EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
+    }
+
+    static void OnPlayModeStateChanged(PlayModeStateChange state)
+    {
+        if (state != PlayModeStateChange.EnteredPlayMode) return;
+
+        int errorCount = 0;
+        int warningCount = 0;
+
+        // Missing Script / Missing Reference（開いているシーン）
+        for (int i = 0; i < SceneManager.sceneCount; i++)
+        {
+            var scene = SceneManager.GetSceneAt(i);
+            if (!scene.isLoaded) continue;
+            foreach (var root in scene.GetRootGameObjects())
+                errorCount += ScanGameObjectRuntime(root, scene.name);
+        }
+
+        // タグ/レイヤー整合性
+        var registeredTags = new HashSet<string>(UnityEditorInternal.InternalEditorUtility.tags);
+        var tagFields = typeof(GameTags).GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
+        foreach (var field in tagFields)
+        {
+            if (field.FieldType != typeof(string)) continue;
+            string tagValue = (string)field.GetValue(null);
+            if (!registeredTags.Contains(tagValue))
+            {
+                Debug.LogError($"[AssetValidator] GameTags.{field.Name} = \"{tagValue}\" がTagManagerに未登録");
+                errorCount++;
+            }
+        }
+
+        string[] layerNames = { "Ground", "Wall", "Player", "Enemy", "Bullet", "MagnetField" };
+        foreach (string layerName in layerNames)
+        {
+            if (LayerMask.NameToLayer(layerName) == -1)
+            {
+                Debug.LogError($"[AssetValidator] レイヤー \"{layerName}\" がProjectSettingsに未定義");
+                errorCount++;
+            }
+        }
+
+        // コード規約（静的解析）
+        warningCount += ScanCodeConventionsRuntime();
+
+        if (errorCount > 0 || warningCount > 0)
+            Debug.LogWarning($"[AssetValidator] PlayMode検証: エラー {errorCount} 件 / 警告 {warningCount} 件");
+        else
+            Debug.Log("[AssetValidator] PlayMode検証: 問題なし");
+    }
+
+    static int ScanGameObjectRuntime(GameObject go, string sceneName)
+    {
+        int count = 0;
+        var components = go.GetComponents<Component>();
+        foreach (var component in components)
+        {
+            if (component == null)
+            {
+                Debug.LogError($"[AssetValidator] Missing Script: {BuildPath(go)} [{sceneName}]", go);
+                count++;
+                continue;
+            }
+
+            var so = new SerializedObject(component);
+            var prop = so.GetIterator();
+            while (prop.NextVisible(true))
+            {
+                if (prop.propertyType != SerializedPropertyType.ObjectReference) continue;
+                if (prop.objectReferenceValue == null && prop.objectReferenceInstanceIDValue != 0)
+                {
+                    Debug.LogError($"[AssetValidator] Missing Reference: {BuildPath(go)} → {component.GetType().Name}.{prop.propertyPath} [{sceneName}]", go);
+                    count++;
+                }
+            }
+        }
+
+        for (int i = 0; i < go.transform.childCount; i++)
+            count += ScanGameObjectRuntime(go.transform.GetChild(i).gameObject, sceneName);
+
+        return count;
+    }
+
+    static int ScanCodeConventionsRuntime()
+    {
+        int count = 0;
+        string scriptsRoot = Path.Combine(Application.dataPath, "_Project", "Scripts");
+        if (!Directory.Exists(scriptsRoot)) return 0;
+
+        var nameToLayer = new Regex(@"NameToLayer\s*\(\s*""[^""]+""", RegexOptions.Compiled);
+        var compareTag = new Regex(@"CompareTag\s*\(\s*""[^""]+""", RegexOptions.Compiled);
+        var tagEquals = new Regex(@"\.tag\s*[!=]=\s*""[^""]+""", RegexOptions.Compiled);
+        var renderingLiteral = new Regex(@"renderingLayerMask\s*[|&^]?=\s*\d+", RegexOptions.Compiled);
+
+        var excluded = new HashSet<string> { "PhysicsLayers.cs", "GameTags.cs", "RenderingLayers.cs" };
+
+        foreach (string filePath in Directory.GetFiles(scriptsRoot, "*.cs", SearchOption.AllDirectories))
+        {
+            string fileName = Path.GetFileName(filePath);
+            if (excluded.Contains(fileName)) continue;
+
+            string relativePath = "Assets" + filePath.Substring(Application.dataPath.Length).Replace('\\', '/');
+            string[] lines = File.ReadAllLines(filePath);
+
+            for (int i = 0; i < lines.Length; i++)
+            {
+                string trimmed = lines[i].TrimStart();
+                if (trimmed.StartsWith("//") || trimmed.StartsWith("*") || trimmed.StartsWith("///")) continue;
+
+                string line = lines[i];
+                if (nameToLayer.IsMatch(line))
+                {
+                    Debug.LogWarning($"[AssetValidator] コード規約: {relativePath}:{i + 1} — NameToLayer直接使用。PhysicsLayers.XXX を使ってください");
+                    count++;
+                }
+                if (compareTag.IsMatch(line))
+                {
+                    Debug.LogWarning($"[AssetValidator] コード規約: {relativePath}:{i + 1} — CompareTag直接使用。GameTags.XXX を使ってください");
+                    count++;
+                }
+                if (tagEquals.IsMatch(line))
+                {
+                    Debug.LogWarning($"[AssetValidator] コード規約: {relativePath}:{i + 1} — .tag==\"\"直接比較。GameTags.XXX を使ってください");
+                    count++;
+                }
+                if (renderingLiteral.IsMatch(line))
+                {
+                    Debug.LogWarning($"[AssetValidator] コード規約: {relativePath}:{i + 1} — renderingLayerMask数値直接指定。RenderingLayers.XXX を使ってください");
+                    count++;
+                }
+            }
+        }
+
+        return count;
     }
 }

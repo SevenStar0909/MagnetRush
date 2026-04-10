@@ -7,6 +7,7 @@ using System;
 /// MagnetManagerに自動登録され、力の適用はオブジェクト種別に応じて自動判別する。
 /// 磁化時はRendering Layer Maskを設定し、Edge Detection アウトラインの対象になる。
 /// </summary>
+[RequireComponent(typeof(Rigidbody))]
 public class Magnetizable : MonoBehaviour
 {
     [FormerlySerializedAs("pole")]

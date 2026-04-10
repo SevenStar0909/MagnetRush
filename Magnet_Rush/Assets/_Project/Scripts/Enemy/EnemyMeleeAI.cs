@@ -39,6 +39,12 @@ public class EnemyMeleeAI : MonoBehaviour
             return;
         }
 
+        // NavMesh外ではAI処理をスキップ（磁力で飛ばされた直後など）
+        if (!m_agent.isOnNavMesh)
+        {
+            return;
+        }
+
         // 武器が無い場合は、まず武器取得を試みる。
         // 取れない場合は空手でプレイヤーを追跡・攻撃する。
         if (!m_enemyBase.HasWeapon)
