@@ -39,7 +39,7 @@ public class MagnetBullet : MonoBehaviour
         m_timer = m_settings.lifetime;
 
         // ビジュアル切替（S=赤、N=青）
-        var renderer = GetComponentInChildren<MeshRenderer>();
+        var renderer = GetComponent<MeshRenderer>();
         if (renderer != null && m_settings != null)
         {
             Material mat = pole == MagneticPole.S ? m_settings.sMaterial : m_settings.nMaterial;
