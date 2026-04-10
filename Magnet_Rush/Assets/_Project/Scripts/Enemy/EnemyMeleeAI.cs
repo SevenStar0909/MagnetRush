@@ -21,7 +21,6 @@ public class EnemyMeleeAI : MonoBehaviour
 
     private void Start()
     {
-        m_agent = m_enemyBase.Agent;
         m_player = m_enemyBase.Player;
         m_data = m_enemyBase.StatusData;
     }
@@ -34,13 +33,10 @@ public class EnemyMeleeAI : MonoBehaviour
             return;
         }
 
-        if (m_player == null || m_agent == null || !m_agent.enabled || m_data == null)
-        {
-            return;
-        }
+        // NavMeshAgentはStartの実行順でnullの場合があるので毎フレーム取得
+        m_agent = m_enemyBase.Agent;
 
-        // NavMesh外ではAI処理をスキップ（磁力で飛ばされた直後など）
-        if (!m_agent.isOnNavMesh)
+        if (m_player == null || m_agent == null || m_data == null)
         {
             return;
         }
@@ -70,7 +66,7 @@ public class EnemyMeleeAI : MonoBehaviour
             m_agent.isStopped = true;
             m_agent.ResetPath();
 
-            if (!m_meleeAttack.IsAttacking) // 攻撃中でなければプレイヤーの方を向く
+            if (!m_meleeAttack.IsAttacking)
             {
                 FacePlayer();
             }
@@ -109,7 +105,8 @@ public class EnemyMeleeAI : MonoBehaviour
 
         float distanceToWeapon = Vector3.Distance(transform.position, m_targetWeapon.transform.position);
 
-        if (distanceToWeapon <= m_data.stopDistance + 0.1f)
+        // NavMeshの経路距離と直線距離のズレを考慮して余裕を持たせる
+        if (distanceToWeapon <= m_data.stopDistance + 1f)
         {
             if (!m_targetWeapon.CanBePickedUp || m_targetWeapon.IsMagnetAffected)
             {

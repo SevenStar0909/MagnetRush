@@ -280,6 +280,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 8255812454995536023, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
   m_PrefabInstance: {fileID: 7373498522457693323}
   m_PrefabAsset: {fileID: 0}
+--- !u!4 &382252246 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2118634250300634044, guid: dc8c794c5d3006b4f82c6b43ea9b63f7, type: 3}
+  m_PrefabInstance: {fileID: 4905529883673045142}
+  m_PrefabAsset: {fileID: 0}
 --- !u!65 &395239982 stripped
 BoxCollider:
   m_CorrespondingSourceObject: {fileID: 3702969766159663034, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
@@ -289,11 +294,6 @@ BoxCollider:
 BoxCollider:
   m_CorrespondingSourceObject: {fileID: 3746490398527674929, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
   m_PrefabInstance: {fileID: 7373498522457693323}
-  m_PrefabAsset: {fileID: 0}
---- !u!23 &478061061 stripped
-MeshRenderer:
-  m_CorrespondingSourceObject: {fileID: 4177156730884542892, guid: 2740263ddfa42454686313cd99fd67cc, type: 3}
-  m_PrefabInstance: {fileID: 7462816049743949195}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &592084508
 PrefabInstance:
@@ -538,11 +538,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!4 &1174846459 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 248068794771929252, guid: 2740263ddfa42454686313cd99fd67cc, type: 3}
-  m_PrefabInstance: {fileID: 7462816049743949195}
-  m_PrefabAsset: {fileID: 0}
 --- !u!134 &1527842624
 PhysicsMaterial:
   m_ObjectHideFlags: 0
@@ -705,6 +700,10 @@ PrefabInstance:
     - target: {fileID: 357060642695285532, guid: d88d1e89cc9e6a1458b81fe08ab3b4dc, type: 3}
       propertyPath: m_Name
       value: _Camera
+      objectReference: {fileID: 0}
+    - target: {fileID: 8304598551610691169, guid: d88d1e89cc9e6a1458b81fe08ab3b4dc, type: 3}
+      propertyPath: field of view
+      value: 60
       objectReference: {fileID: 0}
     - target: {fileID: 8306166869299380518, guid: d88d1e89cc9e6a1458b81fe08ab3b4dc, type: 3}
       propertyPath: m_LocalPosition.x
@@ -1076,37 +1075,17 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 248068794771929252, guid: 2740263ddfa42454686313cd99fd67cc, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3167841675448230176, guid: 2740263ddfa42454686313cd99fd67cc, type: 3}
-      propertyPath: m_weaponPreSwingYawOffset
-      value: -15.6
-      objectReference: {fileID: 0}
-    - target: {fileID: 3167841675448230176, guid: 2740263ddfa42454686313cd99fd67cc, type: 3}
-      propertyPath: m_attackHitboxMeshRenderer
-      value: 
-      objectReference: {fileID: 478061061}
-    - target: {fileID: 3551788889622459020, guid: 2740263ddfa42454686313cd99fd67cc, type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4475599975985477865, guid: 2740263ddfa42454686313cd99fd67cc, type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 4630226825425554802, guid: 2740263ddfa42454686313cd99fd67cc, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 10
+      value: 9.999999
       objectReference: {fileID: 0}
     - target: {fileID: 4630226825425554802, guid: 2740263ddfa42454686313cd99fd67cc, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1.5
+      value: 0.03333333
       objectReference: {fileID: 0}
     - target: {fileID: 4630226825425554802, guid: 2740263ddfa42454686313cd99fd67cc, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 20
+      value: 15
       objectReference: {fileID: 0}
     - target: {fileID: 4630226825425554802, guid: 2740263ddfa42454686313cd99fd67cc, type: 3}
       propertyPath: m_LocalRotation.w
@@ -1141,9 +1120,9 @@ PrefabInstance:
       value: Enemy_test
       objectReference: {fileID: 0}
     - target: {fileID: 7292421887379303148, guid: 2740263ddfa42454686313cd99fd67cc, type: 3}
-      propertyPath: m_weaponHandSocket
+      propertyPath: m_player
       value: 
-      objectReference: {fileID: 1174846459}
+      objectReference: {fileID: 382252246}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

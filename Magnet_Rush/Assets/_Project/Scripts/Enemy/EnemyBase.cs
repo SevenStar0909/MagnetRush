@@ -56,12 +56,10 @@ public class EnemyBase : Entity
 
         m_mover = GetComponentInChildren<MagneticMover>();
 
-        if (m_player == null)
-        {
-            GameObject playerObj = GameObject.FindWithTag(GameTags.Player);
-            if (playerObj != null)
-                m_player = playerObj.transform;
-        }
+        // Playerタグ付きオブジェクトを取得（シーンで親オブジェクトが設定されている場合の対策）
+        GameObject playerObj = GameObject.FindWithTag(GameTags.Player);
+        if (playerObj != null)
+            m_player = playerObj.transform;
 
         // Health.OnDie → Die()
         if (m_health != null)
@@ -76,14 +74,6 @@ public class EnemyBase : Entity
 
     protected virtual void Start()
     {
-        // Additiveシーンの読み込み完了後にNavMeshが有効になるため、Startで確認してagentを有効化する
-        if (m_agent != null && !m_agent.enabled)
-        {
-            bool hasNavMesh = NavMesh.SamplePosition(transform.position, out _, 10f, NavMesh.AllAreas);
-            if (hasNavMesh)
-                m_agent.enabled = true;
-        }
-
         if (m_agent != null && m_agent.enabled && m_statusData != null)
         {
             m_agent.speed = m_statusData.moveSpeed;
@@ -94,6 +84,7 @@ public class EnemyBase : Entity
     void Update()
     {
         ValidateWeaponState();
+        TryRecoverAgent();
 
         // MagneticMover がアクティブなら Rigidbody で物理移動中 → externalVelocity パスは不要
         if (IsMagnetControlled) return;
@@ -116,6 +107,25 @@ public class EnemyBase : Entity
 
         m_equippedWeapon = weapon;
         return true;
+    }
+
+    /// <summary>
+    /// NavMeshが後からロードされた場合にagentを再初期化する。
+    /// additive読み込みでNavMeshより先にagentが生成されると内部ハンドルが壊れるため。
+    /// </summary>
+    private void TryRecoverAgent()
+    {
+        if (m_agent == null || !m_agent.enabled) return;
+        if (m_agent.isOnNavMesh) return;
+        if (IsMagnetControlled) return;
+
+        NavMeshHit hit;
+        if (NavMesh.SamplePosition(transform.position, out hit, 2f, NavMesh.AllAreas))
+        {
+            m_agent.enabled = false;
+            transform.position = hit.position;
+            m_agent.enabled = true;
+        }
     }
 
     private void ValidateWeaponState()

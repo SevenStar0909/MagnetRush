@@ -3,8 +3,8 @@ using UnityEngine.AI;
 
 /// <summary>
 /// 敵やオブジェクトが磁力で引かれたときに物理移動する応答コンポーネント。
-/// 仕様書: 「敵の引き寄せ」「身代わり」「押し潰し」で使用。
 /// NavMeshAgent を一時無効化し、Rigidbody で物理移動する。
+/// 磁化中はPhysics.gravityで落下し、磁化解除後にNavMesh復帰する。
 /// </summary>
 [RequireComponent(typeof(Magnetizable))]
 [RequireComponent(typeof(Rigidbody))]
@@ -15,11 +15,13 @@ public class MagneticMover : MonoBehaviour, IMagneticResponse
     private Magnetizable m_magnetizable;
     private Rigidbody m_rb;
     private NavMeshAgent m_agent;
+    private CapsuleCollider m_capsule;
 
     private bool m_isMagnetActive;
     private float m_lastForceTime;
     private int m_recoveryAttempts;
     private Vector3 m_lastValidNavMeshPos;
+    private RigidbodyConstraints m_savedConstraints;
 
     public bool IsResponseActive => m_magnetizable != null && m_magnetizable.IsActive;
 
@@ -31,6 +33,7 @@ public class MagneticMover : MonoBehaviour, IMagneticResponse
         m_magnetizable = GetComponent<Magnetizable>();
         m_rb = GetComponent<Rigidbody>();
         m_agent = GetComponent<NavMeshAgent>();
+        m_capsule = GetComponent<CapsuleCollider>();
     }
 
     public void OnMagnetForce(Vector3 force, Vector3 sourcePosition)
@@ -51,9 +54,29 @@ public class MagneticMover : MonoBehaviour, IMagneticResponse
         // SnapResolver が接触固定を処理する
     }
 
+    void FixedUpdate()
+    {
+        if (!m_isMagnetActive) return;
+
+        // 磁力モード中はRigidbodyに重力を適用（Entity.EntityStepが走らないため）
+        m_rb.AddForce(Physics.gravity, ForceMode.Acceleration);
+
+        // 接地判定: 足元にレイを飛ばして地面があるかチェック
+        bool grounded = Physics.Raycast(transform.position, Vector3.down, 0.3f);
+        // 接地中は摩擦で減速、空中は自然な物理挙動
+        m_rb.linearDamping = grounded ? 8f : 0.5f;
+    }
+
     void Update()
     {
         if (!m_isMagnetActive) return;
+
+        // 磁化がまだアクティブなら復帰しない（復帰→再度飛ばされるワープループ防止）
+        if (m_magnetizable != null && m_magnetizable.IsActive)
+        {
+            m_lastForceTime = Time.time;
+            return;
+        }
 
         if (Time.time - m_lastForceTime > m_settings.recoveryDelay)
             TryRecoverNavMesh();
@@ -71,6 +94,22 @@ public class MagneticMover : MonoBehaviour, IMagneticResponse
         }
 
         m_rb.isKinematic = false;
+        m_rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+        m_savedConstraints = m_rb.constraints;
+        m_rb.constraints = RigidbodyConstraints.FreezeRotation;
+    }
+
+    private void RestoreNavMeshState(Vector3 position)
+    {
+        m_rb.linearVelocity = Vector3.zero;
+        m_rb.linearDamping = 0f;
+        m_rb.collisionDetectionMode = CollisionDetectionMode.Discrete;
+        m_rb.constraints = m_savedConstraints;
+        m_rb.isKinematic = true;
+        transform.position = position;
+        m_agent.enabled = true;
+        m_isMagnetActive = false;
+        m_recoveryAttempts = 0;
     }
 
     private void TryRecoverNavMesh()
@@ -83,24 +122,14 @@ public class MagneticMover : MonoBehaviour, IMagneticResponse
 
         if (NavMesh.SamplePosition(transform.position, out var hit, 2f, NavMesh.AllAreas))
         {
-            m_rb.linearVelocity = Vector3.zero;
-            m_rb.isKinematic = true;
-            transform.position = hit.position;
-            m_agent.enabled = true;
-            m_isMagnetActive = false;
-            m_recoveryAttempts = 0;
+            RestoreNavMeshState(hit.position);
         }
         else
         {
             m_recoveryAttempts++;
             if (m_recoveryAttempts >= m_settings.maxRecoveryAttempts)
             {
-                m_rb.linearVelocity = Vector3.zero;
-                m_rb.isKinematic = true;
-                transform.position = m_lastValidNavMeshPos;
-                m_agent.enabled = true;
-                m_isMagnetActive = false;
-                m_recoveryAttempts = 0;
+                RestoreNavMeshState(m_lastValidNavMeshPos);
             }
         }
     }

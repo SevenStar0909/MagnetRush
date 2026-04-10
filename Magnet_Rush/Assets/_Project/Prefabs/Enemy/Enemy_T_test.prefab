@@ -188,13 +188,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Enemy::EnemyTurretBase
   entityEvents:
-    OnGroundEnter:
+    onGroundEnter:
       m_PersistentCalls:
         m_Calls: []
-    OnGroundExit:
+    onGroundExit:
       m_PersistentCalls:
         m_Calls: []
-  health: {fileID: 0}
+  m_health: {fileID: 0}
   velocity: {x: 0, y: 0, z: 0}
   externalVelocity: {x: 0, y: 0, z: 0}
   m_statusData: {fileID: 11400000, guid: 9927f74da5777824497fc50cc8a967bf, type: 2}

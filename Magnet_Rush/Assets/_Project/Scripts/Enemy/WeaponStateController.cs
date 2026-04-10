@@ -60,7 +60,7 @@ public class WeaponStateController : MonoBehaviour
             if (Time.time < m_nextPickupAllowedTime) return false;
             if (m_settings == null) return true;
 
-            if (m_settings.disablePickupWhileMagnetized && m_magnetizable.IsActive)
+            if (m_settings.disablePickupWhileMagnetized && m_magnetizable != null && m_magnetizable.IsActive)
                 return false;
 
             return true;
