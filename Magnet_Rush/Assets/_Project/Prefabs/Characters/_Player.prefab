@@ -25,7 +25,7 @@ Transform:
   m_GameObject: {fileID: 194716850494653123}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.2, z: 0.5}
+  m_LocalPosition: {x: 0, y: 0.812, z: 0.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -132,6 +132,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e6594f79a3932ea4d8bb7a7e3c6875a9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MagnetRush.Player.Player
+  entityEvents:
+    OnGroundEnter:
+      m_PersistentCalls:
+        m_Calls: []
+    OnGroundExit:
+      m_PersistentCalls:
+        m_Calls: []
   health: {fileID: 0}
   velocity: {x: 0, y: 0, z: 0}
   externalVelocity: {x: 0, y: 0, z: 0}
@@ -192,6 +199,7 @@ MonoBehaviour:
   m_bulletSettings: {fileID: 11400000, guid: 425ee2473071b7a4fa2afd4ccb6a162c, type: 2}
   m_playerSettings: {fileID: 11400000, guid: d645a9ba3befda14d8a96f9af1142f3f, type: 2}
   m_firePoint: {fileID: 7640701815771579218}
+  m_selfFireHeightOffset: 1
 --- !u!114 &5226289233227837273
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -338,6 +346,27 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &1234567890123456789
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5685355580797170966}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7aa81230da17ade4d8600a4b0b71a3ae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  slopeLimit: 45
+  stepOffset: 0.3
+  skinWidth: 0.01
+  center: {x: 0, y: 0, z: 0}
+  m_radius: 0.5
+  m_height: 2
+  collisionLayer:
+    serializedVersion: 2
+    m_Bits: 8179
 --- !u!1 &6188001065769693201
 GameObject:
   m_ObjectHideFlags: 0
@@ -371,21 +400,3 @@ Transform:
   - {fileID: 525279597465324906}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1234567890123456789
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5685355580797170966}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7aa81230da17ade4d8600a4b0b71a3ae, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
-  slopeLimit: 45
-  stepOffset: 0.3
-  skinWidth: 0.01
-  collisionLayer:
-    serializedVersion: 2
-    m_Bits: 4294967291
