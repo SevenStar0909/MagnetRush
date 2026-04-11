@@ -19,7 +19,7 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
     /// <summary>ワールド空間の速度ベクトル。</summary>
     public Vector3 velocity;
 
-    /// <summary>外部からの一時的な力（磁力等）。毎フレームリセット。</summary>
+    /// <summary>外部からの力（磁力等）。蓄積型: m_externalDragで毎フレーム指数減衰する。</summary>
     public Vector3 externalVelocity;
 
     /// <summary>
@@ -82,6 +82,10 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
     // --- 重力設定（サブクラスからSO値で上書き） ---
     protected float m_gravity = -20f;
     protected float m_snapForce = 2f;
+
+    // --- 外部力設定 ---
+    /// <summary>外部力の指数減衰率。Rigidbody.dragに相当。大きいほど早く減速する。</summary>
+    protected float m_externalDrag = 3f;
 
     // --- 接地判定設定（サブクラスからSO値で上書き） ---
     protected LayerMask m_groundLayer = -1;
@@ -246,7 +250,11 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
             transform.position += motion;
         }
 
-        externalVelocity = Vector3.zero;
+        // 指数減衰（フレームレート非依存。Rigidbody.dragと同等の自然な減速曲線）
+        if (externalVelocity.sqrMagnitude > 0.01f)
+            externalVelocity *= Mathf.Exp(-m_externalDrag * dt);
+        else
+            externalVelocity = Vector3.zero;
     }
 
     /// <summary>
@@ -400,11 +408,12 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
     }
 
     /// <summary>
-    /// IMagnetTarget実装。磁力システムから外部力を適用する。
+    /// IMagnetTarget���装。磁力を加速度として蓄積する（AddForce相当）。
+    /// 実際の減衰はApplyMovement内のm_externalDragが処理する。
     /// </summary>
     public void ApplyMagnetForce(Vector3 force)
     {
-        externalVelocity += force;
+        externalVelocity += force * Time.deltaTime;
     }
 
     /// <summary>

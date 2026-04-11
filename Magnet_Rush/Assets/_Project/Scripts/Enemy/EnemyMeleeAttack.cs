@@ -62,7 +62,8 @@ public class EnemyMeleeAttack : MonoBehaviour
         if (m_attackHitboxMeshRenderer != null && m_attackHitboxMeshRenderer.transform.IsChildOf(transform))
         {
             float atkR = m_data.attackRange;
-            m_attackHitboxMeshRenderer.transform.localPosition = new Vector3(0f, 0f, atkR / 2f);
+            float currentY = m_attackHitboxMeshRenderer.transform.localPosition.y;
+            m_attackHitboxMeshRenderer.transform.localPosition = new Vector3(0f, currentY, atkR / 2f);
             m_attackHitboxMeshRenderer.transform.localScale = new Vector3(1f, atkR / 2f, 1f);
         }
     }

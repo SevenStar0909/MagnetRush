@@ -81,6 +81,26 @@ public class EntityController : MonoBehaviour
         InitializeCollider();
         InitializeRigidbody();
         RefreshCollider();
+        WarnExtraColliders();
+    }
+
+    /// <summary>
+    /// 同一Rigidbody上にEntityController管理外の非triggerコライダーがあれば警告する。
+    /// SweepTestで自動除外されるが、意図しない構成を早期に検出するため。
+    /// </summary>
+    [System.Diagnostics.Conditional("UNITY_EDITOR")]
+    private void WarnExtraColliders()
+    {
+        var colliders = GetComponentsInChildren<Collider>();
+        foreach (var col in colliders)
+        {
+            if (col == m_collider) continue;
+            if (col.isTrigger) continue;
+            if (col.attachedRigidbody != m_rigidbody) continue;
+            Debug.LogWarning(
+                $"[EntityController] {name}: 非triggerコライダー '{col.GetType().Name}' が同一Rigidbody上にあります。" +
+                "SweepTestで自動除外されますが、意図した構成か確認してください。", col);
+        }
     }
 
     private void DisableExistingCollider()
@@ -181,7 +201,8 @@ public class EntityController : MonoBehaviour
 
             bool colliding = SweepTest(origin, point1, point2, moveDirection, distance, out var hit);
 
-            if (colliding && !m_ignoredColliders.Contains(hit.collider))
+            // 自分のRigidbodyに属するコライダーは自動除外（弾検出用の非triggerコライダー等）
+            if (colliding && hit.collider.attachedRigidbody != m_rigidbody && !m_ignoredColliders.Contains(hit.collider))
             {
                 // 垂直パスで動的Rigidbodyに当たったら無視して通過（水平パスで押す）
                 if (!pushEnabled)
@@ -267,7 +288,7 @@ public class EntityController : MonoBehaviour
         for (int i = 0; i < count; i++)
         {
             if (m_ignoredColliders.Contains(m_overlaps[i])) continue;
-            if (m_overlaps[i].transform == transform) continue;
+            if (m_overlaps[i].attachedRigidbody == m_rigidbody) continue;
 
             // 動的Rigidbodyはめり込み解決しない（押し処理で対応）
             var overlapRb = m_overlaps[i].attachedRigidbody;

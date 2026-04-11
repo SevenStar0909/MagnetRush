@@ -66,6 +66,8 @@ public class PlayerSettings : ScriptableObject
     [Header("磁力")]
     [Tooltip("磁力への抵抗度（0=影響なし, 1=完全抵抗）")]
     public float magnetResistance = 0.5f;
+    [Tooltip("外部力（磁力等）の指数減衰率。大きいほど早く減速する")]
+    public float externalDrag = 3f;
 
     [Header("磁力回転")]
     [Tooltip("この外部力（magnitude）以上で空中回転開始")]

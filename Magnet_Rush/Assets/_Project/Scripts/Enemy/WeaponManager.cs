@@ -9,6 +9,16 @@ public class WeaponManager : Singleton<WeaponManager>
     // アクティブな武器のリスト。PickableWeaponが自身を登録/解除する。
     private readonly List<WeaponStateController> m_activeWeapons = new();
 
+    protected override void Awake()
+    {
+        base.Awake();
+
+        // OnEnableの初期化順序でRegisterが漏れた武器を回収
+        var existing = FindObjectsByType<WeaponStateController>(FindObjectsSortMode.None);
+        foreach (var w in existing)
+            Register(w);
+    }
+
     // アクティブな武器の読み取り専用リスト。外部からアクセスするためのプロパティ。
     public IReadOnlyList<WeaponStateController> ActiveWeapons => m_activeWeapons;
 

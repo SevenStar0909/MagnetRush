@@ -58,6 +58,7 @@ public class Player : Entity
         m_groundLayer = m_settings.groundLayer != 0
             ? m_settings.groundLayer
             : PhysicsLayers.MaskGroundCheck;
+        m_externalDrag = m_settings.externalDrag;
 
         // HP=0でDiePlayerStateに遷移
         if (m_health != null)

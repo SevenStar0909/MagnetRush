@@ -52,7 +52,7 @@ public class NamingConventionWindow : EditorWindow
         public string rule;
     }
 
-    [MenuItem("Tools/Naming Convention Validator")]
+    [MenuItem("Tools/命名規則チェック")]
     static void ShowWindow()
     {
         GetWindow<NamingConventionWindow>("命名規則チェック");
