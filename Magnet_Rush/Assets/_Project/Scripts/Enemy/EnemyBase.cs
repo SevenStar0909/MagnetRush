@@ -71,11 +71,6 @@ public class EnemyBase : Entity
         if (m_controller == null)
             Debug.LogWarning($"[EnemyBase] {name}: EntityControllerがありません。衝突判定なしで動作します", this);
 
-        // EntityControllerが元のCapsuleColliderを無効化するが、
-        // 弾のOnTriggerEnterはtriggerコライダーを無視するため、非triggerコライダーを再有効化する。
-        // EntityControllerは自分のRigidbodyのコライダーを自動除外するのでIgnoreCollider不要。
-        if (m_capsuleCollider != null && !m_capsuleCollider.enabled)
-            m_capsuleCollider.enabled = true;
     }
 
     void OnDestroy()

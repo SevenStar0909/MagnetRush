@@ -151,7 +151,7 @@ public class MagnetField : MonoBehaviour, IMagnetField
 
         if (!m_entityCache.TryGetValue(other, out var entity))
         {
-            entity = other.GetComponent<Entity>();
+            entity = other.GetComponentInParent<Entity>();
             m_entityCache[other] = entity;
         }
 

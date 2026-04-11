@@ -1,5 +1,38 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1628707945538607237
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6655592081610315571}
+  m_Layer: 0
+  m_Name: Hitbox
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6655592081610315571
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1628707945538607237}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 9062611734526088656}
+  - {fileID: 3884165942968563849}
+  m_Father: {fileID: 4630226825425554802}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2101001838920687952
 GameObject:
   m_ObjectHideFlags: 0
@@ -30,7 +63,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 4630226825425554802}
+  m_Father: {fileID: 6655592081610315571}
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
 --- !u!136 &779674132170559637
 CapsuleCollider:
@@ -86,6 +119,7 @@ Transform:
   m_Children:
   - {fileID: 3198493902101337362}
   - {fileID: 3472742060431950145}
+  - {fileID: 248068794771929252}
   m_Father: {fileID: 4630226825425554802}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3726074435058751394
@@ -203,12 +237,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5747292427090194916}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.9, y: 1.5, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0.9000001, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 4630226825425554802}
+  m_Father: {fileID: 4953411500840794254}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6044810200242208032
 GameObject:
@@ -241,7 +275,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 4630226825425554802}
+  m_Father: {fileID: 6655592081610315571}
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
 --- !u!33 &5130213553373117168
 MeshFilter:
@@ -314,7 +348,6 @@ GameObject:
   - component: {fileID: 3167841675448230176}
   - component: {fileID: 4035754179591038178}
   - component: {fileID: 4842298320176942720}
-  - component: {fileID: 347338415583942693}
   - component: {fileID: 6214276783969666036}
   - component: {fileID: 4778288357894398122}
   - component: {fileID: 4750899806209563542}
@@ -338,10 +371,8 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 9062611734526088656}
-  - {fileID: 3884165942968563849}
   - {fileID: 4953411500840794254}
-  - {fileID: 248068794771929252}
+  - {fileID: 6655592081610315571}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
 --- !u!114 &7292421887379303148
@@ -427,29 +458,6 @@ MonoBehaviour:
   m_pole: 0
   m_isActive: 0
   m_initialMass: 2
---- !u!136 &347338415583942693
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6329422227486001355}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.5
-  m_Height: 3
-  m_Direction: 1
-  m_Center: {x: 0, y: 1.5, z: 0}
 --- !u!54 &6214276783969666036
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -492,9 +500,9 @@ MonoBehaviour:
   slopeLimit: 45
   stepOffset: 0.3
   skinWidth: 0.01
-  center: {x: 0, y: 0, z: 0}
+  center: {x: 0, y: 1.5, z: 0}
   m_radius: 0.5
-  m_height: 2
+  m_height: 3
   collisionLayer:
     serializedVersion: 2
     m_Bits: 8179

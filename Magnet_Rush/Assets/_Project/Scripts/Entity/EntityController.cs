@@ -43,6 +43,7 @@ public class EntityController : MonoBehaviour
 
     private Rigidbody m_rigidbody;
     private CapsuleCollider m_collider;
+    private Transform m_hitboxContainer;
     private Collider[] m_overlaps = new Collider[128];
     private HashSet<Collider> m_ignoredColliders = new();
 
@@ -78,29 +79,25 @@ public class EntityController : MonoBehaviour
             collisionLayer = PhysicsLayers.MaskEntityCollision;
 
         DisableExistingCollider();
-        InitializeCollider();
         InitializeRigidbody();
+        CreateHitboxContainer();
+        InitializeCollider();
+        InitializeEntityBody();
         RefreshCollider();
-        WarnExtraColliders();
     }
 
-    /// <summary>
-    /// 同一Rigidbody上にEntityController管理外の非triggerコライダーがあれば警告する。
-    /// SweepTestで自動除外されるが、意図しない構成を早期に検出するため。
-    /// </summary>
-    [System.Diagnostics.Conditional("UNITY_EDITOR")]
-    private void WarnExtraColliders()
+    private void CreateHitboxContainer()
     {
-        var colliders = GetComponentsInChildren<Collider>();
-        foreach (var col in colliders)
+        var existing = transform.Find("Hitbox");
+        if (existing != null)
         {
-            if (col == m_collider) continue;
-            if (col.isTrigger) continue;
-            if (col.attachedRigidbody != m_rigidbody) continue;
-            Debug.LogWarning(
-                $"[EntityController] {name}: 非triggerコライダー '{col.GetType().Name}' が同一Rigidbody上にあります。" +
-                "SweepTestで自動除外されますが、意図した構成か確認してください。", col);
+            m_hitboxContainer = existing;
+            return;
         }
+
+        var go = new GameObject("Hitbox");
+        go.transform.SetParent(transform, false);
+        m_hitboxContainer = go.transform;
     }
 
     private void DisableExistingCollider()
@@ -117,7 +114,12 @@ public class EntityController : MonoBehaviour
 
     private void InitializeCollider()
     {
-        m_collider = gameObject.AddComponent<CapsuleCollider>();
+        var receiver = new GameObject("BulletReceiver");
+        receiver.transform.SetParent(m_hitboxContainer, false);
+        receiver.layer = gameObject.layer;
+        receiver.tag = gameObject.tag;
+
+        m_collider = receiver.AddComponent<CapsuleCollider>();
         m_collider.isTrigger = true;
     }
 
@@ -129,6 +131,21 @@ public class EntityController : MonoBehaviour
         m_rigidbody.isKinematic = true;
         m_rigidbody.useGravity = false;
         m_rigidbody.interpolation = RigidbodyInterpolation.None;
+    }
+
+    private void InitializeEntityBody()
+    {
+        var body = new GameObject("Body");
+        body.transform.SetParent(m_hitboxContainer, false);
+        body.layer = PhysicsLayers.EntityBody;
+
+        var col = body.AddComponent<CapsuleCollider>();
+        col.isTrigger = false;
+        col.radius = m_radius;
+        col.height = m_height;
+        col.center = center;
+
+        m_ignoredColliders.Add(col);
     }
 
     private void RefreshCollider()
@@ -201,8 +218,7 @@ public class EntityController : MonoBehaviour
 
             bool colliding = SweepTest(origin, point1, point2, moveDirection, distance, out var hit);
 
-            // 自分のRigidbodyに属するコライダーは自動除外（弾検出用の非triggerコライダー等）
-            if (colliding && hit.collider.attachedRigidbody != m_rigidbody && !m_ignoredColliders.Contains(hit.collider))
+            if (colliding && !m_ignoredColliders.Contains(hit.collider))
             {
                 // 垂直パスで動的Rigidbodyに当たったら無視して通過（水平パスで押す）
                 if (!pushEnabled)
@@ -288,7 +304,6 @@ public class EntityController : MonoBehaviour
         for (int i = 0; i < count; i++)
         {
             if (m_ignoredColliders.Contains(m_overlaps[i])) continue;
-            if (m_overlaps[i].attachedRigidbody == m_rigidbody) continue;
 
             // 動的Rigidbodyはめり込み解決しない（押し処理で対応）
             var overlapRb = m_overlaps[i].attachedRigidbody;
