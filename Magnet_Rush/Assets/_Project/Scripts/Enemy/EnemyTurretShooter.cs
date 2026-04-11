@@ -7,9 +7,9 @@ using UnityEngine;
 public class EnemyTurretShooter : MonoBehaviour
 {
     [Header("References")]
-    [Tooltip("Ž¥—Í’e‚Å‚Í‚È‚¢Aƒ^ƒŒƒbƒgê—p‚Ì’Êí’ePrefab")]
+    [Tooltip("ï¿½ï¿½ï¿½Í’eï¿½Å‚Í‚È‚ï¿½ï¿½Aï¿½^ï¿½ï¿½ï¿½bï¿½gï¿½ï¿½pï¿½Ì’Êï¿½ePrefab")]
     [SerializeField] private GameObject m_projectilePrefab;
-    [Tooltip("–¢Žw’è‚È‚ç EnemyTurretBase.FirePoint ‚ðŽg—p")]
+    [Tooltip("ï¿½ï¿½ï¿½wï¿½ï¿½È‚ï¿½ EnemyTurretBase.FirePoint ï¿½ï¿½ï¿½gï¿½p")]
     [SerializeField] private Transform m_firePointOverride;
 
     private EnemyTurretBase m_turretBase;
@@ -18,6 +18,8 @@ public class EnemyTurretShooter : MonoBehaviour
     private EnemyTurretSettings m_data;
 
     private float m_shootTimer;
+    private int m_burstRemaining;
+    private float m_burstTimer;
 
     private void Awake()
     {
@@ -33,12 +35,28 @@ public class EnemyTurretShooter : MonoBehaviour
 
     private void Update()
     {
+        // ãƒãƒ¼ã‚¹ãƒˆä¸­
+        if (m_burstRemaining > 0)
+        {
+            m_burstTimer -= Time.deltaTime;
+            if (m_burstTimer <= 0f)
+            {
+                Fire();
+                m_burstRemaining--;
+                m_burstTimer = m_data != null ? m_data.burstInterval : 0.15f;
+            }
+            return;
+        }
+
         m_shootTimer += Time.deltaTime;
 
         if (!CanShootNow())
             return;
 
         Fire();
+        int burst = m_data != null ? m_data.burstCount : 1;
+        m_burstRemaining = Mathf.Max(0, burst - 1);
+        m_burstTimer = m_data != null ? m_data.burstInterval : 0.15f;
         m_shootTimer = 0f;
     }
 

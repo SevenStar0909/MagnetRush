@@ -16,8 +16,9 @@ public class DiePlayerState : EntityState<Player>
         entity.externalVelocity = UnityEngine.Vector3.zero;
         entity.input.enabled = false;
 
-        var collider = entity.GetComponent<UnityEngine.Collider>();
-        if (collider != null) collider.enabled = false;
+        var controller = entity.GetComponent<EntityController>();
+        if (controller != null && controller.collider != null)
+            controller.collider.enabled = false;
 
         m_respawnTimer = entity.Settings.respawnDelay;
     }
@@ -35,8 +36,9 @@ public class DiePlayerState : EntityState<Player>
     {
         m_entity.input.enabled = true;
 
-        var collider = m_entity.GetComponent<Collider>();
-        if (collider != null) collider.enabled = true;
+        var controller = m_entity.GetComponent<EntityController>();
+        if (controller != null && controller.collider != null)
+            controller.collider.enabled = true;
     }
 
     private void Respawn()
