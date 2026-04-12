@@ -82,7 +82,7 @@ public class EntityController : MonoBehaviour
         InitializeRigidbody();
         CreateHitboxContainer();
         InitializeCollider();
-        InitializeEntityBody();
+        InitializePushbox();
         RefreshCollider();
     }
 
@@ -92,12 +92,21 @@ public class EntityController : MonoBehaviour
         if (existing != null)
         {
             m_hitboxContainer = existing;
-            return;
+        }
+        else
+        {
+            var go = new GameObject("Hitbox");
+            go.transform.SetParent(transform, false);
+            m_hitboxContainer = go.transform;
         }
 
-        var go = new GameObject("Hitbox");
-        go.transform.SetParent(transform, false);
-        m_hitboxContainer = go.transform;
+        // Hitbox親コンテナにIHittable実装を集約
+        // プレハブで設定済みなら無視、未設定なら警告ログを出してフォールバック追加
+        if (m_hitboxContainer.GetComponent<Hitbox>() == null)
+        {
+            Debug.LogWarning($"[EntityController] {name} のHitbox子オブジェクトに Hitbox コンポーネントがありません。実行時に追加しますが、プレハブで明示設定してください。", this);
+            m_hitboxContainer.gameObject.AddComponent<Hitbox>();
+        }
     }
 
     private void DisableExistingCollider()
@@ -114,10 +123,10 @@ public class EntityController : MonoBehaviour
 
     private void InitializeCollider()
     {
-        // プレハブに既存のBulletReceiverがあれば再利用
+        // プレハブに既存のHurtboxがあれば再利用
         if (m_hitboxContainer != null)
         {
-            var existing = m_hitboxContainer.Find("BulletReceiver");
+            var existing = m_hitboxContainer.Find("Hurtbox");
             if (existing != null)
             {
                 existing.gameObject.layer = gameObject.layer;
@@ -130,12 +139,12 @@ public class EntityController : MonoBehaviour
             }
         }
 
-        var receiver = new GameObject("BulletReceiver");
-        receiver.transform.SetParent(m_hitboxContainer, false);
-        receiver.layer = gameObject.layer;
-        receiver.tag = gameObject.tag;
+        var hurtbox = new GameObject("Hurtbox");
+        hurtbox.transform.SetParent(m_hitboxContainer, false);
+        hurtbox.layer = gameObject.layer;
+        hurtbox.tag = gameObject.tag;
 
-        m_collider = receiver.AddComponent<CapsuleCollider>();
+        m_collider = hurtbox.AddComponent<CapsuleCollider>();
         m_collider.isTrigger = true;
     }
 
@@ -149,12 +158,12 @@ public class EntityController : MonoBehaviour
         m_rigidbody.interpolation = RigidbodyInterpolation.None;
     }
 
-    private void InitializeEntityBody()
+    private void InitializePushbox()
     {
-        // プレハブに既存のBodyがあれば再利用
+        // プレハブに既存のPushboxがあれば再利用
         if (m_hitboxContainer != null)
         {
-            var existing = m_hitboxContainer.Find("Body");
+            var existing = m_hitboxContainer.Find("Pushbox");
             if (existing != null)
             {
                 existing.gameObject.layer = PhysicsLayers.EntityBody;
@@ -170,7 +179,7 @@ public class EntityController : MonoBehaviour
             }
         }
 
-        var body = new GameObject("Body");
+        var body = new GameObject("Pushbox");
         body.transform.SetParent(m_hitboxContainer, false);
         body.layer = PhysicsLayers.EntityBody;
 

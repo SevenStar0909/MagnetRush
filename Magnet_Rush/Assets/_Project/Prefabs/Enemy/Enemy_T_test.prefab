@@ -11,8 +11,8 @@ GameObject:
   - component: {fileID: 7414464703589046716}
   - component: {fileID: 3874328646459720605}
   - component: {fileID: 3940855536998302056}
-  m_Layer: 13
-  m_Name: Body
+  m_Layer: 15
+  m_Name: Pushbox
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -27,8 +27,8 @@ Transform:
   m_GameObject: {fileID: 2534367079351659617}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 0, y: -0.48614, z: -0.15799}
+  m_LocalScale: {x: 1.5, y: 1.5, z: 1.5}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 3322500825396684594}
@@ -52,8 +52,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.5, y: 0.5, z: 2.5}
-  m_Center: {x: 0, y: 1.5, z: 0.4}
+  m_Size: {x: 0.5, y: 0.2, z: 2.2}
+  m_Center: {x: 0, y: 1.65, z: 0.4}
 --- !u!136 &3940855536998302056
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -73,7 +73,7 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 1
+  m_Radius: 1.06
   m_Height: 0.8
   m_Direction: 1
   m_Center: {x: 0, y: 1, z: 0}
@@ -179,7 +179,7 @@ GameObject:
   - component: {fileID: 9012370561837747551}
   - component: {fileID: 8099761192100986834}
   m_Layer: 9
-  m_Name: BulletReceiver
+  m_Name: Hurtbox
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -194,8 +194,8 @@ Transform:
   m_GameObject: {fileID: 4554061794089356957}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 0, y: -0.48614, z: -0.15799}
+  m_LocalScale: {x: 1.5, y: 1.5, z: 1.5}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 3322500825396684594}
@@ -219,8 +219,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.5, y: 0.5, z: 2.5}
-  m_Center: {x: 0, y: 1.5, z: 0.4}
+  m_Size: {x: 0.5, y: 0.2, z: 2.2}
+  m_Center: {x: 0, y: 1.65, z: 0.4}
 --- !u!136 &8099761192100986834
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -240,7 +240,7 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 1
+  m_Radius: 1.06
   m_Height: 0.8
   m_Direction: 1
   m_Center: {x: 0, y: 1, z: 0}
@@ -284,6 +284,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3322500825396684594}
+  - component: {fileID: 3168771895533325468}
   m_Layer: 0
   m_Name: Hitbox
   m_TagString: Untagged
@@ -308,6 +309,19 @@ Transform:
   - {fileID: 7414464703589046716}
   m_Father: {fileID: 6502018102171756954}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3168771895533325468
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6369980134280559077}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca0d1d98b4bbc3e4eb461b8e76083f04, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Entity::Hitbox
+  m_health: {fileID: 0}
 --- !u!1 &6629291254456774930
 GameObject:
   m_ObjectHideFlags: 0
@@ -413,6 +427,7 @@ GameObject:
   - component: {fileID: 3691482542178759726}
   - component: {fileID: 3946089420334116635}
   - component: {fileID: 7730523117461317999}
+  - component: {fileID: 3295255653146135985}
   m_Layer: 0
   m_Name: Enemy_T_test
   m_TagString: Untagged
@@ -535,6 +550,20 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 94
   m_CollisionDetection: 0
+--- !u!114 &3295255653146135985
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7821919568731876759}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f7eb2ea83aeed54c8fa7e632b84756a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Entity::Health
+  m_maxHealth: 3
+  m_damageCooldown: 1
 --- !u!1001 &3919647067567928831
 PrefabInstance:
   m_ObjectHideFlags: 0

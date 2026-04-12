@@ -14,6 +14,7 @@ public class Health : MonoBehaviour
 
     public int MaxHealth => m_maxHealth;
     public int CurrentHealth { get; private set; }
+    public float HealthRatio => m_maxHealth > 0 ? (float)CurrentHealth / m_maxHealth : 0f;
     public bool IsDead => CurrentHealth <= 0;
     public bool IsRecovering => Time.time < m_lastDamageTime + m_damageCooldown;
 

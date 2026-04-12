@@ -26,6 +26,9 @@ public class BulletManager : Singleton<BulletManager>
     /// </summary>
     public int CurrentCount => m_activeBullets.Count;
 
+    /// <summary>アクティブな弾のリストを返す（読み取り専用）。</summary>
+    public IReadOnlyList<MagnetBullet> ActiveBullets => m_activeBullets;
+
     /// <summary>
     /// 撃った弾数（リロードでリセット）。
     /// </summary>
@@ -51,6 +54,15 @@ public class BulletManager : Singleton<BulletManager>
     {
         if (bullet == null || m_activeBullets.Contains(bullet)) return;
         m_activeBullets.Add(bullet);
+        m_shotCount++;
+        OnBulletCountChanged?.Invoke(m_shotCount);
+    }
+
+    /// <summary>
+    /// 弾を生成せずに撃った弾数だけ加算する（自己射撃用）。
+    /// </summary>
+    public void IncrementShotCount()
+    {
         m_shotCount++;
         OnBulletCountChanged?.Invoke(m_shotCount);
     }

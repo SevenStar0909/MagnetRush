@@ -53,6 +53,10 @@ PrefabInstance:
       value: CrateSmall
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: e98903017435bc64a90fa6e9069a6d56, type: 3}
+      propertyPath: m_Layer
+      value: 14
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: e98903017435bc64a90fa6e9069a6d56, type: 3}
       propertyPath: m_TagString
       value: Wall
       objectReference: {fileID: 0}
@@ -69,6 +73,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: e98903017435bc64a90fa6e9069a6d56, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3356688915699781622}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: e98903017435bc64a90fa6e9069a6d56, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6418973554342402206}
   m_SourcePrefab: {fileID: 100100000, guid: e98903017435bc64a90fa6e9069a6d56, type: 3}
 --- !u!1 &6655669728369940698 stripped
 GameObject:
@@ -138,3 +145,16 @@ MonoBehaviour:
   m_pole: 0
   m_isActive: 0
   m_initialMass: 1
+--- !u!114 &6418973554342402206
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6655669728369940698}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1dddde946f822994e8a99a48b20b3df3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Magnet::MagneticContactDamage
+  m_settings: {fileID: 11400000, guid: e1513859b505ebb43aae138ee58fa533, type: 2}

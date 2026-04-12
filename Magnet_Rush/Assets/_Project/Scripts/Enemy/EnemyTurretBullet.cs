@@ -11,7 +11,6 @@ public class EnemyTurretBullet : MonoBehaviour
     [SerializeField] private int m_damage = 1;
 
     private Rigidbody m_rb;
-    private GameObject m_owner;
     private float m_timer;
 
     private void Awake()
@@ -21,11 +20,9 @@ public class EnemyTurretBullet : MonoBehaviour
         m_timer = m_lifetime;
     }
 
-    public void Initialize(Vector3 direction, GameObject owner)
+    public void Initialize(Vector3 direction)
     {
-        m_owner = owner;
         if (m_rb == null) return;
-
         m_rb.linearVelocity = direction.normalized * m_speed;
     }
 
@@ -38,17 +35,18 @@ public class EnemyTurretBullet : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        HandleHit(other);
-    }
-
-    private void HandleHit(Collider other)
-    {
-        if (other == null) return;
-        if (m_owner != null && other.transform.root.gameObject == m_owner) return;
-
-        Health health = other.GetComponentInParent<Health>();
-        if (health != null)
-            health.Damage(m_damage);
+        // Matrixが「当たるべき相手」だけを通す
+        var hittable = other.GetComponent<IHittable>();
+        if (hittable != null)
+        {
+            hittable.OnHit(new HitData
+            {
+                damage = m_damage,
+                hitPoint = other.ClosestPoint(transform.position),
+                knockbackDir = m_rb.linearVelocity.normalized,
+                source = gameObject
+            });
+        }
 
         Destroy(gameObject);
     }

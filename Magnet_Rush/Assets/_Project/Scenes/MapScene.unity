@@ -588,6 +588,24 @@ Mesh:
       - serializedVersion: 1
         m_IndexStart: 0
         m_IndexCount: 0
+--- !u!1 &435845526 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6329422227486001355, guid: 2740263ddfa42454686313cd99fd67cc, type: 3}
+  m_PrefabInstance: {fileID: 1246585751}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &435845537
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 435845526}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1dddde946f822994e8a99a48b20b3df3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Magnet::MagneticContactDamage
+  m_settings: {fileID: 11400000, guid: e1513859b505ebb43aae138ee58fa533, type: 2}
 --- !u!43 &547868750
 Mesh:
   m_ObjectHideFlags: 0
@@ -1357,6 +1375,24 @@ Mesh:
       - serializedVersion: 1
         m_IndexStart: 0
         m_IndexCount: 0
+--- !u!1 &1065149338 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3909207933744081808, guid: e44995ba5a96b014a994d62957eb0e3a, type: 3}
+  m_PrefabInstance: {fileID: 1567289700}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1065149345
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1065149338}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1dddde946f822994e8a99a48b20b3df3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Magnet::MagneticContactDamage
+  m_settings: {fileID: 11400000, guid: e1513859b505ebb43aae138ee58fa533, type: 2}
 --- !u!43 &1105827444
 Mesh:
   m_ObjectHideFlags: 0
@@ -1946,8 +1982,29 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 6329422227486001355, guid: 2740263ddfa42454686313cd99fd67cc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 435845537}
   m_SourcePrefab: {fileID: 100100000, guid: 2740263ddfa42454686313cd99fd67cc, type: 3}
+--- !u!1 &1278511856 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7821919568731876759, guid: f52c849e694832142897101f5d167e95, type: 3}
+  m_PrefabInstance: {fileID: 1593511817}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1278511864
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1278511856}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1dddde946f822994e8a99a48b20b3df3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Magnet::MagneticContactDamage
+  m_settings: {fileID: 11400000, guid: e1513859b505ebb43aae138ee58fa533, type: 2}
 --- !u!1 &1364431817
 GameObject:
   m_ObjectHideFlags: 0
@@ -2083,18 +2140,34 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 466507519584123275, guid: e44995ba5a96b014a994d62957eb0e3a, type: 3}
+      propertyPath: m_Name
+      value: Metal_Crate
+      objectReference: {fileID: 0}
     - target: {fileID: 1383151194813886663, guid: e44995ba5a96b014a994d62957eb0e3a, type: 3}
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 138393740}
+    - target: {fileID: 1383151194813886663, guid: e44995ba5a96b014a994d62957eb0e3a, type: 3}
+      propertyPath: m_VersionIndex
+      value: 176
+      objectReference: {fileID: 0}
     - target: {fileID: 1447732088421885195, guid: e44995ba5a96b014a994d62957eb0e3a, type: 3}
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 709686511}
+    - target: {fileID: 1447732088421885195, guid: e44995ba5a96b014a994d62957eb0e3a, type: 3}
+      propertyPath: m_VersionIndex
+      value: 182
+      objectReference: {fileID: 0}
     - target: {fileID: 2366322548027825375, guid: e44995ba5a96b014a994d62957eb0e3a, type: 3}
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 1159319272}
+    - target: {fileID: 2366322548027825375, guid: e44995ba5a96b014a994d62957eb0e3a, type: 3}
+      propertyPath: m_VersionIndex
+      value: 176
+      objectReference: {fileID: 0}
     - target: {fileID: 2594133578245352087, guid: e44995ba5a96b014a994d62957eb0e3a, type: 3}
       propertyPath: m_Name
       value: ProtoMap
@@ -2155,10 +2228,22 @@ PrefabInstance:
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 1105827444}
+    - target: {fileID: 3495439208276942205, guid: e44995ba5a96b014a994d62957eb0e3a, type: 3}
+      propertyPath: m_VersionIndex
+      value: 146
+      objectReference: {fileID: 0}
+    - target: {fileID: 3909207933744081808, guid: e44995ba5a96b014a994d62957eb0e3a, type: 3}
+      propertyPath: m_Name
+      value: Metal_Crate(1)
+      objectReference: {fileID: 0}
     - target: {fileID: 4860508547839784604, guid: e44995ba5a96b014a994d62957eb0e3a, type: 3}
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 547868750}
+    - target: {fileID: 4860508547839784604, guid: e44995ba5a96b014a994d62957eb0e3a, type: 3}
+      propertyPath: m_VersionIndex
+      value: 182
+      objectReference: {fileID: 0}
     - target: {fileID: 5360991603861858395, guid: e44995ba5a96b014a994d62957eb0e3a, type: 3}
       propertyPath: m_Mesh
       value: 
@@ -2187,22 +2272,47 @@ PrefabInstance:
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 377765810}
+    - target: {fileID: 8134185353405065404, guid: e44995ba5a96b014a994d62957eb0e3a, type: 3}
+      propertyPath: m_VersionIndex
+      value: 267
+      objectReference: {fileID: 0}
     - target: {fileID: 8258061431223837484, guid: e44995ba5a96b014a994d62957eb0e3a, type: 3}
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 1244618813}
+    - target: {fileID: 8258061431223837484, guid: e44995ba5a96b014a994d62957eb0e3a, type: 3}
+      propertyPath: m_VersionIndex
+      value: 146
+      objectReference: {fileID: 0}
     - target: {fileID: 8295723536946797208, guid: e44995ba5a96b014a994d62957eb0e3a, type: 3}
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 656117220}
+    - target: {fileID: 8295723536946797208, guid: e44995ba5a96b014a994d62957eb0e3a, type: 3}
+      propertyPath: m_VersionIndex
+      value: 176
+      objectReference: {fileID: 0}
     - target: {fileID: 8875702279380453955, guid: e44995ba5a96b014a994d62957eb0e3a, type: 3}
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 1041637122}
+    - target: {fileID: 8875702279380453955, guid: e44995ba5a96b014a994d62957eb0e3a, type: 3}
+      propertyPath: m_VersionIndex
+      value: 154
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8353480809217973355, guid: e44995ba5a96b014a994d62957eb0e3a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2119629585}
+    - targetCorrespondingSourceObject: {fileID: 466507519584123275, guid: e44995ba5a96b014a994d62957eb0e3a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1762799361}
+    - targetCorrespondingSourceObject: {fileID: 3909207933744081808, guid: e44995ba5a96b014a994d62957eb0e3a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1065149345}
   m_SourcePrefab: {fileID: 100100000, guid: e44995ba5a96b014a994d62957eb0e3a, type: 3}
 --- !u!1001 &1593511817
 PrefabInstance:
@@ -2259,7 +2369,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7821919568731876759, guid: f52c849e694832142897101f5d167e95, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1278511864}
   m_SourcePrefab: {fileID: 100100000, guid: f52c849e694832142897101f5d167e95, type: 3}
 --- !u!1001 &1595216970
 PrefabInstance:
@@ -2316,8 +2429,65 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1367372084905098933, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1798929740}
   m_SourcePrefab: {fileID: 100100000, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+--- !u!1 &1762799354 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 466507519584123275, guid: e44995ba5a96b014a994d62957eb0e3a, type: 3}
+  m_PrefabInstance: {fileID: 1567289700}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1762799361
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1762799354}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1dddde946f822994e8a99a48b20b3df3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Magnet::MagneticContactDamage
+  m_settings: {fileID: 11400000, guid: e1513859b505ebb43aae138ee58fa533, type: 2}
+--- !u!1 &1798929733 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1367372084905098933, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+  m_PrefabInstance: {fileID: 1595216970}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1798929740
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1798929733}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1dddde946f822994e8a99a48b20b3df3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Magnet::MagneticContactDamage
+  m_settings: {fileID: 11400000, guid: e1513859b505ebb43aae138ee58fa533, type: 2}
+--- !u!1 &2119629578 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8353480809217973355, guid: e44995ba5a96b014a994d62957eb0e3a, type: 3}
+  m_PrefabInstance: {fileID: 1567289700}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &2119629585
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2119629578}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1dddde946f822994e8a99a48b20b3df3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Magnet::MagneticContactDamage
+  m_settings: {fileID: 11400000, guid: e1513859b505ebb43aae138ee58fa533, type: 2}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
