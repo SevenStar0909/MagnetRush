@@ -74,10 +74,21 @@ public class ShootingController : MonoBehaviour
         Ray ray = m_mainCamera.ScreenPointToRay(screenCenter);
         Vector3 camForward = m_mainCamera.transform.forward;
 
+        // MagnetFieldレイヤーを除外
         int layerMask = PhysicsLayers.MaskShootingRaycast;
+        if (PhysicsLayers.MagnetField >= 0)
+        {
+            layerMask &= ~(1 << PhysicsLayers.MagnetField);
+        }
         float maxDist = m_bulletSettings != null ? m_bulletSettings.raycastDistance : 200f;
 
         Vector3 targetPoint = CalculateTargetPoint(ray, camForward, spawnPos, layerMask, maxDist);
+
+        // デバッグ表示（CalculateTargetPointの結果を可視化）
+        float debugDuration = 3.0f; // 線を表示し続ける時間（秒）
+        Debug.DrawLine(ray.origin, targetPoint, Color.cyan, debugDuration); // カメラからの視線
+        Debug.DrawLine(spawnPos, targetPoint, Color.yellow, debugDuration); // 実際の弾道
+
         Vector3 direction = (targetPoint - spawnPos).normalized;
 
         // 弾を生成・初期化
@@ -87,6 +98,9 @@ public class ShootingController : MonoBehaviour
         {
             MagneticPole pole = m_polarityController != null ? m_polarityController.CurrentPole : MagneticPole.S;
             bullet.Initialize(pole, direction);
+
+            // 【変更点2】生成した弾をBulletManagerに登録する
+            BulletManager.Instance.Register(bullet);
         }
 
         m_events?.FireShoot();

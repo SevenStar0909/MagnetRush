@@ -21,11 +21,8 @@ public class EnemyTurretMagneticAim : MonoBehaviour, IMagneticResponse
     private Magnetizable m_selfMagnetizable;
     private Magnetizable m_currentTarget;
     private float m_refreshTimer;
-    private Vector3 m_initialLocalEuler;
 
     public bool IsResponseActive => m_selfMagnetizable != null && m_selfMagnetizable.IsActive;
-    public bool HasAimTarget { get; private set; }
-    public Vector3 CurrentAimDirection { get; private set; } = Vector3.forward;
 
     private void Awake()
     {
@@ -34,17 +31,13 @@ public class EnemyTurretMagneticAim : MonoBehaviour, IMagneticResponse
 
         if (m_yawPivot == null)
             m_yawPivot = transform;
-
-        m_initialLocalEuler = m_yawPivot.localEulerAngles;
     }
 
     private void Update()
     {
-        HasAimTarget = false;
-
         if (!IsResponseActive)
         {
-            FacePlayerWhenNotMagnetized();
+            FacePlayer(checkRange: true);
             return;
         }
 
@@ -55,62 +48,65 @@ public class EnemyTurretMagneticAim : MonoBehaviour, IMagneticResponse
             m_currentTarget = FindNearestMagnetizable();
         }
 
+        // 磁力ターゲットがなければプレイヤーを追従し続ける
         if (m_currentTarget == null)
+        {
+            FacePlayer(checkRange: false);
             return;
+        }
 
         Vector3 toTarget = m_currentTarget.transform.position - m_yawPivot.position;
-        toTarget.y = 0f;
         if (toTarget.sqrMagnitude <= 0.0001f)
             return;
 
         bool isOppositePole = IsOppositePole(m_currentTarget);
         Vector3 desiredWorldDir = isOppositePole ? toTarget.normalized : (-toTarget.normalized);
 
-        HasAimTarget = true;
-        CurrentAimDirection = desiredWorldDir;
-        RotateYawOnly(desiredWorldDir);
+        RotateToward(desiredWorldDir);
     }
 
-    private void FacePlayerWhenNotMagnetized()
+    private void FacePlayer(bool checkRange)
     {
         if (m_turretBase == null || m_turretBase.Player == null)
             return;
 
         Vector3 toPlayer = m_turretBase.Player.position - m_yawPivot.position;
-        toPlayer.y = 0f;
 
         float sqrDist = toPlayer.sqrMagnitude;
         if (sqrDist <= 0.0001f)
             return;
 
-        if (m_aimToPlayerRange > 0f && sqrDist > m_aimToPlayerRange * m_aimToPlayerRange)
+        if (checkRange && m_aimToPlayerRange > 0f && sqrDist > m_aimToPlayerRange * m_aimToPlayerRange)
             return;
 
-        Vector3 dir = toPlayer.normalized;
-        HasAimTarget = true;
-        CurrentAimDirection = dir;
-        RotateYawOnly(dir);
+        RotateToward(toPlayer.normalized);
     }
 
-    private void RotateYawOnly(Vector3 desiredWorldDir)
+    /// <summary>
+    /// 砲身をターゲット方向にyaw+pitchで回転させる（localRotation使用、ロールなし）。
+    /// </summary>
+    private void RotateToward(Vector3 desiredWorldDir)
     {
+        if (desiredWorldDir.sqrMagnitude <= 0.0001f)
+            return;
+
+        // 親空間に変換（Model Y180°を吸収）
         Vector3 localDir = m_yawPivot.parent != null
             ? m_yawPivot.parent.InverseTransformDirection(desiredWorldDir)
             : desiredWorldDir;
 
-        localDir.y = 0f;
         if (localDir.sqrMagnitude <= 0.0001f)
             return;
 
-        float targetYaw = Mathf.Atan2(localDir.x, localDir.z) * Mathf.Rad2Deg;
-        float currentYaw = m_yawPivot.localEulerAngles.y;
-        float nextYaw = Mathf.MoveTowardsAngle(currentYaw, targetYaw, Mathf.Max(1f, m_rotationSpeed) * Time.deltaTime);
+        // バレルメッシュがlocal -Z方向に伸びているため180°オフセット
+        float targetYaw = Mathf.Atan2(localDir.x, localDir.z) * Mathf.Rad2Deg + 180f;
+        float horizontalDist = Mathf.Sqrt(localDir.x * localDir.x + localDir.z * localDir.z);
+        float targetPitch = Mathf.Atan2(localDir.y, horizontalDist) * Mathf.Rad2Deg;
 
-        m_yawPivot.localRotation = Quaternion.Euler(
-            m_initialLocalEuler.x,
-            nextYaw,
-            m_initialLocalEuler.z
-        );
+        Quaternion targetLocalRot = Quaternion.Euler(targetPitch, targetYaw, 0f);
+        float maxDelta = Mathf.Max(1f, m_rotationSpeed) * Time.deltaTime;
+        m_yawPivot.localRotation = Quaternion.RotateTowards(
+            m_yawPivot.localRotation, targetLocalRot, maxDelta);
     }
 
     private bool IsOppositePole(Magnetizable other)
@@ -147,7 +143,6 @@ public class EnemyTurretMagneticAim : MonoBehaviour, IMagneticResponse
             if (candidate.Pole == MagneticPole.None) continue;
 
             Vector3 delta = candidate.transform.position - origin;
-            delta.y = 0f;
             float sqr = delta.sqrMagnitude;
 
             if (sqr < nearestSqr)

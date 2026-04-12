@@ -1,12 +1,10 @@
 using UnityEngine;
-using UnityEngine.AI;
 using UnityEngine.Serialization;
 
 /// <summary>
 /// 敵の基底クラス。Entityを継承しHealth・IMagnetTargetを共有する。
-/// 移動はNavMeshAgent経由、磁力はexternalVelocityで適用。
+/// 移動はEntityStep() → EntityController経由。AIサブクラスがAccelerateToward等で速度を駆動する。
 /// </summary>
-[RequireComponent(typeof(NavMeshAgent))]
 public class EnemyBase : Entity
 {
     [Header("Data")]
@@ -18,8 +16,6 @@ public class EnemyBase : Entity
     [SerializeField] private Transform m_player;
     [SerializeField] private Transform m_weaponHandSocket;
 
-    protected NavMeshAgent agent;
-
     [Header("Magnetic")]
     [FormerlySerializedAs("MagneticMover")]
     [SerializeField] private MagneticMover m_mover;
@@ -28,7 +24,6 @@ public class EnemyBase : Entity
 
     public EnemySettings StatusData => m_statusData;
     public Transform Player => m_player;
-    public NavMeshAgent Agent => agent;
     public Transform WeaponHandSocket => m_weaponHandSocket;
     public WeaponStateController EquippedWeapon => m_equippedWeapon;
 
@@ -52,49 +47,69 @@ public class EnemyBase : Entity
     protected override void Awake()
     {
         base.Awake();
-        agent = GetComponent<NavMeshAgent>();
         m_mover = GetComponentInChildren<MagneticMover>();
 
-        if (m_player == null)
+        // Playerタグ付きオブジェクトを常に取得
+        GameObject playerObj = GameObject.FindWithTag(GameTags.Player);
+        if (playerObj != null)
+            m_player = playerObj.transform;
+
+        // EnemySettings → Entity基底フィールド
+        if (m_statusData != null)
         {
-            GameObject playerObj = GameObject.FindWithTag(GameTags.Player);
-            if (playerObj != null)
-                m_player = playerObj.transform;
+            m_gravity = m_statusData.gravity;
+            m_snapForce = m_statusData.snapForce;
+            m_groundCheckDistance = m_statusData.groundCheckDistance;
+            if (m_statusData.groundLayer != 0)
+                m_groundLayer = m_statusData.groundLayer;
+            m_externalDrag = m_statusData.externalDrag;
         }
 
-        // Health.OnDie → Die()
-        if (health != null)
-            health.OnDie += Die;
+        if (m_health != null)
+            m_health.OnDie += Die;
+
+        if (m_controller == null)
+            Debug.LogWarning($"[EnemyBase] {name}: EntityControllerがありません。衝突判定なしで動作します", this);
+
     }
 
     void OnDestroy()
     {
-        if (health != null)
-            health.OnDie -= Die;
-    }
-
-    protected virtual void Start()
-    {
-        if (agent != null && m_statusData != null)
-        {
-            agent.speed = m_statusData.moveSpeed;
-            agent.stoppingDistance = m_statusData.stopDistance;
-        }
+        if (m_health != null)
+            m_health.OnDie -= Die;
     }
 
     void Update()
     {
         ValidateWeaponState();
+        EntityStep(Time.deltaTime);
+    }
 
-        // MagneticMover がアクティブなら Rigidbody で物理移動中 → externalVelocity パスは不要
-        if (IsMagnetControlled) return;
-
-        // MagneticMover なしの敵は従来通り externalVelocity で磁力適用
-        if (externalVelocity.sqrMagnitude > 0.01f && agent != null)
+    /// <summary>指定方向（ワールド空間）に加速する。AIが計算した移動方向を渡す。</summary>
+    public void AccelerateToward(Vector3 worldDirection, float dt)
+    {
+        if (worldDirection.sqrMagnitude > 0.01f)
         {
-            agent.Move(externalVelocity * Time.deltaTime);
-            externalVelocity = Vector3.zero;
+            // Accelerate()はlateralVelocity（ローカル空間）で計算するため変換が必要
+            Vector3 localDir = Quaternion.FromToRotation(transform.up, Vector3.up) * worldDirection;
+            localDir = localDir.normalized;
+
+            Accelerate(localDir, m_statusData.turningDrag,
+                       m_statusData.acceleration, m_statusData.moveSpeed, dt);
+            FaceDirection(worldDirection, m_statusData.rotationSpeed, dt);
         }
+    }
+
+    /// <summary>横移動を減速する。</summary>
+    public void SlowDown(float dt)
+    {
+        Decelerate(m_statusData.deceleration, dt);
+    }
+
+    /// <summary>指定方向を向く。</summary>
+    public void FaceToward(Vector3 direction, float dt)
+    {
+        FaceDirection(direction, m_statusData.rotationSpeed, dt);
     }
 
     public bool TryEquipWeapon(WeaponStateController weapon)

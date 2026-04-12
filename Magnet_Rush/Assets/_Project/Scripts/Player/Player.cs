@@ -1,11 +1,10 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Serialization;
 
 /// <summary>
 /// プレイヤーエンティティ。入力・ステート・磁力の統合制御を行う。
 /// </summary>
 [RequireComponent(typeof(Rigidbody))]
-[RequireComponent(typeof(CapsuleCollider))]
 [RequireComponent(typeof(PlayerInputHandler))]
 [RequireComponent(typeof(PlayerEvents))]
 public class Player : Entity
@@ -58,19 +57,20 @@ public class Player : Entity
         m_groundLayer = m_settings.groundLayer != 0
             ? m_settings.groundLayer
             : PhysicsLayers.MaskGroundCheck;
+        m_externalDrag = m_settings.externalDrag;
 
         // HP=0でDiePlayerStateに遷移
-        if (health != null)
+        if (m_health != null)
         {
-            health.OnDie += OnDie;
+            m_health.OnDie += OnDie;
         }
     }
 
     void OnDestroy()
     {
-        if (health != null)
+        if (m_health != null)
         {
-            health.OnDie -= OnDie;
+            m_health.OnDie -= OnDie;
         }
     }
 
@@ -84,7 +84,10 @@ public class Player : Entity
         float dt = Mathf.Min(Time.deltaTime, Time.fixedDeltaTime * 3f);
         UpdateMagneticInfluence();
         states.Step(dt);
-        EntityStep(dt);
+
+        // 死亡中は重力・移動処理をスキップ（EntityStepがvelocityを上書きして落下するのを防ぐ）
+        if (!states.IsCurrentOfType<DiePlayerState>())
+            EntityStep(dt);
     }
 
     /// <summary>
@@ -140,9 +143,9 @@ public class Player : Entity
         {
             Accelerate(dir, m_settings.turningDrag, m_settings.acceleration, aimSpeed, dt);
         }
-        if (cachedCameraTransform != null)
+        if (m_cachedCameraTransform != null)
         {
-            Vector3 camForward = cachedCameraTransform.forward;
+            Vector3 camForward = m_cachedCameraTransform.forward;
             camForward.y = 0f;
             FaceDirection(camForward, m_settings.rotationSpeed * 2f, dt, false);
         }

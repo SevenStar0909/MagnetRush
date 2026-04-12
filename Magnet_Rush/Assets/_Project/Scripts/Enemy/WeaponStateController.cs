@@ -20,7 +20,6 @@ public class WeaponStateController : MonoBehaviour
     [Header("References")]
     [SerializeField] private Transform m_gripPoint;
     [SerializeField] private Collider[] m_physicsColliders;
-    //[SerializeField] private Collider m_pickupTrigger;
     [SerializeField] private Collider m_attackTrigger;
 
     [Header("Owned Pose")]
@@ -60,7 +59,7 @@ public class WeaponStateController : MonoBehaviour
             if (Time.time < m_nextPickupAllowedTime) return false;
             if (m_settings == null) return true;
 
-            if (m_settings.disablePickupWhileMagnetized && m_magnetizable.IsActive)
+            if (m_settings.disablePickupWhileMagnetized && m_magnetizable != null && m_magnetizable.IsActive)
                 return false;
 
             return true;
@@ -99,9 +98,12 @@ public class WeaponStateController : MonoBehaviour
 
         if (m_rb != null)
         {
+            if (!m_rb.isKinematic)
+            {
+                m_rb.linearVelocity = Vector3.zero;
+                m_rb.angularVelocity = Vector3.zero;
+            }
             m_rb.isKinematic = true;
-            m_rb.linearVelocity = Vector3.zero;
-            m_rb.angularVelocity = Vector3.zero;
         }
 
         SetPhysicsCollidersEnabled(false);
@@ -128,7 +130,7 @@ public class WeaponStateController : MonoBehaviour
             return;
         }
 
-        // 1) GripPoint tp Socket 
+        // 1) GripPoint tp Socket
         Vector3 currentGrip = m_gripPoint.position;
         Vector3 nextGrip = Vector3.MoveTowards(
             currentGrip,
@@ -171,9 +173,13 @@ public class WeaponStateController : MonoBehaviour
 
         if (m_rb != null)
         {
+            // 既にkinematicの場合はvelocity設定不要
+            if (!m_rb.isKinematic)
+            {
+                m_rb.linearVelocity = Vector3.zero;
+                m_rb.angularVelocity = Vector3.zero;
+            }
             m_rb.isKinematic = true;
-            m_rb.linearVelocity = Vector3.zero;
-            m_rb.angularVelocity = Vector3.zero;
         }
 
         if (m_attackTrigger != null)

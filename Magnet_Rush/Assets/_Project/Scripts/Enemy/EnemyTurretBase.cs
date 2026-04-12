@@ -36,14 +36,14 @@ public class EnemyTurretBase : Entity
                 m_player = playerObj.transform;
         }
 
-        if (health != null)
-            health.OnDie += Die;
+        if (m_health != null)
+            m_health.OnDie += Die;
     }
 
     private void OnDestroy()
     {
-        if (health != null)
-            health.OnDie -= Die;
+        if (m_health != null)
+            m_health.OnDie -= Die;
     }
 
     private void Update()

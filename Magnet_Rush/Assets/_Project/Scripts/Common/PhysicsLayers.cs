@@ -14,6 +14,9 @@ public static class PhysicsLayers
     public static int Enemy { get; private set; }
     public static int Bullet { get; private set; }
     public static int MagnetField { get; private set; }
+    public static int EntityBody { get; private set; }
+    public static int AttackHitbox { get; private set; }
+    public static int WeaponBody { get; private set; }
 
     // --- 用途別マスク（Initialize()で計算） ---
 
@@ -37,6 +40,17 @@ public static class PhysicsLayers
     // MagnetField × Player/Enemy = ON（OnTriggerStayでEntity検知に必要）
     // Player × Bullet = ON（SelfFire弾がプレイヤーに当たる必要あり）
     // Bullet × Bullet = ON（弾同士のOnTriggerEnterでダメージ蓄積処理）
+    // Bullet × EntityBody = OFF（弾はBulletReceiverのtriggerで検出）
+    // Bullet × AttackHitbox = OFF（弾が攻撃ヒットボックス経由で磁化するのを防止）
+    // MagnetField × EntityBody/AttackHitbox = OFF（磁力場は物理コライダーとの衝突不要）
+    // Player × EntityBody = OFF（不要なtriggerイベント防止。衝突検出はLayerMask経由）
+    // Enemy × EntityBody = OFF（同上）
+    // Player × AttackHitbox = ON（攻撃がプレイヤーに当たる必要あり）
+    // Enemy × AttackHitbox = OFF（敵同士のフレンドリーファイア防止）
+    // EntityBody × EntityBody = ON（Entity同士の衝突。HandlePenetration/MoveAndSlideで処理）
+    // EntityBody × AttackHitbox = OFF（物理衝突と攻撃判定の混在防止）
+    // AttackHitbox × AttackHitbox = OFF（攻撃同士の衝突不要）
+    // WeaponBody × Bullet/MagnetField/Player/Enemy/EntityBody/AttackHitbox/WeaponBody = OFF（武器物理は地面/壁のみ）
 
     /// <summary>
     /// 全Awakeより前にメインスレッドで実行される。
@@ -51,11 +65,14 @@ public static class PhysicsLayers
         Enemy = LayerMask.NameToLayer("Enemy");
         Bullet = LayerMask.NameToLayer("Bullet");
         MagnetField = LayerMask.NameToLayer("MagnetField");
+        EntityBody = LayerMask.NameToLayer("EntityBody");
+        AttackHitbox = LayerMask.NameToLayer("AttackHitbox");
+        WeaponBody = LayerMask.NameToLayer("WeaponBody");
 
         // Default(0) + Ground + Wall
         MaskGroundCheck = (1 << 0) | SafeMask(Ground) | SafeMask(Wall);
-        // MagnetField + Bullet + IgnoreRaycast(2) を除外
-        MaskEntityCollision = ~(SafeMask(MagnetField) | SafeMask(Bullet) | (1 << 2));
+        // MagnetField + Bullet + AttackHitbox + IgnoreRaycast(2) を除外
+        MaskEntityCollision = ~(SafeMask(MagnetField) | SafeMask(Bullet) | SafeMask(AttackHitbox) | SafeMask(WeaponBody) | (1 << 2));
         // Player を除外
         MaskShootingRaycast = ~SafeMask(Player);
 
@@ -70,6 +87,8 @@ public static class PhysicsLayers
         if (Enemy == -1) Debug.LogError("[PhysicsLayers] Layer 'Enemy' がProjectSettingsに未定義");
         if (Bullet == -1) Debug.LogError("[PhysicsLayers] Layer 'Bullet' がProjectSettingsに未定義");
         if (MagnetField == -1) Debug.LogError("[PhysicsLayers] Layer 'MagnetField' がProjectSettingsに未定義");
-
+        if (EntityBody == -1) Debug.LogError("[PhysicsLayers] Layer 'EntityBody' がProjectSettingsに未定義");
+        if (AttackHitbox == -1) Debug.LogError("[PhysicsLayers] Layer 'AttackHitbox' がProjectSettingsに未定義");
+        if (WeaponBody == -1) Debug.LogError("[PhysicsLayers] Layer 'WeaponBody' がProjectSettingsに未定義");
     }
 }

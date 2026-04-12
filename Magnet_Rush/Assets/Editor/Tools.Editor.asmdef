@@ -1,7 +1,13 @@
 {
     "name": "Tools.Editor",
     "rootNamespace": "",
-    "references": [],
+    "references": [
+        "Unity.RenderPipelines.Core.Editor",
+        "Unity.RenderPipelines.Core.Runtime",
+        "Unity.RenderPipelines.Universal.Editor",
+        "Unity.RenderPipelines.Universal.Runtime",
+        "MagnetRush.Common"
+    ],
     "includePlatforms": ["Editor"],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

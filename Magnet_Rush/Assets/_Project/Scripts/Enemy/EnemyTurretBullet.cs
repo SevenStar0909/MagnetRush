@@ -17,6 +17,7 @@ public class EnemyTurretBullet : MonoBehaviour
     private void Awake()
     {
         m_rb = GetComponent<Rigidbody>();
+        m_rb.useGravity = false;
         m_timer = m_lifetime;
     }
 
@@ -25,8 +26,6 @@ public class EnemyTurretBullet : MonoBehaviour
         m_owner = owner;
         if (m_rb == null) return;
 
-        m_rb.useGravity = false;
-        m_rb.isKinematic = false;
         m_rb.linearVelocity = direction.normalized * m_speed;
     }
 
@@ -40,11 +39,6 @@ public class EnemyTurretBullet : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         HandleHit(other);
-    }
-
-    private void OnCollisionEnter(Collision collision)
-    {
-        HandleHit(collision.collider);
     }
 
     private void HandleHit(Collider other)

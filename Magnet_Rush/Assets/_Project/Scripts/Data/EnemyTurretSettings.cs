@@ -23,6 +23,10 @@ public class EnemyTurretSettings : ScriptableObject
     [Tooltip("砲口前方向と照準方向の一致閾値（-1〜1）")]
     [Range(-1f, 1f)]
     public float shootMinDot = 0.95f;
+    [Tooltip("1回の発射で撃つ弾数")]
+    public int burstCount = 1;
+    [Tooltip("バースト内の弾間隔（秒）")]
+    public float burstInterval = 0.15f;
     [Tooltip("ONなら磁化中のみ発射")]
     public bool shootOnlyWhenMagnetized = false;
 }

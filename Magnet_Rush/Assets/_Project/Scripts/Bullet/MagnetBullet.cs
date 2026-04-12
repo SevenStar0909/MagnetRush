@@ -39,7 +39,7 @@ public class MagnetBullet : MonoBehaviour
         m_timer = m_settings.lifetime;
 
         // ビジュアル切替（S=赤、N=青）
-        var renderer = GetComponent<MeshRenderer>();
+        var renderer = GetComponentInChildren<MeshRenderer>();
         if (renderer != null && m_settings != null)
         {
             Material mat = pole == MagneticPole.S ? m_settings.sMaterial : m_settings.nMaterial;
@@ -109,11 +109,8 @@ public class MagnetBullet : MonoBehaviour
     {
         if (IsStuck) return;
 
-        // トリガーコライダーは無視。SelfFire弾はプレイヤーのTriggerのみ許可
-        if (other.isTrigger)
-        {
-            if (!IsSelfFire || !other.CompareTag(GameTags.Player)) return;
-        }
+        // SelfFire弾はプレイヤーのみ対象（Layer MatrixがisTriggerフィルタを担う）
+        if (IsSelfFire && !other.CompareTag(GameTags.Player)) return;
 
         // 他の弾 — MagnetFieldを持つ弾にはダメージ蓄積
         if (other.CompareTag(GameTags.MagnetBullet))
@@ -136,7 +133,7 @@ public class MagnetBullet : MonoBehaviour
         if (other.CompareTag(GameTags.Player) && !IsSelfFire) return;
 
         // 対象に Magnetizable があるか → パターン分岐
-        var targetMag = other.GetComponent<Magnetizable>();
+        var targetMag = other.GetComponentInParent<Magnetizable>();
 
         if (targetMag != null)
         {
@@ -162,15 +159,16 @@ public class MagnetBullet : MonoBehaviour
     {
         targetMag.SetPole(Pole);
 
-        if (target.GetComponent<MagnetField>() == null && m_settings != null && m_settings.bulletFieldSettings != null)
+        var targetGO = targetMag.gameObject;
+        if (targetGO.GetComponent<MagnetField>() == null && m_settings != null && m_settings.bulletFieldSettings != null)
         {
-            var field = target.gameObject.AddComponent<MagnetField>();
+            var field = targetGO.AddComponent<MagnetField>();
             field.Initialize(Pole, m_settings.bulletFieldSettings);
 
             if (MagnetManager.Instance != null)
                 MagnetManager.Instance.RegisterField(field);
 
-            var visualizer = target.gameObject.AddComponent<MagnetFieldVisualizer>();
+            var visualizer = targetGO.AddComponent<MagnetFieldVisualizer>();
             visualizer.Show(Pole, m_settings.bulletFieldSettings);
 
             // 着弾エフェクトを対象に生成

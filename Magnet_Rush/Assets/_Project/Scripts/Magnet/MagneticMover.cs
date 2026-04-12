@@ -2,48 +2,49 @@ using UnityEngine;
 using UnityEngine.AI;
 
 /// <summary>
-/// 敵やオブジェクトが磁力で引かれたときに物理移動する応答コンポーネント。
-/// 仕様書: 「敵の引き寄せ」「身代わり」「押し潰し」で使用。
-/// NavMeshAgent を一時無効化し、Rigidbody で物理移動する。
+/// 磁力によるAI一時停止とNavMesh位置同期を管理する。
+/// 力はIMagnetTarget(Entity.externalVelocity)経由で適用し、
+/// EntityStep()が重力・衝突を処理する。
 /// </summary>
 [RequireComponent(typeof(Magnetizable))]
-[RequireComponent(typeof(Rigidbody))]
 public class MagneticMover : MonoBehaviour, IMagneticResponse
 {
     [SerializeField] private MagneticMoverSettings m_settings;
 
     private Magnetizable m_magnetizable;
-    private Rigidbody m_rb;
     private NavMeshAgent m_agent;
+    private IMagnetTarget m_magnetTarget;
 
     private bool m_isMagnetActive;
     private float m_lastForceTime;
     private int m_recoveryAttempts;
-    private Vector3 m_lastValidNavMeshPos;
 
     public bool IsResponseActive => m_magnetizable != null && m_magnetizable.IsActive;
 
-    /// <summary>磁力移動モード中かどうか。EnemyBase がAI処理スキップの判定に使用。</summary>
+    /// <summary>磁力移動モード中かどうか。AIはこの間スキップされる。</summary>
     public bool IsMagnetActive => m_isMagnetActive;
 
     void Awake()
     {
         m_magnetizable = GetComponent<Magnetizable>();
-        m_rb = GetComponent<Rigidbody>();
         m_agent = GetComponent<NavMeshAgent>();
+        m_magnetTarget = GetComponent<IMagnetTarget>();
     }
 
     public void OnMagnetForce(Vector3 force, Vector3 sourcePosition)
     {
         if (m_settings == null) return;
 
-        if (!m_isMagnetActive)
-            ActivateMagnetMode();
-
+        m_isMagnetActive = true;
         m_lastForceTime = Time.time;
 
-        m_rb.AddForce(force, m_settings.forceMode);
-        m_rb.linearVelocity = Vector3.ClampMagnitude(m_rb.linearVelocity, m_settings.maxSpeed);
+        // 力をスケーリングしてEntityに渡す。蓄積・減衰はEntity.externalVelocityが処理する。
+        if (m_magnetTarget != null)
+        {
+            Vector3 scaledForce = force * m_settings.forceMultiplier;
+            Vector3 clampedForce = Vector3.ClampMagnitude(scaledForce, m_settings.maxSpeed);
+            m_magnetTarget.ApplyMagnetForce(clampedForce);
+        }
     }
 
     public void OnMagnetContact(Magnetizable self, Magnetizable other)
@@ -55,62 +56,36 @@ public class MagneticMover : MonoBehaviour, IMagneticResponse
     {
         if (!m_isMagnetActive) return;
 
+        // OnMagnetForceが呼ばれなくなった（範囲外）→ recoveryDelay後にAI再開
+        // externalVelocityの減衰はEntity側で処理されるため、ここではタイミングのみ管理
         if (Time.time - m_lastForceTime > m_settings.recoveryDelay)
-            TryRecoverNavMesh();
+            RecoverFromMagnet();
     }
 
-    private void ActivateMagnetMode()
+    private void RecoverFromMagnet()
     {
-        m_isMagnetActive = true;
-        m_recoveryAttempts = 0;
-
         if (m_agent != null && m_agent.enabled)
         {
-            m_lastValidNavMeshPos = transform.position;
-            m_agent.enabled = false;
-        }
-
-        m_rb.isKinematic = false;
-    }
-
-    private void TryRecoverNavMesh()
-    {
-        if (m_agent == null)
-        {
-            m_isMagnetActive = false;
-            return;
-        }
-
-        if (NavMesh.SamplePosition(transform.position, out var hit, 2f, NavMesh.AllAreas))
-        {
-            m_rb.isKinematic = true;
-            m_rb.linearVelocity = Vector3.zero;
-            transform.position = hit.position;
-            m_agent.enabled = true;
-            m_isMagnetActive = false;
-            m_recoveryAttempts = 0;
-        }
-        else
-        {
-            m_recoveryAttempts++;
-            if (m_recoveryAttempts >= m_settings.maxRecoveryAttempts)
+            if (NavMesh.SamplePosition(transform.position, out var hit, 2f, NavMesh.AllAreas))
             {
-                m_rb.isKinematic = true;
-                m_rb.linearVelocity = Vector3.zero;
-                transform.position = m_lastValidNavMeshPos;
-                m_agent.enabled = true;
+                m_agent.nextPosition = hit.position;
                 m_isMagnetActive = false;
                 m_recoveryAttempts = 0;
             }
+            else
+            {
+                m_recoveryAttempts++;
+                if (m_recoveryAttempts >= m_settings.maxRecoveryAttempts)
+                {
+                    m_agent.Warp(transform.position);
+                    m_isMagnetActive = false;
+                    m_recoveryAttempts = 0;
+                }
+            }
         }
-    }
-
-    void OnDisable()
-    {
-        if (m_isMagnetActive && m_agent != null)
+        else
         {
-            m_rb.isKinematic = true;
-            m_agent.enabled = true;
+            // NavMeshAgentなし（将来の飛行敵等）→ フラグ解除のみ
             m_isMagnetActive = false;
         }
     }

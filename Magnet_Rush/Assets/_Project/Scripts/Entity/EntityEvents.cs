@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -11,8 +11,8 @@ using UnityEngine.Events;
 public class EntityEvents
 {
     [Tooltip("接地した瞬間に発火")]
-    public UnityEvent OnGroundEnter;
+    public UnityEvent onGroundEnter;
 
     [Tooltip("地面から離れた瞬間に発火")]
-    public UnityEvent OnGroundExit;
+    public UnityEvent onGroundExit;
 }

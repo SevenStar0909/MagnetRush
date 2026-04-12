@@ -41,7 +41,10 @@ public class EnemyMeleeAttack : MonoBehaviour
         m_unarmedAttackHitboxMeshRenderer = m_attackHitboxMeshRenderer;
 
         if (m_attackHitbox != null)
+        {
+            m_attackHitbox.gameObject.layer = PhysicsLayers.AttackHitbox;
             m_attackHitbox.enabled = false;
+        }
 
         if (m_attackHitboxMeshRenderer != null)
             m_attackHitboxMeshRenderer.enabled = false;
@@ -62,7 +65,8 @@ public class EnemyMeleeAttack : MonoBehaviour
         if (m_attackHitboxMeshRenderer != null && m_attackHitboxMeshRenderer.transform.IsChildOf(transform))
         {
             float atkR = m_data.attackRange;
-            m_attackHitboxMeshRenderer.transform.localPosition = new Vector3(0f, 0f, atkR / 2f);
+            float currentY = m_attackHitboxMeshRenderer.transform.localPosition.y;
+            m_attackHitboxMeshRenderer.transform.localPosition = new Vector3(0f, currentY, atkR / 2f);
             m_attackHitboxMeshRenderer.transform.localScale = new Vector3(1f, atkR / 2f, 1f);
         }
     }
@@ -265,6 +269,7 @@ public class EnemyMeleeAttack : MonoBehaviour
         if (capsule != null)
         {
             m_attackHitbox = capsule;
+            m_attackHitbox.gameObject.layer = PhysicsLayers.AttackHitbox;
             m_attackHitboxMeshRenderer = m_attackHitbox.GetComponent<MeshRenderer>();
         }
     }
