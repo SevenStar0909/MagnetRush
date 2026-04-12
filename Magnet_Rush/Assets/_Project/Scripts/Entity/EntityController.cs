@@ -114,6 +114,22 @@ public class EntityController : MonoBehaviour
 
     private void InitializeCollider()
     {
+        // プレハブに既存のBulletReceiverがあれば再利用
+        if (m_hitboxContainer != null)
+        {
+            var existing = m_hitboxContainer.Find("BulletReceiver");
+            if (existing != null)
+            {
+                existing.gameObject.layer = gameObject.layer;
+                existing.gameObject.tag = gameObject.tag;
+                m_collider = existing.GetComponent<CapsuleCollider>();
+                if (m_collider == null)
+                    m_collider = existing.gameObject.AddComponent<CapsuleCollider>();
+                m_collider.isTrigger = true;
+                return;
+            }
+        }
+
         var receiver = new GameObject("BulletReceiver");
         receiver.transform.SetParent(m_hitboxContainer, false);
         receiver.layer = gameObject.layer;
@@ -135,17 +151,36 @@ public class EntityController : MonoBehaviour
 
     private void InitializeEntityBody()
     {
+        // プレハブに既存のBodyがあれば再利用
+        if (m_hitboxContainer != null)
+        {
+            var existing = m_hitboxContainer.Find("Body");
+            if (existing != null)
+            {
+                existing.gameObject.layer = PhysicsLayers.EntityBody;
+                var col = existing.GetComponent<CapsuleCollider>();
+                if (col == null)
+                    col = existing.gameObject.AddComponent<CapsuleCollider>();
+                col.isTrigger = false;
+                col.radius = m_radius;
+                col.height = m_height;
+                col.center = center;
+                m_ignoredColliders.Add(col);
+                return;
+            }
+        }
+
         var body = new GameObject("Body");
         body.transform.SetParent(m_hitboxContainer, false);
         body.layer = PhysicsLayers.EntityBody;
 
-        var col = body.AddComponent<CapsuleCollider>();
-        col.isTrigger = false;
-        col.radius = m_radius;
-        col.height = m_height;
-        col.center = center;
+        var newCol = body.AddComponent<CapsuleCollider>();
+        newCol.isTrigger = false;
+        newCol.radius = m_radius;
+        newCol.height = m_height;
+        newCol.center = center;
 
-        m_ignoredColliders.Add(col);
+        m_ignoredColliders.Add(newCol);
     }
 
     private void RefreshCollider()
@@ -372,4 +407,21 @@ public class EntityController : MonoBehaviour
         return Physics.Raycast(position, direction, out hit,
             distance, collisionLayer, QueryTriggerInteraction.Ignore);
     }
+
+#if UNITY_EDITOR
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = new Color(0f, 1f, 0f, 0.4f);
+        Vector3 worldCenter = transform.position + transform.rotation * center;
+        float halfLine = Mathf.Max(0f, m_height * 0.5f - m_radius);
+        Vector3 top = worldCenter + transform.up * halfLine;
+        Vector3 bottom = worldCenter - transform.up * halfLine;
+        Gizmos.DrawWireSphere(top, m_radius);
+        Gizmos.DrawWireSphere(bottom, m_radius);
+        Gizmos.DrawLine(top + transform.right * m_radius, bottom + transform.right * m_radius);
+        Gizmos.DrawLine(top - transform.right * m_radius, bottom - transform.right * m_radius);
+        Gizmos.DrawLine(top + transform.forward * m_radius, bottom + transform.forward * m_radius);
+        Gizmos.DrawLine(top - transform.forward * m_radius, bottom - transform.forward * m_radius);
+    }
+#endif
 }

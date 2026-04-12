@@ -9,8 +9,7 @@ using UnityEngine.Serialization;
 [DefaultExecutionOrder(-100)]
 public class GameManager : Singleton<GameManager>
 {
-    [FormerlySerializedAs("spawnPoint")]
-    [SerializeField] private Transform m_spawnPoint;
+    private Transform m_spawnPoint;
 
     protected override void Awake()
     {
@@ -53,6 +52,14 @@ public class GameManager : Singleton<GameManager>
         {
             player.transform.position = m_spawnPoint.position;
         }
+    }
+
+    /// <summary>
+    /// マップシーンのStageSpawnPointから呼ばれる。
+    /// </summary>
+    public void RegisterSpawnPoint(Transform point)
+    {
+        m_spawnPoint = point;
     }
 
     /// <summary>

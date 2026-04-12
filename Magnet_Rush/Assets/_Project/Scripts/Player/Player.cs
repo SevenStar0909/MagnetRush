@@ -5,7 +5,6 @@ using UnityEngine.Serialization;
 /// プレイヤーエンティティ。入力・ステート・磁力の統合制御を行う。
 /// </summary>
 [RequireComponent(typeof(Rigidbody))]
-[RequireComponent(typeof(CapsuleCollider))]
 [RequireComponent(typeof(PlayerInputHandler))]
 [RequireComponent(typeof(PlayerEvents))]
 public class Player : Entity

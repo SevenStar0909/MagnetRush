@@ -2,7 +2,6 @@ using UnityEngine;
 
 [DisallowMultipleComponent]
 [RequireComponent(typeof(EnemyTurretBase))]
-[RequireComponent(typeof(EnemyTurretMagneticAim))]
 [RequireComponent(typeof(Magnetizable))]
 public class EnemyTurretShooter : MonoBehaviour
 {
@@ -13,7 +12,6 @@ public class EnemyTurretShooter : MonoBehaviour
     [SerializeField] private Transform m_firePointOverride;
 
     private EnemyTurretBase m_turretBase;
-    private EnemyTurretMagneticAim m_aim;
     private Magnetizable m_selfMagnetizable;
     private EnemyTurretSettings m_data;
 
@@ -24,13 +22,13 @@ public class EnemyTurretShooter : MonoBehaviour
     private void Awake()
     {
         m_turretBase = GetComponent<EnemyTurretBase>();
-        m_aim = GetComponent<EnemyTurretMagneticAim>();
         m_selfMagnetizable = GetComponent<Magnetizable>();
     }
 
     private void Start()
     {
         m_data = m_turretBase != null ? m_turretBase.StatusData : null;
+        m_shootTimer = m_data != null ? m_data.shootInterval : 0f;
     }
 
     private void Update()
@@ -63,8 +61,8 @@ public class EnemyTurretShooter : MonoBehaviour
     private bool CanShootNow()
     {
         if (m_projectilePrefab == null) return false;
-        if (m_data == null || m_aim == null) return false;
-        if (!m_aim.HasAimTarget) return false;
+        if (m_data == null) return false;
+        if (m_turretBase == null || m_turretBase.Player == null) return false;
 
         if (m_data.shootOnlyWhenMagnetized && (m_selfMagnetizable == null || !m_selfMagnetizable.IsActive))
             return false;
@@ -73,32 +71,29 @@ public class EnemyTurretShooter : MonoBehaviour
         if (m_shootTimer < interval)
             return false;
 
+        // 砲身がプレイヤー方向を向いているか（砲身forwardとプレイヤー方向のdot）
         Transform muzzle = ResolveFirePoint();
+        if (muzzle != null)
+        {
+            Vector3 toPlayer = (m_turretBase.Player.position - muzzle.position).normalized;
+            // 砲身メッシュのバレルはlocal -Z方向
+            float dot = Vector3.Dot(-muzzle.forward, toPlayer);
+            if (dot < m_data.shootMinDot)
+                return false;
+        }
 
-        Vector3 muzzleForward = muzzle != null ? muzzle.forward : transform.forward;
-        muzzleForward.y = 0f;
-        if (muzzleForward.sqrMagnitude <= 0.0001f) return false;
-        muzzleForward.Normalize();
-
-        Vector3 aimDir = m_aim.CurrentAimDirection;
-        aimDir.y = 0f;
-        if (aimDir.sqrMagnitude <= 0.0001f) return false;
-        aimDir.Normalize();
-
-        float minDot = Mathf.Clamp(m_data.shootMinDot, -1f, 1f);
-        return Vector3.Dot(muzzleForward, aimDir) >= minDot;
+        return true;
     }
 
     private void Fire()
     {
+        if (m_turretBase == null || m_turretBase.Player == null) return;
+
         Transform muzzle = ResolveFirePoint();
         Vector3 spawnPos = muzzle != null ? muzzle.position : transform.position + Vector3.up * 1.2f;
 
-        Vector3 direction = m_aim.CurrentAimDirection;
-        direction.y = 0f;
-        if (direction.sqrMagnitude <= 0.0001f)
-            direction = muzzle != null ? muzzle.forward : transform.forward;
-        direction.Normalize();
+        // 砲身方向に発射（磁化で砲身が逸れれば弾も逸れる）
+        Vector3 direction = muzzle != null ? -muzzle.forward : (m_turretBase.Player.position - spawnPos).normalized;
 
         Quaternion rotation = Quaternion.LookRotation(direction, Vector3.up);
         GameObject projectileObj = Instantiate(m_projectilePrefab, spawnPos, rotation);

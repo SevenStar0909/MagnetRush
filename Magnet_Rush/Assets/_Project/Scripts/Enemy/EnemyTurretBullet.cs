@@ -17,6 +17,7 @@ public class EnemyTurretBullet : MonoBehaviour
     private void Awake()
     {
         m_rb = GetComponent<Rigidbody>();
+        m_rb.useGravity = false;
         m_timer = m_lifetime;
     }
 
@@ -25,8 +26,6 @@ public class EnemyTurretBullet : MonoBehaviour
         m_owner = owner;
         if (m_rb == null) return;
 
-        m_rb.useGravity = false;
-        m_rb.isKinematic = false;
         m_rb.linearVelocity = direction.normalized * m_speed;
     }
 
@@ -54,7 +53,14 @@ public class EnemyTurretBullet : MonoBehaviour
 
         Health health = other.GetComponentInParent<Health>();
         if (health != null)
+        {
             health.Damage(m_damage);
+            Debug.Log($"[TurretBullet] {other.name}({other.transform.root.name})にヒット HP={health.CurrentHealth}/{health.MaxHealth}");
+        }
+        else
+        {
+            Debug.Log($"[TurretBullet] {other.name}({other.transform.root.name})に衝突（Health無し）");
+        }
 
         Destroy(gameObject);
     }

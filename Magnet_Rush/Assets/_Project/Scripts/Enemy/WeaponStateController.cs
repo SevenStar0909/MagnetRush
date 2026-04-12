@@ -99,9 +99,11 @@ public class WeaponStateController : MonoBehaviour
 
         if (m_rb != null)
         {
-            // kinematicにする前にvelocityをクリア（kinematic後の設定は警告になる）
-            m_rb.linearVelocity = Vector3.zero;
-            m_rb.angularVelocity = Vector3.zero;
+            if (!m_rb.isKinematic)
+            {
+                m_rb.linearVelocity = Vector3.zero;
+                m_rb.angularVelocity = Vector3.zero;
+            }
             m_rb.isKinematic = true;
         }
 

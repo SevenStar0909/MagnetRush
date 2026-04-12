@@ -5,13 +5,10 @@
 /// </summary>
 public class DiePlayerState : EntityState<Player>
 {
-    private float m_respawnTimer;
-
     public override void Enter(Player entity, EntityStateManager<Player> manager)
     {
         base.Enter(entity, manager);
 
-        // 全速度を即座にゼロ化（重力蓄積を防ぐ）
         entity.velocity = UnityEngine.Vector3.zero;
         entity.externalVelocity = UnityEngine.Vector3.zero;
         entity.input.enabled = false;
@@ -20,17 +17,10 @@ public class DiePlayerState : EntityState<Player>
         if (controller != null && controller.collider != null)
             controller.collider.enabled = false;
 
-        m_respawnTimer = entity.Settings.respawnDelay;
+        Respawn();
     }
 
-    public override void Step(float dt)
-    {
-        m_respawnTimer -= dt;
-        if (m_respawnTimer <= 0f)
-        {
-            Respawn();
-        }
-    }
+    public override void Step(float dt) { }
 
     public override void Exit()
     {
