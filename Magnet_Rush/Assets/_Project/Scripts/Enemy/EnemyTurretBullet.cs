@@ -41,11 +41,6 @@ public class EnemyTurretBullet : MonoBehaviour
         HandleHit(other);
     }
 
-    private void OnCollisionEnter(Collision collision)
-    {
-        HandleHit(collision.collider);
-    }
-
     private void HandleHit(Collider other)
     {
         if (other == null) return;
@@ -53,14 +48,7 @@ public class EnemyTurretBullet : MonoBehaviour
 
         Health health = other.GetComponentInParent<Health>();
         if (health != null)
-        {
             health.Damage(m_damage);
-            Debug.Log($"[TurretBullet] {other.name}({other.transform.root.name})にヒット HP={health.CurrentHealth}/{health.MaxHealth}");
-        }
-        else
-        {
-            Debug.Log($"[TurretBullet] {other.name}({other.transform.root.name})に衝突（Health無し）");
-        }
 
         Destroy(gameObject);
     }

@@ -6,9 +6,9 @@ using UnityEngine;
 public class EnemyTurretShooter : MonoBehaviour
 {
     [Header("References")]
-    [Tooltip("���͒e�ł͂Ȃ��A�^���b�g��p�̒ʏ�ePrefab")]
+    [Tooltip("タレット用の通常弾Prefab")]
     [SerializeField] private GameObject m_projectilePrefab;
-    [Tooltip("���w��Ȃ� EnemyTurretBase.FirePoint ���g�p")]
+    [Tooltip("未指定ならEnemyTurretBase.FirePointを使用")]
     [SerializeField] private Transform m_firePointOverride;
 
     private EnemyTurretBase m_turretBase;

@@ -20,7 +20,6 @@ public class WeaponStateController : MonoBehaviour
     [Header("References")]
     [SerializeField] private Transform m_gripPoint;
     [SerializeField] private Collider[] m_physicsColliders;
-    //[SerializeField] private Collider m_pickupTrigger;
     [SerializeField] private Collider m_attackTrigger;
 
     [Header("Owned Pose")]
