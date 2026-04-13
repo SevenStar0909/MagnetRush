@@ -73,6 +73,16 @@ public class CameraSettingsApplier : MonoBehaviour
         Cursor.visible = false;
     }
 
+    void OnEnable()
+    {
+        AimController.OnAimChanged += SetAimMode;
+    }
+
+    void OnDisable()
+    {
+        AimController.OnAimChanged -= SetAimMode;
+    }
+
     void LateUpdate()
     {
         if (m_cameraPivot == null || m_settings == null) return;

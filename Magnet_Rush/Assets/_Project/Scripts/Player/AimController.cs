@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -8,8 +9,12 @@ public class AimController : MonoBehaviour
 {
     [FormerlySerializedAs("settings")]
     [SerializeField] private PlayerSettings m_settings;
-    [FormerlySerializedAs("cameraSettings")]
-    [SerializeField] private CameraSettingsApplier m_cameraSettings;
+
+    /// <summary>
+    /// エイム状態が変化したときに発火する。引数はエイム中かどうか。
+    /// 購読側（CameraSettingsApplier等）でカメラやFOVを切り替える。
+    /// </summary>
+    public static event Action<bool> OnAimChanged;
 
     private PlayerInputHandler m_input;
     private PlayerStateManager m_states;
@@ -23,9 +28,6 @@ public class AimController : MonoBehaviour
     {
         m_input = GetComponent<PlayerInputHandler>();
         m_states = GetComponent<PlayerStateManager>();
-
-        if (m_cameraSettings == null)
-            m_cameraSettings = FindAnyObjectByType<CameraSettingsApplier>();
     }
 
     void Update()
@@ -54,8 +56,7 @@ public class AimController : MonoBehaviour
         IsAiming = true;
         Time.timeScale = m_settings.aimTimeScale;
 
-        if (m_cameraSettings != null)
-            m_cameraSettings.SetAimMode(true);
+        OnAimChanged?.Invoke(true);
 
         if (m_states != null)
             m_states.Change<AimPlayerState>();
@@ -69,8 +70,7 @@ public class AimController : MonoBehaviour
         IsAiming = false;
         Time.timeScale = 1f;
 
-        if (m_cameraSettings != null)
-            m_cameraSettings.SetAimMode(false);
+        OnAimChanged?.Invoke(false);
 
         // 入力があればMove、なければIdleに戻る
         if (m_states != null)

@@ -7,14 +7,55 @@ using UnityEngine;
 public class DebugCollisionGizmos : MonoBehaviour
 {
 #if UNITY_EDITOR
-    [SerializeField] private bool m_showLabels = true;
+    private const string k_ShowLabelsPrefKey = "DebugCollisionGizmos.ShowLabels";
+    private const string k_ShowGizmosPrefKey = "DebugCollisionGizmos.ShowGizmos";
     [SerializeField] private float m_labelOffsetY = 0.3f;
     [SerializeField] private float m_labelLineHeight = 0.3f;
 
     private readonly System.Collections.Generic.List<Vector3> m_drawnLabels = new();
 
+    [UnityEditor.InitializeOnLoadMethod]
+    private static void RegisterSceneGui()
+    {
+        UnityEditor.SceneView.duringSceneGui -= OnSceneGui;
+        UnityEditor.SceneView.duringSceneGui += OnSceneGui;
+    }
+
+    private static void OnSceneGui(UnityEditor.SceneView sceneView)
+    {
+        UnityEditor.Handles.BeginGUI();
+        const float width = 160f;
+        const float height = 22f;
+        const float marginRight = 30f;
+        const float marginBottom = 60f;
+        const float spacing = 4f;
+        var viewSize = sceneView.position.size;
+
+        bool labelsOn = UnityEditor.EditorPrefs.GetBool(k_ShowLabelsPrefKey, false);
+        var labelsRect = new Rect(viewSize.x - width - marginRight, viewSize.y - height - marginBottom, width, height);
+        if (GUI.Button(labelsRect, labelsOn ? "Layer Labels: ON" : "Layer Labels: OFF"))
+        {
+            UnityEditor.EditorPrefs.SetBool(k_ShowLabelsPrefKey, !labelsOn);
+            UnityEditor.SceneView.RepaintAll();
+        }
+
+        bool gizmosOn = UnityEditor.EditorPrefs.GetBool(k_ShowGizmosPrefKey, false);
+        var gizmosRect = new Rect(labelsRect.x, labelsRect.y - height - spacing, width, height);
+        if (GUI.Button(gizmosRect, gizmosOn ? "Collider Gizmos: ON" : "Collider Gizmos: OFF"))
+        {
+            UnityEditor.EditorPrefs.SetBool(k_ShowGizmosPrefKey, !gizmosOn);
+            UnityEditor.SceneView.RepaintAll();
+        }
+
+        UnityEditor.Handles.EndGUI();
+    }
+
     void OnDrawGizmos()
     {
+        bool showGizmos = UnityEditor.EditorPrefs.GetBool(k_ShowGizmosPrefKey, false);
+        bool showLabels = UnityEditor.EditorPrefs.GetBool(k_ShowLabelsPrefKey, false);
+        if (!showGizmos && !showLabels) return;
+
         var colliders = FindObjectsByType<Collider>(FindObjectsSortMode.None);
         m_drawnLabels.Clear();
 
@@ -22,14 +63,17 @@ public class DebugCollisionGizmos : MonoBehaviour
         {
             if (col == null) continue;
 
-            // Trigger=青、Collider=緑
-            Gizmos.color = col.isTrigger
-                ? new Color(0.2f, 0.4f, 1f, 0.3f)
-                : new Color(0.2f, 1f, 0.3f, 0.3f);
+            if (showGizmos)
+            {
+                // Trigger=青、Collider=緑
+                Gizmos.color = col.isTrigger
+                    ? new Color(0.2f, 0.4f, 1f, 0.3f)
+                    : new Color(0.2f, 1f, 0.3f, 0.3f);
 
-            DrawColliderGizmo(col);
+                DrawColliderGizmo(col);
+            }
 
-            if (m_showLabels)
+            if (showLabels)
             {
                 string layerName = LayerMask.LayerToName(col.gameObject.layer);
                 if (!string.IsNullOrEmpty(layerName) && col.gameObject.layer >= 6)

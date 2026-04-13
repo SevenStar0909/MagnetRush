@@ -39,17 +39,21 @@ public class MagneticContactDamage : MonoBehaviour
 
     void OnCollisionEnter(Collision collision)
     {
-        if (m_magnetizable == null || !m_magnetizable.IsActive) return;
-        if (m_settings == null) return;
+        Debug.Log($"[ContactDmg] {name} hit {collision.collider.name} vel={collision.relativeVelocity.magnitude:F2} mag={(m_magnetizable != null ? m_magnetizable.IsActive.ToString() : "null")}");
 
-        // 衝突速度が閾値未満なら無視
-        if (collision.relativeVelocity.magnitude < m_settings.minVelocity) return;
+        if (m_magnetizable == null || !m_magnetizable.IsActive) { Debug.Log("[ContactDmg] -> skip: magnetizable inactive"); return; }
+        if (m_settings == null) { Debug.Log("[ContactDmg] -> skip: settings null"); return; }
 
-        // 自分自身にはダメージを与えない
-        if (collision.collider.transform.IsChildOf(m_magnetizable.transform)) return;
+        if (collision.relativeVelocity.magnitude < m_settings.minVelocity) { Debug.Log($"[ContactDmg] -> skip: velocity {collision.relativeVelocity.magnitude:F2} < {m_settings.minVelocity}"); return; }
+
+        if (collision.collider.transform.IsChildOf(m_magnetizable.transform)) { Debug.Log("[ContactDmg] -> skip: self"); return; }
 
         var hittable = collision.collider.GetComponentInParent<IHittable>();
-        if (hittable == null) return;
+        if (hittable == null && collision.rigidbody != null)
+            hittable = collision.rigidbody.GetComponentInChildren<IHittable>();
+        if (hittable == null) { Debug.Log($"[ContactDmg] -> skip: no IHittable on {collision.collider.name}"); return; }
+
+        Debug.Log($"[ContactDmg] -> HIT! target={((MonoBehaviour)hittable).name} damage={m_settings.damage}");
 
         // 同一対象への重複ダメージ防止（磁力切れるまで1回のみ）
         if (m_hitTargets.Add(hittable))
