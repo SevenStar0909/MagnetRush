@@ -100,7 +100,7 @@ public class EnemyTurretShooter : MonoBehaviour
 
         EnemyTurretBullet turretBullet = projectileObj.GetComponent<EnemyTurretBullet>();
         if (turretBullet != null)
-            turretBullet.Initialize(direction, gameObject);
+            turretBullet.Initialize(direction);
     }
 
     private Transform ResolveFirePoint()

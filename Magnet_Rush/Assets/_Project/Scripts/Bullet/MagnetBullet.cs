@@ -8,14 +8,13 @@ using UnityEngine.Serialization;
 /// </summary>
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(SphereCollider))]
-public class MagnetBullet : MonoBehaviour
+public class MagnetBullet : MonoBehaviour, IBulletProximity
 {
     [FormerlySerializedAs("settings")]
     [SerializeField] private BulletSettings m_settings;
 
     public MagneticPole Pole { get; private set; }
     public bool IsStuck { get; private set; }
-    public bool IsSelfFire { get; private set; }
 
     /// <summary>弾が何かに着弾した時に発火するコールバック。</summary>
     public event Action OnImpact;
@@ -29,10 +28,9 @@ public class MagnetBullet : MonoBehaviour
         m_rb = GetComponent<Rigidbody>();
     }
 
-    public void Initialize(MagneticPole pole, Vector3 direction, bool isSelfFire = false)
+    public void Initialize(MagneticPole pole, Vector3 direction)
     {
         Pole = pole;
-        IsSelfFire = isSelfFire;
         m_rb.isKinematic = false;
         m_rb.useGravity = false;
         m_rb.linearVelocity = direction.normalized * m_settings.bulletSpeed;
@@ -55,6 +53,10 @@ public class MagnetBullet : MonoBehaviour
             BulletManager.Instance.Register(this);
             m_registered = true;
         }
+
+        // MagnetManager弾近接検出に登録
+        if (MagnetManager.Instance != null)
+            MagnetManager.Instance.RegisterBullet(this);
     }
 
     private void InitializeEffects(MagneticPole pole)
@@ -109,30 +111,9 @@ public class MagnetBullet : MonoBehaviour
     {
         if (IsStuck) return;
 
-        // SelfFire弾はプレイヤーのみ対象（Layer MatrixがisTriggerフィルタを担う）
-        if (IsSelfFire && !other.CompareTag(GameTags.Player)) return;
+        // Matrixが「当たるべき相手」だけを通す。コード内フィルタ不要。
+        // 弾同士の検出はMagnetManagerで距離ベース処理（Trigger×Trigger非発火のため）
 
-        // 他の弾 — MagnetFieldを持つ弾にはダメージ蓄積
-        if (other.CompareTag(GameTags.MagnetBullet))
-        {
-            var otherField = other.GetComponent<MagnetField>();
-            if (otherField != null && m_settings != null)
-            {
-                bool isOpposite = Pole != otherField.Pole && Pole != MagneticPole.None && otherField.Pole != MagneticPole.None;
-                if (isOpposite)
-                {
-                    otherField.AccumulateDamage(m_settings.bulletDamage);
-                    OnImpact?.Invoke();
-                    Destroy(gameObject);
-                }
-            }
-            return;
-        }
-
-        // 通常弾はプレイヤーを無視。SelfFire弾のみプレイヤーに当たる
-        if (other.CompareTag(GameTags.Player) && !IsSelfFire) return;
-
-        // 対象に Magnetizable があるか → パターン分岐
         var targetMag = other.GetComponentInParent<Magnetizable>();
 
         if (targetMag != null)
@@ -141,7 +122,6 @@ public class MagnetBullet : MonoBehaviour
         }
         else
         {
-            Debug.Log($"[Bullet] → Pattern1: StickToSurface({other.name})");
             StickToSurface(other);
         }
     }
@@ -255,6 +235,8 @@ public class MagnetBullet : MonoBehaviour
         );
     }
 
+    public MagnetField GetField() => GetComponent<MagnetField>();
+
     void OnDestroy()
     {
         // BulletManager解除（二重呼出ガード）
@@ -263,5 +245,9 @@ public class MagnetBullet : MonoBehaviour
             BulletManager.Instance.Unregister(this);
             m_registered = false;
         }
+
+        // MagnetManager弾近接検出から解除
+        if (MagnetManager.Instance != null)
+            MagnetManager.Instance.UnregisterBullet(this);
     }
 }

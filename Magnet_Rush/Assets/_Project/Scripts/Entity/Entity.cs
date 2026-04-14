@@ -79,21 +79,29 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
     public float turningDragMultiplier { get; set; } = 1f;
     public float decelerationMultiplier { get; set; } = 1f;
 
-    // --- 重力設定（サブクラスからSO値で上書き） ---
-    protected float m_gravity = -20f;
-    protected float m_snapForce = 2f;
+    // --- 重力・移動・接地設定 ---
+    // サブクラスでSO値を返すように override する。デフォルト値はフォールバック用。
 
-    // --- 外部力設定 ---
+    /// <summary>重力加速度 (m/s²)。負の値で下向き。</summary>
+    protected virtual float Gravity => -20f;
+
+    /// <summary>地面への押し付け力。接地時に verticalVelocity に適用される。</summary>
+    protected virtual float SnapForce => 2f;
+
     /// <summary>外部力の指数減衰率。Rigidbody.dragに相当。大きいほど早く減速する。</summary>
-    protected float m_externalDrag = 3f;
+    protected virtual float ExternalDrag => 3f;
 
-    // --- 接地判定設定（サブクラスからSO値で上書き） ---
-    protected LayerMask m_groundLayer = -1;
-    protected float m_groundCheckDistance = 0.3f;
+    /// <summary>接地判定対象レイヤー。</summary>
+    protected virtual LayerMask GroundLayer => -1;
 
-    // --- 磁力回転設定（サブクラスからSO値で上書き） ---
-    protected float m_pullOrientationThreshold = 5f;
-    protected float m_pullOrientationSpeed = 8f;
+    /// <summary>接地判定の追加レイ距離。</summary>
+    protected virtual float GroundCheckDistance => 0.3f;
+
+    /// <summary>磁力で引かれているとき向き直す速度の閾値。</summary>
+    protected virtual float PullOrientationThreshold => 5f;
+
+    /// <summary>磁力で引かれているときの向き直し速度。</summary>
+    protected virtual float PullOrientationSpeed => 8f;
 
     // --- 汎用プロパティ ---
 
@@ -252,23 +260,23 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
 
         // 指数減衰（フレームレート非依存。Rigidbody.dragと同等の自然な減速曲線）
         if (externalVelocity.sqrMagnitude > 0.01f)
-            externalVelocity *= Mathf.Exp(-m_externalDrag * dt);
+            externalVelocity *= Mathf.Exp(-ExternalDrag * dt);
         else
             externalVelocity = Vector3.zero;
     }
 
     /// <summary>
-    /// 重力を適用する。接地時は地面にスナップする。m_gravity/m_snapForceを使用。
+    /// 重力を適用する。接地時は地面にスナップする。
     /// </summary>
     protected void ApplyGravity(float dt)
     {
         if (IsGrounded && verticalVelocity < 0f)
         {
-            verticalVelocity = -m_snapForce;
+            verticalVelocity = -SnapForce;
         }
         else
         {
-            verticalVelocity += m_gravity * dt;
+            verticalVelocity += Gravity * dt;
         }
     }
 
@@ -318,10 +326,10 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
     protected void UpdateGround()
     {
         bool wasGrounded = IsGrounded;
-        float groundCheckDist = height * 0.5f + m_groundCheckDistance;
+        float groundCheckDist = height * 0.5f + GroundCheckDistance;
 
         if (Physics.Raycast(transform.position, -transform.up, out var hit, groundCheckDist,
-            m_groundLayer, QueryTriggerInteraction.Ignore))
+            GroundLayer, QueryTriggerInteraction.Ignore))
         {
             float footDist = hit.distance - height * 0.5f;
             IsGrounded = footDist < 0.1f;
@@ -354,7 +362,7 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
     /// <summary>
     /// 現在の地面が斜面かどうかを返す。
     /// </summary>
-    public virtual bool OnSlopingGround()
+    protected virtual bool OnSlopingGround()
     {
         return IsGrounded && groundAngle > m_slopingGroundAngle;
     }
@@ -399,12 +407,12 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
     protected virtual void UpdateMagneticOrientation(float dt)
     {
         if (IsGrounded) return;
-        if (externalVelocity.sqrMagnitude < m_pullOrientationThreshold * m_pullOrientationThreshold) return;
+        if (externalVelocity.sqrMagnitude < PullOrientationThreshold * PullOrientationThreshold) return;
 
         // 水平方向のみ回転（Y軸回転のみ）。上下に傾けるとtransform.upが狂い重力計算が破綻する
         Vector3 horizontalDir = new Vector3(externalVelocity.x, 0f, externalVelocity.z);
         if (horizontalDir.sqrMagnitude > 0.01f)
-            FaceDirection(horizontalDir.normalized, m_pullOrientationSpeed, dt);
+            FaceDirection(horizontalDir.normalized, PullOrientationSpeed, dt);
     }
 
     /// <summary>

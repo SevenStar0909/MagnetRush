@@ -16,8 +16,6 @@ public class EnemyMeleeAttack : MonoBehaviour
     [SerializeField] private float m_weaponSwingAngle = 90f;
     [SerializeField] private float m_weaponSwingForwardDuration = 0.12f;
     [SerializeField] private float m_weaponSwingReturnDuration = 0.12f;
-   // [SerializeField] private float m_weaponPreSwingYawOffset = -12f;
-   // [SerializeField] private float m_weaponPreSwingYawDuration = 0.06f;
 
     private EnemyBase m_enemyBase;
     private EnemySettings m_data;
@@ -42,7 +40,7 @@ public class EnemyMeleeAttack : MonoBehaviour
 
         if (m_attackHitbox != null)
         {
-            m_attackHitbox.gameObject.layer = PhysicsLayers.AttackHitbox;
+            m_attackHitbox.gameObject.layer = PhysicsLayers.MeleeHitbox;
             m_attackHitbox.enabled = false;
         }
 
@@ -269,7 +267,7 @@ public class EnemyMeleeAttack : MonoBehaviour
         if (capsule != null)
         {
             m_attackHitbox = capsule;
-            m_attackHitbox.gameObject.layer = PhysicsLayers.AttackHitbox;
+            m_attackHitbox.gameObject.layer = PhysicsLayers.MeleeHitbox;
             m_attackHitboxMeshRenderer = m_attackHitbox.GetComponent<MeshRenderer>();
         }
     }
@@ -282,7 +280,7 @@ public class EnemyMeleeAttack : MonoBehaviour
         GetCapsuleWorldPoints(m_attackHitbox, out Vector3 p0, out Vector3 p1, out float radius);
 
         int hitCount = Physics.OverlapCapsuleNonAlloc(
-            p0, p1, radius, m_overlapResults, ~0, QueryTriggerInteraction.Collide);
+            p0, p1, radius, m_overlapResults, 1 << PhysicsLayers.Player, QueryTriggerInteraction.Collide);
 
         for (int i = 0; i < hitCount; i++)
         {
@@ -347,13 +345,21 @@ public class EnemyMeleeAttack : MonoBehaviour
     private void TryApplyDamage(Collider other)
     {
         if (other == null) return;
-        if (!other.CompareTag(GameTags.Player)) return;
         if (m_data == null) return;
 
-        Health health = other.GetComponentInParent<Health>();
-        if (health == null) return;
+        var hittable = other.GetComponent<IHittable>();
+        if (hittable == null) return;
 
-        if (m_hitTargets.Add(health))
-            health.Damage(m_data.attackDamage);
+        // 重複ダメージ防止（HashSetでフレーム内1回のみ）
+        var health = other.GetComponentInParent<Health>();
+        if (health != null && !m_hitTargets.Add(health)) return;
+
+        hittable.OnHit(new HitData
+        {
+            damage = m_data.attackDamage,
+            hitPoint = other.ClosestPoint(transform.position),
+            knockbackDir = (other.transform.position - transform.position).normalized,
+            source = gameObject
+        });
     }
 }

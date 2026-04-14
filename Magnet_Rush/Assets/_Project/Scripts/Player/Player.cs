@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.Serialization;
 
 /// <summary>
@@ -11,6 +12,30 @@ public class Player : Entity
 {
     [FormerlySerializedAs("settings")]
     [SerializeField] private PlayerSettings m_settings;
+
+    /// <summary>プレイヤー設定SO。サブコンポーネントから参照される唯一の保持者。</summary>
+    public PlayerSettings Settings => m_settings;
+
+    /// <summary>現在アクティブな Player インスタンス。Awakeで設定、OnDestroyでクリア。</summary>
+    public static Player Current { get; private set; }
+
+    /// <summary>Player.Awake で発火。シーン参照なしでサブシステムが Player を取得する用。</summary>
+    public static event Action<Player> OnPlayerReady;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetStatics()
+    {
+        Current = null;
+        OnPlayerReady = null;
+    }
+
+    protected override float Gravity => m_settings.gravity;
+    protected override float SnapForce => m_settings.snapForce;
+    protected override float ExternalDrag => m_settings.externalDrag;
+    protected override float GroundCheckDistance => m_settings.groundCheckDistance;
+    protected override LayerMask GroundLayer => m_settings.groundLayer != 0 ? m_settings.groundLayer : PhysicsLayers.MaskGroundCheck;
+    protected override float PullOrientationThreshold => m_settings.pullOrientationThreshold;
+    protected override float PullOrientationSpeed => m_settings.pullOrientationSpeed;
 
     /// <summary>
     /// プレイヤーの入力ハンドラー。
@@ -28,11 +53,6 @@ public class Player : Entity
     public PlayerStateManager states { get; private set; }
 
     /// <summary>
-    /// プレイヤー設定（ScriptableObject）。
-    /// </summary>
-    public PlayerSettings Settings => m_settings;
-
-    /// <summary>
     /// 磁力影響を受けるコンポーネント。
     /// </summary>
     public Magnetizable magnetizable { get; private set; }
@@ -45,25 +65,17 @@ public class Player : Entity
         states = GetComponent<PlayerStateManager>();
         magnetizable = GetComponent<Magnetizable>();
 
-        // SO値をEntity基底フィールドに反映
-        m_gravity = m_settings.gravity;
-        m_snapForce = m_settings.snapForce;
-        m_pullOrientationThreshold = m_settings.pullOrientationThreshold;
-        m_pullOrientationSpeed = m_settings.pullOrientationSpeed;
-        m_groundCheckDistance = m_settings.groundCheckDistance;
-
         if (m_settings.groundLayer == 0)
             Debug.LogWarning("[Player] PlayerSettings.groundLayerが未設定。PhysicsLayers.MaskGroundCheckを使用。");
-        m_groundLayer = m_settings.groundLayer != 0
-            ? m_settings.groundLayer
-            : PhysicsLayers.MaskGroundCheck;
-        m_externalDrag = m_settings.externalDrag;
 
         // HP=0でDiePlayerStateに遷移
         if (m_health != null)
         {
             m_health.OnDie += OnDie;
         }
+
+        Current = this;
+        OnPlayerReady?.Invoke(this);
     }
 
     void OnDestroy()
@@ -72,6 +84,7 @@ public class Player : Entity
         {
             m_health.OnDie -= OnDie;
         }
+        if (Current == this) Current = null;
     }
 
     private void OnDie()
@@ -125,14 +138,6 @@ public class Player : Entity
     }
 
     /// <summary>
-    /// 入力方向に加速し、進行方向を向く通常移動。
-    /// </summary>
-    public void MoveWithInput(float dt)
-    {
-        AccelerateToInputDirection(dt);
-    }
-
-    /// <summary>
     /// エイム中のストレイフ移動。カメラ方向を向いたまま横移動する。
     /// </summary>
     public void MoveWithInputStrafe(float dt)
@@ -159,11 +164,4 @@ public class Player : Entity
         Decelerate(m_settings.deceleration, dt);
     }
 
-    /// <summary>
-    /// 斜面での加減速を適用する
-    /// </summary>
-    public void RegularSlopeFactor(float dt)
-    {
-        SlopeFactor(m_settings.slopeUpwardForce, m_settings.slopeDownwardForce, dt);
-    }
 }

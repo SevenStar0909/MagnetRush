@@ -21,6 +21,10 @@ public class MagnetSettings : ScriptableObject
     [Tooltip("FixedJoint の破壊力（同極反発で分離）")]
     public float snapBreakForce = 100f;
 
+    [Header("弾同士")]
+    [Tooltip("異極の弾が近接した時にダメージ蓄積が発生する距離")]
+    public float bulletProximityRange = 1f;
+
     [Header("移動変調")]
     [Tooltip("磁力場内での最高速度低下率(0=影響なし, 1=完全停止)")]
     [Range(0f, 1f)]

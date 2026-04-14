@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 534112566515760242}
   - component: {fileID: 7600820157332703419}
   m_Layer: 15
-  m_Name: Body
+  m_Name: Pushbox
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -86,8 +86,8 @@ GameObject:
   - component: {fileID: 2020541165592269174}
   - component: {fileID: 1655790781129092325}
   - component: {fileID: 2159208340310202588}
-  m_Layer: 0
-  m_Name: BulletReceiver
+  m_Layer: 14
+  m_Name: Hurtbox
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -150,6 +150,73 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.3, y: 2, z: 0.3}
   m_Center: {x: -0.2, y: -0.5, z: 0}
+--- !u!1 &1885055998646422609
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2129049794394701577}
+  - component: {fileID: 8602820057336631393}
+  - component: {fileID: 5985960519269828675}
+  m_Layer: 14
+  m_Name: Blade
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2129049794394701577
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1885055998646422609}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1230192934864207643}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &8602820057336631393
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1885055998646422609}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1.2, y: 1.2, z: 0.3}
+  m_Center: {x: 0, y: 1, z: 0}
+--- !u!114 &5985960519269828675
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1885055998646422609}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1dddde946f822994e8a99a48b20b3df3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Magnet::MagneticContactDamage
+  m_settings: {fileID: 11400000, guid: 544316e6442099845a3620eb0ffb70c8, type: 2}
 --- !u!1 &3591664329864478015
 GameObject:
   m_ObjectHideFlags: 0
@@ -159,7 +226,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1230192934864207643}
-  m_Layer: 0
+  m_Layer: 14
   m_Name: Hitbox
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -182,6 +249,8 @@ Transform:
   - {fileID: 1037776423359008453}
   - {fileID: 2020541165592269174}
   - {fileID: 200911650627256469}
+  - {fileID: 2129049794394701577}
+  - {fileID: 123620142385228483}
   m_Father: {fileID: 1851596299686503439}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3898998465771294246
@@ -193,7 +262,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8255812454995536023}
-  m_Layer: 0
+  m_Layer: 14
   m_Name: GripPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -226,7 +295,7 @@ GameObject:
   - component: {fileID: 4420697215778567978}
   - component: {fileID: 1592091888738655372}
   - component: {fileID: 4640447145451905622}
-  m_Layer: 0
+  m_Layer: 14
   m_Name: Collider_Blade
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -316,7 +385,7 @@ GameObject:
   - component: {fileID: 2638856091698737023}
   - component: {fileID: 7567567936025980818}
   - component: {fileID: 3204515883932256016}
-  m_Layer: 0
+  m_Layer: 14
   m_Name: Collider_Handle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -404,7 +473,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 122934556562363111}
-  m_Layer: 0
+  m_Layer: 14
   m_Name: Model
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -438,8 +507,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1037776423359008453}
   - component: {fileID: 2834774298953285679}
-  m_Layer: 0
-  m_Name: AttackHitbox
+  m_Layer: 12
+  m_Name: MeleeHitbox
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -483,6 +552,73 @@ CapsuleCollider:
   m_Height: 1.5
   m_Direction: 1
   m_Center: {x: 0, y: 1, z: 0}
+--- !u!1 &7806384027028353527
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 123620142385228483}
+  - component: {fileID: 7803047217870631225}
+  - component: {fileID: -3740336224707038721}
+  m_Layer: 14
+  m_Name: handle
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &123620142385228483
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7806384027028353527}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1230192934864207643}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &7803047217870631225
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7806384027028353527}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.3, y: 2, z: 0.3}
+  m_Center: {x: -0.2, y: -0.5, z: 0}
+--- !u!114 &-3740336224707038721
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7806384027028353527}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1dddde946f822994e8a99a48b20b3df3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Magnet::MagneticContactDamage
+  m_settings: {fileID: 11400000, guid: e1513859b505ebb43aae138ee58fa533, type: 2}
 --- !u!1001 &2177640482778153956
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -493,15 +629,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 7992a0ee6d9427149a6b3e67e5380898, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 1.69
+      value: 6.1386857
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 7992a0ee6d9427149a6b3e67e5380898, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 2.5
+      value: 1.5426896
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 7992a0ee6d9427149a6b3e67e5380898, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 19.9
+      value: 16.8
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 7992a0ee6d9427149a6b3e67e5380898, type: 3}
       propertyPath: m_LocalRotation.w
@@ -536,6 +672,10 @@ PrefabInstance:
       value: Weapon_Axe
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 7992a0ee6d9427149a6b3e67e5380898, type: 3}
+      propertyPath: m_Layer
+      value: 14
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 7992a0ee6d9427149a6b3e67e5380898, type: 3}
       propertyPath: m_TagString
       value: EnemyWeapon
       objectReference: {fileID: 0}
@@ -561,6 +701,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 7992a0ee6d9427149a6b3e67e5380898, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3203641024391090725}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 7992a0ee6d9427149a6b3e67e5380898, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7723169106203769630}
   m_SourcePrefab: {fileID: 100100000, guid: 7992a0ee6d9427149a6b3e67e5380898, type: 3}
 --- !u!1 &1367372084905098933 stripped
 GameObject:
@@ -631,6 +774,19 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &7723169106203769630
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1367372084905098933}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1dddde946f822994e8a99a48b20b3df3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Magnet::MagneticContactDamage
+  m_settings: {fileID: 11400000, guid: e1513859b505ebb43aae138ee58fa533, type: 2}
 --- !u!4 &1851596299686503439 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 7992a0ee6d9427149a6b3e67e5380898, type: 3}

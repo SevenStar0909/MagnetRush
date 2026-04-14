@@ -173,12 +173,6 @@ public class MagnetField : MonoBehaviour, IMagnetField
 
     }
 
-    /// <summary>ブリッジから呼ばれるトリガーEnter。</summary>
-    public void HandleTriggerEnter(Collider other)
-    {
-        if (!m_initialized) return;
-    }
-
     void OnEnable()
     {
         if (MagnetManager.Instance != null)

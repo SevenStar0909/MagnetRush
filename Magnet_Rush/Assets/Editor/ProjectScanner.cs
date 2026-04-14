@@ -11,10 +11,10 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 /// <summary>
-/// アセットバリデータ。Missing Reference検出、タグ/レイヤー整合性チェック、ビルド前チェックを提供する。
-/// メニュー: Tools/Asset Validator
+/// プロジェクトスキャナ。Missing Script/Reference検出、タグ/レイヤー整合性、コード規約、命名規則、ビルド前チェックを提供する。
+/// メニュー: Tools/プロジェクトスキャン
 /// </summary>
-public class AssetValidator : EditorWindow, IPreprocessBuildWithReport
+public class ProjectScanner : EditorWindow, IPreprocessBuildWithReport
 {
     public int callbackOrder => 0;
 
@@ -32,59 +32,10 @@ public class AssetValidator : EditorWindow, IPreprocessBuildWithReport
         public Object targetObject;
     }
 
-    [MenuItem("Tools/アセット検証")]
+    [MenuItem("Tools/プロジェクトスキャン")]
     static void ShowWindow()
     {
-        GetWindow<AssetValidator>("Asset Validator");
-    }
-
-    [MenuItem("Tools/Missing Script検出 %#m")]
-    static void FindAllMissingScripts()
-    {
-        int count = 0;
-
-        // 開いている全シーンをスキャン
-        for (int i = 0; i < SceneManager.sceneCount; i++)
-        {
-            var scene = SceneManager.GetSceneAt(i);
-            if (!scene.isLoaded) continue;
-            foreach (var root in scene.GetRootGameObjects())
-                count += ScanMissingScriptsRecursive(root, scene.name);
-        }
-
-        // _Project以下の全Prefabをスキャン
-        var guids = AssetDatabase.FindAssets("t:Prefab", new[] { "Assets/_Project" });
-        foreach (string guid in guids)
-        {
-            string path = AssetDatabase.GUIDToAssetPath(guid);
-            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
-            if (prefab != null)
-                count += ScanMissingScriptsRecursive(prefab, $"Prefab: {path}");
-        }
-
-        if (count == 0)
-            Debug.Log("[MissingScript] 全シーン・Prefabを検索完了。Missing Scriptなし。");
-        else
-            Debug.LogWarning($"[MissingScript] {count} 件のMissing Scriptを検出。上のログを確認してください。");
-    }
-
-    static int ScanMissingScriptsRecursive(GameObject go, string context)
-    {
-        int count = 0;
-        var components = go.GetComponents<Component>();
-        for (int i = 0; i < components.Length; i++)
-        {
-            if (components[i] == null)
-            {
-                Debug.LogError($"[MissingScript] {BuildPath(go)} (コンポーネント #{i}) [{context}]", go);
-                count++;
-            }
-        }
-
-        for (int c = 0; c < go.transform.childCount; c++)
-            count += ScanMissingScriptsRecursive(go.transform.GetChild(c).gameObject, context);
-
-        return count;
+        GetWindow<ProjectScanner>("プロジェクトスキャン");
     }
 
     void OnGUI()
@@ -115,6 +66,14 @@ public class AssetValidator : EditorWindow, IPreprocessBuildWithReport
             ValidateCodeConventions();
             if (m_results.Count == 0)
                 m_results.Add(new ValidationResult { category = "結果", message = "コード規約違反なし。", severity = MessageType.Info });
+            Repaint();
+        }
+        if (GUILayout.Button("命名規則", EditorStyles.toolbarButton, GUILayout.Width(80)))
+        {
+            m_results.Clear();
+            ValidateNamingConventions();
+            if (m_results.Count == 0)
+                m_results.Add(new ValidationResult { category = "結果", message = "命名規則違反なし。", severity = MessageType.Info });
             Repaint();
         }
         GUILayout.FlexibleSpace();
@@ -176,22 +135,26 @@ public class AssetValidator : EditorWindow, IPreprocessBuildWithReport
         m_results.Clear();
         try
         {
-            EditorUtility.DisplayProgressBar("Asset Validator", "タグ/レイヤーチェック中...", 0.1f);
+            EditorUtility.DisplayProgressBar("プロジェクトスキャン", "タグ/レイヤーチェック中...", 0.1f);
             ValidateTagsAndLayers();
-            EditorUtility.DisplayProgressBar("Asset Validator", "シーンチェック中...", 0.3f);
+            EditorUtility.DisplayProgressBar("プロジェクトスキャン", "シーンチェック中...", 0.3f);
             ValidateOpenScenes();
-            EditorUtility.DisplayProgressBar("Asset Validator", "Prefabチェック中...", 0.5f);
+            EditorUtility.DisplayProgressBar("プロジェクトスキャン", "Prefabチェック中...", 0.5f);
             ValidatePrefabs();
-            EditorUtility.DisplayProgressBar("Asset Validator", "SOチェック中...", 0.7f);
+            EditorUtility.DisplayProgressBar("プロジェクトスキャン", "SOチェック中...", 0.7f);
             ValidateScriptableObjects();
-            EditorUtility.DisplayProgressBar("Asset Validator", "コード規約チェック中...", 0.8f);
+            EditorUtility.DisplayProgressBar("プロジェクトスキャン", "コード規約チェック中...", 0.8f);
             ValidateCodeConventions();
-            EditorUtility.DisplayProgressBar("Asset Validator", "ビルドシーンチェック中...", 0.9f);
+            EditorUtility.DisplayProgressBar("プロジェクトスキャン", "命名規則チェック中...", 0.85f);
+            ValidateNamingConventions();
+            EditorUtility.DisplayProgressBar("プロジェクトスキャン", "コリジョン設計チェック中...", 0.88f);
+            ValidateCollisionDesign();
+            EditorUtility.DisplayProgressBar("プロジェクトスキャン", "ビルドシーンチェック中...", 0.9f);
             ValidateBuildScenes();
         }
         catch (System.Exception e)
         {
-            Debug.LogError($"[AssetValidator] チェック中にエラー: {e}");
+            Debug.LogError($"[ProjectScanner] チェック中にエラー: {e}");
         }
         finally
         {
@@ -232,7 +195,7 @@ public class AssetValidator : EditorWindow, IPreprocessBuildWithReport
             }
         }
 
-        string[] layerNames = { "Ground", "Wall", "Player", "Enemy", "Bullet", "MagnetField" };
+        string[] layerNames = { "Ground", "Wall", "Player", "Enemy", "PlayerBullet", "EnemyBullet", "MeleeHitbox", "MagnetField", "PhysicsObject", "EntityBody" };
         foreach (string layerName in layerNames)
         {
             if (LayerMask.NameToLayer(layerName) == -1)
@@ -423,6 +386,209 @@ public class AssetValidator : EditorWindow, IPreprocessBuildWithReport
         }
     }
 
+    // コリジョンコールバック内のCompareTag検出用
+    static readonly Regex s_collisionCallback = new Regex(@"void\s+(OnTriggerEnter|OnCollisionEnter|OnTriggerStay|OnCollisionStay)", RegexOptions.Compiled);
+    static readonly Regex s_compareTagInCode = new Regex(@"CompareTag\s*\(", RegexOptions.Compiled);
+    static readonly Regex s_layerCheck = new Regex(@"\.layer\s*[!=]=", RegexOptions.Compiled);
+
+    void ValidateCollisionDesign()
+    {
+        string scriptsRoot = Path.Combine(Application.dataPath, "_Project", "Scripts");
+        if (!Directory.Exists(scriptsRoot)) return;
+
+        var csFiles = Directory.GetFiles(scriptsRoot, "*.cs", SearchOption.AllDirectories);
+
+        foreach (string filePath in csFiles)
+        {
+            string fileName = Path.GetFileName(filePath);
+            if (k_ExcludedFiles.Contains(fileName)) continue;
+
+            string[] lines = File.ReadAllLines(filePath);
+            string relativePath = "Assets" + filePath.Substring(Application.dataPath.Length).Replace('\\', '/');
+
+            // コリジョンコールバック内のCompareTag/layer判定を検出
+            bool inCallback = false;
+            int braceDepth = 0;
+
+            for (int i = 0; i < lines.Length; i++)
+            {
+                string trimmed = lines[i].TrimStart();
+                if (trimmed.StartsWith("//") || trimmed.StartsWith("*") || trimmed.StartsWith("///")) continue;
+
+                if (s_collisionCallback.IsMatch(lines[i]))
+                {
+                    inCallback = true;
+                    braceDepth = 0;
+                }
+
+                if (inCallback)
+                {
+                    foreach (char c in lines[i])
+                    {
+                        if (c == '{') braceDepth++;
+                        if (c == '}') braceDepth--;
+                    }
+
+                    if (s_compareTagInCode.IsMatch(lines[i]))
+                    {
+                        m_results.Add(new ValidationResult
+                        {
+                            category = "コリジョン設計",
+                            message = $"{relativePath}:{i + 1} — コリジョンコールバック内でCompareTag使用。Layer Matrixで制御してください",
+                            severity = MessageType.Warning
+                        });
+                    }
+
+                    if (s_layerCheck.IsMatch(lines[i]))
+                    {
+                        m_results.Add(new ValidationResult
+                        {
+                            category = "コリジョン設計",
+                            message = $"{relativePath}:{i + 1} — コリジョンコールバック内でlayer判定。Layer Matrixで制御してください",
+                            severity = MessageType.Warning
+                        });
+                    }
+
+                    if (braceDepth <= 0 && inCallback)
+                        inCallback = false;
+                }
+            }
+        }
+
+        // PhysicsObject層のKinematicチェック
+        var propGuids = AssetDatabase.FindAssets("t:Prefab", new[] { "Assets/_Project" });
+        int propLayer = LayerMask.NameToLayer("PhysicsObject");
+        foreach (string guid in propGuids)
+        {
+            string path = AssetDatabase.GUIDToAssetPath(guid);
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+            if (prefab == null || prefab.layer != propLayer) continue;
+
+            var rb = prefab.GetComponent<Rigidbody>();
+            if (rb != null && rb.isKinematic)
+            {
+                m_results.Add(new ValidationResult
+                {
+                    category = "コリジョン設計",
+                    message = $"{path} — PhysicsObject層のRigidbodyがKinematic。OnCollisionEnterが発火しません",
+                    severity = MessageType.Error
+                });
+            }
+        }
+    }
+
+    void ValidateNamingConventions()
+    {
+        var guids = AssetDatabase.FindAssets("t:MonoScript", new[] { "Assets/_Project/Scripts" });
+
+        foreach (string guid in guids)
+        {
+            string path = AssetDatabase.GUIDToAssetPath(guid);
+            if (!path.EndsWith(".cs")) continue;
+            ScanNamingConventions(path);
+        }
+    }
+
+    void ScanNamingConventions(string assetPath)
+    {
+        string fullPath = Path.GetFullPath(assetPath);
+        if (!File.Exists(fullPath)) return;
+
+        string[] lines = File.ReadAllLines(fullPath);
+        bool inMultiLineComment = false;
+
+        for (int i = 0; i < lines.Length; i++)
+        {
+            string line = lines[i].Trim();
+
+            if (line.Contains("/*")) inMultiLineComment = true;
+            if (line.Contains("*/")) { inMultiLineComment = false; continue; }
+            if (inMultiLineComment) continue;
+
+            if (string.IsNullOrEmpty(line)) continue;
+            if (line.StartsWith("//")) continue;
+            if (line.StartsWith("using ")) continue;
+            if (line.StartsWith("[")) continue;
+
+            bool isProperty = line.Contains("=>") || line.Contains("{ get");
+
+            if (!isProperty)
+            {
+                var privateFieldMatch = Regex.Match(line,
+                    @"(?:private|protected)\s+(?:readonly\s+)?(?:static\s+)?(\w+(?:<[^>]+>)?(?:\[\])?)\s+(\w+)\s*[;=]");
+                if (privateFieldMatch.Success)
+                {
+                    string fieldName = privateFieldMatch.Groups[2].Value;
+
+                    if (line.Contains(" static ") && !line.Contains(" const "))
+                    {
+                        if (!fieldName.StartsWith("s_"))
+                        {
+                            m_results.Add(new ValidationResult
+                            {
+                                category = "命名規則: staticフィールド",
+                                message = $"{assetPath}:{i + 1} — s_ プレフィックスを使ってください: s_{fieldName}",
+                                severity = MessageType.Warning
+                            });
+                        }
+                    }
+                    else if (line.Contains(" const "))
+                    {
+                        if (!fieldName.StartsWith("k_"))
+                        {
+                            m_results.Add(new ValidationResult
+                            {
+                                category = "命名規則: 定数",
+                                message = $"{assetPath}:{i + 1} — k_ プレフィックスを使ってください: k_{ToPascalCase(fieldName)}",
+                                severity = MessageType.Warning
+                            });
+                        }
+                    }
+                    else
+                    {
+                        if (!fieldName.StartsWith("m_"))
+                        {
+                            m_results.Add(new ValidationResult
+                            {
+                                category = "命名規則: privateフィールド",
+                                message = $"{assetPath}:{i + 1} — m_ プレフィックスを使ってください: m_{fieldName}",
+                                severity = MessageType.Warning
+                            });
+                        }
+                    }
+                }
+            }
+
+            var publicFieldMatch = Regex.Match(line,
+                @"public\s+(?:readonly\s+)?(\w+(?:<[^>]+>)?(?:\[\])?)\s+(\w+)\s*[;=]");
+            if (publicFieldMatch.Success && !line.Contains(" const ") && !line.Contains(" static ") && !line.Contains(" event "))
+            {
+                string fieldName = publicFieldMatch.Groups[2].Value;
+                if (!line.Contains("{") && !line.Contains("=>") && !char.IsLower(fieldName[0]) && fieldName != fieldName.ToUpper())
+                {
+                    m_results.Add(new ValidationResult
+                    {
+                        category = "命名規則: publicフィールド",
+                        message = $"{assetPath}:{i + 1} — camelCaseを使ってください: {ToCamelCase(fieldName)}",
+                        severity = MessageType.Warning
+                    });
+                }
+            }
+        }
+    }
+
+    static string ToCamelCase(string s)
+    {
+        if (string.IsNullOrEmpty(s)) return s;
+        return char.ToLower(s[0]) + s.Substring(1);
+    }
+
+    static string ToPascalCase(string s)
+    {
+        if (string.IsNullOrEmpty(s)) return s;
+        return char.ToUpper(s[0]) + s.Substring(1);
+    }
+
     void LogResultsToConsole()
     {
         int errorCount = m_results.Count(r => r.severity == MessageType.Error);
@@ -430,20 +596,20 @@ public class AssetValidator : EditorWindow, IPreprocessBuildWithReport
 
         if (errorCount == 0 && warningCount == 0)
         {
-            Debug.Log("[AssetValidator] 全チェック完了。問題なし。");
+            Debug.Log("[ProjectScanner] 全チェック完了。問題なし。");
             return;
         }
 
         foreach (var result in m_results)
         {
-            string msg = $"[AssetValidator] [{result.category}] {result.message}";
+            string msg = $"[ProjectScanner] [{result.category}] {result.message}";
             if (result.severity == MessageType.Error)
                 Debug.LogError(msg, result.targetObject);
             else if (result.severity == MessageType.Warning)
                 Debug.LogWarning(msg, result.targetObject);
         }
 
-        Debug.Log($"[AssetValidator] 完了: エラー {errorCount} 件 / 警告 {warningCount} 件");
+        Debug.Log($"[ProjectScanner] 完了: エラー {errorCount} 件 / 警告 {warningCount} 件");
     }
 
     static string BuildPath(GameObject go)
@@ -474,7 +640,7 @@ public class AssetValidator : EditorWindow, IPreprocessBuildWithReport
                 errors.Add($"GameTags.{field.Name} = \"{tagValue}\" がTagManagerに未登録");
         }
 
-        string[] layerNames = { "Ground", "Wall", "Player", "Enemy", "Bullet", "MagnetField" };
+        string[] layerNames = { "Ground", "Wall", "Player", "Enemy", "PlayerBullet", "EnemyBullet", "MeleeHitbox", "MagnetField", "PhysicsObject", "EntityBody" };
         foreach (string name in layerNames)
         {
             if (LayerMask.NameToLayer(name) == -1)
@@ -506,133 +672,41 @@ public class AssetValidator : EditorWindow, IPreprocessBuildWithReport
     {
         if (state != PlayModeStateChange.EnteredPlayMode) return;
 
-        int errorCount = 0;
-        int warningCount = 0;
-
-        // Missing Script / Missing Reference（開いているシーン）
-        for (int i = 0; i < SceneManager.sceneCount; i++)
-        {
-            var scene = SceneManager.GetSceneAt(i);
-            if (!scene.isLoaded) continue;
-            foreach (var root in scene.GetRootGameObjects())
-                errorCount += ScanGameObjectRuntime(root, scene.name);
-        }
-
-        // タグ/レイヤー整合性
-        var registeredTags = new HashSet<string>(UnityEditorInternal.InternalEditorUtility.tags);
-        var tagFields = typeof(GameTags).GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
-        foreach (var field in tagFields)
-        {
-            if (field.FieldType != typeof(string)) continue;
-            string tagValue = (string)field.GetValue(null);
-            if (!registeredTags.Contains(tagValue))
-            {
-                Debug.LogError($"[AssetValidator] GameTags.{field.Name} = \"{tagValue}\" がTagManagerに未登録");
-                errorCount++;
-            }
-        }
-
-        string[] layerNames = { "Ground", "Wall", "Player", "Enemy", "Bullet", "MagnetField" };
-        foreach (string layerName in layerNames)
-        {
-            if (LayerMask.NameToLayer(layerName) == -1)
-            {
-                Debug.LogError($"[AssetValidator] レイヤー \"{layerName}\" がProjectSettingsに未定義");
-                errorCount++;
-            }
-        }
-
-        // コード規約（静的解析）
-        warningCount += ScanCodeConventionsRuntime();
-
-        if (errorCount > 0 || warningCount > 0)
-            Debug.LogWarning($"[AssetValidator] PlayMode検証: エラー {errorCount} 件 / 警告 {warningCount} 件");
-        else
-            Debug.Log("[AssetValidator] PlayMode検証: 問題なし");
+        var scanner = CreateInstance<ProjectScanner>();
+        scanner.m_results.Clear();
+        scanner.ValidateTagsAndLayers();
+        scanner.ValidateOpenScenes();
+        scanner.ValidatePrefabs();
+        scanner.ValidateScriptableObjects();
+        scanner.ValidateCodeConventions();
+        scanner.ValidateNamingConventions();
+        scanner.ValidateBuildScenes();
+        scanner.LogResultsToConsole();
+        DestroyImmediate(scanner);
     }
 
-    static int ScanGameObjectRuntime(GameObject go, string sceneName)
-    {
-        int count = 0;
-        var components = go.GetComponents<Component>();
-        foreach (var component in components)
-        {
-            if (component == null)
-            {
-                Debug.LogError($"[AssetValidator] Missing Script: {BuildPath(go)} [{sceneName}]", go);
-                count++;
-                continue;
-            }
+}
 
-            var so = new SerializedObject(component);
-            var prop = so.GetIterator();
-            while (prop.NextVisible(true))
+/// <summary>
+/// スクリプトファイル名のPascalCaseチェック（インポート時自動実行）。
+/// </summary>
+public class ScriptNameValidator : AssetPostprocessor
+{
+    static void OnPostprocessAllAssets(
+        string[] importedAssets, string[] deletedAssets,
+        string[] movedAssets, string[] movedFromAssetPaths)
+    {
+        foreach (string path in importedAssets)
+        {
+            if (!path.StartsWith("Assets/_Project/")) continue;
+            if (!path.EndsWith(".cs")) continue;
+
+            string fileName = Path.GetFileNameWithoutExtension(path);
+
+            if (!Regex.IsMatch(fileName, @"^[A-Z][a-zA-Z0-9]+$"))
             {
-                if (prop.propertyType != SerializedPropertyType.ObjectReference) continue;
-                if (prop.objectReferenceValue == null && prop.objectReferenceInstanceIDValue != 0)
-                {
-                    Debug.LogError($"[AssetValidator] Missing Reference: {BuildPath(go)} → {component.GetType().Name}.{prop.propertyPath} [{sceneName}]", go);
-                    count++;
-                }
+                Debug.LogWarning($"[ProjectScanner] スクリプト名がPascalCaseではありません: {path}");
             }
         }
-
-        for (int i = 0; i < go.transform.childCount; i++)
-            count += ScanGameObjectRuntime(go.transform.GetChild(i).gameObject, sceneName);
-
-        return count;
-    }
-
-    static int ScanCodeConventionsRuntime()
-    {
-        int count = 0;
-        string scriptsRoot = Path.Combine(Application.dataPath, "_Project", "Scripts");
-        if (!Directory.Exists(scriptsRoot)) return 0;
-
-        var nameToLayer = new Regex(@"NameToLayer\s*\(\s*""[^""]+""", RegexOptions.Compiled);
-        var compareTag = new Regex(@"CompareTag\s*\(\s*""[^""]+""", RegexOptions.Compiled);
-        var tagEquals = new Regex(@"\.tag\s*[!=]=\s*""[^""]+""", RegexOptions.Compiled);
-        var renderingLiteral = new Regex(@"renderingLayerMask\s*[|&^]?=\s*\d+", RegexOptions.Compiled);
-
-        var excluded = new HashSet<string> { "PhysicsLayers.cs", "GameTags.cs", "RenderingLayers.cs" };
-
-        foreach (string filePath in Directory.GetFiles(scriptsRoot, "*.cs", SearchOption.AllDirectories))
-        {
-            string fileName = Path.GetFileName(filePath);
-            if (excluded.Contains(fileName)) continue;
-
-            string relativePath = "Assets" + filePath.Substring(Application.dataPath.Length).Replace('\\', '/');
-            string[] lines = File.ReadAllLines(filePath);
-
-            for (int i = 0; i < lines.Length; i++)
-            {
-                string trimmed = lines[i].TrimStart();
-                if (trimmed.StartsWith("//") || trimmed.StartsWith("*") || trimmed.StartsWith("///")) continue;
-
-                string line = lines[i];
-                if (nameToLayer.IsMatch(line))
-                {
-                    Debug.LogWarning($"[AssetValidator] コード規約: {relativePath}:{i + 1} — NameToLayer直接使用。PhysicsLayers.XXX を使ってください");
-                    count++;
-                }
-                if (compareTag.IsMatch(line))
-                {
-                    Debug.LogWarning($"[AssetValidator] コード規約: {relativePath}:{i + 1} — CompareTag直接使用。GameTags.XXX を使ってください");
-                    count++;
-                }
-                if (tagEquals.IsMatch(line))
-                {
-                    Debug.LogWarning($"[AssetValidator] コード規約: {relativePath}:{i + 1} — .tag==\"\"直接比較。GameTags.XXX を使ってください");
-                    count++;
-                }
-                if (renderingLiteral.IsMatch(line))
-                {
-                    Debug.LogWarning($"[AssetValidator] コード規約: {relativePath}:{i + 1} — renderingLayerMask数値直接指定。RenderingLayers.XXX を使ってください");
-                    count++;
-                }
-            }
-        }
-
-        return count;
     }
 }

@@ -4,16 +4,16 @@ using UnityEngine.Serialization;
 /// <summary>
 /// RT入力で磁力弾を画面中央方向に発射する。A/Fで自身に磁力を付与する。
 /// </summary>
+[RequireComponent(typeof(Player))]
 public class ShootingController : MonoBehaviour
 {
     [FormerlySerializedAs("bulletSettings")]
     [SerializeField] private BulletSettings m_bulletSettings;
-    [FormerlySerializedAs("playerSettings")]
-    [SerializeField] private PlayerSettings m_playerSettings;
     [FormerlySerializedAs("firePoint")]
     [SerializeField] private Transform m_firePoint;
     [SerializeField] private float m_selfFireHeightOffset = 1.0f;
 
+    private PlayerSettings m_playerSettings;
     private PlayerInputHandler m_input;
     private PolarityController m_polarityController;
     private AimController m_aimController;
@@ -26,6 +26,7 @@ public class ShootingController : MonoBehaviour
         m_polarityController = GetComponent<PolarityController>();
         m_aimController = GetComponent<AimController>();
         m_events = GetComponent<PlayerEvents>();
+        m_playerSettings = GetComponent<Player>().Settings;
     }
 
     void Start()
@@ -74,12 +75,8 @@ public class ShootingController : MonoBehaviour
         Ray ray = m_mainCamera.ScreenPointToRay(screenCenter);
         Vector3 camForward = m_mainCamera.transform.forward;
 
-        // MagnetFieldレイヤーを除外
+        // MaskShootingRaycastでTrigger系は既に除外済み
         int layerMask = PhysicsLayers.MaskShootingRaycast;
-        if (PhysicsLayers.MagnetField >= 0)
-        {
-            layerMask &= ~(1 << PhysicsLayers.MagnetField);
-        }
         float maxDist = m_bulletSettings != null ? m_bulletSettings.raycastDistance : 200f;
 
         Vector3 targetPoint = CalculateTargetPoint(ray, camForward, spawnPos, layerMask, maxDist);
@@ -146,20 +143,55 @@ public class ShootingController : MonoBehaviour
     }
 
     /// <summary>
-    /// 自分の中心付近に弾を生成し、自身を磁化する。
+    /// コリジョンを経由せず、直接プレイヤーを磁化する。
+    /// MagnetField+Visualizer+エフェクトを生成して演出を維持。
     /// </summary>
     private void SelfFire()
     {
-        Vector3 spawnPos = transform.position + Vector3.up * m_selfFireHeightOffset;
-        Vector3 direction = Vector3.down;
+        MagneticPole pole = m_polarityController != null ? m_polarityController.CurrentPole : MagneticPole.S;
 
-        GameObject bulletObj = Instantiate(m_bulletSettings.bulletPrefab, spawnPos, Quaternion.LookRotation(direction));
-        var bullet = bulletObj.GetComponent<MagnetBullet>();
-        if (bullet != null)
+        // プレイヤーを磁化
+        var magnetizable = GetComponent<Magnetizable>();
+        if (magnetizable != null)
+            magnetizable.SetPole(pole);
+
+        // MagnetField + Visualizer を直接生成
+        var fieldSettings = m_bulletSettings != null ? m_bulletSettings.bulletFieldSettings : null;
+        if (fieldSettings != null)
         {
-            MagneticPole pole = m_polarityController != null ? m_polarityController.CurrentPole : MagneticPole.S;
-            bullet.Initialize(pole, direction, isSelfFire: true);
+            var existing = GetComponent<MagnetField>();
+            if (existing == null)
+            {
+                var field = gameObject.AddComponent<MagnetField>();
+                field.Initialize(pole, fieldSettings);
+
+                if (MagnetManager.Instance != null)
+                    MagnetManager.Instance.RegisterField(field);
+
+                var visualizer = gameObject.AddComponent<MagnetFieldVisualizer>();
+                visualizer.Show(pole, fieldSettings);
+
+                // 着弾エフェクト
+                GameObject effectPrefab = pole == MagneticPole.S ? m_bulletSettings.impactEffect_S : m_bulletSettings.impactEffect_N;
+                GameObject effectInstance = null;
+                if (effectPrefab != null)
+                {
+                    effectInstance = Instantiate(effectPrefab, transform);
+                    effectInstance.transform.localPosition = Vector3.zero;
+                }
+
+                field.OnFieldExpired += () =>
+                {
+                    if (magnetizable != null) magnetizable.Deactivate();
+                    if (visualizer != null) Destroy(visualizer);
+                    if (effectInstance != null) Destroy(effectInstance);
+                };
+            }
         }
+
+        // 弾数カウント（自己射撃も弾を消費）
+        if (BulletManager.Instance != null)
+            BulletManager.Instance.IncrementShotCount();
 
         m_events?.FireSelfShoot();
     }

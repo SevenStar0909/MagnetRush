@@ -24,6 +24,9 @@ public class MagnetManager : Singleton<MagnetManager>
     // 接触中ペアの追跡（Enter/Exit判定用）
     private readonly HashSet<long> m_activeContacts = new();
 
+    // 弾近接検出用レジストリ
+    private readonly List<IBulletProximity> m_bulletRegistry = new();
+
     // スナップ解決
     private MagneticSnapResolver m_snapResolver;
 
@@ -45,6 +48,18 @@ public class MagnetManager : Singleton<MagnetManager>
     {
         if (m != null && m_registry.Remove(m))
             m_listDirty = true;
+    }
+
+    public void RegisterBullet(IBulletProximity bullet)
+    {
+        if (bullet != null && !m_bulletRegistry.Contains(bullet))
+            m_bulletRegistry.Add(bullet);
+    }
+
+    public void UnregisterBullet(IBulletProximity bullet)
+    {
+        if (bullet != null)
+            m_bulletRegistry.Remove(bullet);
     }
 
     public void RegisterField(MagnetField f)
@@ -116,6 +131,47 @@ public class MagnetManager : Singleton<MagnetManager>
 
         // 接触Exit判定
         m_activeContacts.IntersectWith(contactsThisFrame);
+
+        // 弾同士の近接検出（Trigger×Trigger非発火のため距離ベース）
+        ProcessBulletProximity();
+    }
+
+    /// <summary>
+    /// 異極の弾が近接した場合にダメージ蓄積を処理する。
+    /// Trigger×TriggerはOnTriggerEnter非発火のため、距離ベースで検出。
+    /// </summary>
+    private void ProcessBulletProximity()
+    {
+        // 破棄済みを除去
+        m_bulletRegistry.RemoveAll(b => b == null || b.gameObject == null);
+        if (m_bulletRegistry.Count < 2) return;
+
+        float threshold = m_settings != null ? m_settings.bulletProximityRange : 1f;
+        float thresholdSq = threshold * threshold;
+
+        for (int i = 0; i < m_bulletRegistry.Count; i++)
+        {
+            var a = m_bulletRegistry[i];
+            if (a.IsStuck) continue;
+
+            for (int j = i + 1; j < m_bulletRegistry.Count; j++)
+            {
+                var b = m_bulletRegistry[j];
+                if (b.IsStuck) continue;
+
+                if (a.Pole == b.Pole || a.Pole == MagneticPole.None || b.Pole == MagneticPole.None) continue;
+
+                float distSq = (a.transform.position - b.transform.position).sqrMagnitude;
+                if (distSq > thresholdSq) continue;
+
+                var fieldB = b.GetField();
+                if (fieldB != null)
+                    fieldB.AccumulateDamage(1);
+
+                Destroy(a.gameObject);
+                break;
+            }
+        }
     }
 
     /// <summary>
