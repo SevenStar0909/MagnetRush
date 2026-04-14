@@ -1,14 +1,13 @@
 using System;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 /// <summary>
 /// LT入力でエイムモード（スロー＋カメラ寄り＋FOV変更）を制御する。
 /// </summary>
+[RequireComponent(typeof(Player))]
 public class AimController : MonoBehaviour
 {
-    [FormerlySerializedAs("settings")]
-    [SerializeField] private PlayerSettings m_settings;
+    private PlayerSettings m_settings;
 
     /// <summary>
     /// エイム状態が変化したときに発火する。引数はエイム中かどうか。
@@ -28,6 +27,7 @@ public class AimController : MonoBehaviour
     {
         m_input = GetComponent<PlayerInputHandler>();
         m_states = GetComponent<PlayerStateManager>();
+        m_settings = GetComponent<Player>().Settings;
     }
 
     void Update()

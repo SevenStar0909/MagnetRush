@@ -248,7 +248,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 140
+  m_VersionIndex: 155
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -603,7 +603,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 176
+  m_VersionIndex: 191
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -1072,7 +1072,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 170
+  m_VersionIndex: 185
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -1427,7 +1427,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 170
+  m_VersionIndex: 185
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -1782,7 +1782,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 176
+  m_VersionIndex: 191
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -2137,7 +2137,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 261
+  m_VersionIndex: 276
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -2492,7 +2492,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 170
+  m_VersionIndex: 185
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -2847,7 +2847,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 140
+  m_VersionIndex: 155
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -3202,7 +3202,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 148
+  m_VersionIndex: 163
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -3383,6 +3383,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: CrateMedium (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 1194326794921345559, guid: 34fd38bf7a1a29c4cac15073713d4b5a, type: 3}
+      propertyPath: m_Layer
+      value: 14
+      objectReference: {fileID: 0}
     - target: {fileID: 2006574949358426285, guid: 34fd38bf7a1a29c4cac15073713d4b5a, type: 3}
       propertyPath: m_LocalPosition.x
       value: -11.92568
@@ -3505,7 +3509,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 580972217943271679, guid: 9eb09d11e64c2424691ee6154025cf4e, type: 3}
       propertyPath: m_Name
-      value: Rock (1)
+      value: Metal_Crate
+      objectReference: {fileID: 0}
+    - target: {fileID: 580972217943271679, guid: 9eb09d11e64c2424691ee6154025cf4e, type: 3}
+      propertyPath: m_Layer
+      value: 14
       objectReference: {fileID: 0}
     - target: {fileID: 7524739309315275981, guid: 9eb09d11e64c2424691ee6154025cf4e, type: 3}
       propertyPath: m_UseGravity
@@ -3562,8 +3570,29 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 580972217943271679, guid: 9eb09d11e64c2424691ee6154025cf4e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1423628607879027540}
   m_SourcePrefab: {fileID: 100100000, guid: 9eb09d11e64c2424691ee6154025cf4e, type: 3}
+--- !u!1 &466507519584123275 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 580972217943271679, guid: 9eb09d11e64c2424691ee6154025cf4e, type: 3}
+  m_PrefabInstance: {fileID: 1038459292568326516}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1423628607879027540
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 466507519584123275}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1dddde946f822994e8a99a48b20b3df3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Magnet::MagneticContactDamage
+  m_settings: {fileID: 11400000, guid: e1513859b505ebb43aae138ee58fa533, type: 2}
 --- !u!4 &7450475707559976824 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7569479052784242188, guid: 9eb09d11e64c2424691ee6154025cf4e, type: 3}
@@ -3580,6 +3609,10 @@ PrefabInstance:
     - target: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_Name
       value: CrateBig1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      propertyPath: m_Layer
+      value: 14
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.x
@@ -3641,7 +3674,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 580972217943271679, guid: 9eb09d11e64c2424691ee6154025cf4e, type: 3}
       propertyPath: m_Name
-      value: Rock
+      value: Metal_Crate(1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 580972217943271679, guid: 9eb09d11e64c2424691ee6154025cf4e, type: 3}
+      propertyPath: m_Layer
+      value: 14
       objectReference: {fileID: 0}
     - target: {fileID: 7524739309315275981, guid: 9eb09d11e64c2424691ee6154025cf4e, type: 3}
       propertyPath: m_UseGravity
@@ -3698,8 +3735,29 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 580972217943271679, guid: 9eb09d11e64c2424691ee6154025cf4e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6417251485864838069}
   m_SourcePrefab: {fileID: 100100000, guid: 9eb09d11e64c2424691ee6154025cf4e, type: 3}
+--- !u!1 &3909207933744081808 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 580972217943271679, guid: 9eb09d11e64c2424691ee6154025cf4e, type: 3}
+  m_PrefabInstance: {fileID: 4490173216292422511}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &6417251485864838069
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3909207933744081808}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1dddde946f822994e8a99a48b20b3df3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Magnet::MagneticContactDamage
+  m_settings: {fileID: 11400000, guid: e1513859b505ebb43aae138ee58fa533, type: 2}
 --- !u!4 &6295044745469250915 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7569479052784242188, guid: 9eb09d11e64c2424691ee6154025cf4e, type: 3}
@@ -3820,6 +3878,10 @@ PrefabInstance:
       value: CrateSmall (1)
       objectReference: {fileID: 0}
     - target: {fileID: 3199827588150775943, guid: 2838ed7ac925e364bb6506f43830a1a0, type: 3}
+      propertyPath: m_Layer
+      value: 14
+      objectReference: {fileID: 0}
+    - target: {fileID: 3199827588150775943, guid: 2838ed7ac925e364bb6506f43830a1a0, type: 3}
       propertyPath: m_TagString
       value: Wall
       objectReference: {fileID: 0}
@@ -3836,6 +3898,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 3199827588150775943, guid: 2838ed7ac925e364bb6506f43830a1a0, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3921814347998417918}
+    - targetCorrespondingSourceObject: {fileID: 3199827588150775943, guid: 2838ed7ac925e364bb6506f43830a1a0, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5165867583615126569}
   m_SourcePrefab: {fileID: 100100000, guid: 2838ed7ac925e364bb6506f43830a1a0, type: 3}
 --- !u!1 &8353480809217973355 stripped
 GameObject:
@@ -3905,6 +3970,19 @@ MonoBehaviour:
   m_pole: 0
   m_isActive: 0
   m_initialMass: 1
+--- !u!114 &5165867583615126569
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8353480809217973355}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1dddde946f822994e8a99a48b20b3df3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Magnet::MagneticContactDamage
+  m_settings: {fileID: 11400000, guid: e1513859b505ebb43aae138ee58fa533, type: 2}
 --- !u!4 &8693730847964694225 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2820311717350246973, guid: 2838ed7ac925e364bb6506f43830a1a0, type: 3}

@@ -20,12 +20,6 @@ public class MagnetFieldTriggerBridge : MonoBehaviour
             m_field.HandleTriggerStay(other);
     }
 
-    void OnTriggerEnter(Collider other)
-    {
-        if (m_field != null)
-            m_field.HandleTriggerEnter(other);
-    }
-
     void OnTriggerExit(Collider other)
     {
         if (m_field != null)

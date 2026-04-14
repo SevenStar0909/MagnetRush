@@ -16,8 +16,6 @@ public class EnemyMeleeAttack : MonoBehaviour
     [SerializeField] private float m_weaponSwingAngle = 90f;
     [SerializeField] private float m_weaponSwingForwardDuration = 0.12f;
     [SerializeField] private float m_weaponSwingReturnDuration = 0.12f;
-   // [SerializeField] private float m_weaponPreSwingYawOffset = -12f;
-   // [SerializeField] private float m_weaponPreSwingYawDuration = 0.06f;
 
     private EnemyBase m_enemyBase;
     private EnemySettings m_data;

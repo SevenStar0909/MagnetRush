@@ -5,7 +5,7 @@ public class MovePlayerState : EntityState<Player>
 {
     public override void Step(float dt)
     {
-        m_entity.MoveWithInput(dt);
+        m_entity.AccelerateToInputDirection(dt);
 
         if (m_entity.input.MoveInput.sqrMagnitude < 0.01f)
         {

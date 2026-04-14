@@ -478,6 +478,7 @@ GameObject:
   - component: {fileID: 4778288357894398122}
   - component: {fileID: 4750899806209563542}
   - component: {fileID: 8061168943465889715}
+  - component: {fileID: 7192687420809887641}
   m_Layer: 9
   m_Name: Enemy_test
   m_TagString: Untagged
@@ -669,6 +670,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: MagnetRush.Entity::Health
   m_maxHealth: 3
   m_damageCooldown: 1
+--- !u!114 &7192687420809887641
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6329422227486001355}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1dddde946f822994e8a99a48b20b3df3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Magnet::MagneticContactDamage
+  m_settings: {fileID: 11400000, guid: e1513859b505ebb43aae138ee58fa533, type: 2}
 --- !u!1 &6873655830408382306
 GameObject:
   m_ObjectHideFlags: 0

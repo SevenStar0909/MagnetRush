@@ -44,6 +44,12 @@ public class EnemyBase : Entity
     /// <summary>MagneticMover が磁力移動モード中かどうか。AI はこの間スキップされる。</summary>
     public bool IsMagnetControlled => m_mover != null && m_mover.IsMagnetActive;
 
+    protected override float Gravity => m_statusData != null ? m_statusData.gravity : base.Gravity;
+    protected override float SnapForce => m_statusData != null ? m_statusData.snapForce : base.SnapForce;
+    protected override float ExternalDrag => m_statusData != null ? m_statusData.externalDrag : base.ExternalDrag;
+    protected override float GroundCheckDistance => m_statusData != null ? m_statusData.groundCheckDistance : base.GroundCheckDistance;
+    protected override LayerMask GroundLayer => (m_statusData != null && m_statusData.groundLayer != 0) ? m_statusData.groundLayer : base.GroundLayer;
+
     protected override void Awake()
     {
         base.Awake();
@@ -54,23 +60,11 @@ public class EnemyBase : Entity
         if (playerObj != null)
             m_player = playerObj.transform;
 
-        // EnemySettings → Entity基底フィールド
-        if (m_statusData != null)
-        {
-            m_gravity = m_statusData.gravity;
-            m_snapForce = m_statusData.snapForce;
-            m_groundCheckDistance = m_statusData.groundCheckDistance;
-            if (m_statusData.groundLayer != 0)
-                m_groundLayer = m_statusData.groundLayer;
-            m_externalDrag = m_statusData.externalDrag;
-        }
-
         if (m_health != null)
             m_health.OnDie += Die;
 
         if (m_controller == null)
             Debug.LogWarning($"[EnemyBase] {name}: EntityControllerがありません。衝突判定なしで動作します", this);
-
     }
 
     void OnDestroy()

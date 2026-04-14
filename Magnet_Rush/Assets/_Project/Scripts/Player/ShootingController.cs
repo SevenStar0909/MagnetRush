@@ -4,16 +4,16 @@ using UnityEngine.Serialization;
 /// <summary>
 /// RT入力で磁力弾を画面中央方向に発射する。A/Fで自身に磁力を付与する。
 /// </summary>
+[RequireComponent(typeof(Player))]
 public class ShootingController : MonoBehaviour
 {
     [FormerlySerializedAs("bulletSettings")]
     [SerializeField] private BulletSettings m_bulletSettings;
-    [FormerlySerializedAs("playerSettings")]
-    [SerializeField] private PlayerSettings m_playerSettings;
     [FormerlySerializedAs("firePoint")]
     [SerializeField] private Transform m_firePoint;
     [SerializeField] private float m_selfFireHeightOffset = 1.0f;
 
+    private PlayerSettings m_playerSettings;
     private PlayerInputHandler m_input;
     private PolarityController m_polarityController;
     private AimController m_aimController;
@@ -26,6 +26,7 @@ public class ShootingController : MonoBehaviour
         m_polarityController = GetComponent<PolarityController>();
         m_aimController = GetComponent<AimController>();
         m_events = GetComponent<PlayerEvents>();
+        m_playerSettings = GetComponent<Player>().Settings;
     }
 
     void Start()

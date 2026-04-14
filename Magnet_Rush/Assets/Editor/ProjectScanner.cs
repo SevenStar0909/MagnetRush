@@ -38,55 +38,6 @@ public class ProjectScanner : EditorWindow, IPreprocessBuildWithReport
         GetWindow<ProjectScanner>("プロジェクトスキャン");
     }
 
-    [MenuItem("Tools/Missing Script検出 %#m")]
-    static void FindAllMissingScripts()
-    {
-        int count = 0;
-
-        // 開いている全シーンをスキャン
-        for (int i = 0; i < SceneManager.sceneCount; i++)
-        {
-            var scene = SceneManager.GetSceneAt(i);
-            if (!scene.isLoaded) continue;
-            foreach (var root in scene.GetRootGameObjects())
-                count += ScanMissingScriptsRecursive(root, scene.name);
-        }
-
-        // _Project以下の全Prefabをスキャン
-        var guids = AssetDatabase.FindAssets("t:Prefab", new[] { "Assets/_Project" });
-        foreach (string guid in guids)
-        {
-            string path = AssetDatabase.GUIDToAssetPath(guid);
-            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
-            if (prefab != null)
-                count += ScanMissingScriptsRecursive(prefab, $"Prefab: {path}");
-        }
-
-        if (count == 0)
-            Debug.Log("[MissingScript] 全シーン・Prefabを検索完了。Missing Scriptなし。");
-        else
-            Debug.LogWarning($"[MissingScript] {count} 件のMissing Scriptを検出。上のログを確認してください。");
-    }
-
-    static int ScanMissingScriptsRecursive(GameObject go, string context)
-    {
-        int count = 0;
-        var components = go.GetComponents<Component>();
-        for (int i = 0; i < components.Length; i++)
-        {
-            if (components[i] == null)
-            {
-                Debug.LogError($"[MissingScript] {BuildPath(go)} (コンポーネント #{i}) [{context}]", go);
-                count++;
-            }
-        }
-
-        for (int c = 0; c < go.transform.childCount; c++)
-            count += ScanMissingScriptsRecursive(go.transform.GetChild(c).gameObject, context);
-
-        return count;
-    }
-
     void OnGUI()
     {
         EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);

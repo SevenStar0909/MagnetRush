@@ -10,10 +10,10 @@ using Unity.Cinemachine;
 [DefaultExecutionOrder(-200)]
 public class CameraSettingsApplier : MonoBehaviour
 {
-    [FormerlySerializedAs("settings")]
-    [SerializeField] private PlayerSettings m_settings;
     [FormerlySerializedAs("cinemachineCamera")]
     [SerializeField] private CinemachineCamera m_cinemachineCamera;
+
+    private PlayerSettings m_settings;
 
     private CinemachineThirdPersonFollow m_thirdPersonFollow;
     private float m_defaultFOV;
@@ -21,13 +21,29 @@ public class CameraSettingsApplier : MonoBehaviour
     private Transform m_cameraPivot;
     private float m_yaw;
     private float m_pitch;
+    private bool m_initialized;
 
-    void Awake()
+    void OnEnable()
     {
-        if (m_cinemachineCamera == null) return;
+        AimController.OnAimChanged += SetAimMode;
+        Player.OnPlayerReady += InitializeWithPlayer;
+        if (Player.Current != null) InitializeWithPlayer(Player.Current);
+    }
 
-        var player = GameObject.FindWithTag(GameTags.Player);
-        if (player == null) return;
+    void OnDisable()
+    {
+        AimController.OnAimChanged -= SetAimMode;
+        Player.OnPlayerReady -= InitializeWithPlayer;
+    }
+
+    private void InitializeWithPlayer(Player playerComponent)
+    {
+        if (m_initialized) return;
+        if (m_cinemachineCamera == null) return;
+        if (playerComponent == null) return;
+
+        m_settings = playerComponent.Settings;
+        var player = playerComponent.gameObject;
 
         // カメラ回転ピボットをプレイヤーの子に生成
         var pivotGO = new GameObject("CameraPivot");
@@ -71,16 +87,8 @@ public class CameraSettingsApplier : MonoBehaviour
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
-    }
 
-    void OnEnable()
-    {
-        AimController.OnAimChanged += SetAimMode;
-    }
-
-    void OnDisable()
-    {
-        AimController.OnAimChanged -= SetAimMode;
+        m_initialized = true;
     }
 
     void LateUpdate()
