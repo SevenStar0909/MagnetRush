@@ -283,15 +283,7 @@ public class MagnetManager : Singleton<MagnetManager>
         if (isOpposite && entityInvolved && distance <= m_settings.holdEngageDistance)
         {
             ProcessHold(a, b);
-
-            // 接触通知は従来通り出す（Enter判定維持）
-            long pairKeyHold = GetPairKey(a, b);
-            contactsThisFrame.Add(pairKeyHold);
-            if (m_activeContacts.Add(pairKeyHold))
-            {
-                a.NotifyContact(b);
-                b.NotifyContact(a);
-            }
+            RegisterContact(a, b, contactsThisFrame);
             return;
         }
 
@@ -334,16 +326,24 @@ public class MagnetManager : Singleton<MagnetManager>
         if (isOpposite && distance < m_settings.snapDistance)
         {
             m_snapResolver?.Resolve(a, b, Time.fixedDeltaTime);
+            RegisterContact(a, b, contactsThisFrame);
+        }
+    }
 
-            long pairKey = GetPairKey(a, b);
-            contactsThisFrame.Add(pairKey);
+    /// <summary>
+    /// ペアを接触フレームに登録し、Enter判定なら NotifyContact を発火する。
+    /// PD ホルダー経路と SnapResolver 経路の両方から呼ばれる共通ヘルパー。
+    /// </summary>
+    private void RegisterContact(Magnetizable a, Magnetizable b, HashSet<long> contactsThisFrame)
+    {
+        long pairKey = GetPairKey(a, b);
+        contactsThisFrame.Add(pairKey);
 
-            // Enter判定: 前フレームに接触していなかったら通知
-            if (m_activeContacts.Add(pairKey))
-            {
-                a.NotifyContact(b);
-                b.NotifyContact(a);
-            }
+        // Enter判定: 前フレームに接触していなかったら通知
+        if (m_activeContacts.Add(pairKey))
+        {
+            a.NotifyContact(b);
+            b.NotifyContact(a);
         }
     }
 

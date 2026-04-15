@@ -5,25 +5,32 @@ using UnityEngine.AI;
 /// 磁力によるAI一時停止とNavMesh位置同期を管理する。
 /// 力はIMagnetTarget(Entity.externalVelocity)経由で適用し、
 /// EntityStep()が重力・衝突を処理する。
+/// 状態は MoverState enum で一元管理する (Idle / DistanceForce / Holding)。
 /// </summary>
 [RequireComponent(typeof(Magnetizable))]
 public class MagneticMover : MonoBehaviour, IMagneticResponse
 {
+    private enum MoverState
+    {
+        Idle,            // 磁力非アクティブ、AI通常動作
+        DistanceForce,   // 距離減衰引力受信中 (OnMagnetForce ルート)
+        Holding          // PD 保持中 (MagnetManager.ProcessHold ルート)
+    }
+
     [SerializeField] private MagneticMoverSettings m_settings;
 
     private Magnetizable m_magnetizable;
     private NavMeshAgent m_agent;
     private IMagnetTarget m_magnetTarget;
 
-    private bool m_isMagnetActive;
-    private bool m_isHoldActive;  // PD 保持による AI 停止。距離減衰力ルート (m_isMagnetActive) と独立管理
+    private MoverState m_state = MoverState.Idle;
     private float m_lastForceTime;
     private int m_recoveryAttempts;
 
     public bool IsResponseActive => m_magnetizable != null && m_magnetizable.IsActive;
 
-    /// <summary>磁力移動モード中かどうか。AIはこの間スキップされる。</summary>
-    public bool IsMagnetActive => m_isMagnetActive;
+    /// <summary>磁力移動モード中かどうか (Idle 以外)。AI はこの間スキップされる。</summary>
+    public bool IsMagnetActive => m_state != MoverState.Idle;
 
     void Awake()
     {
@@ -34,12 +41,12 @@ public class MagneticMover : MonoBehaviour, IMagneticResponse
 
     public void OnMagnetForce(Vector3 force, Vector3 sourcePosition)
     {
-        // PD 保持中のみ既存ルートを弾く（距離減衰力は通常通り毎フレーム適用したい）
-        if (m_isHoldActive) { ChannelLogger.LogGuardReturn("Magnet", "PD保持中は距離減衰力を無視"); return; }
+        // PD 保持中のみ既存ルートを弾く（距離減衰力は毎フレーム適用したい）
+        if (m_state == MoverState.Holding) { ChannelLogger.LogGuardReturn("Magnet", "PD保持中は距離減衰力を無視"); return; }
 
         if (m_settings == null) { ChannelLogger.LogGuardReturn("Magnet", "Mover設定なし"); return; }
 
-        m_isMagnetActive = true;
+        m_state = MoverState.DistanceForce;
         m_lastForceTime = Time.time;
 
         // 力をスケーリングしてEntityに渡す。蓄積・減衰はEntity.externalVelocityが処理する。
@@ -53,14 +60,13 @@ public class MagneticMover : MonoBehaviour, IMagneticResponse
 
     /// <summary>
     /// PDホルダーから吸着の Enter/Exit を受け取り、NavMeshAgent 停止/復帰を明示制御する。
-    /// active=true: AI停止 (距離減衰力と同じ扱い)。active=false: NavMeshAgent 復帰。
+    /// active=true: Holding に遷移。active=false: RecoverFromMagnet で Idle に戻す。
     /// </summary>
     public void SetHoldActive(bool active)
     {
-        m_isHoldActive = active;
         if (active)
         {
-            m_isMagnetActive = true;
+            m_state = MoverState.Holding;
             m_lastForceTime = Time.time;
         }
         else
@@ -76,7 +82,10 @@ public class MagneticMover : MonoBehaviour, IMagneticResponse
 
     void Update()
     {
-        if (!m_isMagnetActive) { ChannelLogger.LogGuardReturn("Magnet", "磁力移動モード非アクティブ"); return; }
+        if (m_state == MoverState.Idle) { ChannelLogger.LogGuardReturn("Magnet", "磁力移動モード非アクティブ"); return; }
+
+        // PD 保持中はタイムアウト復帰しない (SetHoldActive(false) で明示的に解除される)
+        if (m_state == MoverState.Holding) return;
 
         // OnMagnetForceが呼ばれなくなった（範囲外）→ recoveryDelay後にAI再開
         // externalVelocityの減衰はEntity側で処理されるため、ここではタイミングのみ管理
@@ -91,7 +100,7 @@ public class MagneticMover : MonoBehaviour, IMagneticResponse
             if (NavMesh.SamplePosition(transform.position, out var hit, 2f, NavMesh.AllAreas))
             {
                 m_agent.nextPosition = hit.position;
-                m_isMagnetActive = false;
+                m_state = MoverState.Idle;
                 m_recoveryAttempts = 0;
             }
             else
@@ -100,7 +109,7 @@ public class MagneticMover : MonoBehaviour, IMagneticResponse
                 if (m_recoveryAttempts >= m_settings.maxRecoveryAttempts)
                 {
                     m_agent.Warp(transform.position);
-                    m_isMagnetActive = false;
+                    m_state = MoverState.Idle;
                     m_recoveryAttempts = 0;
                 }
             }
@@ -108,7 +117,7 @@ public class MagneticMover : MonoBehaviour, IMagneticResponse
         else
         {
             // NavMeshAgentなし（将来の飛行敵等）→ フラグ解除のみ
-            m_isMagnetActive = false;
+            m_state = MoverState.Idle;
         }
     }
 }

@@ -11,7 +11,6 @@ public class MagneticSnapResolver
 {
     private readonly MagnetSettings m_settings;
     private readonly HashSet<long> m_attachedPairs = new();
-    private readonly Dictionary<long, Vector3> m_velocities = new();
     private readonly Dictionary<long, FixedJoint> m_joints = new();
 
     // 距離解除されたペア。磁化が解除されるまで再スナップ＋力適用を禁止
@@ -56,7 +55,7 @@ public class MagneticSnapResolver
     }
 
     /// <summary>FixedJointで物理固定する。mass=Infinity側にJointを生成。</summary>
-    public void Snap(Magnetizable a, Magnetizable b)
+    private void Snap(Magnetizable a, Magnetizable b)
     {
         if (a == null || b == null) { ChannelLogger.LogGuardReturn("Magnet", "Snap対象のMagnetizableがnull"); return; }
 
@@ -73,10 +72,9 @@ public class MagneticSnapResolver
 
         m_attachedPairs.Add(key);
         m_joints[key] = joint;
-        m_velocities.Remove(key);
     }
 
-    public void Release(long pairKey)
+    private void Release(long pairKey)
     {
         if (!m_attachedPairs.Remove(pairKey)) { ChannelLogger.LogGuardReturn("Magnet", "解放対象のペアが未登録"); return; }
 
@@ -86,8 +84,6 @@ public class MagneticSnapResolver
                 Object.Destroy(joint);
             m_joints.Remove(pairKey);
         }
-
-        m_velocities.Remove(pairKey);
     }
 
     /// <summary>指定フィールドに関連する全Jointを破棄する。磁場消滅時に呼ぶ。</summary>
@@ -133,8 +129,6 @@ public class MagneticSnapResolver
 
         ClearBrokenFor(mag);
     }
-
-    public bool IsAttached(long pairKey) => m_attachedPairs.Contains(pairKey);
 
     /// <summary>null化したJointや、磁力範囲外に出たJointを掃除する。距離解除ペアはbrokenリストに追加。</summary>
     public void CleanupDestroyedJoints()
