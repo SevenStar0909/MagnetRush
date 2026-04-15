@@ -14,12 +14,25 @@ public class MagnetSettings : ScriptableObject
     public float maxForcePerObject = 50f;
 
     [Header("接触")]
-    [Tooltip("磁力スナップが発生する距離")]
+    [Tooltip("Object×Object の FixedJoint 発動距離（Entity絡みは holdEngageDistance を使用）")]
     public float snapDistance = 1.5f;
 
     [Header("スナップ")]
     [Tooltip("FixedJoint の破壊力（同極反発で分離）")]
     public float snapBreakForce = 100f;
+
+    [Header("PDホールド")]
+    [Tooltip("この距離内に入ると PD 保持に切り替わる (Entity絡みペア専用)")]
+    public float holdEngageDistance = 1.5f;
+
+    [Tooltip("位置エラーに対するバネ定数。大きいほどガッチリ追従するが振動しやすい")]
+    public float holdStiffness = 80f;
+
+    [Tooltip("速度に対するダンパ係数。大きいほど振動が収まるが追従が重くなる")]
+    public float holdDamping = 15f;
+
+    [Tooltip("吸着中の最大許容距離。超過で吸着解除")]
+    public float holdMaxDistance = 3f;
 
     [Header("弾同士")]
     [Tooltip("異極の弾が近接した時にダメージ蓄積が発生する距離")]

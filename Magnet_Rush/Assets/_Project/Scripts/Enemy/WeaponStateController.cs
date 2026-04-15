@@ -120,12 +120,14 @@ public class WeaponStateController : MonoBehaviour
     {
         if (m_pendingOwner == null || m_pendingHand == null)
         {
+            ChannelLogger.LogGuardReturn("Enemy", "装備対象の所有者/ハンドなし");
             CancelEquip();
             return;
         }
 
         if (m_gripPoint == null)
         {
+            ChannelLogger.LogGuardReturn("Enemy", "GripPoint未設定");
             CancelEquip();
             return;
         }
@@ -232,7 +234,7 @@ public class WeaponStateController : MonoBehaviour
 
     public void BeginAttackWindow()
     {
-        if (m_state != WeaponOwnerState.Owned) return;
+        if (m_state != WeaponOwnerState.Owned) { ChannelLogger.LogGuardReturn("Enemy", "装備状態でない"); return; }
         if (m_attackTrigger != null)
             m_attackTrigger.enabled = true;
     }
@@ -245,10 +247,10 @@ public class WeaponStateController : MonoBehaviour
 
     private void CheckForcedDropByMagnet()
     {
-        if (m_settings == null) return;
-        if (!m_settings.dropWhenMagnetAffectedWhileOwned) return;
-        if (m_magnetizable == null) return;
-        if (!m_magnetizable.IsActive) return;
+        if (m_settings == null) { ChannelLogger.LogGuardReturn("Enemy", "WeaponMeleeSettings未設定"); return; }
+        if (!m_settings.dropWhenMagnetAffectedWhileOwned) { ChannelLogger.LogGuardReturn("Enemy", "強制ドロップ設定OFF"); return; }
+        if (m_magnetizable == null) { ChannelLogger.LogGuardReturn("Enemy", "Magnetizableなし"); return; }
+        if (!m_magnetizable.IsActive) { ChannelLogger.LogGuardReturn("Enemy", "磁力非アクティブ"); return; }
 
         float influence = m_magnetizable.GetInfluence(1f);
         if (influence >= m_settings.forcedDropInfluenceThreshold)
@@ -257,7 +259,7 @@ public class WeaponStateController : MonoBehaviour
 
     private void AlignToHand(Transform handSocket)
     {
-        if (m_gripPoint == null || handSocket == null) return;
+        if (m_gripPoint == null || handSocket == null) { ChannelLogger.LogGuardReturn("Enemy", "GripPoint/HandSocketなし"); return; }
 
         // GripPoint alien to hand socket
         Quaternion deltaRot = handSocket.rotation * Quaternion.Inverse(m_gripPoint.rotation);
@@ -279,7 +281,7 @@ public class WeaponStateController : MonoBehaviour
 
     private void RotateAroundGripPoint(Quaternion worldDelta)
     {
-        if (m_gripPoint == null) return;
+        if (m_gripPoint == null) { ChannelLogger.LogGuardReturn("Enemy", "GripPoint未設定"); return; }
 
         Vector3 pivot = m_gripPoint.position;
         transform.position = pivot + worldDelta * (transform.position - pivot);
@@ -288,7 +290,7 @@ public class WeaponStateController : MonoBehaviour
 
     private void SetPhysicsCollidersEnabled(bool enabled)
     {
-        if (m_physicsColliders == null) return;
+        if (m_physicsColliders == null) { ChannelLogger.LogGuardReturn("Enemy", "物理Collider配列未設定"); return; }
 
         for (int i = 0; i < m_physicsColliders.Length; i++)
         {

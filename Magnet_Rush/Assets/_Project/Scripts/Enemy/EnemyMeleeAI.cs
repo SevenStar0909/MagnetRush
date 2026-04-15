@@ -47,8 +47,8 @@ public class EnemyMeleeAI : MonoBehaviour
 
     private void Update()
     {
-        if (m_enemyBase.IsMagnetControlled) return;
-        if (m_player == null || m_agent == null || m_data == null) return;
+        if (m_enemyBase.IsMagnetControlled) { ChannelLogger.LogGuardReturn("Enemy", "磁力制御中"); return; }
+        if (m_player == null || m_agent == null || m_data == null) { ChannelLogger.LogGuardReturn("Enemy", "プレイヤー/Agent/データ未取得"); return; }
 
         float dt = Time.deltaTime;
 
@@ -68,13 +68,14 @@ public class EnemyMeleeAI : MonoBehaviour
         if (!m_enemyBase.HasWeapon)
         {
             bool isHandlingWeapon = HandleWeaponSearchAndPickup(dt);
-            if (isHandlingWeapon) return;
+            if (isHandlingWeapon) { ChannelLogger.LogGuardReturn("Enemy", "武器ピックアップ処理中"); return; }
         }
 
         float distance = Vector3.Distance(transform.position, m_player.position);
 
         if (distance > m_data.chaseRange)
         {
+            ChannelLogger.LogGuardReturn("Enemy", "追跡範囲外");
             m_agent.ResetPath();
             m_enemyBase.SlowDown(dt);
             return;
@@ -140,7 +141,7 @@ public class EnemyMeleeAI : MonoBehaviour
     private void FallbackDirectMove(float dt)
     {
         float dist = Vector3.Distance(transform.position, m_player.position);
-        if (dist > m_data.chaseRange) return;
+        if (dist > m_data.chaseRange) { ChannelLogger.LogGuardReturn("Enemy", "追跡範囲外(フォールバック)"); return; }
 
         if (dist <= m_data.attackRange)
         {
@@ -202,11 +203,14 @@ public class EnemyMeleeAI : MonoBehaviour
     /// </summary>
     private void TryRecoverAgent()
     {
-        if (m_agent == null) return;
-        if (m_agent.enabled && m_agent.isOnNavMesh) return;
+        if (m_agent == null) { ChannelLogger.LogGuardReturn("Enemy", "NavMeshAgentなし"); return; }
+        if (m_agent.enabled && m_agent.isOnNavMesh) { ChannelLogger.LogGuardReturn("Enemy", "Agent既に有効"); return; }
 
         if (!NavMesh.SamplePosition(transform.position, out var hit, 5f, NavMesh.AllAreas))
+        {
+            ChannelLogger.LogGuardReturn("Enemy", "NavMeshサンプル失敗");
             return;
+        }
 
         // agentが有効なら一度無効化してリセット
         if (m_agent.enabled)

@@ -24,7 +24,7 @@ public class GraphyStagedToggle : MonoBehaviour
     void Start()
     {
         var ram = transform.Find("SafeArea/RAM - Module");
-        if (ram == null) return;
+        if (ram == null) { ChannelLogger.LogGuardReturn("UI", "RAM - Moduleが見つからない"); return; }
 
         var reserved = ram.Find("reserved_ram_text");
         if (reserved != null)
@@ -62,9 +62,9 @@ public class GraphyStagedToggle : MonoBehaviour
 
     void Update()
     {
-        if (Keyboard.current == null) return;
-        if (m_graphy == null) return;
-        if (!Keyboard.current[m_toggleKey].wasPressedThisFrame) return;
+        if (Keyboard.current == null) { ChannelLogger.LogGuardReturn("UI", "Keyboardデバイスなし"); return; }
+        if (m_graphy == null) { ChannelLogger.LogGuardReturn("UI", "GraphyManager未設定"); return; }
+        if (!Keyboard.current[m_toggleKey].wasPressedThisFrame) { ChannelLogger.LogGuardReturn("UI", "トグルキー未押下"); return; }
 
         m_stage = (m_stage + 1) % 3;
 

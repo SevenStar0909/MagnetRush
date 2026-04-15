@@ -140,14 +140,14 @@ public class MagnetField : MonoBehaviour, IMagnetField
     /// </summary>
     public void AccumulateDamage(float amount)
     {
-        if (m_settings == null || !m_settings.accumulateDamage) return;
+        if (m_settings == null || !m_settings.accumulateDamage) { ChannelLogger.LogGuardReturn("Magnet", "設定なしまたはダメージ蓄積無効"); return; }
         m_storedDamage = Mathf.Min(m_storedDamage + amount, m_settings.maxStoredDamage);
     }
 
     /// <summary>ブリッジから呼ばれるトリガーStay。</summary>
     public void HandleTriggerStay(Collider other)
     {
-        if (!m_initialized) return;
+        if (!m_initialized) { ChannelLogger.LogGuardReturn("Magnet", "フィールド未初期化"); return; }
 
         if (!m_entityCache.TryGetValue(other, out var entity))
         {
@@ -162,7 +162,7 @@ public class MagnetField : MonoBehaviour, IMagnetField
     /// <summary>ブリッジから呼ばれるトリガーExit。</summary>
     public void HandleTriggerExit(Collider other)
     {
-        if (!m_initialized) return;
+        if (!m_initialized) { ChannelLogger.LogGuardReturn("Magnet", "フィールド未初期化"); return; }
 
         if (m_entityCache.TryGetValue(other, out var entity))
         {
@@ -193,10 +193,10 @@ public class MagnetField : MonoBehaviour, IMagnetField
 
     void Update()
     {
-        if (m_settings == null) return;
+        if (m_settings == null) { ChannelLogger.LogGuardReturn("Magnet", "フィールド設定なし"); return; }
 
         // lifetime=0 は永続（タイマー不動）
-        if (m_settings.lifetime <= 0f) return;
+        if (m_settings.lifetime <= 0f) { ChannelLogger.LogGuardReturn("Magnet", "lifetime=0は永続でタイマー停止"); return; }
 
         m_remainingLifetime -= Time.deltaTime;
         if (m_remainingLifetime <= 0f)
@@ -209,7 +209,7 @@ public class MagnetField : MonoBehaviour, IMagnetField
     /// </summary>
     public void ForceExpire()
     {
-        if (m_expired) return;
+        if (m_expired) { ChannelLogger.LogGuardReturn("Magnet", "既に期限切れ済み"); return; }
         m_expired = true;
         OnFieldExpired?.Invoke();
         Destroy(this);

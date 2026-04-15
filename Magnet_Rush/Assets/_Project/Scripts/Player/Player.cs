@@ -114,6 +114,7 @@ public class Player : Entity
         {
             topSpeedMultiplier = 1f;
             turningDragMultiplier = 1f;
+            ChannelLogger.LogGuardReturn("Player", "Magnetizable/MagnetManager未取得");
             return;
         }
 

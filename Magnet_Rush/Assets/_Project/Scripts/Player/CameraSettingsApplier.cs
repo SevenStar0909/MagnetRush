@@ -38,9 +38,9 @@ public class CameraSettingsApplier : MonoBehaviour
 
     private void InitializeWithPlayer(Player playerComponent)
     {
-        if (m_initialized) return;
-        if (m_cinemachineCamera == null) return;
-        if (playerComponent == null) return;
+        if (m_initialized) { ChannelLogger.LogGuardReturn("Player", "既に初期化済み"); return; }
+        if (m_cinemachineCamera == null) { ChannelLogger.LogGuardReturn("Player", "CinemachineCamera未設定"); return; }
+        if (playerComponent == null) { ChannelLogger.LogGuardReturn("Player", "Playerコンポーネントなし"); return; }
 
         m_settings = playerComponent.Settings;
         var player = playerComponent.gameObject;
@@ -93,7 +93,7 @@ public class CameraSettingsApplier : MonoBehaviour
 
     void LateUpdate()
     {
-        if (m_cameraPivot == null || m_settings == null) return;
+        if (m_cameraPivot == null || m_settings == null) { ChannelLogger.LogGuardReturn("Player", "カメラピボットまたは設定なし"); return; }
 
         // 右スティック / マウスでカメラ回転
         Vector2 look = Vector2.zero;
@@ -119,7 +119,7 @@ public class CameraSettingsApplier : MonoBehaviour
     /// </summary>
     public void SetAimMode(bool aiming)
     {
-        if (m_thirdPersonFollow == null || m_settings == null) return;
+        if (m_thirdPersonFollow == null || m_settings == null) { ChannelLogger.LogGuardReturn("Player", "ThirdPersonFollowまたは設定なし"); return; }
 
         m_thirdPersonFollow.CameraDistance = aiming ? m_settings.aimCameraDistance : m_defaultCameraDistance;
 

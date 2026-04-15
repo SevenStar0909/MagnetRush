@@ -52,7 +52,7 @@ public class BulletManager : Singleton<BulletManager>
     /// </summary>
     public void Register(MagnetBullet bullet)
     {
-        if (bullet == null || m_activeBullets.Contains(bullet)) return;
+        if (bullet == null || m_activeBullets.Contains(bullet)) { ChannelLogger.LogGuardReturn("Bullet", "弾がnullまたは既に登録済み"); return; }
         m_activeBullets.Add(bullet);
         m_shotCount++;
         OnBulletCountChanged?.Invoke(m_shotCount);
@@ -72,7 +72,7 @@ public class BulletManager : Singleton<BulletManager>
     /// </summary>
     public void Unregister(MagnetBullet bullet)
     {
-        if (bullet == null || !m_activeBullets.Contains(bullet)) return;
+        if (bullet == null || !m_activeBullets.Contains(bullet)) { ChannelLogger.LogGuardReturn("Bullet", "弾がnullまたは未登録"); return; }
         m_activeBullets.Remove(bullet);
     }
 

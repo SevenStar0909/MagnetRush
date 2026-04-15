@@ -51,13 +51,17 @@ public class EnemyTurretMagneticAim : MonoBehaviour, IMagneticResponse
         // 磁力ターゲットがなければプレイヤーを追従し続ける
         if (m_currentTarget == null)
         {
+            ChannelLogger.LogGuardReturn("Enemy", "磁力ターゲットなし");
             FacePlayer(checkRange: false);
             return;
         }
 
         Vector3 toTarget = m_currentTarget.transform.position - m_yawPivot.position;
         if (toTarget.sqrMagnitude <= 0.0001f)
+        {
+            ChannelLogger.LogGuardReturn("Enemy", "ターゲット距離ほぼゼロ");
             return;
+        }
 
         bool isOppositePole = IsOppositePole(m_currentTarget);
         Vector3 desiredWorldDir = isOppositePole ? toTarget.normalized : (-toTarget.normalized);
@@ -68,16 +72,25 @@ public class EnemyTurretMagneticAim : MonoBehaviour, IMagneticResponse
     private void FacePlayer(bool checkRange)
     {
         if (m_turretBase == null || m_turretBase.Player == null)
+        {
+            ChannelLogger.LogGuardReturn("Enemy", "タレット基底/プレイヤー参照なし");
             return;
+        }
 
         Vector3 toPlayer = m_turretBase.Player.position - m_yawPivot.position;
 
         float sqrDist = toPlayer.sqrMagnitude;
         if (sqrDist <= 0.0001f)
+        {
+            ChannelLogger.LogGuardReturn("Enemy", "プレイヤー距離ほぼゼロ");
             return;
+        }
 
         if (checkRange && m_aimToPlayerRange > 0f && sqrDist > m_aimToPlayerRange * m_aimToPlayerRange)
+        {
+            ChannelLogger.LogGuardReturn("Enemy", "プレイヤー照準範囲外");
             return;
+        }
 
         RotateToward(toPlayer.normalized);
     }
@@ -88,7 +101,10 @@ public class EnemyTurretMagneticAim : MonoBehaviour, IMagneticResponse
     private void RotateToward(Vector3 desiredWorldDir)
     {
         if (desiredWorldDir.sqrMagnitude <= 0.0001f)
+        {
+            ChannelLogger.LogGuardReturn("Enemy", "目標方向ほぼゼロ");
             return;
+        }
 
         // 親空間に変換（Model Y180°を吸収）
         Vector3 localDir = m_yawPivot.parent != null
@@ -96,7 +112,10 @@ public class EnemyTurretMagneticAim : MonoBehaviour, IMagneticResponse
             : desiredWorldDir;
 
         if (localDir.sqrMagnitude <= 0.0001f)
+        {
+            ChannelLogger.LogGuardReturn("Enemy", "ローカル変換後の方向ほぼゼロ");
             return;
+        }
 
         // バレルメッシュがlocal -Z方向に伸びているため180°オフセット
         float targetYaw = Mathf.Atan2(localDir.x, localDir.z) * Mathf.Rad2Deg + 180f;

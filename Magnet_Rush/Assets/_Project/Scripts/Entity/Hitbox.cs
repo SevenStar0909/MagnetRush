@@ -17,7 +17,7 @@ public class Hitbox : MonoBehaviour, IHittable
 
     public void OnHit(HitData hit)
     {
-        if (m_health == null) return;
+        if (m_health == null) { ChannelLogger.LogGuardReturn("Entity", "Health未設定"); return; }
         m_health.Damage(hit.damage);
     }
 }

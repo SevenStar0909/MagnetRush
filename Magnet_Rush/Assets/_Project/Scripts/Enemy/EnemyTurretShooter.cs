@@ -87,7 +87,7 @@ public class EnemyTurretShooter : MonoBehaviour
 
     private void Fire()
     {
-        if (m_turretBase == null || m_turretBase.Player == null) return;
+        if (m_turretBase == null || m_turretBase.Player == null) { ChannelLogger.LogGuardReturn("Enemy", "タレット基底/プレイヤー参照なし"); return; }
 
         Transform muzzle = ResolveFirePoint();
         Vector3 spawnPos = muzzle != null ? muzzle.position : transform.position + Vector3.up * 1.2f;

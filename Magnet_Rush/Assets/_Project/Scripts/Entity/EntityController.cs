@@ -47,6 +47,10 @@ public class EntityController : MonoBehaviour
     private Collider[] m_overlaps = new Collider[128];
     private HashSet<Collider> m_ignoredColliders = new();
 
+    // 磁力吸着中の Object を push しないための Owner 側磁極キャッシュ（PD ホルダーが位置を制御するので押しても無意味）
+    // Entity asmdef は Magnet asmdef を参照できないため Common の IMagnetPoleProvider を経由する
+    private IMagnetPoleProvider m_ownerMagnetPole;
+
     // 押し中のオブジェクト管理
     private readonly List<PushInfo> m_pushActive = new();
 
@@ -84,6 +88,23 @@ public class EntityController : MonoBehaviour
         InitializeCollider();
         InitializePushbox();
         RefreshCollider();
+
+        // 磁気例外チェック用キャッシュ（親階層探索を毎フレーム避ける）
+        m_ownerMagnetPole = GetComponent<IMagnetPoleProvider>();
+    }
+
+    /// <summary>
+    /// hit 対象が「自分と異極で磁化された Object」なら push ではなく壁扱いにする。
+    /// PD ホルダーが位置を制御しているため push しても無意味 (むしろ箱が無限に動くバグ源)。
+    /// </summary>
+    private bool IsMagneticallyHeld(Rigidbody hitRb)
+    {
+        if (m_ownerMagnetPole == null || !m_ownerMagnetPole.IsActive) return false;
+        if (hitRb == null) return false;
+        var hitMag = hitRb.GetComponent<IMagnetPoleProvider>();
+        if (hitMag == null || !hitMag.IsActive) return false;
+        if (hitMag.Pole == MagneticPole.None) return false;
+        return hitMag.Pole != m_ownerMagnetPole.Pole;
     }
 
     private void CreateHitboxContainer()
@@ -274,6 +295,9 @@ public class EntityController : MonoBehaviour
                     var checkRb = hit.collider.attachedRigidbody;
                     if (checkRb != null && !checkRb.isKinematic)
                     {
+                        // 磁気吸着中の Object は通過させずに壁扱い（PDホルダーが位置を制御する）
+                        if (IsMagneticallyHeld(checkRb)) goto wallHandling;
+
                         m_pushActive.Add(new PushInfo { rb = checkRb, col = hit.collider });
                         m_ignoredColliders.Add(hit.collider);
                         continue;
@@ -286,6 +310,9 @@ public class EntityController : MonoBehaviour
                     var hitRb = hit.collider.attachedRigidbody;
                     if (hitRb != null && !hitRb.isKinematic)
                     {
+                        // 磁気吸着中の Object は push しない（PD ホルダーが位置を制御する、箱が無限に押されるバグ源）
+                        if (IsMagneticallyHeld(hitRb)) goto wallHandling;
+
                         // 衝突面に対して正面から押しているか判定（hit.normalベース）
                         Vector3 pushDir = new Vector3(moveDirection.x, 0f, moveDirection.z).normalized;
                         Vector3 surfaceDir = new Vector3(-hit.normal.x, 0f, -hit.normal.z).normalized;

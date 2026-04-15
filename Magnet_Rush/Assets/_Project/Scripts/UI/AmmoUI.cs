@@ -69,7 +69,7 @@ public class AmmoUI : MonoBehaviour
 
     private void UpdateSprite()
     {
-        if (m_ammoImage == null) return;
+        if (m_ammoImage == null) { ChannelLogger.LogGuardReturn("UI", "残弾Image未設定"); return; }
 
         Sprite[] sprites = m_currentPole == MagneticPole.S ? m_spritesS : m_spritesN;
         if (sprites != null && m_currentRemaining >= 0 && m_currentRemaining < sprites.Length)

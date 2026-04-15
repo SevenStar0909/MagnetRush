@@ -120,10 +120,11 @@ public class EnemyBase : Entity
 
     private void ValidateWeaponState()
     {
-        if (m_equippedWeapon == null) return;
+        if (m_equippedWeapon == null) { ChannelLogger.LogGuardReturn("Enemy", "装備武器なし"); return; }
 
         if (m_equippedWeapon.State == WeaponStateController.WeaponOwnerState.Unowned)
         {
+            ChannelLogger.LogGuardReturn("Enemy", "武器が無主状態に戻った");
             m_equippedWeapon = null;
             return;
         }

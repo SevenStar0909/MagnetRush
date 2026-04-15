@@ -30,6 +30,19 @@ public class MagnetManager : Singleton<MagnetManager>
     // スナップ解決
     private MagneticSnapResolver m_snapResolver;
 
+    // PD ホルダー管理（Entity絡みペアの双方向保持）
+    private class HeldPair
+    {
+        public Magnetizable a;
+        public Magnetizable b;
+        // worldOffset はワールド座標で固定する (local 座標ではない)。
+        // MagnetRush は TPS で Player がカメラに合わせて頻繁に旋回するため、
+        // local 追従だと箱が Player の回転で振り回されて軌道を描く。見た目として不自然。
+        // 「くっついた位置のままぶら下がる」挙動を意図している。
+        public Vector3 worldOffset;
+    }
+    private readonly Dictionary<long, HeldPair> m_heldPairs = new();
+
     protected override void Awake()
     {
         base.Awake();
@@ -86,6 +99,14 @@ public class MagnetManager : Singleton<MagnetManager>
 
     void FixedUpdate()
     {
+        // ① 全磁化 Entity の holdVelocity を毎フレームゼロリセット（ProcessHold が再計算で上書き）
+        //    heldPairs ベースではなく m_cachedList 全走査する（CleanupExpiredHolds で除外された
+        //    Entity も確実に 0 に戻すため。幽霊運動の構造的防止）
+        ResetAllHoldVelocities();
+
+        // ② PD 保持ペアのクリーンアップ（距離超過・片方無効化）
+        CleanupExpiredHolds();
+
         m_snapResolver?.CleanupDestroyedJoints();
 
         // 破棄済みオブジェクト除去
@@ -144,7 +165,7 @@ public class MagnetManager : Singleton<MagnetManager>
     {
         // 破棄済みを除去
         m_bulletRegistry.RemoveAll(b => b == null || b.gameObject == null);
-        if (m_bulletRegistry.Count < 2) return;
+        if (m_bulletRegistry.Count < 2) { ChannelLogger.LogGuardReturn("Magnet", "近接検出対象の弾が2個未満"); return; }
 
         float threshold = m_settings != null ? m_settings.bulletProximityRange : 1f;
         float thresholdSq = threshold * threshold;
@@ -220,10 +241,10 @@ public class MagnetManager : Singleton<MagnetManager>
         float distance = delta.magnitude;
 
         // ハードカットオフ（パフォーマンス用）
-        if (distance > m_settings.magnetRange || distance < 0.01f) return;
+        if (distance > m_settings.magnetRange || distance < 0.01f) { ChannelLogger.LogGuardReturn("Magnet", "距離がmagnetRange外または近接しすぎ"); return; }
 
         // 距離解除されたペアは力もスナップも完全スキップ（ワープ防止）
-        if (m_snapResolver != null && m_snapResolver.IsBroken(a, b)) return;
+        if (m_snapResolver != null && m_snapResolver.IsBroken(a, b)) { ChannelLogger.LogGuardReturn("Magnet", "brokenペアのためスキップ"); return; }
 
         // フィールド個別範囲で有効距離を決定（大きい方を採用）
         float effectiveOuter = Mathf.Max(a.FieldOuterRadius, b.FieldOuterRadius);
@@ -234,7 +255,7 @@ public class MagnetManager : Singleton<MagnetManager>
         if (effectiveInner <= 0f) effectiveInner = effectiveOuter * 0.8f;
 
         // フィールド範囲外なら力を適用しない
-        if (distance > effectiveOuter) return;
+        if (distance > effectiveOuter) { ChannelLogger.LogGuardReturn("Magnet", "有効フィールド範囲外"); return; }
 
         Vector3 dirAtoB = delta / distance;
 
@@ -256,6 +277,23 @@ public class MagnetManager : Singleton<MagnetManager>
 
         bool isOpposite = a.Pole != b.Pole && a.Pole != MagneticPole.None && b.Pole != MagneticPole.None;
         bool isSame = a.Pole == b.Pole;
+
+        // Entity 絡みの異極ペアが holdEngageDistance 内なら PD ホルダー経路に分岐（通常引力はスキップ）
+        bool entityInvolved = a.CachedEntity != null || b.CachedEntity != null;
+        if (isOpposite && entityInvolved && distance <= m_settings.holdEngageDistance)
+        {
+            ProcessHold(a, b);
+
+            // 接触通知は従来通り出す（Enter判定維持）
+            long pairKeyHold = GetPairKey(a, b);
+            contactsThisFrame.Add(pairKeyHold);
+            if (m_activeContacts.Add(pairKeyHold))
+            {
+                a.NotifyContact(b);
+                b.NotifyContact(a);
+            }
+            return;
+        }
 
         // 質量非対称: 軽い方が多く動く
         float massA = a.mass;
@@ -292,9 +330,7 @@ public class MagnetManager : Singleton<MagnetManager>
             b.ApplyForce(dirAtoB * forceMagnitude * ratioB, a.transform.position);
         }
 
-        // 接触判定（異極のみ、snapDistance内）
-        // snapDistance内ではSnapResolverのSmoothDampが位置を制御するため、
-        // 上で適用した力は実質無視される（意図的な設計：吸着フェーズでは滑らかな接近を優先）
+        // 接触判定 / FixedJoint スナップ（Object×Object 専用。Entity絡みは上の PD 分岐で処理済み）
         if (isOpposite && distance < m_settings.snapDistance)
         {
             m_snapResolver?.Resolve(a, b, Time.fixedDeltaTime);
@@ -308,6 +344,171 @@ public class MagnetManager : Singleton<MagnetManager>
                 a.NotifyContact(b);
                 b.NotifyContact(a);
             }
+        }
+    }
+
+    /// <summary>
+    /// PD ホルダー本体。双方向 PD 力を計算して a/b に配布する。
+    /// Player が kinematic で物理反作用が発生しないため、手動で ±pdForce を両側に配布する。
+    /// </summary>
+    private void ProcessHold(Magnetizable argA, Magnetizable argB)
+    {
+        // 正規化: InstanceID の小さい側を pair.a に固定（GetPairKey / MakePairKey の convention と一致）。
+        // ProcessPair のイテレーションで (a,b) と (b,a) のフレームが混在し得るため、
+        // 関数引数ではなく安定した順序 (first/second) を使って worldOffset の符号反転を防ぐ。
+        Magnetizable first, second;
+        if (argA.GetInstanceID() < argB.GetInstanceID())
+        {
+            first = argA; second = argB;
+        }
+        else
+        {
+            first = argB; second = argA;
+        }
+
+        long key = GetPairKey(first, second);
+        if (!m_heldPairs.TryGetValue(key, out var pair))
+        {
+            pair = new HeldPair
+            {
+                a = first,
+                b = second,
+                worldOffset = second.transform.position - first.transform.position
+            };
+            m_heldPairs.Add(key, pair);
+
+            // NavMeshAgent 停止通知（両側 Entity）
+            NotifyMagneticMoverHold(first, true);
+            NotifyMagneticMoverHold(second, true);
+        }
+
+        // 相対速度（damping が anchor 移動を誤検出しないように差分を取る）
+        Vector3 velA = GetPairVelocity(pair.a);
+        Vector3 velB = GetPairVelocity(pair.b);
+        Vector3 relVel = velB - velA;
+
+        // target position は pair.a 基準 + 初回固定の worldOffset
+        Vector3 target = pair.a.transform.position + pair.worldOffset;
+        Vector3 error = target - pair.b.transform.position;
+
+        // PD 力（質量比配分なし、ApplyHoldForce 内で /mass 変換）
+        // mass 源はペア種別依存: Entity=Magnetizable.mass, Object=Rigidbody.mass（設計決定参照）
+        Vector3 pdForce = error * m_settings.holdStiffness - relVel * m_settings.holdDamping;
+
+        // 双方向配布（Player が kinematic で物理反作用が発生しないため手動配布）
+        pair.a.ApplyHoldForce(-pdForce);
+        pair.b.ApplyHoldForce(pdForce);
+    }
+
+    /// <summary>
+    /// ペアの前フレーム速度を取得する。Entity は velocity+external+hold 全成分、Object は rb.velocity。
+    /// </summary>
+    private Vector3 GetPairVelocity(Magnetizable m)
+    {
+        if (m == null) return Vector3.zero;
+        var entity = m.CachedEntity;
+        if (entity != null)
+            return entity.velocity + entity.externalVelocity + entity.holdVelocity;
+
+        var rb = m.GetComponent<Rigidbody>();
+        if (rb != null) return rb.linearVelocity;
+        return Vector3.zero;
+    }
+
+    /// <summary>
+    /// MagneticMover が付いていれば SetHoldActive で AI 停止/復帰を通知する。
+    /// </summary>
+    private void NotifyMagneticMoverHold(Magnetizable m, bool active)
+    {
+        if (m == null) return;
+        var mover = m.GetComponent<MagneticMover>();
+        if (mover != null) mover.SetHoldActive(active);
+    }
+
+    /// <summary>
+    /// 全磁化 Entity の holdVelocity を毎 FixedUpdate 冒頭でゼロリセットする。
+    /// heldPairs ではなく m_cachedList 全走査で確実にゼロ戻し（幽霊運動の構造的防止）。
+    /// </summary>
+    private void ResetAllHoldVelocities()
+    {
+        for (int i = 0; i < m_cachedList.Count; i++)
+        {
+            var m = m_cachedList[i];
+            if (m == null) continue;
+            var entity = m.CachedEntity;
+            if (entity != null) entity.holdVelocity = Vector3.zero;
+        }
+    }
+
+    /// <summary>
+    /// PD 保持ペアのクリーンアップ。距離超過 / 片方無効化 で除外し、NavMeshAgent を復帰通知する。
+    /// </summary>
+    private void CleanupExpiredHolds()
+    {
+        if (m_heldPairs.Count == 0) return;
+
+        float maxDist = m_settings != null ? m_settings.holdMaxDistance : 3f;
+        float maxDistSqr = maxDist * maxDist;
+
+        List<long> toRemove = null;
+        foreach (var kvp in m_heldPairs)
+        {
+            var pair = kvp.Value;
+            if (pair == null || pair.a == null || pair.b == null
+                || !pair.a.IsActive || !pair.b.IsActive
+                || (pair.a.Pole == pair.b.Pole))
+            {
+                (toRemove ??= new List<long>()).Add(kvp.Key);
+                continue;
+            }
+
+            float sqr = (pair.b.transform.position - pair.a.transform.position).sqrMagnitude;
+            if (sqr > maxDistSqr)
+            {
+                (toRemove ??= new List<long>()).Add(kvp.Key);
+            }
+        }
+
+        if (toRemove != null)
+        {
+            for (int i = 0; i < toRemove.Count; i++)
+            {
+                if (m_heldPairs.TryGetValue(toRemove[i], out var pair))
+                {
+                    NotifyMagneticMoverHold(pair.a, false);
+                    NotifyMagneticMoverHold(pair.b, false);
+                }
+                m_heldPairs.Remove(toRemove[i]);
+            }
+        }
+    }
+
+    /// <summary>
+    /// 指定 Magnetizable に関連する PD 保持を全解除する。Magnetizable.OnDisable から呼ぶ。
+    /// </summary>
+    public void ReleaseHolds(Magnetizable m)
+    {
+        if (m == null || m_heldPairs.Count == 0) return;
+
+        List<long> toRemove = null;
+        foreach (var kvp in m_heldPairs)
+        {
+            var pair = kvp.Value;
+            if (pair == null || pair.a == m || pair.b == m)
+                (toRemove ??= new List<long>()).Add(kvp.Key);
+        }
+
+        if (toRemove == null) return;
+
+        for (int i = 0; i < toRemove.Count; i++)
+        {
+            if (m_heldPairs.TryGetValue(toRemove[i], out var pair))
+            {
+                // 相手側のみ NavMeshAgent 復帰通知（消える本人は対象外）
+                if (pair.a != null && pair.a != m) NotifyMagneticMoverHold(pair.a, false);
+                if (pair.b != null && pair.b != m) NotifyMagneticMoverHold(pair.b, false);
+            }
+            m_heldPairs.Remove(toRemove[i]);
         }
     }
 
@@ -327,7 +528,7 @@ public class MagnetManager : Singleton<MagnetManager>
     /// </summary>
     private void HandleFieldExplosion(MagnetField field)
     {
-        if (field == null || field.StoredDamage <= 0f) return;
+        if (field == null || field.StoredDamage <= 0f) { ChannelLogger.LogGuardReturn("Magnet", "磁場なしまたは蓄積ダメージゼロ"); return; }
 
         float radius = field.OuterRadius;
         Vector3 center = field.Center;

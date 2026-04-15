@@ -37,6 +37,7 @@ public class SceneLoader : Singleton<SceneLoader>
         if (ShouldSkipTitle(current))
         {
             LoadAdditiveScenes();
+            ChannelLogger.LogGuardReturn("Game", "タイトル遷移をスキップ");
             return;
         }
 

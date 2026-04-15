@@ -46,16 +46,16 @@ public class ShootingController : MonoBehaviour
         // 射撃（RT）
         if (m_input.ConsumeFire())
         {
-            if (m_bulletSettings == null || m_bulletSettings.bulletPrefab == null) return;
-            if (BulletManager.Instance == null || !BulletManager.Instance.CanShoot()) return;
+            if (m_bulletSettings == null || m_bulletSettings.bulletPrefab == null) { ChannelLogger.LogGuardReturn("Player", "BulletSettings未設定"); return; }
+            if (BulletManager.Instance == null || !BulletManager.Instance.CanShoot()) { ChannelLogger.LogGuardReturn("Player", "BulletManager未初期化 or 射撃不可"); return; }
             Fire();
         }
 
         // セルフファイア（A / F）— 自分に磁力を付与
         if (m_input.ConsumeSelfFire())
         {
-            if (m_bulletSettings == null || m_bulletSettings.bulletPrefab == null) return;
-            if (BulletManager.Instance == null || !BulletManager.Instance.CanShoot()) return;
+            if (m_bulletSettings == null || m_bulletSettings.bulletPrefab == null) { ChannelLogger.LogGuardReturn("Player", "BulletSettings未設定(SelfFire)"); return; }
+            if (BulletManager.Instance == null || !BulletManager.Instance.CanShoot()) { ChannelLogger.LogGuardReturn("Player", "BulletManager未初期化 or 射撃不可(SelfFire)"); return; }
             SelfFire();
         }
     }
@@ -64,7 +64,7 @@ public class ShootingController : MonoBehaviour
 
     private void Fire()
     {
-        if (m_mainCamera == null) return;
+        if (m_mainCamera == null) { ChannelLogger.LogGuardReturn("Player", "MainCameraなし"); return; }
 
         // 発射位置を先に確定
         float height = m_playerSettings != null ? m_playerSettings.firePointHeight : 1.2f;

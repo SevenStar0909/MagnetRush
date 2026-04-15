@@ -61,9 +61,9 @@ public class MagnetBullet : MonoBehaviour, IBulletProximity
 
     private void InitializeEffects(MagneticPole pole)
     {
-        if (m_settings == null) return;
+        if (m_settings == null) { ChannelLogger.LogGuardReturn("Bullet", "BulletSettings未設定"); return; }
         GameObject prefab = pole == MagneticPole.S ? m_settings.fireEffect_S : m_settings.fireEffect_N;
-        if (prefab == null) return;
+        if (prefab == null) { ChannelLogger.LogGuardReturn("Bullet", "発射エフェクトプレハブ未設定"); return; }
 
         var instance = Instantiate(prefab, transform);
         instance.transform.localPosition = Vector3.zero;
@@ -74,7 +74,7 @@ public class MagnetBullet : MonoBehaviour, IBulletProximity
 
     void Update()
     {
-        if (IsStuck) return;
+        if (IsStuck) { ChannelLogger.LogGuardReturn("Bullet", "着弾済み(Update)"); return; }
 
         // timeScaleの影響を受けない（エイム中に寿命が短くならない）
         m_timer -= Time.unscaledDeltaTime;
@@ -86,8 +86,8 @@ public class MagnetBullet : MonoBehaviour, IBulletProximity
 
     void FixedUpdate()
     {
-        if (IsStuck || m_rb == null || m_settings == null) return;
-        if (MagnetManager.Instance == null) return;
+        if (IsStuck || m_rb == null || m_settings == null) { ChannelLogger.LogGuardReturn("Bullet", "着弾済みまたはRigidbody/Settings未設定"); return; }
+        if (MagnetManager.Instance == null) { ChannelLogger.LogGuardReturn("Bullet", "MagnetManager未初期化"); return; }
 
         var fields = MagnetManager.Instance.GetActiveFields();
         for (int i = 0; i < fields.Count; i++)
@@ -109,7 +109,7 @@ public class MagnetBullet : MonoBehaviour, IBulletProximity
 
     void OnTriggerEnter(Collider other)
     {
-        if (IsStuck) return;
+        if (IsStuck) { ChannelLogger.LogGuardReturn("Bullet", "着弾済み(OnTriggerEnter)"); return; }
 
         // Matrixが「当たるべき相手」だけを通す。コード内フィルタ不要。
         // 弾同士の検出はMagnetManagerで距離ベース処理（Trigger×Trigger非発火のため）

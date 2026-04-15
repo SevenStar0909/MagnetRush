@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 /// <summary>
@@ -10,6 +11,9 @@ public static class ChannelLogger
 {
     static readonly Dictionary<string, bool> s_channelEnabled = new Dictionary<string, bool>();
     static bool s_globalEnabled = true;
+
+    // ガード節ログの前回理由記憶（file:line キーで状態変化時のみ出力するため）
+    static readonly Dictionary<string, string> s_lastGuardReason = new Dictionary<string, string>();
 
     // チャンネルごとの色（Consoleで識別しやすくする）
     static readonly Dictionary<string, string> s_channelColors = new Dictionary<string, string>
@@ -54,6 +58,31 @@ public static class ChannelLogger
     {
         string color = s_channelColors.TryGetValue(channel, out string c) ? c : "#FFFFFF";
         Debug.LogError($"<color={color}>[{channel}]</color> {message}");
+    }
+
+    /// <summary>
+    /// 早期returnガード節用のログ。file:line 単位で前回理由を記憶し、
+    /// 同じ理由で連続returnした場合は出力しない（毎フレーム発火対策）。
+    /// </summary>
+    /// <param name="channel">チャンネル名（"Player"/"Enemy"/"Magnet" 等）</param>
+    /// <param name="reason">returnの理由（日本語可）</param>
+    [System.Diagnostics.Conditional("UNITY_EDITOR")]
+    [System.Diagnostics.Conditional("DEBUG")]
+    public static void LogGuardReturn(string channel, string reason,
+        [CallerFilePath] string file = "",
+        [CallerLineNumber] int line = 0,
+        [CallerMemberName] string member = "")
+    {
+        if (!s_globalEnabled) return;
+        if (s_channelEnabled.TryGetValue(channel, out bool enabled) && !enabled) return;
+
+        string key = file + ":" + line;
+        if (s_lastGuardReason.TryGetValue(key, out string prev) && prev == reason) return;
+        s_lastGuardReason[key] = reason;
+
+        string color = s_channelColors.TryGetValue(channel, out string c) ? c : "#FFFFFF";
+        string cls = System.IO.Path.GetFileNameWithoutExtension(file);
+        Debug.Log($"<color={color}>[{channel}]</color> [{cls}.{member}:{line}] return: {reason}");
     }
 
     /// <summary>チャンネルの有効/無効を切り替える。</summary>

@@ -22,7 +22,7 @@ public class EnemyTurretBullet : MonoBehaviour
 
     public void Initialize(Vector3 direction)
     {
-        if (m_rb == null) return;
+        if (m_rb == null) { ChannelLogger.LogGuardReturn("Enemy", "Rigidbody未取得"); return; }
         m_rb.linearVelocity = direction.normalized * m_speed;
     }
 

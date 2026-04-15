@@ -73,14 +73,14 @@ public class DebugUI : MonoBehaviour
 
     private void UpdateLabels()
     {
-        if (m_magnetSettings == null) return;
+        if (m_magnetSettings == null) { ChannelLogger.LogGuardReturn("UI", "MagnetSettings未設定"); return; }
         if (m_forceLabel != null) m_forceLabel.text = $"磁力: {m_magnetSettings.magnetForce:F1}";
         if (m_rangeLabel != null) m_rangeLabel.text = $"範囲: {m_magnetSettings.magnetRange:F1}";
     }
 
     private void UpdateBulletList()
     {
-        if (m_bulletListText == null || BulletManager.Instance == null) return;
+        if (m_bulletListText == null || BulletManager.Instance == null) { ChannelLogger.LogGuardReturn("UI", "弾リストUIまたはBulletManagerなし"); return; }
 
         // BulletManagerの内部カウントを使用（GetComponentsInChildrenは不正確）
         int count = BulletManager.Instance.CurrentCount;

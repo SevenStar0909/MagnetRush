@@ -8,7 +8,7 @@ using System;
 /// 磁化時はRendering Layer Maskを設定し、Edge Detection アウトラインの対象になる。
 /// </summary>
 [RequireComponent(typeof(Rigidbody))]
-public class Magnetizable : MonoBehaviour
+public class Magnetizable : MonoBehaviour, IMagnetPoleProvider
 {
     [FormerlySerializedAs("pole")]
     [SerializeField] private MagneticPole m_pole = MagneticPole.None;
@@ -81,7 +81,32 @@ public class Magnetizable : MonoBehaviour
         if (MagnetManager.Instance != null)
         {
             MagnetManager.Instance.SnapResolver?.ReleaseAllFor(this);
+            MagnetManager.Instance.ReleaseHolds(this);
             MagnetManager.Instance.Unregister(this);
+        }
+    }
+
+    /// <summary>
+    /// PDホルダーから保持力を受け取る。Entity 側は Magnetizable.mass、Object 側は Rigidbody.mass で /mass 変換。
+    /// IMagneticResponse / IMagnetTarget の分岐は通さない（PDは独立経路）。
+    /// </summary>
+    public void ApplyHoldForce(Vector3 force)
+    {
+        m_totalForceThisFrame += force.magnitude;
+
+        if (m_cachedEntity != null)
+        {
+            // Entity: kinematic なので Magnetizable.mass (磁気重さ) を使用
+            float entityMass = mass > 0f ? mass : 1f;
+            m_cachedEntity.holdVelocity += force / entityMass * Time.fixedDeltaTime;
+            return;
+        }
+
+        if (m_rb != null && !m_rb.isKinematic)
+        {
+            // Object: Rigidbody.mass (物理慣性) を使用。解除後の KE が物理エンジンと整合
+            float rbMass = m_rb.mass > 0f ? m_rb.mass : 1f;
+            m_rb.linearVelocity += force / rbMass * Time.fixedDeltaTime;
         }
     }
 
@@ -199,9 +224,9 @@ public class Magnetizable : MonoBehaviour
 
     void Update()
     {
-        if (!m_isSettling || m_rb == null) return;
+        if (!m_isSettling || m_rb == null) { ChannelLogger.LogGuardReturn("Magnet", "セトリング中でないまたはRigidbodyなし"); return; }
         // kinematic中はセトリング処理をスキップ（EntityControllerの押し処理中など）
-        if (m_rb.isKinematic) return;
+        if (m_rb.isKinematic) { ChannelLogger.LogGuardReturn("Magnet", "kinematic中はセトリングスキップ"); return; }
 
         m_settlingTimer -= Time.deltaTime;
 

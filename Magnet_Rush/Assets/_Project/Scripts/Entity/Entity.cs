@@ -23,6 +23,13 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
     public Vector3 externalVelocity;
 
     /// <summary>
+    /// PDホルダーから受け取る速度変化。減衰しない。
+    /// MagnetManager が毎 FixedUpdate 冒頭で全磁化 Entity をゼロリセットし、ProcessHold が再計算する。
+    /// 非保持時は構造的に Vector3.zero になるため幽霊運動が発生しない。
+    /// </summary>
+    public Vector3 holdVelocity;
+
+    /// <summary>
     /// ローカル空間の速度（transform.upとVector3.upの間で自動変換）。
     /// 斜面上でも正しく動作する。
     /// </summary>
@@ -232,8 +239,8 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
     /// </summary>
     protected void HandleCeiling()
     {
-        if (m_controller != null) return;
-        if (verticalVelocity <= 0f) return;
+        if (m_controller != null) { ChannelLogger.LogGuardReturn("Entity", "EntityController有り(MoveAndSlideが処理)"); return; }
+        if (verticalVelocity <= 0f) { ChannelLogger.LogGuardReturn("Entity", "上昇していない"); return; }
 
         float maxCeilingDist = height * 0.5f + 0.1f;
         if (CapsuleCast(transform.up, maxCeilingDist, out _, PhysicsLayers.MaskGroundCheck))
@@ -247,7 +254,7 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
     /// </summary>
     protected virtual void ApplyMovement(float dt)
     {
-        Vector3 motion = (velocity + externalVelocity) * dt;
+        Vector3 motion = (velocity + externalVelocity + holdVelocity) * dt;
 
         if (m_controller != null)
         {
@@ -286,7 +293,7 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
     /// </summary>
     protected void Accelerate(Vector3 direction, float turningDrag, float acceleration, float topSpeed, float dt)
     {
-        if (direction.sqrMagnitude < 0.01f) return;
+        if (direction.sqrMagnitude < 0.01f) { ChannelLogger.LogGuardReturn("Entity", "入力方向ゼロ"); return; }
 
         direction.Normalize();
 
@@ -372,7 +379,7 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
     /// </summary>
     protected void SlopeFactor(float upwardForce, float downwardForce, float dt)
     {
-        if (!IsGrounded || !OnSlopingGround()) return;
+        if (!IsGrounded || !OnSlopingGround()) { ChannelLogger.LogGuardReturn("Entity", "非接地 or 斜面でない"); return; }
 
         var factor = Vector3.Dot(Vector3.up, groundNormal);
         var downwards = Vector3.Dot(localSlopeDirection, lateralVelocity) > 0;
@@ -387,7 +394,7 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
     /// </summary>
     protected void FaceDirection(Vector3 direction, float rotationSpeed, float dt, bool adjustUp = true)
     {
-        if (direction.sqrMagnitude < 0.01f) return;
+        if (direction.sqrMagnitude < 0.01f) { ChannelLogger.LogGuardReturn("Entity", "回転方向ゼロ"); return; }
 
         if (adjustUp)
             direction = Quaternion.FromToRotation(Vector3.up, transform.up) * direction;
@@ -406,8 +413,8 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
     /// </summary>
     protected virtual void UpdateMagneticOrientation(float dt)
     {
-        if (IsGrounded) return;
-        if (externalVelocity.sqrMagnitude < PullOrientationThreshold * PullOrientationThreshold) return;
+        if (IsGrounded) { ChannelLogger.LogGuardReturn("Entity", "接地中は通常回転を維持"); return; }
+        if (externalVelocity.sqrMagnitude < PullOrientationThreshold * PullOrientationThreshold) { ChannelLogger.LogGuardReturn("Entity", "磁力が閾値未満"); return; }
 
         // 水平方向のみ回転（Y軸回転のみ）。上下に傾けるとtransform.upが狂い重力計算が破綻する
         Vector3 horizontalDir = new Vector3(externalVelocity.x, 0f, externalVelocity.z);

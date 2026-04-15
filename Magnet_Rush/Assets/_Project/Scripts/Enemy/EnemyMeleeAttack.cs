@@ -76,9 +76,9 @@ public class EnemyMeleeAttack : MonoBehaviour
 
     public void TryAttack()
     {
-        if (m_data == null) return;
-        if (m_isAttacking) return;
-        if (m_attackTimer < m_data.attackInterval) return;
+        if (m_data == null) { ChannelLogger.LogGuardReturn("Enemy", "EnemySettings未設定"); return; }
+        if (m_isAttacking) { ChannelLogger.LogGuardReturn("Enemy", "攻撃中"); return; }
+        if (m_attackTimer < m_data.attackInterval) { ChannelLogger.LogGuardReturn("Enemy", "攻撃クールダウン中"); return; }
 
         StartCoroutine(AttackRoutine());
     }
@@ -237,7 +237,7 @@ public class EnemyMeleeAttack : MonoBehaviour
     // それもなければ最初に見つかったCapsuleColliderを使う。
     private void ResolveAttackHitboxFromWeapon(WeaponStateController weapon)
     {
-        if (weapon == null) return;
+        if (weapon == null) { ChannelLogger.LogGuardReturn("Enemy", "武器参照なし"); return; }
 
         CapsuleCollider capsule = null;
 
@@ -274,8 +274,8 @@ public class EnemyMeleeAttack : MonoBehaviour
 
     private void CheckHitboxOverlapAndDamage()
     {
-        if (m_attackHitbox == null) return;
-        if (!m_attackHitbox.enabled) return;
+        if (m_attackHitbox == null) { ChannelLogger.LogGuardReturn("Enemy", "攻撃Hitbox未設定"); return; }
+        if (!m_attackHitbox.enabled) { ChannelLogger.LogGuardReturn("Enemy", "攻撃Hitbox無効"); return; }
 
         GetCapsuleWorldPoints(m_attackHitbox, out Vector3 p0, out Vector3 p1, out float radius);
 
@@ -336,23 +336,23 @@ public class EnemyMeleeAttack : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (m_attackHitbox == null) return;
-        if (!m_attackHitbox.enabled) return;
+        if (m_attackHitbox == null) { ChannelLogger.LogGuardReturn("Enemy", "攻撃Hitbox未設定"); return; }
+        if (!m_attackHitbox.enabled) { ChannelLogger.LogGuardReturn("Enemy", "攻撃Hitbox無効"); return; }
 
         TryApplyDamage(other);
     }
 
     private void TryApplyDamage(Collider other)
     {
-        if (other == null) return;
-        if (m_data == null) return;
+        if (other == null) { ChannelLogger.LogGuardReturn("Enemy", "対象Colliderなし"); return; }
+        if (m_data == null) { ChannelLogger.LogGuardReturn("Enemy", "EnemySettings未設定"); return; }
 
         var hittable = other.GetComponent<IHittable>();
-        if (hittable == null) return;
+        if (hittable == null) { ChannelLogger.LogGuardReturn("Enemy", "IHittable未実装"); return; }
 
         // 重複ダメージ防止（HashSetでフレーム内1回のみ）
         var health = other.GetComponentInParent<Health>();
-        if (health != null && !m_hitTargets.Add(health)) return;
+        if (health != null && !m_hitTargets.Add(health)) { ChannelLogger.LogGuardReturn("Enemy", "同一フレーム重複ヒット"); return; }
 
         hittable.OnHit(new HitData
         {

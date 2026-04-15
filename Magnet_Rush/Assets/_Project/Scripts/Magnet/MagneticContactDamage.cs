@@ -23,7 +23,7 @@ public class MagneticContactDamage : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (m_magnetizable == null) return;
+        if (m_magnetizable == null) { ChannelLogger.LogGuardReturn("Magnet", "Magnetizableなし"); return; }
 
         // 磁力が切れたらヒット記録をリセット（再度当たれるように）
         if (!m_magnetizable.IsActive && m_wasActive)

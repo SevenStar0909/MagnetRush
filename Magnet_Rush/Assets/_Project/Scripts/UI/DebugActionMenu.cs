@@ -45,7 +45,7 @@ public class DebugActionMenu : MonoBehaviour
 
     void OnGUI()
     {
-        if (!m_isVisible) return;
+        if (!m_isVisible) { ChannelLogger.LogGuardReturn("UI", "メニュー非表示中"); return; }
         m_windowRect = GUILayout.Window(999, m_windowRect, DrawWindow, "デバッグメニュー [F2]");
     }
 

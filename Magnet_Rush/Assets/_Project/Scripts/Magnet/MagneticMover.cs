@@ -16,6 +16,7 @@ public class MagneticMover : MonoBehaviour, IMagneticResponse
     private IMagnetTarget m_magnetTarget;
 
     private bool m_isMagnetActive;
+    private bool m_isHoldActive;  // PD 保持による AI 停止。距離減衰力ルート (m_isMagnetActive) と独立管理
     private float m_lastForceTime;
     private int m_recoveryAttempts;
 
@@ -33,7 +34,10 @@ public class MagneticMover : MonoBehaviour, IMagneticResponse
 
     public void OnMagnetForce(Vector3 force, Vector3 sourcePosition)
     {
-        if (m_settings == null) return;
+        // PD 保持中のみ既存ルートを弾く（距離減衰力は通常通り毎フレーム適用したい）
+        if (m_isHoldActive) { ChannelLogger.LogGuardReturn("Magnet", "PD保持中は距離減衰力を無視"); return; }
+
+        if (m_settings == null) { ChannelLogger.LogGuardReturn("Magnet", "Mover設定なし"); return; }
 
         m_isMagnetActive = true;
         m_lastForceTime = Time.time;
@@ -47,6 +51,24 @@ public class MagneticMover : MonoBehaviour, IMagneticResponse
         }
     }
 
+    /// <summary>
+    /// PDホルダーから吸着の Enter/Exit を受け取り、NavMeshAgent 停止/復帰を明示制御する。
+    /// active=true: AI停止 (距離減衰力と同じ扱い)。active=false: NavMeshAgent 復帰。
+    /// </summary>
+    public void SetHoldActive(bool active)
+    {
+        m_isHoldActive = active;
+        if (active)
+        {
+            m_isMagnetActive = true;
+            m_lastForceTime = Time.time;
+        }
+        else
+        {
+            RecoverFromMagnet();
+        }
+    }
+
     public void OnMagnetContact(Magnetizable self, Magnetizable other)
     {
         // SnapResolver が接触固定を処理する
@@ -54,7 +76,7 @@ public class MagneticMover : MonoBehaviour, IMagneticResponse
 
     void Update()
     {
-        if (!m_isMagnetActive) return;
+        if (!m_isMagnetActive) { ChannelLogger.LogGuardReturn("Magnet", "磁力移動モード非アクティブ"); return; }
 
         // OnMagnetForceが呼ばれなくなった（範囲外）→ recoveryDelay後にAI再開
         // externalVelocityの減衰はEntity側で処理されるため、ここではタイミングのみ管理

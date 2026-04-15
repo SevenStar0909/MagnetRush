@@ -27,7 +27,7 @@ public class PolarityController : MonoBehaviour
 
     void Update()
     {
-        if (!m_input.ConsumeSwitchPole()) return;
+        if (!m_input.ConsumeSwitchPole()) { ChannelLogger.LogGuardReturn("Player", "極性切替入力なし"); return; }
 
         CurrentPole = CurrentPole == MagneticPole.S ? MagneticPole.N : MagneticPole.S;
         OnPolarityChanged?.Invoke(CurrentPole);

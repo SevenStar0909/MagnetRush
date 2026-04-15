@@ -25,14 +25,14 @@ public class WeaponManager : Singleton<WeaponManager>
     // 武器をアクティブリストに登録する。PickableWeaponから呼び出される。
     public void Register(WeaponStateController weapon)
     {
-        if (weapon == null || m_activeWeapons.Contains(weapon)) return;
+        if (weapon == null || m_activeWeapons.Contains(weapon)) { ChannelLogger.LogGuardReturn("Enemy", "武器null/登録済み"); return; }
         m_activeWeapons.Add(weapon);
     }
 
     // 武器をアクティブリストから解除する。PickableWeaponから呼び出される。
     public void Unregister(WeaponStateController weapon)
     {
-        if (weapon == null || !m_activeWeapons.Contains(weapon)) return;
+        if (weapon == null || !m_activeWeapons.Contains(weapon)) { ChannelLogger.LogGuardReturn("Enemy", "武器null/未登録"); return; }
         m_activeWeapons.Remove(weapon);
     }
 

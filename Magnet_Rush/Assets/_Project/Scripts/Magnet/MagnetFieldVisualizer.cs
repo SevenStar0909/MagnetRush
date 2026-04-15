@@ -22,7 +22,7 @@ public class MagnetFieldVisualizer : MonoBehaviour
 #if !DEBUG && !UNITY_EDITOR
         return;
 #endif
-        if (settings == null) return;
+        if (settings == null) { ChannelLogger.LogGuardReturn("Magnet", "Visualizer設定なし"); return; }
         Hide();
 
         Color innerColor = pole == MagneticPole.S

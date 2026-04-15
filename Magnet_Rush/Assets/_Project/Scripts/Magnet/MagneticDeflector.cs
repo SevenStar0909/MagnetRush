@@ -25,8 +25,8 @@ public class MagneticDeflector : MonoBehaviour, IMagneticResponse
 
     public void OnMagnetForce(Vector3 force, Vector3 sourcePosition)
     {
-        if (m_settings == null) return;
-        if (m_rb.linearVelocity.sqrMagnitude < 0.01f) return;
+        if (m_settings == null) { ChannelLogger.LogGuardReturn("Magnet", "Deflector設定なし"); return; }
+        if (m_rb.linearVelocity.sqrMagnitude < 0.01f) { ChannelLogger.LogGuardReturn("Magnet", "弾速度がほぼゼロで偏向不可"); return; }
 
         // 速度方向を力の方向にブレンド（速さは維持）
         float speed = m_rb.linearVelocity.magnitude;

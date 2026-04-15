@@ -2,9 +2,10 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// 異極オブジェクトの吸い込み→固定を管理する。
-/// FixedJointで物理固定し、距離超過で解除する。
-/// 解除されたペアはbrokenリストに入り、どちらかの磁化が解除されるまで再スナップ＋力適用を禁止する。
+/// Object×Object 専用の異極吸い込み→FixedJoint 固定を管理する。
+/// Entity 絡みペア（片方または両方が Entity）は PD ホルダー (MagnetManager.ProcessHold) に委譲するため、
+/// Resolve 冒頭で CachedEntity ガードで弾く。
+/// 距離超過で解除されたペアは brokenリストに入り、どちらかの磁化が解除されるまで再スナップ＋力適用を禁止する。
 /// </summary>
 public class MagneticSnapResolver
 {
@@ -30,7 +31,7 @@ public class MagneticSnapResolver
     /// <summary>指定Magnetizableに関連するbrokenペアを解除する。磁化解除時にMagnetizable.OnDisableから呼ぶ。</summary>
     public void ClearBrokenFor(Magnetizable mag)
     {
-        if (mag == null) return;
+        if (mag == null) { ChannelLogger.LogGuardReturn("Magnet", "Magnetizableなし"); return; }
         m_brokenPairs.RemoveWhere(key =>
         {
             int id = mag.GetInstanceID();
@@ -40,14 +41,16 @@ public class MagneticSnapResolver
         });
     }
 
-    /// <summary>snapDistance内の異極ペアを固定する。brokenペアは再スナップしない。</summary>
+    /// <summary>snapDistance内の異極Object×Objectペアを固定する。Entity絡みペアはPDホルダーに委譲するため対象外。brokenペアは再スナップしない。</summary>
     public void Resolve(Magnetizable a, Magnetizable b, float dt)
     {
-        if (a == null || b == null) return;
+        if (a == null || b == null) { ChannelLogger.LogGuardReturn("Magnet", "Resolve対象のMagnetizableがnull"); return; }
+
+        if (a.CachedEntity != null || b.CachedEntity != null) { ChannelLogger.LogGuardReturn("Magnet", "Entity絡みペアはPDホルダーに委譲"); return; }
 
         long key = MakePairKey(a, b);
-        if (m_attachedPairs.Contains(key)) return;
-        if (m_brokenPairs.Contains(key)) return;
+        if (m_attachedPairs.Contains(key)) { ChannelLogger.LogGuardReturn("Magnet", "既に吸着済みペア"); return; }
+        if (m_brokenPairs.Contains(key)) { ChannelLogger.LogGuardReturn("Magnet", "brokenペアは再スナップ禁止"); return; }
 
         Snap(a, b);
     }
@@ -55,14 +58,14 @@ public class MagneticSnapResolver
     /// <summary>FixedJointで物理固定する。mass=Infinity側にJointを生成。</summary>
     public void Snap(Magnetizable a, Magnetizable b)
     {
-        if (a == null || b == null) return;
+        if (a == null || b == null) { ChannelLogger.LogGuardReturn("Magnet", "Snap対象のMagnetizableがnull"); return; }
 
         long key = MakePairKey(a, b);
-        if (m_attachedPairs.Contains(key)) return;
+        if (m_attachedPairs.Contains(key)) { ChannelLogger.LogGuardReturn("Magnet", "既に吸着済みペア"); return; }
 
         Magnetizable anchor = FindAnchor(a, b);
         Magnetizable mover = anchor == a ? b : a;
-        if (anchor == null || mover == null) return;
+        if (anchor == null || mover == null) { ChannelLogger.LogGuardReturn("Magnet", "アンカー/ムーバー決定失敗"); return; }
 
         var joint = mover.gameObject.AddComponent<FixedJoint>();
         joint.connectedBody = anchor.GetComponent<Rigidbody>();
@@ -75,7 +78,7 @@ public class MagneticSnapResolver
 
     public void Release(long pairKey)
     {
-        if (!m_attachedPairs.Remove(pairKey)) return;
+        if (!m_attachedPairs.Remove(pairKey)) { ChannelLogger.LogGuardReturn("Magnet", "解放対象のペアが未登録"); return; }
 
         if (m_joints.TryGetValue(pairKey, out var joint))
         {
@@ -90,7 +93,7 @@ public class MagneticSnapResolver
     /// <summary>指定フィールドに関連する全Jointを破棄する。磁場消滅時に呼ぶ。</summary>
     public void ReleaseAllForField(MagnetField field)
     {
-        if (field == null) return;
+        if (field == null) { ChannelLogger.LogGuardReturn("Magnet", "解放対象のフィールドがnull"); return; }
 
         var toRemove = new List<long>();
         foreach (var kvp in m_joints)
@@ -111,7 +114,7 @@ public class MagneticSnapResolver
     /// <summary>指定Magnetizableに関連する全Jointを破棄する。OnDisable時に呼ぶ。</summary>
     public void ReleaseAllFor(Magnetizable mag)
     {
-        if (mag == null) return;
+        if (mag == null) { ChannelLogger.LogGuardReturn("Magnet", "解放対象のMagnetizableがnull"); return; }
 
         var toRemove = new List<long>();
         foreach (var kvp in m_joints)

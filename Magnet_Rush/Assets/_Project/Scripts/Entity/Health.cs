@@ -34,9 +34,9 @@ public class Health : MonoBehaviour
     /// </summary>
     public void Damage(int amount)
     {
-        if (IsDead) return;
-        if (IsRecovering) return;
-        if (amount <= 0) return;
+        if (IsDead) { ChannelLogger.LogGuardReturn("Entity", "既に死亡"); return; }
+        if (IsRecovering) { ChannelLogger.LogGuardReturn("Entity", "無敵時間中"); return; }
+        if (amount <= 0) { ChannelLogger.LogGuardReturn("Entity", "ダメージ量0以下"); return; }
 
         CurrentHealth = Mathf.Max(CurrentHealth - amount, 0);
         m_lastDamageTime = Time.time;
@@ -53,8 +53,8 @@ public class Health : MonoBehaviour
     /// </summary>
     public void Heal(int amount)
     {
-        if (IsDead) return;
-        if (amount <= 0) return;
+        if (IsDead) { ChannelLogger.LogGuardReturn("Entity", "死亡中は回復不可"); return; }
+        if (amount <= 0) { ChannelLogger.LogGuardReturn("Entity", "回復量0以下"); return; }
 
         CurrentHealth = Mathf.Min(CurrentHealth + amount, m_maxHealth);
         OnHeal?.Invoke(amount);
