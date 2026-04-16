@@ -566,11 +566,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!4 &1344641885 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 7640701815771579218, guid: dc8c794c5d3006b4f82c6b43ea9b63f7, type: 3}
-  m_PrefabInstance: {fileID: 4905529883673045142}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1371998104
 GameObject:
   m_ObjectHideFlags: 0
@@ -915,11 +910,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2070937299}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!4 &1144573772107352254 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 6521214187702972074, guid: dc8c794c5d3006b4f82c6b43ea9b63f7, type: 3}
-  m_PrefabInstance: {fileID: 4905529883673045142}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &2131794728023520199
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -975,7 +965,7 @@ PrefabInstance:
     - target: {fileID: 5554608176706901386, guid: d88d1e89cc9e6a1458b81fe08ab3b4dc, type: 3}
       propertyPath: Target.TrackingTarget
       value: 
-      objectReference: {fileID: 1144573772107352254}
+      objectReference: {fileID: 0}
     - target: {fileID: 6616475823130266433, guid: d88d1e89cc9e6a1458b81fe08ab3b4dc, type: 3}
       propertyPath: Damping.x
       value: 0
@@ -1043,11 +1033,6 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 2058972897}
   m_SourcePrefab: {fileID: 100100000, guid: d88d1e89cc9e6a1458b81fe08ab3b4dc, type: 3}
---- !u!4 &4088202899330330600 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 525279597465324906, guid: dc8c794c5d3006b4f82c6b43ea9b63f7, type: 3}
-  m_PrefabInstance: {fileID: 4905529883673045142}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &4905529883673045142
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1103,7 +1088,7 @@ PrefabInstance:
     - target: {fileID: 5284489176223668504, guid: dc8c794c5d3006b4f82c6b43ea9b63f7, type: 3}
       propertyPath: m_firePoint
       value: 
-      objectReference: {fileID: 1344641885}
+      objectReference: {fileID: 0}
     - target: {fileID: 5827321480477193096, guid: dc8c794c5d3006b4f82c6b43ea9b63f7, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
@@ -1229,7 +1214,7 @@ PrefabInstance:
     - target: {fileID: 2604617035444351685, guid: 6b054d6dbebac8b49be1e9aed68e9497, type: 3}
       propertyPath: m_spawnPoint
       value: 
-      objectReference: {fileID: 4088202899330330600}
+      objectReference: {fileID: 0}
     - target: {fileID: 5587081181866657333, guid: 6b054d6dbebac8b49be1e9aed68e9497, type: 3}
       propertyPath: m_Name
       value: _Managers
