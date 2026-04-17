@@ -13,9 +13,7 @@ MonoBehaviour:
   m_Name: OutlineRendererFeature
   m_EditorClassIdentifier: Assembly-CSharp::OutlineRendererFeature
   m_Active: 1
-  m_outlineLayerMask:
-    serializedVersion: 2
-    m_Bits: 4096
+  m_outlineRenderingLayerMask: 256
   m_normalsMaterial: {fileID: 2100000, guid: 426f5f8983ee79e4da69d3f36be04c52, type: 2}
   m_edgeDetectionMaterial: {fileID: 2100000, guid: b9afae233f8fa1045aa127df316e450e, type: 2}
   m_outlineThickness: 1

@@ -79,6 +79,7 @@ MonoBehaviour:
   m_health: {fileID: 0}
   velocity: {x: 0, y: 0, z: 0}
   externalVelocity: {x: 0, y: 0, z: 0}
+  holdVelocity: {x: 0, y: 0, z: 0}
   m_settings: {fileID: 11400000, guid: d645a9ba3befda14d8a96f9af1142f3f, type: 2}
 --- !u!114 &3248401797439555635
 MonoBehaviour:
@@ -134,7 +135,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MagnetRush.Player.ShootingController
   m_bulletSettings: {fileID: 11400000, guid: 425ee2473071b7a4fa2afd4ccb6a162c, type: 2}
-  m_playerSettings: {fileID: 11400000, guid: d645a9ba3befda14d8a96f9af1142f3f, type: 2}
   m_firePoint: {fileID: 5721768207443567397}
   m_selfFireHeightOffset: 1
 --- !u!114 &8008771699409890324
@@ -149,7 +149,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c3e1c545df00ac54b9bc05bdf8aeb891, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MagnetRush.Player.AimController
-  m_settings: {fileID: 11400000, guid: d645a9ba3befda14d8a96f9af1142f3f, type: 2}
 --- !u!114 &6810576503435534551
 MonoBehaviour:
   m_ObjectHideFlags: 0

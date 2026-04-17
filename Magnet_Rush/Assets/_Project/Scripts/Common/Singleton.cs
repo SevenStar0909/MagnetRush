@@ -21,6 +21,7 @@ public abstract class Singleton<T> : MonoBehaviour where T : MonoBehaviour
         if (s_instance != null && s_instance != this)
         {
             Destroy(gameObject);
+            ChannelLogger.LogGuardReturn("Game", "既存Singletonあり、重複を破棄");
             return;
         }
         s_instance = this as T;

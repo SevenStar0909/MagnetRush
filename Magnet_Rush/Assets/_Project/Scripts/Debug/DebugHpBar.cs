@@ -76,7 +76,7 @@ public class DebugHpBar : MonoBehaviour
     void OnGUI()
     {
         var cam = Camera.main;
-        if (cam == null) return;
+        if (cam == null) { ChannelLogger.LogGuardReturn("Game", "メインカメラなし"); return; }
 
         foreach (var target in m_targets)
         {
