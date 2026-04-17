@@ -3,7 +3,7 @@ using UnityEngine;
 /// <summary>
 /// 磁力への応答方法を抽象化するインターフェース。
 /// Magnetizable が力の適用先を判別する際に使用する。
-/// オブジェクトごとに異なる応答（移動/回転/偏向）を実装可能にする。
+/// オブジェクトごとに異なる応答（移動/回転/軌道変化）を実装可能にする。
 /// </summary>
 public interface IMagneticResponse
 {
