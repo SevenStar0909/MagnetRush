@@ -1,0 +1,28 @@
+using UnityEngine;
+
+/// <summary>
+/// MagnetField のトリガー子GOに付けるブリッジ。
+/// OnTrigger イベントを親の MagnetField に転送する。
+/// MagnetField レイヤーに配置。Layer Collision MatrixでGround/Wall/Bullet/Magnetizedとの衝突を遮断済み。
+/// </summary>
+public class MagnetFieldTriggerBridge : MonoBehaviour
+{
+    private MagnetField m_field;
+
+    public void Initialize(MagnetField field)
+    {
+        m_field = field;
+    }
+
+    void OnTriggerStay(Collider other)
+    {
+        if (m_field != null)
+            m_field.HandleTriggerStay(other);
+    }
+
+    void OnTriggerExit(Collider other)
+    {
+        if (m_field != null)
+            m_field.HandleTriggerExit(other);
+    }
+}

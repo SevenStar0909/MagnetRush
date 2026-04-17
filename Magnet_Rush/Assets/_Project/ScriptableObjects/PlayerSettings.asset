@@ -23,8 +23,8 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 193
-  cameraSensitivityX: 200
-  cameraSensitivityY: 200
+  cameraSensitivityX: 50
+  cameraSensitivityY: 35
   cameraDistance: 5
   shoulderOffset: {x: 0.8, y: 0.3, z: 0}
   firePointHeight: 1.2
@@ -37,5 +37,6 @@ MonoBehaviour:
   slopeUpwardForce: 15
   slopeDownwardForce: 25
   magnetResistance: 0.5
+  externalDrag: 3
   pullOrientationThreshold: 5
   pullOrientationSpeed: 8

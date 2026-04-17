@@ -9,8 +9,7 @@ using UnityEngine.Serialization;
 [DefaultExecutionOrder(-100)]
 public class GameManager : Singleton<GameManager>
 {
-    [FormerlySerializedAs("spawnPoint")]
-    [SerializeField] private Transform m_spawnPoint;
+    private Transform m_spawnPoint;
 
     protected override void Awake()
     {
@@ -21,8 +20,8 @@ public class GameManager : Singleton<GameManager>
 
     void Update()
     {
-        // Rキーでリスタート（Input System）
-        if (Keyboard.current != null && Keyboard.current.rKey.wasPressedThisFrame)
+        // F5キーでリスタート
+        if (Keyboard.current != null && Keyboard.current.f5Key.wasPressedThisFrame)
         {
             Restart();
         }
@@ -40,7 +39,7 @@ public class GameManager : Singleton<GameManager>
     public void Restart()
     {
         Time.timeScale = 1f;
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
     /// <summary>
@@ -53,6 +52,14 @@ public class GameManager : Singleton<GameManager>
         {
             player.transform.position = m_spawnPoint.position;
         }
+    }
+
+    /// <summary>
+    /// マップシーンのStageSpawnPointから呼ばれる。
+    /// </summary>
+    public void RegisterSpawnPoint(Transform point)
+    {
+        m_spawnPoint = point;
     }
 
     /// <summary>
