@@ -4,7 +4,7 @@ using UnityEngine;
 /// 飛行中の弾が磁力の影響で軌道を曲げる応答コンポーネント。
 /// 仕様書: 「敵の弾にS + 自分にS → 弾が反発して跳ね返る」「攻撃誘導」で使用。
 /// 敵弾プレハブに Magnetizable(pole=None) + MagneticDeflector を事前アタッチ。
-/// プレイヤーの弾が当たると Magnetizable.SetPole() で極性設定 → 偏向開始。
+/// プレイヤーの弾が当たると Magnetizable.SetPole() で極性設定 → 軌道変化開始。
 /// </summary>
 [RequireComponent(typeof(Magnetizable))]
 [RequireComponent(typeof(Rigidbody))]
@@ -26,7 +26,7 @@ public class MagneticDeflector : MonoBehaviour, IMagneticResponse
     public void OnMagnetForce(Vector3 force, Vector3 sourcePosition)
     {
         if (m_settings == null) { ChannelLogger.LogGuardReturn("Magnet", "Deflector設定なし"); return; }
-        if (m_rb.linearVelocity.sqrMagnitude < 0.01f) { ChannelLogger.LogGuardReturn("Magnet", "弾速度がほぼゼロで偏向不可"); return; }
+        if (m_rb.linearVelocity.sqrMagnitude < 0.01f) { ChannelLogger.LogGuardReturn("Magnet", "弾速度がほぼゼロで軌道変化不可"); return; }
 
         // 速度方向を力の方向にブレンド（速さは維持）
         float speed = m_rb.linearVelocity.magnitude;

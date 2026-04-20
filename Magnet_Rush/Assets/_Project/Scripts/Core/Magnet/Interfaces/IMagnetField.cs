@@ -2,7 +2,7 @@
 
 /// <summary>
 /// 磁力場の共通インターフェース。Entity が参照する型。
-/// Common モジュールに配置し、循環依存を回避する。
+/// Core アセンブリ内の Magnet/Interfaces/ に分離配置し、MagnetField 本体の実装詳細に依存せずに利用できる。
 /// </summary>
 public interface IMagnetField
 {
