@@ -1,19 +1,9 @@
 using UnityEngine;
 
 /// <summary>
-/// マップシーンに配置するスポーン地点。OnEnableでGameManagerに自己登録する。
+/// マップシーンに配置するスポーン地点を示すマーカー。
+/// GameManager.GetSpawnPosition() が必要時に FindFirstObjectByType で検索する。
 /// </summary>
 public class StageSpawnPoint : MonoBehaviour
 {
-    private void OnEnable()
-    {
-        if (GameManager.Instance != null)
-            GameManager.Instance.RegisterSpawnPoint(transform);
-    }
-
-    private void OnDisable()
-    {
-        if (GameManager.Instance != null)
-            GameManager.Instance.RegisterSpawnPoint(null);
-    }
 }
