@@ -28,10 +28,17 @@ public abstract class EntityStateManagerBase : MonoBehaviour
 public class EntityStateManager<T> : EntityStateManagerBase where T : Entity
 {
     private readonly Dictionary<Type, EntityState<T>> m_states = new();
+    private readonly List<EntityState<T>> m_list = new();
     private T m_entity;
 
     public EntityState<T> current { get; private set; }
     public EntityState<T> last { get; private set; }
+
+    /// <summary>現在ステートの登録順 index。未登録 or 未初期化時は -1。</summary>
+    public int index => current != null ? m_list.IndexOf(current) : -1;
+
+    /// <summary>前回ステートの登録順 index。未初期化時は -1。</summary>
+    public int lastIndex => last != null ? m_list.IndexOf(last) : -1;
 
     /// <summary>
     /// 全ステート登録後にサブクラスのAwake()から呼び出す。
@@ -42,11 +49,14 @@ public class EntityStateManager<T> : EntityStateManagerBase where T : Entity
     }
 
     /// <summary>
-    /// ステートを辞書に登録する。
+    /// ステートを辞書とリストに登録する。同じ型の二重登録は無視する。
     /// </summary>
     public void RegisterState(EntityState<T> state)
     {
-        m_states[state.GetType()] = state;
+        var type = state.GetType();
+        if (m_states.ContainsKey(type)) return;
+        m_states[type] = state;
+        m_list.Add(state);
     }
 
     /// <summary>
