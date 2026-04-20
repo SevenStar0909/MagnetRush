@@ -98,9 +98,9 @@ public class Player : Entity
         UpdateMagneticInfluence();
         states.UpdateState(dt);
 
-        // 死亡中は重力・移動処理をスキップ（EntityStepがvelocityを上書きして落下するのを防ぐ）
+        // 死亡中は重力・移動処理をスキップ（UpdateEntityがvelocityを上書きして落下するのを防ぐ）
         if (!states.IsCurrentOfType<DiePlayerState>())
-            EntityStep(dt);
+            UpdateEntity(dt);
     }
 
     /// <summary>

@@ -204,7 +204,7 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
     /// <summary>
     /// 共通物理ステップ: 接地判定 → 重力 → 移動。サブクラスのUpdate()から呼ぶ。
     /// </summary>
-    protected void EntityStep(float dt)
+    protected void UpdateEntity(float dt)
     {
         UpdateGround();
         HandleCeiling();
