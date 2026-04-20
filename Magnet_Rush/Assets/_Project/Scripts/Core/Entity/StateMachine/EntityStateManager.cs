@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 /// <summary>
 /// EntityStateManagerの非ジェネリック基底クラス。
@@ -17,9 +18,20 @@ public abstract class EntityStateManagerBase : MonoBehaviour
     /// <summary>ステート変更時に発火。</summary>
     public event Action OnStateChanged;
 
+    /// <summary>
+    /// Inspectorから接続可能なステート変化イベント。
+    /// コード購読はOnStateChangedを使うこと。
+    /// </summary>
+    [Tooltip("Inspectorから接続可能なステート変化イベント。コード購読はOnStateChangedを使う")]
+    public UnityEvent onStateChanged;
+
     protected void InvokeStateEnter(Type type) => OnStateEnter?.Invoke(type);
     protected void InvokeStateExit(Type type) => OnStateExit?.Invoke(type);
-    protected void InvokeStateChanged() => OnStateChanged?.Invoke();
+    protected void InvokeStateChanged()
+    {
+        OnStateChanged?.Invoke();
+        onStateChanged?.Invoke();
+    }
 }
 
 /// <summary>
