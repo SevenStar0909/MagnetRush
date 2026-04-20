@@ -1,0 +1,32 @@
+基本ルール
+
+:PascalCase(各単語の先頭を大文字) を使う：PlayerCharacter、MainMenuButton
+:日本語・スペース・記号（- () など）は避ける、_（アンダースコア）は区切り用に使う
+:単数形を基本にする：Enemy ◯ / Enemies X
+:「カテゴリ\_名前\_バリエーション\_状態」みたいな順で並べると後で検索しやすい
+
+種類                     プレフィックス  例
+
+テクスチャ                 T_              T_Rock_01
+
+UIテクスチャ               UI_             UI_Button_Start
+
+マテリアル                 M_              M_Rock_01
+
+スタティックメッシュ       SM_             SM_Wall_01
+※スタティックメッシュ＝変形しない固定形状の3Dモデル（岩・壁・小物など）
+
+スケルタルメッシュ         SK_             SK_PlayerBody
+
+プレハブ                   P_              P_Enemy_Turret
+
+アニメーションクリップ      A_              A_Player_Idle
+
+アニメーターコントローラー  AC_             AC_Player
+
+オーディオ（SE/BGM）       SFX_ / BGM_     SFX_Jump_01 / BGM_nantoka
+
+パーティクル               FX_ / VFX_      VFX_Explosion_Large
+
+
+

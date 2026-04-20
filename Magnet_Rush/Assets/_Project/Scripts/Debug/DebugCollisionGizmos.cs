@@ -54,7 +54,7 @@ public class DebugCollisionGizmos : MonoBehaviour
     {
         bool showGizmos = UnityEditor.EditorPrefs.GetBool(k_ShowGizmosPrefKey, false);
         bool showLabels = UnityEditor.EditorPrefs.GetBool(k_ShowLabelsPrefKey, false);
-        if (!showGizmos && !showLabels) return;
+        if (!showGizmos && !showLabels) { ChannelLogger.LogGuardReturn("Game", "ギズモ・ラベル両方OFF"); return; }
 
         var colliders = FindObjectsByType<Collider>(FindObjectsSortMode.None);
         m_drawnLabels.Clear();
@@ -102,11 +102,11 @@ public class DebugCollisionGizmos : MonoBehaviour
         var cam = UnityEditor.SceneView.currentDrawingSceneView != null
             ? UnityEditor.SceneView.currentDrawingSceneView.camera
             : Camera.current;
-        if (cam == null) return;
+        if (cam == null) { ChannelLogger.LogGuardReturn("Game", "カメラ取得失敗"); return; }
 
         // 背面の点はスキップ
         Vector3 viewPos = cam.WorldToViewportPoint(worldPos);
-        if (viewPos.z < 0f) return;
+        if (viewPos.z < 0f) { ChannelLogger.LogGuardReturn("Game", "背面のラベル位置"); return; }
 
         var content = new GUIContent(text);
         var style = new GUIStyle(GUI.skin.label) { fontStyle = FontStyle.Bold };

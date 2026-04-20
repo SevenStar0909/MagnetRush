@@ -45,9 +45,9 @@ public class OutlineRendererFeature : ScriptableRendererFeature
 
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
     {
-        if (m_normalsMaterial == null || m_edgeDetectionMaterial == null) return;
-        if (renderingData.cameraData.cameraType == CameraType.SceneView) return;
-        if (renderingData.cameraData.cameraType == CameraType.Preview) return;
+        if (m_normalsMaterial == null || m_edgeDetectionMaterial == null) { ChannelLogger.LogGuardReturn("Game", "アウトライン用マテリアル未設定"); return; }
+        if (renderingData.cameraData.cameraType == CameraType.SceneView) { ChannelLogger.LogGuardReturn("Game", "SceneViewカメラはスキップ"); return; }
+        if (renderingData.cameraData.cameraType == CameraType.Preview) { ChannelLogger.LogGuardReturn("Game", "Previewカメラはスキップ"); return; }
 
         renderer.EnqueuePass(m_normalsPass);
         renderer.EnqueuePass(m_edgePass);

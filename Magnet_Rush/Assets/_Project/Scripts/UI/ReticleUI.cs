@@ -63,7 +63,7 @@ public class ReticleUI : MonoBehaviour
 
     private void UpdateSprite()
     {
-        if (m_reticleImage == null) return;
+        if (m_reticleImage == null) { ChannelLogger.LogGuardReturn("UI", "レティクルImage未設定"); return; }
 
         bool aiming = m_aimController != null && m_aimController.IsAiming;
 
