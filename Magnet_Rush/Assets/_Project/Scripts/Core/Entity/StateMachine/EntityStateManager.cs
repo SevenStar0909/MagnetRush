@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 /// <summary>
 /// EntityStateManagerの非ジェネリック基底クラス。
@@ -17,9 +18,20 @@ public abstract class EntityStateManagerBase : MonoBehaviour
     /// <summary>ステート変更時に発火。</summary>
     public event Action OnStateChanged;
 
+    /// <summary>
+    /// Inspectorから接続可能なステート変化イベント。
+    /// コード購読はOnStateChangedを使うこと。
+    /// </summary>
+    [Tooltip("Inspectorから接続可能なステート変化イベント。コード購読はOnStateChangedを使う")]
+    public UnityEvent onStateChanged;
+
     protected void InvokeStateEnter(Type type) => OnStateEnter?.Invoke(type);
     protected void InvokeStateExit(Type type) => OnStateExit?.Invoke(type);
-    protected void InvokeStateChanged() => OnStateChanged?.Invoke();
+    protected void InvokeStateChanged()
+    {
+        OnStateChanged?.Invoke();
+        onStateChanged?.Invoke();
+    }
 }
 
 /// <summary>
@@ -28,10 +40,17 @@ public abstract class EntityStateManagerBase : MonoBehaviour
 public class EntityStateManager<T> : EntityStateManagerBase where T : Entity
 {
     private readonly Dictionary<Type, EntityState<T>> m_states = new();
+    private readonly List<EntityState<T>> m_list = new();
     private T m_entity;
 
     public EntityState<T> current { get; private set; }
     public EntityState<T> last { get; private set; }
+
+    /// <summary>現在ステートの登録順 index。未登録 or 未初期化時は -1。</summary>
+    public int index => current != null ? m_list.IndexOf(current) : -1;
+
+    /// <summary>前回ステートの登録順 index。未初期化時は -1。</summary>
+    public int lastIndex => last != null ? m_list.IndexOf(last) : -1;
 
     /// <summary>
     /// 全ステート登録後にサブクラスのAwake()から呼び出す。
@@ -42,11 +61,14 @@ public class EntityStateManager<T> : EntityStateManagerBase where T : Entity
     }
 
     /// <summary>
-    /// ステートを辞書に登録する。
+    /// ステートを辞書とリストに登録する。同じ型の二重登録は無視する。
     /// </summary>
     public void RegisterState(EntityState<T> state)
     {
-        m_states[state.GetType()] = state;
+        var type = state.GetType();
+        if (m_states.ContainsKey(type)) return;
+        m_states[type] = state;
+        m_list.Add(state);
     }
 
     /// <summary>

@@ -1,7 +1,7 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.InputSystem;
-using UnityEngine.Serialization;
 
 /// <summary>
 /// ゲーム全体の管理。リスタート、リスポーン、テレポートを担当する。
@@ -9,64 +9,70 @@ using UnityEngine.Serialization;
 [DefaultExecutionOrder(-100)]
 public class GameManager : Singleton<GameManager>
 {
-    private Transform m_spawnPoint;
-
-    protected override void Awake()
+    private void OnEnable()
     {
-        base.Awake();
-        // _Managersの子なのでDontDestroyOnLoadは使わない
-        // シーン遷移時はシーンと一緒に破棄される
+        SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
-    void Update()
+    private void OnDisable()
     {
-        // F5キーでリスタート
-        if (Keyboard.current != null && Keyboard.current.f5Key.wasPressedThisFrame)
-        {
-            Restart();
-        }
-
-        // 1キーでスポーン地点にテレポート
-        if (Keyboard.current != null && Keyboard.current.digit1Key.wasPressedThisFrame)
-        {
-            TeleportToStart();
-        }
+        SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
-    /// <summary>
-    /// シーンリロードでゲームをリスタートする。
-    /// </summary>
+    private void Start()
+    {
+        StartCoroutine(TeleportNextFrame());
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (FindFirstObjectByType<StageSpawnPoint>() == null) { ChannelLogger.LogGuardReturn("Game", "SpawnPoint未ロード"); return; }
+        StartCoroutine(TeleportNextFrame());
+    }
+
+    private IEnumerator TeleportNextFrame()
+    {
+        yield return null;
+        TeleportToStart();
+    }
+
+    private void Update()
+    {
+        if (Keyboard.current == null) return;
+        if (Keyboard.current.f5Key.wasPressedThisFrame) Restart();
+        if (Keyboard.current.digit1Key.wasPressedThisFrame) TeleportToStart();
+    }
+
+    /// <summary>シーンリロードでゲームをリスタートする。</summary>
     public void Restart()
     {
         Time.timeScale = 1f;
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
-    /// <summary>
-    /// プレイヤーをスポーン地点に移動する。
-    /// </summary>
+    /// <summary>プレイヤーをスポーン地点に移動する。</summary>
     public void TeleportToStart()
     {
-        var player = GameObject.FindWithTag(GameTags.Player);
-        if (player != null && m_spawnPoint != null)
+        // Player タグは _Player(root) と Hurtbox(子) の両方に付いているので transform.root で寄せる
+        var tagged = GameObject.FindWithTag(GameTags.Player);
+        if (tagged == null) { ChannelLogger.LogGuardReturn("Game", "Playerタグ未発見"); return; }
+        var root = tagged.transform.root;
+        var spawn = GetSpawnPosition();
+        root.position = spawn;
+        var rb = root.GetComponent<Rigidbody>();
+        if (rb == null) return;
+        rb.position = spawn;
+        if (!rb.isKinematic)
         {
-            player.transform.position = m_spawnPoint.position;
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
         }
     }
 
-    /// <summary>
-    /// マップシーンのStageSpawnPointから呼ばれる。
-    /// </summary>
-    public void RegisterSpawnPoint(Transform point)
-    {
-        m_spawnPoint = point;
-    }
-
-    /// <summary>
-    /// リスポーン位置を取得する。
-    /// </summary>
+    /// <summary>リスポーン位置を取得する。StageSpawnPoint を都度検索する（pull 方式）。</summary>
     public Vector3 GetSpawnPosition()
     {
-        return m_spawnPoint != null ? m_spawnPoint.position : Vector3.up;
+        var sp = FindFirstObjectByType<StageSpawnPoint>();
+        return sp != null ? sp.transform.position : Vector3.up;
     }
 }
