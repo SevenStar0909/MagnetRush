@@ -31,6 +31,6 @@ public class PolarityController : MonoBehaviour
 
         CurrentPole = CurrentPole == MagneticPole.S ? MagneticPole.N : MagneticPole.S;
         OnPolarityChanged?.Invoke(CurrentPole);
-        m_events?.FirePolaritySwitch(CurrentPole);
+        m_events?.FirePolaritySwitch();
     }
 }
