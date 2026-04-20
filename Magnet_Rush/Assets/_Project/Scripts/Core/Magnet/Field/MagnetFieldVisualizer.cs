@@ -2,7 +2,7 @@ using UnityEngine;
 
 /// <summary>
 /// 磁力範囲をワイヤーフレーム（LineRenderer）で可視化する。
-/// Sphere/Box/Cylinderの3形状に対応。フルパワー圏（inner）のみ描画。
+/// Sphere/Box/Cylinderの3形状に対応し、フルパワー圏（inner）と減衰圏（outer）を2重描画する。
 /// リングは回転固定コンテナの子として生成し、親が回転してもワールド軸に平行を保つ。
 /// </summary>
 public class MagnetFieldVisualizer : MonoBehaviour

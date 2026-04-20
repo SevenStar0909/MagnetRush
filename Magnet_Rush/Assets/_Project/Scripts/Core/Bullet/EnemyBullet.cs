@@ -35,8 +35,8 @@ public class EnemyBullet : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        // Matrixが「当たるべき相手」だけを通す
-        var hittable = other.GetComponent<IHittable>();
+        // Matrixが「当たるべき相手」だけを通す。Hurtbox 子コライダー直撃でも親 Hitbox の IHittable に到達する
+        var hittable = other.GetComponentInParent<IHittable>();
         if (hittable != null)
         {
             hittable.OnHit(new HitData

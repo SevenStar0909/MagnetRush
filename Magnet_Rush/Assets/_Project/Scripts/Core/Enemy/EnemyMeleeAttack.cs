@@ -347,7 +347,8 @@ public class EnemyMeleeAttack : MonoBehaviour
         if (other == null) { ChannelLogger.LogGuardReturn("Enemy", "対象Colliderなし"); return; }
         if (m_data == null) { ChannelLogger.LogGuardReturn("Enemy", "EnemySettings未設定"); return; }
 
-        var hittable = other.GetComponent<IHittable>();
+        // Hurtbox 子コライダー直撃でも親 Hitbox の IHittable に到達する
+        var hittable = other.GetComponentInParent<IHittable>();
         if (hittable == null) { ChannelLogger.LogGuardReturn("Enemy", "IHittable未実装"); return; }
 
         // 重複ダメージ防止（HashSetでフレーム内1回のみ）
