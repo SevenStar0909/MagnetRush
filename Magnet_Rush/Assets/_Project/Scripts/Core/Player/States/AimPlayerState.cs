@@ -3,7 +3,7 @@
 /// </summary>
 public class AimPlayerState : EntityState<Player>
 {
-    public override void Step(float dt)
+    public override void UpdateState(float dt)
     {
         // ストレイフ移動：カメラ方向を向き、速度半減
         m_entity.MoveWithInputStrafe(dt);

@@ -3,7 +3,7 @@
 /// </summary>
 public class IdlePlayerState : EntityState<Player>
 {
-    public override void Step(float dt)
+    public override void UpdateState(float dt)
     {
         m_entity.SlowDown(dt);
 

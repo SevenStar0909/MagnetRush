@@ -20,7 +20,7 @@ public abstract class EntityState<T> where T : Entity
 
     public virtual void Exit() { }
 
-    public virtual void Step(float dt) { }
+    public virtual void UpdateState(float dt) { }
 
     /// <summary>エンティティが他のColliderと接触した時に呼ばれる。</summary>
     public virtual void OnContact(Collider other) { }

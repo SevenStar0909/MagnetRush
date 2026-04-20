@@ -97,13 +97,13 @@ public class EntityStateManager<T> : EntityStateManagerBase where T : Entity
     }
 
     /// <summary>
-    /// 現在ステートのStepを実行し、timeSinceEnteredを更新する。
+    /// 現在ステートのUpdateStateを実行し、timeSinceEnteredを更新する。
     /// </summary>
-    public void Step(float dt)
+    public void UpdateState(float dt)
     {
         if (current != null)
         {
-            current.Step(dt);
+            current.UpdateState(dt);
             current.timeSinceEntered += dt;
         }
     }

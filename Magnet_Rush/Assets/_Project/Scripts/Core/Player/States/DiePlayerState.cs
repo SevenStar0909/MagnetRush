@@ -20,7 +20,7 @@ public class DiePlayerState : EntityState<Player>
         Respawn();
     }
 
-    public override void Step(float dt) { }
+    public override void UpdateState(float dt) { }
 
     public override void Exit()
     {
