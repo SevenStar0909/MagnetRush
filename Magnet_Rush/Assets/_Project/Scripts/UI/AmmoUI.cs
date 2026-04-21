@@ -19,20 +19,20 @@ public class AmmoUI : MonoBehaviour
     [FormerlySerializedAs("spritesN")]
     [SerializeField] private Sprite[] m_spritesN;
 
-    private PolarityController m_polarityController;
+    private PolarityController m_polarity;
     private MagneticPole m_currentPole = MagneticPole.S;
     private int m_currentRemaining = 4;
 
     void Start()
     {
-        var player = GameObject.FindWithTag(GameTags.Player);
-        if (player != null)
+        var playerObj = GameObject.FindWithTag(GameTags.Player);
+        if (playerObj != null)
         {
-            m_polarityController = player.GetComponent<PolarityController>();
-            if (m_polarityController != null)
+            m_polarity = playerObj.GetComponent<PolarityController>();
+            if (m_polarity != null)
             {
-                m_polarityController.OnPolarityChanged += OnPolarityChanged;
-                m_currentPole = m_polarityController.CurrentPole;
+                m_polarity.OnPolarityChanged += OnPolarityChanged;
+                m_currentPole = m_polarity.CurrentPole;
             }
         }
 
@@ -47,8 +47,8 @@ public class AmmoUI : MonoBehaviour
 
     void OnDestroy()
     {
-        if (m_polarityController != null)
-            m_polarityController.OnPolarityChanged -= OnPolarityChanged;
+        if (m_polarity != null)
+            m_polarity.OnPolarityChanged -= OnPolarityChanged;
 
         if (BulletManager.Instance != null)
             BulletManager.Instance.OnBulletCountChanged -= OnBulletCountChanged;

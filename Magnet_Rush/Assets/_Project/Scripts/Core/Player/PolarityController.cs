@@ -2,18 +2,17 @@ using System;
 using UnityEngine;
 
 /// <summary>
-/// Y入力で弾の磁極（S/N）を切り替える。
+/// 磁極制御コンポーネント。Y 入力で S/N を切り替え、UI 等へイベント通知する。
+/// 依存: PlayerInputHandler, PlayerEvents（同 GameObject 上）
 /// </summary>
+[RequireComponent(typeof(PlayerInputHandler))]
+[RequireComponent(typeof(PlayerEvents))]
 public class PolarityController : MonoBehaviour
 {
-    /// <summary>
-    /// 現在の磁極（SまたはN）。
-    /// </summary>
+    /// <summary>現在の磁極（S または N）。</summary>
     public MagneticPole CurrentPole { get; private set; } = MagneticPole.S;
 
-    /// <summary>
-    /// 磁極が切り替わったときに発火するイベント。
-    /// </summary>
+    /// <summary>磁極切替時に発火。UI 等が購読する。</summary>
     public event Action<MagneticPole> OnPolarityChanged;
 
     private PlayerInputHandler m_input;
@@ -25,12 +24,12 @@ public class PolarityController : MonoBehaviour
         m_events = GetComponent<PlayerEvents>();
     }
 
-    void Update()
+    /// <summary>Y 入力があれば磁極を切り替える。毎フレーム呼ぶ前提。</summary>
+    public void Switch()
     {
-        if (!m_input.ConsumeSwitchPole()) { ChannelLogger.LogGuardReturn("Player", "極性切替入力なし"); return; }
-
+        if (!m_input.ConsumeSwitchPole()) return;
         CurrentPole = CurrentPole == MagneticPole.S ? MagneticPole.N : MagneticPole.S;
         OnPolarityChanged?.Invoke(CurrentPole);
-        m_events?.FirePolaritySwitch(CurrentPole);
+        m_events.FirePolaritySwitch();
     }
 }

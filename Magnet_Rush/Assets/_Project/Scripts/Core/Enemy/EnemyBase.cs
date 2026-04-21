@@ -3,7 +3,7 @@ using UnityEngine.Serialization;
 
 /// <summary>
 /// 敵の基底クラス。Entityを継承しHealth・IMagnetTargetを共有する。
-/// 移動はEntityStep() → EntityController経由。AIサブクラスがAccelerateToward等で速度を駆動する。
+/// 移動はUpdateEntity() → EntityController経由。AIサブクラスがAccelerateToward等で速度を駆動する。
 /// </summary>
 public class EnemyBase : Entity
 {
@@ -76,7 +76,7 @@ public class EnemyBase : Entity
     void Update()
     {
         ValidateWeaponState();
-        EntityStep(Time.deltaTime);
+        UpdateEntity(Time.deltaTime);
     }
 
     /// <summary>指定方向（ワールド空間）に加速する。AIが計算した移動方向を渡す。</summary>

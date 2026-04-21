@@ -1,24 +1,18 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// プレイヤー用のステートマシン。Idle/Move/Die/Aimステートを管理する。
+/// プレイヤー用のステートマシン。Inspector の states 配列から動的にステートを生成する。
+/// 新 State を追加したい場合は Scripts/Core/Player/States/ に新クラスを置いて Inspector で選ぶ。
 /// </summary>
 public class PlayerStateManager : EntityStateManager<Player>
 {
-    void Awake()
+    [ClassTypeName(typeof(EntityState<Player>))]
+    [Tooltip("使用するステートの一覧。Inspector のドロップダウンで選択。登録順が State Int index になる")]
+    public string[] states;
+
+    protected override List<EntityState<Player>> GetStateList()
     {
-        var player = GetComponent<Player>();
-
-        RegisterState(new IdlePlayerState());
-        RegisterState(new MovePlayerState());
-        RegisterState(new DiePlayerState());
-        RegisterState(new AimPlayerState());
-
-        Initialize(player);
-    }
-
-    void Start()
-    {
-        Change<IdlePlayerState>();
+        return CreateListFromStringArray(states);
     }
 }

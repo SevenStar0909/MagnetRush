@@ -1,19 +1,24 @@
-﻿using System;
+using System;
 using UnityEngine;
 using UnityEngine.Serialization;
 
 /// <summary>
-/// プレイヤーエンティティ。入力・ステート・磁力の統合制御を行う。
+/// プレイヤーエンティティ。入力・ステート・磁力の統合制御を行うハブ。
+/// 能力系（射撃/エイム/磁極）は同 GameObject 上の Controller に分離。
+/// Movement は Entity base の protected メソッド依存のため本クラスに保持。
 /// </summary>
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(PlayerInputHandler))]
 [RequireComponent(typeof(PlayerEvents))]
+[RequireComponent(typeof(PolarityController))]
+[RequireComponent(typeof(AimController))]
+[RequireComponent(typeof(ShootingController))]
 public class Player : Entity
 {
     [FormerlySerializedAs("settings")]
     [SerializeField] private PlayerSettings m_settings;
 
-    /// <summary>プレイヤー設定SO。サブコンポーネントから参照される唯一の保持者。</summary>
+    /// <summary>プレイヤー設定SO。Controller から参照される唯一の保持者。</summary>
     public PlayerSettings Settings => m_settings;
 
     /// <summary>現在アクティブな Player インスタンス。Awakeで設定、OnDestroyでクリア。</summary>
@@ -37,25 +42,26 @@ public class Player : Entity
     protected override float PullOrientationThreshold => m_settings.pullOrientationThreshold;
     protected override float PullOrientationSpeed => m_settings.pullOrientationSpeed;
 
-    /// <summary>
-    /// プレイヤーの入力ハンドラー。
-    /// </summary>
+    /// <summary>プレイヤーの入力ハンドラー。</summary>
     public PlayerInputHandler input { get; private set; }
 
-    /// <summary>
-    /// プレイヤーイベントの発火用。
-    /// </summary>
+    /// <summary>プレイヤーイベントの発火用。</summary>
     public PlayerEvents events { get; private set; }
 
-    /// <summary>
-    /// プレイヤーのステートマシン。
-    /// </summary>
+    /// <summary>プレイヤーのステートマシン。</summary>
     public PlayerStateManager states { get; private set; }
 
-    /// <summary>
-    /// 磁力影響を受けるコンポーネント。
-    /// </summary>
+    /// <summary>磁力影響を受けるコンポーネント。</summary>
     public Magnetizable magnetizable { get; private set; }
+
+    /// <summary>射撃 Controller。</summary>
+    public ShootingController shooting { get; private set; }
+
+    /// <summary>エイム Controller。</summary>
+    public AimController aim { get; private set; }
+
+    /// <summary>磁極 Controller。</summary>
+    public PolarityController polarity { get; private set; }
 
     protected override void Awake()
     {
@@ -64,6 +70,9 @@ public class Player : Entity
         events = GetComponent<PlayerEvents>();
         states = GetComponent<PlayerStateManager>();
         magnetizable = GetComponent<Magnetizable>();
+        shooting = GetComponent<ShootingController>();
+        aim = GetComponent<AimController>();
+        polarity = GetComponent<PolarityController>();
 
         if (m_settings.groundLayer == 0)
             Debug.LogWarning("[Player] PlayerSettings.groundLayerが未設定。PhysicsLayers.MaskGroundCheckを使用。");
@@ -92,15 +101,25 @@ public class Player : Entity
         states.Change<DiePlayerState>();
     }
 
+    void OnDisable()
+    {
+        // シーン遷移・オブジェクト破棄時にスロー状態を強制解除
+        // aim は RequireComponent 保証、OnDisable 時点で sibling は生きている
+        if (aim.IsAiming)
+        {
+            Time.timeScale = 1f;
+        }
+    }
+
     void Update()
     {
         float dt = Mathf.Min(Time.deltaTime, Time.fixedDeltaTime * 3f);
         UpdateMagneticInfluence();
-        states.Step(dt);
+        states.UpdateState(dt);   // State 側で Controller を呼ぶ
 
-        // 死亡中は重力・移動処理をスキップ（EntityStepがvelocityを上書きして落下するのを防ぐ）
+        // 死亡中は重力・移動処理をスキップ（UpdateEntityがvelocityを上書きして落下するのを防ぐ）
         if (!states.IsCurrentOfType<DiePlayerState>())
-            EntityStep(dt);
+            UpdateEntity(dt);
     }
 
     /// <summary>
@@ -125,9 +144,9 @@ public class Player : Entity
         turningDragMultiplier = 1f + influence * damping;
     }
 
-    /// <summary>
-    /// カメラ相対の入力方向に加速し、進行方向を向く。
-    /// </summary>
+    // --- Movement ---（Entity base の protected メソッド依存のため Player に保持）
+
+    /// <summary>カメラ相対の入力方向に加速し、進行方向を向く。</summary>
     public void AccelerateToInputDirection(float dt)
     {
         var direction = GetCameraRelativeDirection(input.MoveInput);
@@ -138,9 +157,7 @@ public class Player : Entity
         }
     }
 
-    /// <summary>
-    /// エイム中のストレイフ移動。カメラ方向を向いたまま横移動する。
-    /// </summary>
+    /// <summary>エイム中のストレイフ移動。カメラ方向を向いたまま横移動する。</summary>
     public void MoveWithInputStrafe(float dt)
     {
         Vector3 dir = GetCameraRelativeDirection(input.MoveInput);
@@ -157,12 +174,9 @@ public class Player : Entity
         }
     }
 
-    /// <summary>
-    /// 横移動速度を減速する。
-    /// </summary>
+    /// <summary>横移動速度を減速する。</summary>
     public void SlowDown(float dt)
     {
         Decelerate(m_settings.deceleration, dt);
     }
-
 }
