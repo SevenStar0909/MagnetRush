@@ -1,9 +1,11 @@
-﻿using System;
+using System;
 using UnityEngine;
 using UnityEngine.Serialization;
 
 /// <summary>
-/// プレイヤーエンティティ。入力・ステート・磁力の統合制御を行う。
+/// プレイヤーエンティティ。入力・ステート・磁力の統合制御を行うハブ。
+/// 能力系（射撃/エイム/磁極）は同 GameObject 上の Controller に分離。
+/// Movement は Entity base の protected メソッド依存のため本クラスに保持。
 /// </summary>
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(PlayerInputHandler))]
@@ -11,12 +13,12 @@ using UnityEngine.Serialization;
 [RequireComponent(typeof(PolarityController))]
 [RequireComponent(typeof(AimController))]
 [RequireComponent(typeof(ShootingController))]
-public partial class Player : Entity
+public class Player : Entity
 {
     [FormerlySerializedAs("settings")]
     [SerializeField] private PlayerSettings m_settings;
 
-    /// <summary>プレイヤー設定SO。サブコンポーネントから参照される唯一の保持者。</summary>
+    /// <summary>プレイヤー設定SO。Controller から参照される唯一の保持者。</summary>
     public PlayerSettings Settings => m_settings;
 
     /// <summary>現在アクティブな Player インスタンス。Awakeで設定、OnDestroyでクリア。</summary>
@@ -40,24 +42,16 @@ public partial class Player : Entity
     protected override float PullOrientationThreshold => m_settings.pullOrientationThreshold;
     protected override float PullOrientationSpeed => m_settings.pullOrientationSpeed;
 
-    /// <summary>
-    /// プレイヤーの入力ハンドラー。
-    /// </summary>
+    /// <summary>プレイヤーの入力ハンドラー。</summary>
     public PlayerInputHandler input { get; private set; }
 
-    /// <summary>
-    /// プレイヤーイベントの発火用。
-    /// </summary>
+    /// <summary>プレイヤーイベントの発火用。</summary>
     public PlayerEvents events { get; private set; }
 
-    /// <summary>
-    /// プレイヤーのステートマシン。
-    /// </summary>
+    /// <summary>プレイヤーのステートマシン。</summary>
     public PlayerStateManager states { get; private set; }
 
-    /// <summary>
-    /// 磁力影響を受けるコンポーネント。
-    /// </summary>
+    /// <summary>磁力影響を受けるコンポーネント。</summary>
     public Magnetizable magnetizable { get; private set; }
 
     /// <summary>射撃 Controller。</summary>
@@ -68,11 +62,6 @@ public partial class Player : Entity
 
     /// <summary>磁極 Controller。</summary>
     public PolarityController polarity { get; private set; }
-
-    void Start()
-    {
-        m_mainCamera = Camera.main;
-    }
 
     protected override void Awake()
     {
@@ -115,7 +104,7 @@ public partial class Player : Entity
     void OnDisable()
     {
         // シーン遷移・オブジェクト破棄時にスロー状態を強制解除
-        if (IsAiming)
+        if (aim != null && aim.IsAiming)
         {
             Time.timeScale = 1f;
         }
@@ -125,7 +114,7 @@ public partial class Player : Entity
     {
         float dt = Mathf.Min(Time.deltaTime, Time.fixedDeltaTime * 3f);
         UpdateMagneticInfluence();
-        states.UpdateState(dt);   // State 側で SwitchPole/HandleAimInput/Fire/SelfFire/Reload を呼ぶ
+        states.UpdateState(dt);   // State 側で Controller を呼ぶ
 
         // 死亡中は重力・移動処理をスキップ（UpdateEntityがvelocityを上書きして落下するのを防ぐ）
         if (!states.IsCurrentOfType<DiePlayerState>())
@@ -154,4 +143,39 @@ public partial class Player : Entity
         turningDragMultiplier = 1f + influence * damping;
     }
 
+    // --- Movement ---（Entity base の protected メソッド依存のため Player に保持）
+
+    /// <summary>カメラ相対の入力方向に加速し、進行方向を向く。</summary>
+    public void AccelerateToInputDirection(float dt)
+    {
+        var direction = GetCameraRelativeDirection(input.MoveInput);
+        if (direction.sqrMagnitude > 0.01f)
+        {
+            Accelerate(direction, m_settings.turningDrag, m_settings.acceleration, m_settings.topSpeed, dt);
+            FaceDirection(direction, m_settings.rotationSpeed, dt);
+        }
+    }
+
+    /// <summary>エイム中のストレイフ移動。カメラ方向を向いたまま横移動する。</summary>
+    public void MoveWithInputStrafe(float dt)
+    {
+        Vector3 dir = GetCameraRelativeDirection(input.MoveInput);
+        float aimSpeed = m_settings.topSpeed * m_settings.aimMoveSpeedMultiplier;
+        if (dir.sqrMagnitude > 0.01f)
+        {
+            Accelerate(dir, m_settings.turningDrag, m_settings.acceleration, aimSpeed, dt);
+        }
+        if (m_cachedCameraTransform != null)
+        {
+            Vector3 camForward = m_cachedCameraTransform.forward;
+            camForward.y = 0f;
+            FaceDirection(camForward, m_settings.rotationSpeed * 2f, dt, false);
+        }
+    }
+
+    /// <summary>横移動速度を減速する。</summary>
+    public void SlowDown(float dt)
+    {
+        Decelerate(m_settings.deceleration, dt);
+    }
 }
