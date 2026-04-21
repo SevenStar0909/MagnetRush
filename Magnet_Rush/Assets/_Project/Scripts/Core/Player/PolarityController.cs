@@ -30,6 +30,6 @@ public class PolarityController : MonoBehaviour
         if (!m_input.ConsumeSwitchPole()) return;
         CurrentPole = CurrentPole == MagneticPole.S ? MagneticPole.N : MagneticPole.S;
         OnPoleChanged?.Invoke(CurrentPole);
-        m_events.FirePolaritySwitch();
+        m_events.FirePoleSwitch();
     }
 }
