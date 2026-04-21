@@ -4,6 +4,7 @@ using UnityEngine.UI;
 
 /// <summary>
 /// レティクルUI。エイム状態と極性に応じてスプライトを切り替える。
+/// PolarityController / AimController を購読する。
 /// </summary>
 public class ReticleUI : MonoBehaviour
 {
@@ -22,7 +23,8 @@ public class ReticleUI : MonoBehaviour
     [FormerlySerializedAs("aimN")]
     [SerializeField] private Sprite m_aimN;
 
-    private Player m_player;
+    private PolarityController m_polarity;
+    private AimController m_aim;
     private MagneticPole m_currentPole = MagneticPole.S;
 
     void Start()
@@ -30,12 +32,13 @@ public class ReticleUI : MonoBehaviour
         var playerObj = GameObject.FindWithTag(GameTags.Player);
         if (playerObj != null)
         {
-            m_player = playerObj.GetComponent<Player>();
+            m_polarity = playerObj.GetComponent<PolarityController>();
+            m_aim = playerObj.GetComponent<AimController>();
 
-            if (m_player != null)
+            if (m_polarity != null)
             {
-                m_player.OnPolarityChanged += OnPolarityChanged;
-                m_currentPole = m_player.CurrentPole;
+                m_polarity.OnPolarityChanged += OnPolarityChanged;
+                m_currentPole = m_polarity.CurrentPole;
             }
         }
 
@@ -44,8 +47,8 @@ public class ReticleUI : MonoBehaviour
 
     void OnDestroy()
     {
-        if (m_player != null)
-            m_player.OnPolarityChanged -= OnPolarityChanged;
+        if (m_polarity != null)
+            m_polarity.OnPolarityChanged -= OnPolarityChanged;
     }
 
     void Update()
@@ -63,7 +66,7 @@ public class ReticleUI : MonoBehaviour
     {
         if (m_reticleImage == null) { ChannelLogger.LogGuardReturn("UI", "レティクルImage未設定"); return; }
 
-        bool aiming = m_player != null && m_player.IsAiming;
+        bool aiming = m_aim != null && m_aim.IsAiming;
 
         if (aiming)
             m_reticleImage.sprite = m_currentPole == MagneticPole.S ? m_aimS : m_aimN;
