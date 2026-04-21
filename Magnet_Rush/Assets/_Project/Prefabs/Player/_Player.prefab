@@ -17,6 +17,9 @@ GameObject:
   - component: {fileID: 4320032113719753399}
   - component: {fileID: 2310377158301139839}
   - component: {fileID: 4919385699858757655}
+  - component: {fileID: 5883000521983637742}
+  - component: {fileID: 7317581137853359079}
+  - component: {fileID: 2694998518391623765}
   m_Layer: 8
   m_Name: _Player
   m_TagString: Player
@@ -54,6 +57,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 21430a5baa125a846b3890234515ba9a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MagnetRush.Player.PlayerEvents
+  OnShoot:
+    m_PersistentCalls:
+      m_Calls: []
+  OnSelfShoot:
+    m_PersistentCalls:
+      m_Calls: []
+  OnPolaritySwitch:
+    m_PersistentCalls:
+      m_Calls: []
+  OnReload:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!114 &4022685328076152797
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -77,10 +92,10 @@ MonoBehaviour:
   velocity: {x: 0, y: 0, z: 0}
   externalVelocity: {x: 0, y: 0, z: 0}
   holdVelocity: {x: 0, y: 0, z: 0}
-  m_settings: {fileID: 11400000, guid: d645a9ba3befda14d8a96f9af1142f3f, type: 2}
   m_bulletSettings: {fileID: 11400000, guid: 425ee2473071b7a4fa2afd4ccb6a162c, type: 2}
   m_firePoint: {fileID: 5721768207443567397}
   m_selfFireHeightOffset: 1
+  m_settings: {fileID: 11400000, guid: d645a9ba3befda14d8a96f9af1142f3f, type: 2}
 --- !u!114 &3248401797439555635
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -191,6 +206,45 @@ MonoBehaviour:
   collisionLayer:
     serializedVersion: 2
     m_Bits: 65523
+--- !u!114 &5883000521983637742
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1725508640444081474}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 11997346b0569054fa35f713113e20d0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Player::PolarityController
+--- !u!114 &7317581137853359079
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1725508640444081474}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 17f618d097598184fb335b08b6d86b0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Player::AimController
+--- !u!114 &2694998518391623765
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1725508640444081474}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 88b781069e11dea40b23d30d87519664, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Player::ShootingController
+  m_bulletSettings: {fileID: 11400000, guid: 425ee2473071b7a4fa2afd4ccb6a162c, type: 2}
+  m_firePoint: {fileID: 5721768207443567397}
+  m_selfFireHeightOffset: 1
 --- !u!1 &1986303900024006054
 GameObject:
   m_ObjectHideFlags: 0
