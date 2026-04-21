@@ -31,7 +31,7 @@ public class AmmoUI : MonoBehaviour
             m_polarity = playerObj.GetComponent<PolarityController>();
             if (m_polarity != null)
             {
-                m_polarity.OnPolarityChanged += OnPolarityChanged;
+                m_polarity.OnPoleChanged += OnPoleChanged;
                 m_currentPole = m_polarity.CurrentPole;
             }
         }
@@ -48,13 +48,13 @@ public class AmmoUI : MonoBehaviour
     void OnDestroy()
     {
         if (m_polarity != null)
-            m_polarity.OnPolarityChanged -= OnPolarityChanged;
+            m_polarity.OnPoleChanged -= OnPoleChanged;
 
         if (BulletManager.Instance != null)
             BulletManager.Instance.OnBulletCountChanged -= OnBulletCountChanged;
     }
 
-    private void OnPolarityChanged(MagneticPole pole)
+    private void OnPoleChanged(MagneticPole pole)
     {
         m_currentPole = pole;
         UpdateSprite();

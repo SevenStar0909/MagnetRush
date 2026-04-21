@@ -37,7 +37,7 @@ public class ReticleUI : MonoBehaviour
 
             if (m_polarity != null)
             {
-                m_polarity.OnPolarityChanged += OnPolarityChanged;
+                m_polarity.OnPoleChanged += OnPoleChanged;
                 m_currentPole = m_polarity.CurrentPole;
             }
         }
@@ -48,7 +48,7 @@ public class ReticleUI : MonoBehaviour
     void OnDestroy()
     {
         if (m_polarity != null)
-            m_polarity.OnPolarityChanged -= OnPolarityChanged;
+            m_polarity.OnPoleChanged -= OnPoleChanged;
     }
 
     void Update()
@@ -56,7 +56,7 @@ public class ReticleUI : MonoBehaviour
         UpdateSprite();
     }
 
-    private void OnPolarityChanged(MagneticPole pole)
+    private void OnPoleChanged(MagneticPole pole)
     {
         m_currentPole = pole;
         UpdateSprite();
