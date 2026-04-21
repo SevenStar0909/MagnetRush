@@ -189,12 +189,7 @@ public class Player : Entity
     {
         float dt = Mathf.Min(Time.deltaTime, Time.fixedDeltaTime * 3f);
         UpdateMagneticInfluence();
-        SwitchPole();                        // 一時的にここで呼ぶ（将来 State 側に移す）
-        HandleAimInput();
-        Fire();
-        SelfFire();
-        Reload();
-        states.UpdateState(dt);
+        states.UpdateState(dt);   // State 側で SwitchPole/HandleAimInput/Fire/SelfFire/Reload を呼ぶ
 
         // 死亡中は重力・移動処理をスキップ（UpdateEntityがvelocityを上書きして落下するのを防ぐ）
         if (!states.IsCurrentOfType<DiePlayerState>())
