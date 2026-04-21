@@ -35,9 +35,10 @@ public abstract class EntityStateManagerBase : MonoBehaviour
 }
 
 /// <summary>
-/// エンティティステートを管理する。ステートはRegisterState()で登録される。
+/// エンティティステートを管理する。サブクラスが GetStateList() で使用する State 一覧を返す。
+/// 初期化は Start() で自動実行（entity = GetComponent&lt;T&gt;()、リスト登録、先頭ステートへ遷移）。
 /// </summary>
-public class EntityStateManager<T> : EntityStateManagerBase where T : Entity
+public abstract class EntityStateManager<T> : EntityStateManagerBase where T : Entity
 {
     private readonly Dictionary<Type, EntityState<T>> m_states = new();
     private readonly List<EntityState<T>> m_list = new();
@@ -53,16 +54,33 @@ public class EntityStateManager<T> : EntityStateManagerBase where T : Entity
     public int lastIndex => last != null ? m_list.IndexOf(last) : -1;
 
     /// <summary>
-    /// 全ステート登録後にサブクラスのAwake()から呼び出す。
+    /// サブクラスが返すステートリスト。Inspector 駆動なら CreateListFromStringArray を使う。
+    /// 固定 new 登録のサブクラスは new List を直接返す。
     /// </summary>
-    public void Initialize(T entity)
+    protected abstract List<EntityState<T>> GetStateList();
+
+    protected virtual void Start()
     {
-        m_entity = entity;
+        m_entity = GetComponent<T>();
+        if (m_entity == null)
+        {
+            Debug.LogError($"[{GetType().Name}] {typeof(T).Name} コンポーネントが見つかりません。", this);
+            return;
+        }
+
+        var list = GetStateList();
+        foreach (var state in list)
+        {
+            RegisterState(state);
+        }
+
+        if (m_list.Count > 0)
+        {
+            Change(m_list[0].GetType());
+        }
     }
 
-    /// <summary>
-    /// ステートを辞書とリストに登録する。同じ型の二重登録は無視する。
-    /// </summary>
+    /// <summary>ステートを辞書とリストに登録する。同じ型の二重登録は無視する。</summary>
     public void RegisterState(EntityState<T> state)
     {
         var type = state.GetType();
@@ -76,10 +94,17 @@ public class EntityStateManager<T> : EntityStateManagerBase where T : Entity
     /// </summary>
     public void Change<TState>() where TState : EntityState<T>
     {
-        var type = typeof(TState);
+        Change(typeof(TState));
+    }
+
+    /// <summary>
+    /// 型を直接指定してステートに遷移する。GetStateList や Reflection 経由の遷移に使う。
+    /// </summary>
+    public void Change(Type type)
+    {
         if (!m_states.TryGetValue(type, out var next))
         {
-            Debug.LogError($"State {type.Name} not registered.");
+            Debug.LogError($"State {type.Name} が登録されていません。");
             return;
         }
 
@@ -113,10 +138,7 @@ public class EntityStateManager<T> : EntityStateManagerBase where T : Entity
     /// </summary>
     public void OnContact(Collider other)
     {
-        if (current != null)
-        {
-            current.OnContact(other);
-        }
+        if (current != null) current.OnContact(other);
     }
 
     /// <summary>
@@ -125,5 +147,34 @@ public class EntityStateManager<T> : EntityStateManagerBase where T : Entity
     public bool IsCurrentOfType<TState>() where TState : EntityState<T>
     {
         return current != null && current.GetType() == typeof(TState);
+    }
+
+    /// <summary>
+    /// 文字列配列（クラス名 + アセンブリ名）から State リストを生成する。
+    /// Inspector 駆動のサブクラスで GetStateList から呼ぶヘルパー。
+    /// </summary>
+    protected static List<EntityState<T>> CreateListFromStringArray(string[] array)
+    {
+        var list = new List<EntityState<T>>();
+        if (array == null) return list;
+
+        foreach (var typeName in array)
+        {
+            if (string.IsNullOrEmpty(typeName)) continue;
+            var type = Type.GetType(typeName);
+            if (type == null)
+            {
+                Debug.LogError($"型 '{typeName}' が見つかりません。アセンブリ名を確認してください。");
+                continue;
+            }
+            var instance = Activator.CreateInstance(type) as EntityState<T>;
+            if (instance == null)
+            {
+                Debug.LogError($"'{typeName}' を EntityState<{typeof(T).Name}> として生成できませんでした。");
+                continue;
+            }
+            list.Add(instance);
+        }
+        return list;
     }
 }
