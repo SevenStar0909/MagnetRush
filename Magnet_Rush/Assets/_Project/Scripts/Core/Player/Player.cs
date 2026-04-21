@@ -8,6 +8,9 @@ using UnityEngine.Serialization;
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(PlayerInputHandler))]
 [RequireComponent(typeof(PlayerEvents))]
+[RequireComponent(typeof(PolarityController))]
+[RequireComponent(typeof(AimController))]
+[RequireComponent(typeof(ShootingController))]
 public partial class Player : Entity
 {
     [FormerlySerializedAs("settings")]
@@ -57,6 +60,15 @@ public partial class Player : Entity
     /// </summary>
     public Magnetizable magnetizable { get; private set; }
 
+    /// <summary>射撃 Controller。</summary>
+    public ShootingController shooting { get; private set; }
+
+    /// <summary>エイム Controller。</summary>
+    public AimController aim { get; private set; }
+
+    /// <summary>磁極 Controller。</summary>
+    public PolarityController polarity { get; private set; }
+
     void Start()
     {
         m_mainCamera = Camera.main;
@@ -69,6 +81,9 @@ public partial class Player : Entity
         events = GetComponent<PlayerEvents>();
         states = GetComponent<PlayerStateManager>();
         magnetizable = GetComponent<Magnetizable>();
+        shooting = GetComponent<ShootingController>();
+        aim = GetComponent<AimController>();
+        polarity = GetComponent<PolarityController>();
 
         if (m_settings.groundLayer == 0)
             Debug.LogWarning("[Player] PlayerSettings.groundLayerが未設定。PhysicsLayers.MaskGroundCheckを使用。");
