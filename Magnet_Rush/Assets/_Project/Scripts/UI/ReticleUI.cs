@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 /// <summary>
 /// レティクルUI。エイム状態と極性に応じてスプライトを切り替える。
-/// PolarityController / AimController を購読する。
+/// PoleController / AimController を購読する。
 /// </summary>
 public class ReticleUI : MonoBehaviour
 {
@@ -23,7 +23,7 @@ public class ReticleUI : MonoBehaviour
     [FormerlySerializedAs("aimN")]
     [SerializeField] private Sprite m_aimN;
 
-    private PolarityController m_polarity;
+    private PoleController m_pole;
     private AimController m_aim;
     private MagneticPole m_currentPole = MagneticPole.S;
 
@@ -32,13 +32,13 @@ public class ReticleUI : MonoBehaviour
         var playerObj = GameObject.FindWithTag(GameTags.Player);
         if (playerObj != null)
         {
-            m_polarity = playerObj.GetComponent<PolarityController>();
+            m_pole = playerObj.GetComponent<PoleController>();
             m_aim = playerObj.GetComponent<AimController>();
 
-            if (m_polarity != null)
+            if (m_pole != null)
             {
-                m_polarity.OnPoleChanged += OnPoleChanged;
-                m_currentPole = m_polarity.CurrentPole;
+                m_pole.OnPoleChanged += OnPoleChanged;
+                m_currentPole = m_pole.CurrentPole;
             }
         }
 
@@ -47,8 +47,8 @@ public class ReticleUI : MonoBehaviour
 
     void OnDestroy()
     {
-        if (m_polarity != null)
-            m_polarity.OnPoleChanged -= OnPoleChanged;
+        if (m_pole != null)
+            m_pole.OnPoleChanged -= OnPoleChanged;
     }
 
     void Update()

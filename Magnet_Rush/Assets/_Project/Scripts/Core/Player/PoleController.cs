@@ -7,7 +7,7 @@ using UnityEngine;
 /// </summary>
 [RequireComponent(typeof(PlayerInputHandler))]
 [RequireComponent(typeof(PlayerEvents))]
-public class PolarityController : MonoBehaviour
+public class PoleController : MonoBehaviour
 {
     /// <summary>現在の磁極（S または N）。</summary>
     public MagneticPole CurrentPole { get; private set; } = MagneticPole.S;
