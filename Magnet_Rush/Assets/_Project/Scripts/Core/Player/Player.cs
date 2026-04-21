@@ -104,7 +104,8 @@ public class Player : Entity
     void OnDisable()
     {
         // シーン遷移・オブジェクト破棄時にスロー状態を強制解除
-        if (aim != null && aim.IsAiming)
+        // aim は RequireComponent 保証、OnDisable 時点で sibling は生きている
+        if (aim.IsAiming)
         {
             Time.timeScale = 1f;
         }

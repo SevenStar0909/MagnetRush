@@ -102,11 +102,6 @@ public class PlayerAnimator : MonoBehaviour
         m_hSelfShoot       = Animator.StringToHash(m_selfShootName);
         m_hReload          = Animator.StringToHash(m_reloadName);
 
-        if (m_states != null)
-        {
-            m_states.OnStateChanged += HandleStateChange;
-        }
-
         ValidateAnimatorParameters();
         ValidateStateOrder();
     }
@@ -171,24 +166,30 @@ public class PlayerAnimator : MonoBehaviour
 
     void OnEnable()
     {
-        if (m_events == null) return;
-        m_events.OnShoot.AddListener(HandleShoot);
-        m_events.OnSelfShoot.AddListener(HandleSelfShoot);
-        m_events.OnReload.AddListener(HandleReload);
+        if (m_events != null)
+        {
+            m_events.OnShoot.AddListener(HandleShoot);
+            m_events.OnSelfShoot.AddListener(HandleSelfShoot);
+            m_events.OnReload.AddListener(HandleReload);
+        }
+        if (m_states != null)
+        {
+            m_states.OnStateChanged += HandleStateChange;
+        }
     }
 
     void OnDisable()
     {
-        if (m_events == null) return;
-        m_events.OnShoot.RemoveListener(HandleShoot);
-        m_events.OnSelfShoot.RemoveListener(HandleSelfShoot);
-        m_events.OnReload.RemoveListener(HandleReload);
-    }
-
-    void OnDestroy()
-    {
+        if (m_events != null)
+        {
+            m_events.OnShoot.RemoveListener(HandleShoot);
+            m_events.OnSelfShoot.RemoveListener(HandleSelfShoot);
+            m_events.OnReload.RemoveListener(HandleReload);
+        }
         if (m_states != null)
+        {
             m_states.OnStateChanged -= HandleStateChange;
+        }
     }
 
     void LateUpdate()

@@ -15,7 +15,6 @@ public class ShootingController : MonoBehaviour
     [Header("Shooting")]
     [SerializeField] private BulletSettings m_bulletSettings;
     [SerializeField] private Transform m_firePoint;
-    [SerializeField] private float m_selfFireHeightOffset = 1.0f;
 
     private Camera m_mainCamera;
     private PlayerInputHandler m_input;
@@ -77,7 +76,13 @@ public class ShootingController : MonoBehaviour
         {
             bullet.Initialize(m_polarity.CurrentPole, direction);
             BulletManager.Instance.Register(bullet);
-            bullet.OnImpact += m_aim.StopAim;
+            // 着弾時にエイム解除、自己 unsubscribe で累積・ダングリング参照を防ぐ
+            void HandleImpact()
+            {
+                m_aim.StopAim();
+                bullet.OnImpact -= HandleImpact;
+            }
+            bullet.OnImpact += HandleImpact;
         }
 
         m_events.FireShoot();
