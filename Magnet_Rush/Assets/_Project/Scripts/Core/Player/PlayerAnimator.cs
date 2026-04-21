@@ -42,6 +42,26 @@ public class PlayerAnimator : MonoBehaviour
     [SerializeField] private string m_selfShootName = "SelfShoot";
     [SerializeField] private string m_reloadName = "Reload";
 
+    /// <summary>
+    /// State 型 → Animator の State Int 値への固定マッピング。
+    /// 新 State を Animator と連動させたい場合はここに追加し、PlayerStateIndex enum にも対応値を定義。
+    /// 未登録型は -1 を返す（Animator 側では遷移条件に合致せず無視される）。
+    /// </summary>
+    private static readonly System.Collections.Generic.Dictionary<System.Type, int> s_stateTypeToIndex
+        = new System.Collections.Generic.Dictionary<System.Type, int>
+    {
+        { typeof(IdlePlayerState), (int)PlayerStateIndex.Idle },
+        { typeof(MovePlayerState), (int)PlayerStateIndex.Move },
+        { typeof(DiePlayerState),  (int)PlayerStateIndex.Die  },
+        { typeof(AimPlayerState),  (int)PlayerStateIndex.Aim  },
+    };
+
+    private static int GetStateIndex(System.Type type)
+    {
+        if (type == null) return -1;
+        return s_stateTypeToIndex.TryGetValue(type, out var idx) ? idx : -1;
+    }
+
     private int m_hState;
     private int m_hLastState;
     private int m_hOnStateChanged;
@@ -84,6 +104,7 @@ public class PlayerAnimator : MonoBehaviour
         }
 
         ValidateAnimatorParameters();
+        ValidateStateOrder();
     }
 
     /// <summary>
@@ -120,6 +141,26 @@ public class PlayerAnimator : MonoBehaviour
                 Debug.LogError(
                     $"[PlayerAnimator] Animator パラメータ '{name}' ({purpose}) が Controller に定義されていません。" +
                     "Inspector の Animator Parameter Names 欄か Animator Controller の Parameters タブを確認してください。",
+                    this);
+        }
+    }
+
+    /// <summary>
+    /// PlayerStateManager.states に登録されている State が s_stateTypeToIndex のエントリを
+    /// 全て持っているか検証する。登録漏れがあれば LogError。
+    /// （Inspector 順と enum 値の一致までは検証しない。State Int は enum で固定されているので Inspector 順非依存）
+    /// </summary>
+    private void ValidateStateOrder()
+    {
+        if (m_states == null) return;
+
+        foreach (var kv in s_stateTypeToIndex)
+        {
+            if (!m_states.ContainsStateOfType(kv.Key))
+                Debug.LogError(
+                    $"[PlayerAnimator] Type '{kv.Key.Name}' (expected Int = {kv.Value}) が " +
+                    "PlayerStateManager.states に登録されていません。Inspector で追加するか、" +
+                    "s_stateTypeToIndex から該当エントリを削除してください。",
                     this);
         }
     }
@@ -172,8 +213,12 @@ public class PlayerAnimator : MonoBehaviour
     private void HandleStateChange()
     {
         if (m_animator == null || m_states == null) return;
-        m_animator.SetInteger(m_hState, m_states.index);
-        m_animator.SetInteger(m_hLastState, m_states.lastIndex);
+
+        int currentIdx = GetStateIndex(m_states.current?.GetType());
+        int lastIdx    = GetStateIndex(m_states.last?.GetType());
+
+        m_animator.SetInteger(m_hState, currentIdx);
+        m_animator.SetInteger(m_hLastState, lastIdx);
         ResetTriggersExceptStateChange();
         m_animator.SetTrigger(m_hOnStateChanged);
     }

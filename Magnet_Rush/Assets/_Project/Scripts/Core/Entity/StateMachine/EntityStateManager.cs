@@ -149,6 +149,12 @@ public abstract class EntityStateManager<T> : EntityStateManagerBase where T : E
         return current != null && current.GetType() == typeof(TState);
     }
 
+    /// <summary>指定型のステートが登録されているか返す。</summary>
+    public bool ContainsStateOfType(Type type)
+    {
+        return type != null && m_states.ContainsKey(type);
+    }
+
     /// <summary>
     /// 文字列配列（クラス名 + アセンブリ名）から State リストを生成する。
     /// Inspector 駆動のサブクラスで GetStateList から呼ぶヘルパー。
