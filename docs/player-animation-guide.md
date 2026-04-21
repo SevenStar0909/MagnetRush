@@ -348,3 +348,112 @@ _Player  [Tag=Player, Layer=8, position (0, 1.26, -0.048)]
 - Humanoid Avatar 作成で骨が赤くなる → 相談（Mixamo 以外のモデルは命名が違うことがある）
 - Play してもアニメが全く動かない → Animator の `Controller` / `Avatar` 未設定、`Apply Root Motion` ON、パラメータ名 typo、のどれかが定番
 - Shoot はするが Reload しない → Upper Body Layer の Weight が 0 になっていることが多い（1 にする）
+
+---
+
+## 13. 拡張（プログラマー向け）
+
+このプロジェクトは **Platformer Project 形式**。`Player.cs` が「プレイヤーの全能力の辞書」、State クラスが「その能力をどう組み合わせるか」を担当する。
+
+### 13.1 新しい State を追加する
+
+例: ジャンプ専用ステート `JumpPlayerState`。
+
+**手順:**
+
+1. `Magnet_Rush/Assets/_Project/Scripts/Core/Player/States/JumpPlayerState.cs` を新規作成:
+
+    ```csharp
+    /// <summary>
+    /// ジャンプ中のステート。空中挙動と着地判定を扱う。
+    /// </summary>
+    public class JumpPlayerState : EntityState<Player>
+    {
+        public override void Enter(Player entity, EntityStateManager<Player> manager)
+        {
+            base.Enter(entity, manager);
+            // ジャンプ開始時の処理（効果音、ジャンプ初速付与等）
+        }
+
+        public override void UpdateState(float dt)
+        {
+            // 空中でも利用可能なアクションを列挙
+            m_entity.SwitchPole();
+            m_entity.HandleAimInput();
+            m_entity.Fire();
+            m_entity.SelfFire();
+            m_entity.Reload();
+
+            // 着地したら Idle に戻る
+            if (m_entity.IsGrounded)
+                m_manager.Change<IdlePlayerState>();
+        }
+
+        public override void Exit() { }
+    }
+    ```
+
+2. `_Player.prefab` を開く（Unity Editor）
+3. `PlayerStateManager` コンポーネントの `States` 配列に要素追加
+4. ドロップダウンから `Jump Player State` を選ぶ（`ClassTypeName` Drawer が自動で一覧を出す）
+5. 登録順が `State` Int index になるので、Animator Controller 側で `State == N`（N = 新要素の位置）の遷移を追加
+
+**注意**:
+- **既存の登録順は変更しない**（0=Idle, 1=Move, 2=Die, 3=Aim）。新要素は末尾に追加する（index 4 以降）
+- Animator 側に対応する遷移を追加しないとアニメは切り替わらない（State Int は更新されるが遷移条件がないので）
+
+### 13.2 Player に新しい能力メソッドを追加する
+
+例: ダッシュ能力 `Dash()`。
+
+**手順:**
+
+1. `Player.cs` の `// --- 射撃 ---` セクションの下あたりに、新セクションを追加:
+
+    ```csharp
+    // --- ダッシュ ---
+
+    /// <summary>ダッシュ入力があれば実行。毎フレーム呼ぶ。</summary>
+    public void Dash()
+    {
+        if (!input.ConsumeDash()) return;
+
+        // ダッシュ力を外部速度として適用
+        externalVelocity += transform.forward * m_settings.dashForce;
+
+        events?.FireDash();   // 既存パターン（UnityEvent）で SE/VFX が接続可能
+    }
+    ```
+
+2. 必要なら `PlayerInputHandler.cs` に `ConsumeDash()` を追加（InputAction も定義）
+3. `PlayerEvents.cs` に `public UnityEvent OnDash;` と `public void FireDash() => OnDash?.Invoke();` を追加（Inspector 接続用）
+4. `PlayerSettings.cs` （ScriptableObject）に `public float dashForce = 10f;` を追加
+5. 使う State の `UpdateState` に `m_entity.Dash();` を追加
+6. アニメーション連動させたいなら `PlayerAnimator.cs` に `Dash` Trigger パラメータを追加
+
+### 13.3 やってはいけない
+
+- **`EntityStateManager` / `Entity` base の改修は相談必須**（全 Entity / 敵 AI にも波及する）
+- `Player.cs` の既存メソッドのシグネチャを変えない（State が壊れる）
+- `PlayerStateManager.states` の登録順を変えない（Animator の State Int 条件がずれる）
+- `Player.cs` の `[Header]` セクションに他のコンポーネント機能を混ぜない（SRP を保つ）
+- State クラスで直接 `Animator.SetTrigger` を呼ばない（必ず `PlayerAnimator` 経由）
+
+### 13.4 参考: 既存パターン
+
+- `Player.SwitchPole()` / `Fire()` / `StartAim()` が能力メソッドの実例
+- `IdlePlayerState.UpdateState()` が State の実例（能力メソッドを列挙するだけ）
+- `DiePlayerState.UpdateState()` は **何も呼ばない例**（死亡中は全操作不能を表現）
+
+### 13.5 責務の分離
+
+| 層 | ファイル | 責任 |
+|---|---|---|
+| **基盤** | `EntityStateManager.cs` / `Entity.cs` | ステート管理の基礎 / 物理・移動の基礎 |
+| **能力辞書** | `Player.cs` | プレイヤーができる全アクション |
+| **振る舞い** | `States/*PlayerState.cs` | ステートごとに能力の組み合わせを定義 |
+| **入力** | `PlayerInputHandler.cs` | 入力ポーリング API |
+| **イベント** | `PlayerEvents.cs` | UnityEvent 発火（SE/VFX 接続点） |
+| **アニメ** | `PlayerAnimator.cs` | Animator パラメータ駆動（唯一の Animator クライアント） |
+
+拡張する時はこの対応表を意識する。
