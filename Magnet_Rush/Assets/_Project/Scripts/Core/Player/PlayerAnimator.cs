@@ -82,6 +82,46 @@ public class PlayerAnimator : MonoBehaviour
         {
             m_states.OnStateChanged += HandleStateChange;
         }
+
+        ValidateAnimatorParameters();
+    }
+
+    /// <summary>
+    /// Animator Controller に必要なパラメータ名が全て定義されているか検証する。
+    /// 欠落していれば LogError でガード（silent SetFloat/SetBool を防ぐ）。
+    /// Controller 未割当時はスキップ（メンバーが後からアサインする前提）。
+    /// </summary>
+    private void ValidateAnimatorParameters()
+    {
+        if (m_animator == null || m_animator.runtimeAnimatorController == null) return;
+
+        var expected = new (string name, string purpose)[]
+        {
+            (m_stateName,           "State (Int)"),
+            (m_lastStateName,       "LastState (Int)"),
+            (m_onStateChangedName,  "OnStateChanged (Trigger)"),
+            (m_moveSpeedName,       "MoveSpeed (Float)"),
+            (m_moveInputXName,      "MoveInputX (Float)"),
+            (m_moveInputZName,      "MoveInputZ (Float)"),
+            (m_isAimingName,        "IsAiming (Bool)"),
+            (m_isGroundedName,      "IsGrounded (Bool)"),
+            (m_shootName,           "Shoot (Trigger)"),
+            (m_selfShootName,       "SelfShoot (Trigger)"),
+            (m_reloadName,          "Reload (Trigger)"),
+        };
+
+        var existing = new System.Collections.Generic.HashSet<string>();
+        foreach (var p in m_animator.parameters)
+            existing.Add(p.name);
+
+        foreach (var (name, purpose) in expected)
+        {
+            if (!existing.Contains(name))
+                Debug.LogError(
+                    $"[PlayerAnimator] Animator パラメータ '{name}' ({purpose}) が Controller に定義されていません。" +
+                    "Inspector の Animator Parameter Names 欄か Animator Controller の Parameters タブを確認してください。",
+                    this);
+        }
     }
 
     void OnEnable()
