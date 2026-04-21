@@ -5,7 +5,7 @@ using UnityEngine;
 /// PlayerEvents を購読して射撃系 Trigger を、LateUpdate で連続値を、
 /// ステート変化で State(Int)+OnStateChanged(Trigger) を更新する。
 /// Animator の直接操作はこのクラスのみに集約し、他からは触らない。
-/// 依存: Animator, PlayerEvents, PlayerInputHandler, PlayerStateManager, Entity, AimController
+/// 依存: Animator, PlayerEvents, PlayerInputHandler, PlayerStateManager, Entity, Player
 /// </summary>
 [RequireComponent(typeof(Animator))]
 public class PlayerAnimator : MonoBehaviour
@@ -26,8 +26,8 @@ public class PlayerAnimator : MonoBehaviour
     [Tooltip("Entity。未設定なら親の GetComponentInParent<Entity>()")]
     [SerializeField] private Entity m_entity;
 
-    [Tooltip("AimController。IsAiming 判定用。未設定なら親の GetComponentInParent<AimController>()")]
-    [SerializeField] private AimController m_aim;
+    [Tooltip("Player 本体。未設定なら親の GetComponentInParent<Player>()")]
+    [SerializeField] private Player m_player;
 
     [Header("Animator Parameter Names (Inspector 単一箇所管理)")]
     [SerializeField] private string m_stateName = "State";
@@ -61,7 +61,7 @@ public class PlayerAnimator : MonoBehaviour
         if (m_input    == null) m_input    = GetComponentInParent<PlayerInputHandler>();
         if (m_states   == null) m_states   = GetComponentInParent<PlayerStateManager>();
         if (m_entity   == null) m_entity   = GetComponentInParent<Entity>();
-        if (m_aim      == null) m_aim      = GetComponentInParent<AimController>();
+        if (m_player   == null) m_player   = GetComponentInParent<Player>();
     }
 
     void Start()
@@ -123,9 +123,9 @@ public class PlayerAnimator : MonoBehaviour
             m_animator.SetFloat(m_hMoveInputZ, mv.y);
         }
 
-        if (m_aim != null)
+        if (m_player != null)
         {
-            m_animator.SetBool(m_hIsAiming, m_aim.IsAiming);
+            m_animator.SetBool(m_hIsAiming, m_player.IsAiming);
         }
     }
 

@@ -15,7 +15,6 @@ GameObject:
   - component: {fileID: 8415192833665430904}
   - component: {fileID: 7473496859954039961}
   - component: {fileID: 999434896294523336}
-  - component: {fileID: 8008771699409890324}
   - component: {fileID: 4320032113719753399}
   - component: {fileID: 2310377158301139839}
   - component: {fileID: 4919385699858757655}
@@ -136,18 +135,6 @@ MonoBehaviour:
   m_bulletSettings: {fileID: 11400000, guid: 425ee2473071b7a4fa2afd4ccb6a162c, type: 2}
   m_firePoint: {fileID: 5721768207443567397}
   m_selfFireHeightOffset: 1
---- !u!114 &8008771699409890324
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1725508640444081474}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c3e1c545df00ac54b9bc05bdf8aeb891, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MagnetRush.Player.AimController
 --- !u!54 &4320032113719753399
 Rigidbody:
   m_ObjectHideFlags: 0

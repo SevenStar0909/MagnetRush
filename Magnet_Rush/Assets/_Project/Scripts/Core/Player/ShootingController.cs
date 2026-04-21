@@ -16,7 +16,6 @@ public class ShootingController : MonoBehaviour
     private PlayerSettings m_playerSettings;
     private PlayerInputHandler m_input;
     private Player m_player;
-    private AimController m_aimController;
     private PlayerEvents m_events;
     private Camera m_mainCamera;
 
@@ -24,7 +23,6 @@ public class ShootingController : MonoBehaviour
     {
         m_input = GetComponent<PlayerInputHandler>();
         m_player = GetComponent<Player>();
-        m_aimController = GetComponent<AimController>();
         m_events = GetComponent<PlayerEvents>();
         m_playerSettings = m_player.Settings;
     }
@@ -103,10 +101,10 @@ public class ShootingController : MonoBehaviour
         m_events?.FireShoot();
 
         // 弾の着弾時にスロー解除するコールバックを設定
-        if (bullet != null && m_aimController != null)
+        if (bullet != null && m_player != null)
         {
-            var aim = m_aimController;
-            bullet.OnImpact += () => aim.StopAim();
+            var player = m_player;
+            bullet.OnImpact += () => player.StopAim();
         }
     }
 

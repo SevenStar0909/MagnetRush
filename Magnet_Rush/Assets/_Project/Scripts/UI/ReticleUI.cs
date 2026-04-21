@@ -22,7 +22,6 @@ public class ReticleUI : MonoBehaviour
     [FormerlySerializedAs("aimN")]
     [SerializeField] private Sprite m_aimN;
 
-    private AimController m_aimController;
     private Player m_player;
     private MagneticPole m_currentPole = MagneticPole.S;
 
@@ -31,7 +30,6 @@ public class ReticleUI : MonoBehaviour
         var playerObj = GameObject.FindWithTag(GameTags.Player);
         if (playerObj != null)
         {
-            m_aimController = playerObj.GetComponent<AimController>();
             m_player = playerObj.GetComponent<Player>();
 
             if (m_player != null)
@@ -65,7 +63,7 @@ public class ReticleUI : MonoBehaviour
     {
         if (m_reticleImage == null) { ChannelLogger.LogGuardReturn("UI", "レティクルImage未設定"); return; }
 
-        bool aiming = m_aimController != null && m_aimController.IsAiming;
+        bool aiming = m_player != null && m_player.IsAiming;
 
         if (aiming)
             m_reticleImage.sprite = m_currentPole == MagneticPole.S ? m_aimS : m_aimN;

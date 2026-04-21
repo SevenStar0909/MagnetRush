@@ -25,14 +25,14 @@ public class CameraSettingsApplier : MonoBehaviour
 
     void OnEnable()
     {
-        AimController.OnAimChanged += SetAimMode;
+        Player.OnAimChanged += SetAimMode;
         Player.OnPlayerReady += InitializeWithPlayer;
         if (Player.Current != null) InitializeWithPlayer(Player.Current);
     }
 
     void OnDisable()
     {
-        AimController.OnAimChanged -= SetAimMode;
+        Player.OnAimChanged -= SetAimMode;
         Player.OnPlayerReady -= InitializeWithPlayer;
     }
 
