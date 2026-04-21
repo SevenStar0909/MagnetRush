@@ -57,6 +57,25 @@ public class Player : Entity
     /// </summary>
     public Magnetizable magnetizable { get; private set; }
 
+    // --- 磁極制御 ---
+
+    /// <summary>現在の磁極（S または N）。</summary>
+    public MagneticPole CurrentPole { get; private set; } = MagneticPole.S;
+
+    /// <summary>磁極切替時に発火。UI 等が購読。</summary>
+    public event Action<MagneticPole> OnPolarityChanged;
+
+    /// <summary>
+    /// Y 入力があれば磁極を切り替える。毎フレーム呼ぶ前提。
+    /// </summary>
+    public void SwitchPole()
+    {
+        if (!input.ConsumeSwitchPole()) return;
+        CurrentPole = CurrentPole == MagneticPole.S ? MagneticPole.N : MagneticPole.S;
+        OnPolarityChanged?.Invoke(CurrentPole);
+        events?.FirePolaritySwitch();
+    }
+
     protected override void Awake()
     {
         base.Awake();
@@ -96,6 +115,7 @@ public class Player : Entity
     {
         float dt = Mathf.Min(Time.deltaTime, Time.fixedDeltaTime * 3f);
         UpdateMagneticInfluence();
+        SwitchPole();                        // 一時的にここで呼ぶ（将来 State 側に移す）
         states.UpdateState(dt);
 
         // 死亡中は重力・移動処理をスキップ（UpdateEntityがvelocityを上書きして落下するのを防ぐ）

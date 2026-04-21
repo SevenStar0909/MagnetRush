@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 /// <summary>
 /// 残弾数UIの表示・更新。スプライト切替方式（極性＋残弾数統合画像）。
-/// BulletManagerとPolarityControllerのイベントを購読する。
+/// BulletManagerとPlayerのイベントを購読する。
 /// </summary>
 public class AmmoUI : MonoBehaviour
 {
@@ -19,20 +19,20 @@ public class AmmoUI : MonoBehaviour
     [FormerlySerializedAs("spritesN")]
     [SerializeField] private Sprite[] m_spritesN;
 
-    private PolarityController m_polarityController;
+    private Player m_player;
     private MagneticPole m_currentPole = MagneticPole.S;
     private int m_currentRemaining = 4;
 
     void Start()
     {
-        var player = GameObject.FindWithTag(GameTags.Player);
-        if (player != null)
+        var playerObj = GameObject.FindWithTag(GameTags.Player);
+        if (playerObj != null)
         {
-            m_polarityController = player.GetComponent<PolarityController>();
-            if (m_polarityController != null)
+            m_player = playerObj.GetComponent<Player>();
+            if (m_player != null)
             {
-                m_polarityController.OnPolarityChanged += OnPolarityChanged;
-                m_currentPole = m_polarityController.CurrentPole;
+                m_player.OnPolarityChanged += OnPolarityChanged;
+                m_currentPole = m_player.CurrentPole;
             }
         }
 
@@ -47,8 +47,8 @@ public class AmmoUI : MonoBehaviour
 
     void OnDestroy()
     {
-        if (m_polarityController != null)
-            m_polarityController.OnPolarityChanged -= OnPolarityChanged;
+        if (m_player != null)
+            m_player.OnPolarityChanged -= OnPolarityChanged;
 
         if (BulletManager.Instance != null)
             BulletManager.Instance.OnBulletCountChanged -= OnBulletCountChanged;

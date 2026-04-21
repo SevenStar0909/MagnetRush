@@ -15,7 +15,7 @@ public class ShootingController : MonoBehaviour
 
     private PlayerSettings m_playerSettings;
     private PlayerInputHandler m_input;
-    private PolarityController m_polarityController;
+    private Player m_player;
     private AimController m_aimController;
     private PlayerEvents m_events;
     private Camera m_mainCamera;
@@ -23,10 +23,10 @@ public class ShootingController : MonoBehaviour
     void Awake()
     {
         m_input = GetComponent<PlayerInputHandler>();
-        m_polarityController = GetComponent<PolarityController>();
+        m_player = GetComponent<Player>();
         m_aimController = GetComponent<AimController>();
         m_events = GetComponent<PlayerEvents>();
-        m_playerSettings = GetComponent<Player>().Settings;
+        m_playerSettings = m_player.Settings;
     }
 
     void Start()
@@ -93,7 +93,7 @@ public class ShootingController : MonoBehaviour
         var bullet = bulletObj.GetComponent<MagnetBullet>();
         if (bullet != null)
         {
-            MagneticPole pole = m_polarityController != null ? m_polarityController.CurrentPole : MagneticPole.S;
+            MagneticPole pole = m_player != null ? m_player.CurrentPole : MagneticPole.S;
             bullet.Initialize(pole, direction);
 
             // 【変更点2】生成した弾をBulletManagerに登録する
@@ -148,7 +148,7 @@ public class ShootingController : MonoBehaviour
     /// </summary>
     private void SelfFire()
     {
-        MagneticPole pole = m_polarityController != null ? m_polarityController.CurrentPole : MagneticPole.S;
+        MagneticPole pole = m_player != null ? m_player.CurrentPole : MagneticPole.S;
 
         // プレイヤーを磁化
         var magnetizable = GetComponent<Magnetizable>();

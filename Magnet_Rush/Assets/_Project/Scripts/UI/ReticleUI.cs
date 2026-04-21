@@ -23,21 +23,21 @@ public class ReticleUI : MonoBehaviour
     [SerializeField] private Sprite m_aimN;
 
     private AimController m_aimController;
-    private PolarityController m_polarityController;
+    private Player m_player;
     private MagneticPole m_currentPole = MagneticPole.S;
 
     void Start()
     {
-        var player = GameObject.FindWithTag(GameTags.Player);
-        if (player != null)
+        var playerObj = GameObject.FindWithTag(GameTags.Player);
+        if (playerObj != null)
         {
-            m_aimController = player.GetComponent<AimController>();
-            m_polarityController = player.GetComponent<PolarityController>();
+            m_aimController = playerObj.GetComponent<AimController>();
+            m_player = playerObj.GetComponent<Player>();
 
-            if (m_polarityController != null)
+            if (m_player != null)
             {
-                m_polarityController.OnPolarityChanged += OnPolarityChanged;
-                m_currentPole = m_polarityController.CurrentPole;
+                m_player.OnPolarityChanged += OnPolarityChanged;
+                m_currentPole = m_player.CurrentPole;
             }
         }
 
@@ -46,8 +46,8 @@ public class ReticleUI : MonoBehaviour
 
     void OnDestroy()
     {
-        if (m_polarityController != null)
-            m_polarityController.OnPolarityChanged -= OnPolarityChanged;
+        if (m_player != null)
+            m_player.OnPolarityChanged -= OnPolarityChanged;
     }
 
     void Update()

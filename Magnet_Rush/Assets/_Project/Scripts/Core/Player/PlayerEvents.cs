@@ -4,7 +4,7 @@ using UnityEngine.Events;
 /// <summary>
 /// プレイヤーアクションのイベントハブ。
 /// VFX/SE/アニメ等がInspectorから繋げるようUnityEvent化。
-/// 極性情報は OnPolaritySwitch 発火後に PolarityController.CurrentPole から読む。
+/// 極性情報は OnPolaritySwitch 発火後に Player.CurrentPole から読む。
 /// </summary>
 public class PlayerEvents : MonoBehaviour
 {
@@ -14,7 +14,7 @@ public class PlayerEvents : MonoBehaviour
     [Tooltip("セルフファイア時に発火")]
     public UnityEvent OnSelfShoot;
 
-    [Tooltip("磁極切替時に発火。極は PolarityController.CurrentPole から取得")]
+    [Tooltip("磁極切替時に発火。極は Player.CurrentPole から取得")]
     public UnityEvent OnPolaritySwitch;
 
     [Tooltip("リロード時に発火")]
