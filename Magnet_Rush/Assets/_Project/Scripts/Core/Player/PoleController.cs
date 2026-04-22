@@ -7,13 +7,13 @@ using UnityEngine;
 /// </summary>
 [RequireComponent(typeof(PlayerInputHandler))]
 [RequireComponent(typeof(PlayerEvents))]
-public class PolarityController : MonoBehaviour
+public class PoleController : MonoBehaviour
 {
     /// <summary>現在の磁極（S または N）。</summary>
     public MagneticPole CurrentPole { get; private set; } = MagneticPole.S;
 
     /// <summary>磁極切替時に発火。UI 等が購読する。</summary>
-    public event Action<MagneticPole> OnPolarityChanged;
+    public event Action<MagneticPole> OnPoleChanged;
 
     private PlayerInputHandler m_input;
     private PlayerEvents m_events;
@@ -29,7 +29,7 @@ public class PolarityController : MonoBehaviour
     {
         if (!m_input.ConsumeSwitchPole()) return;
         CurrentPole = CurrentPole == MagneticPole.S ? MagneticPole.N : MagneticPole.S;
-        OnPolarityChanged?.Invoke(CurrentPole);
-        m_events.FirePolaritySwitch();
+        OnPoleChanged?.Invoke(CurrentPole);
+        m_events.FirePoleSwitch();
     }
 }

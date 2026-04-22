@@ -7,7 +7,7 @@ public class AimPlayerState : EntityState<Player>
     {
         // ストレイフ移動：カメラ方向を向き、速度半減
         m_entity.MoveWithInputStrafe(dt);
-        m_entity.polarity.Switch();
+        m_entity.pole.Switch();
         m_entity.aim.HandleAimInput();   // aimReleaseGrace が切れると StopAim() → 別ステートに遷移
         m_entity.shooting.Fire();
         m_entity.shooting.SelfFire();

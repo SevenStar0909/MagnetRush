@@ -2,12 +2,12 @@ using UnityEngine;
 
 /// <summary>
 /// 射撃コンポーネント。RT で通常射撃、A/F でセルフファイア、X でリロード。
-/// 依存: PlayerInputHandler, PlayerEvents, Magnetizable, PolarityController, AimController, Player（PlayerSettings 参照用）
+/// 依存: PlayerInputHandler, PlayerEvents, Magnetizable, PoleController, AimController, Player（PlayerSettings 参照用）
 /// </summary>
 [RequireComponent(typeof(PlayerInputHandler))]
 [RequireComponent(typeof(PlayerEvents))]
 [RequireComponent(typeof(Magnetizable))]
-[RequireComponent(typeof(PolarityController))]
+[RequireComponent(typeof(PoleController))]
 [RequireComponent(typeof(AimController))]
 [RequireComponent(typeof(Player))]
 public class ShootingController : MonoBehaviour
@@ -20,7 +20,7 @@ public class ShootingController : MonoBehaviour
     private PlayerInputHandler m_input;
     private PlayerEvents m_events;
     private Magnetizable m_magnetizable;
-    private PolarityController m_polarity;
+    private PoleController m_pole;
     private AimController m_aim;
     private Player m_player;
 
@@ -31,7 +31,7 @@ public class ShootingController : MonoBehaviour
         m_input = GetComponent<PlayerInputHandler>();
         m_events = GetComponent<PlayerEvents>();
         m_magnetizable = GetComponent<Magnetizable>();
-        m_polarity = GetComponent<PolarityController>();
+        m_pole = GetComponent<PoleController>();
         m_aim = GetComponent<AimController>();
         m_player = GetComponent<Player>();
     }
@@ -74,7 +74,7 @@ public class ShootingController : MonoBehaviour
         var bullet = bulletObj.GetComponent<MagnetBullet>();
         if (bullet != null)
         {
-            bullet.Initialize(m_polarity.CurrentPole, direction);
+            bullet.Initialize(m_pole.CurrentPole, direction);
             BulletManager.Instance.Register(bullet);
             // 着弾時にエイム解除、自己 unsubscribe で累積・ダングリング参照を防ぐ
             void HandleImpact()
@@ -97,7 +97,7 @@ public class ShootingController : MonoBehaviour
         if (BulletManager.Instance == null || !BulletManager.Instance.CanShoot())
         { ChannelLogger.LogGuardReturn("Player", "BulletManager未初期化 or 射撃不可(SelfFire)"); return; }
 
-        m_magnetizable.SetPole(m_polarity.CurrentPole);
+        m_magnetizable.SetPole(m_pole.CurrentPole);
 
         var fieldSettings = m_bulletSettings.bulletFieldSettings;
         if (fieldSettings != null)
@@ -106,15 +106,15 @@ public class ShootingController : MonoBehaviour
             if (existing == null)
             {
                 var field = gameObject.AddComponent<MagnetField>();
-                field.Initialize(m_polarity.CurrentPole, fieldSettings);
+                field.Initialize(m_pole.CurrentPole, fieldSettings);
 
                 if (MagnetManager.Instance != null)
                     MagnetManager.Instance.RegisterField(field);
 
                 var visualizer = gameObject.AddComponent<MagnetFieldVisualizer>();
-                visualizer.Show(m_polarity.CurrentPole, fieldSettings);
+                visualizer.Show(m_pole.CurrentPole, fieldSettings);
 
-                GameObject effectPrefab = m_polarity.CurrentPole == MagneticPole.S
+                GameObject effectPrefab = m_pole.CurrentPole == MagneticPole.S
                     ? m_bulletSettings.impactEffect_S
                     : m_bulletSettings.impactEffect_N;
                 GameObject effectInstance = null;

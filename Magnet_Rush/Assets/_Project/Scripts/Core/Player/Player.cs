@@ -10,7 +10,7 @@ using UnityEngine.Serialization;
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(PlayerInputHandler))]
 [RequireComponent(typeof(PlayerEvents))]
-[RequireComponent(typeof(PolarityController))]
+[RequireComponent(typeof(PoleController))]
 [RequireComponent(typeof(AimController))]
 [RequireComponent(typeof(ShootingController))]
 public class Player : Entity
@@ -61,7 +61,7 @@ public class Player : Entity
     public AimController aim { get; private set; }
 
     /// <summary>磁極 Controller。</summary>
-    public PolarityController polarity { get; private set; }
+    public PoleController pole { get; private set; }
 
     protected override void Awake()
     {
@@ -72,7 +72,7 @@ public class Player : Entity
         magnetizable = GetComponent<Magnetizable>();
         shooting = GetComponent<ShootingController>();
         aim = GetComponent<AimController>();
-        polarity = GetComponent<PolarityController>();
+        pole = GetComponent<PoleController>();
 
         if (m_settings.groundLayer == 0)
             Debug.LogWarning("[Player] PlayerSettings.groundLayerが未設定。PhysicsLayers.MaskGroundCheckを使用。");

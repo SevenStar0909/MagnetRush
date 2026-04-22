@@ -30,7 +30,7 @@ Magnet Rushのプレイヤー制御システムは、Entity基底クラスを中
 │  └──────────────────┘ └──────────────────┘          │
 │                                                       │
 │  ┌──────────────────┐ ┌──────────────────────────┐  │
-│  │PolarityController│ │ CameraSettingsApplier    │  │
+│  │PoleController  │ │ CameraSettingsApplier    │  │
 │  │  (S/N切替)       │ │ (Cinemachine連携)         │  │
 │  └──────────────────┘ └──────────────────────────┘  │
 │                                                       │
@@ -72,7 +72,7 @@ Player.Update()
 
 - **AimController.Update()** -- LT入力を監視し、エイムモードの開始/終了を制御
 - **ShootingController.Update()** -- RT/X/A入力を監視し、射撃/リロード/セルフファイアを実行
-- **PolarityController.Update()** -- Y入力を監視し、磁極をS/Nで切り替え
+- **PoleController.Update()** -- Y入力を監視し、磁極をS/Nで切り替え
 
 ### 1.4 データフロー図
 
@@ -86,7 +86,7 @@ PlayerInputHandler ──読み取り──┬── AimController
   ConsumeFire()                ├── ShootingController
   ConsumeSwitchPole()          │     Fire(), SelfFire()
   ConsumeReload()              │
-  ConsumeSelfFire()            ├── PolarityController
+  ConsumeSelfFire()            ├── PoleController
                                │     CurrentPole (S/N)
                                │
                                ├── Player / States
@@ -96,7 +96,7 @@ PlayerInputHandler ──読み取り──┬── AimController
                                ▼
                           PlayerEvents ──通知──→ 外部システム
                             OnShoot, OnSelfShoot
-                            OnPolaritySwitch, OnReload
+                            OnPoleSwitch, OnReload
 ```
 
 ---
@@ -690,7 +690,7 @@ public class PlayerEvents : MonoBehaviour
 |---|---|---|---|
 | `OnShoot` | `Action` | `ShootingController.Fire()` | 通常射撃時 |
 | `OnSelfShoot` | `Action` | `ShootingController.SelfFire()` | セルフファイア時 |
-| `OnPolaritySwitch` | `Action<MagneticPole>` | `PolarityController.Update()` | 磁極切替時。新しい極が引数 |
+| `OnPoleSwitch` | `Action<MagneticPole>` | `PoleController.Update()` | 磁極切替時。新しい極が引数 |
 | `OnReload` | `Action` | `ShootingController.Update()` | リロード時 |
 
 ### 7.3 発火メソッド
@@ -699,7 +699,7 @@ public class PlayerEvents : MonoBehaviour
 |---|---|
 | `FireShoot()` | `OnShoot?.Invoke()` |
 | `FireSelfShoot()` | `OnSelfShoot?.Invoke()` |
-| `FirePolaritySwitch(MagneticPole pole)` | `OnPolaritySwitch?.Invoke(pole)` |
+| `FirePoleSwitch(MagneticPole pole)` | `OnPoleSwitch?.Invoke(pole)` |
 | `FireReload()` | `OnReload?.Invoke()` |
 
 null条件演算子 (`?.`) により、購読者がいない場合は安全にスキップする。
@@ -727,7 +727,7 @@ RT入力で磁力弾を画面中央方向に発射し、A/F入力で自身に磁
 | `m_firePoint` | `Transform` | SerializeField | 発射位置のTransform |
 | `m_selfFireHeightOffset` | `float` | SerializeField | セルフファイアの高さオフセット（デフォルト1.0） |
 | `m_input` | `PlayerInputHandler` | private | 入力ハンドラー |
-| `m_polarityController` | `PolarityController` | private | 現在の磁極取得用 |
+| `m_poleController` | `PoleController` | private | 現在の磁極取得用 |
 | `m_aimController` | `AimController` | private | エイム解除コールバック用 |
 | `m_events` | `PlayerEvents` | private | イベント発火用 |
 | `m_mainCamera` | `Camera` | private | メインカメラ参照 |
@@ -849,14 +849,14 @@ LT離し中:
 
 ---
 
-## 10. PolarityController（磁極切替）
+## 10. PoleController（磁極切替）
 
-**ファイル:** `Scripts/Player/PolarityController.cs`
+**ファイル:** `Scripts/Player/PoleController.cs`
 
 ### 10.1 クラス定義
 
 ```csharp
-public class PolarityController : MonoBehaviour
+public class PoleController : MonoBehaviour
 ```
 
 Y入力で弾の磁極（S/N）を切り替える。
@@ -873,18 +873,18 @@ Y入力で弾の磁極（S/N）を切り替える。
 | 名前 | 型 | 説明 |
 |---|---|---|
 | `CurrentPole` | `MagneticPole` (property) | 現在の磁極。デフォルト `MagneticPole.S` |
-| `OnPolarityChanged` | `event Action<MagneticPole>` | 磁極変更時に発火。UIの色更新等に使用可能 |
+| `OnPoleChanged` | `event Action<MagneticPole>` | 磁極変更時に発火。UIの色更新等に使用可能 |
 
 ### 10.4 Update()の処理フロー
 
 1. `m_input.ConsumeSwitchPole()` がfalseなら何もしない
 2. `CurrentPole` をトグル（S → N → S → ...）
-3. `OnPolarityChanged?.Invoke(CurrentPole)` で自身のイベント発火
-4. `m_events?.FirePolaritySwitch(CurrentPole)` でPlayerEventsのイベント発火
+3. `OnPoleChanged?.Invoke(CurrentPole)` で自身のイベント発火
+4. `m_events?.FirePoleSwitch(CurrentPole)` でPlayerEventsのイベント発火
 
 イベントが2系統ある理由:
-- `OnPolarityChanged`: PolarityControllerに直接依存するコンポーネント用（UI等）
-- `PlayerEvents.OnPolaritySwitch`: PlayerEventsを集約ハブとして使うシステム用
+- `OnPoleChanged`: PoleControllerに直接依存するコンポーネント用（UI等）
+- `PlayerEvents.OnPoleSwitch`: PlayerEventsを集約ハブとして使うシステム用
 
 ### 10.5 MagneticPole列挙型
 

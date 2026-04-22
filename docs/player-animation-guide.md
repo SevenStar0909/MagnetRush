@@ -63,7 +63,7 @@ Animator を組むときに使うフックはこの3種類だけ。これ以外�
 |---|---|
 | `OnShoot` | 通常射撃（RT）時 |
 | `OnSelfShoot` | セルフファイア（A / F）時 |
-| `OnPolaritySwitch(MagneticPole)` | 磁極切替（Y）時。N / S が渡される |
+| `OnPoleSwitch(MagneticPole)` | 磁極切替（Y）時。N / S が渡される |
 | `OnReload` | リロード実行時 |
 
 ### 2.3 EntityEvents（UnityEvent）
@@ -186,7 +186,7 @@ _Player  [Tag=Player, Layer=8, position (0, 1.26, -0.048)]
     - Rigidbody (isKinematic=true, useGravity=false, Constraints=FreezeRotation 全軸)
     - EntityController (slopeLimit=45, skinWidth=0.01, radius=0.5, height=2)
     - Player, PlayerStateManager, PlayerEvents, PlayerInputHandler
-    - ShootingController, AimController, PolarityController
+    - ShootingController, AimController, PoleController
     - Health (maxHealth=50, damageCooldown=1), Magnetizable
   ※ 親に CapsuleCollider / Animator は無い（追加しない）
   │
