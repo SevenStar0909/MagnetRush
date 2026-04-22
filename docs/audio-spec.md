@@ -122,14 +122,18 @@ MagnetRush.acb
 │   ├── PoleSwitch
 │   ├── Reload
 │   └── Hurt
-├── MagnetBullet/
-│   ├── Launch         （発射音）
-│   ├── HitStatic      （壁/地面ヒット）
-│   ├── HitEnemy       （敵ヒット）
-│   └── Deflect        （反発）
+├── Bullet/
+│   ├── Magnet/
+│   │   ├── Launch     （発射音）
+│   │   ├── HitStatic  （壁/地面ヒット）
+│   │   ├── HitEnemy   （敵ヒット）
+│   │   └── Deflect    （反発）
+│   └── Enemy/
+│       ├── Launch     （敵弾発射音）
+│       └── Hit        （敵弾命中音）
 ├── Enemy/
 │   ├── Spawn
-│   ├── Attack
+│   ├── Attack         （近接攻撃等、非弾系）
 │   ├── Hurt
 │   └── Die
 ├── Magnet/
