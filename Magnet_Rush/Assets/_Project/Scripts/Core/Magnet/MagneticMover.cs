@@ -4,7 +4,7 @@ using UnityEngine.AI;
 /// <summary>
 /// 磁力によるAI一時停止とNavMesh位置同期を管理する。
 /// 力はIMagnetTarget(Entity.externalVelocity)経由で適用し、
-/// EntityStep()が重力・衝突を処理する。
+/// UpdateEntity()が重力・衝突を処理する。
 /// 状態は MoverState enum で一元管理する (Idle / DistanceForce / Holding)。
 /// </summary>
 [RequireComponent(typeof(Magnetizable))]

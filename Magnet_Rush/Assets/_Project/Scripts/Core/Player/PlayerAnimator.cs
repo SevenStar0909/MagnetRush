@@ -5,7 +5,7 @@ using UnityEngine;
 /// PlayerEvents を購読して射撃系 Trigger を、LateUpdate で連続値を、
 /// ステート変化で State(Int)+OnStateChanged(Trigger) を更新する。
 /// Animator の直接操作はこのクラスのみに集約し、他からは触らない。
-/// 依存: Animator, PlayerEvents, PlayerInputHandler, PlayerStateManager, Entity, AimController
+/// 依存: Animator, PlayerEvents, PlayerInputHandler, PlayerStateManager, Entity, Player
 /// </summary>
 [RequireComponent(typeof(Animator))]
 public class PlayerAnimator : MonoBehaviour
@@ -26,7 +26,10 @@ public class PlayerAnimator : MonoBehaviour
     [Tooltip("Entity。未設定なら親の GetComponentInParent<Entity>()")]
     [SerializeField] private Entity m_entity;
 
-    [Tooltip("AimController。IsAiming 判定用。未設定なら親の GetComponentInParent<AimController>()")]
+    [Tooltip("Player 本体。未設定なら親の GetComponentInParent<Player>()")]
+    [SerializeField] private Player m_player;
+
+    [Tooltip("エイム Controller。未設定なら親の GetComponentInParent<AimController>()")]
     [SerializeField] private AimController m_aim;
 
     [Header("Animator Parameter Names (Inspector 単一箇所管理)")]
@@ -41,6 +44,26 @@ public class PlayerAnimator : MonoBehaviour
     [SerializeField] private string m_shootName = "Shoot";
     [SerializeField] private string m_selfShootName = "SelfShoot";
     [SerializeField] private string m_reloadName = "Reload";
+
+    /// <summary>
+    /// State 型 → Animator の State Int 値への固定マッピング。
+    /// 新 State を Animator と連動させたい場合はここに追加し、PlayerStateIndex enum にも対応値を定義。
+    /// 未登録型は -1 を返す（Animator 側では遷移条件に合致せず無視される）。
+    /// </summary>
+    private static readonly System.Collections.Generic.Dictionary<System.Type, int> s_stateTypeToIndex
+        = new System.Collections.Generic.Dictionary<System.Type, int>
+    {
+        { typeof(IdlePlayerState), (int)PlayerStateIndex.Idle },
+        { typeof(MovePlayerState), (int)PlayerStateIndex.Move },
+        { typeof(DiePlayerState),  (int)PlayerStateIndex.Die  },
+        { typeof(AimPlayerState),  (int)PlayerStateIndex.Aim  },
+    };
+
+    private static int GetStateIndex(System.Type type)
+    {
+        if (type == null) return -1;
+        return s_stateTypeToIndex.TryGetValue(type, out var idx) ? idx : -1;
+    }
 
     private int m_hState;
     private int m_hLastState;
@@ -61,6 +84,7 @@ public class PlayerAnimator : MonoBehaviour
         if (m_input    == null) m_input    = GetComponentInParent<PlayerInputHandler>();
         if (m_states   == null) m_states   = GetComponentInParent<PlayerStateManager>();
         if (m_entity   == null) m_entity   = GetComponentInParent<Entity>();
+        if (m_player   == null) m_player   = GetComponentInParent<Player>();
         if (m_aim      == null) m_aim      = GetComponentInParent<AimController>();
     }
 
@@ -78,32 +102,94 @@ public class PlayerAnimator : MonoBehaviour
         m_hSelfShoot       = Animator.StringToHash(m_selfShootName);
         m_hReload          = Animator.StringToHash(m_reloadName);
 
+        ValidateAnimatorParameters();
+        ValidateStateOrder();
+    }
+
+    /// <summary>
+    /// Animator Controller に必要なパラメータ名が全て定義されているか検証する。
+    /// 欠落していれば LogError でガード（silent SetFloat/SetBool を防ぐ）。
+    /// Controller 未割当時はスキップ（メンバーが後からアサインする前提）。
+    /// </summary>
+    private void ValidateAnimatorParameters()
+    {
+        if (m_animator == null || m_animator.runtimeAnimatorController == null) return;
+
+        var expected = new (string name, string purpose)[]
+        {
+            (m_stateName,           "State (Int)"),
+            (m_lastStateName,       "LastState (Int)"),
+            (m_onStateChangedName,  "OnStateChanged (Trigger)"),
+            (m_moveSpeedName,       "MoveSpeed (Float)"),
+            (m_moveInputXName,      "MoveInputX (Float)"),
+            (m_moveInputZName,      "MoveInputZ (Float)"),
+            (m_isAimingName,        "IsAiming (Bool)"),
+            (m_isGroundedName,      "IsGrounded (Bool)"),
+            (m_shootName,           "Shoot (Trigger)"),
+            (m_selfShootName,       "SelfShoot (Trigger)"),
+            (m_reloadName,          "Reload (Trigger)"),
+        };
+
+        var existing = new System.Collections.Generic.HashSet<string>();
+        foreach (var p in m_animator.parameters)
+            existing.Add(p.name);
+
+        foreach (var (name, purpose) in expected)
+        {
+            if (!existing.Contains(name))
+                Debug.LogError(
+                    $"[PlayerAnimator] Animator パラメータ '{name}' ({purpose}) が Controller に定義されていません。" +
+                    "Inspector の Animator Parameter Names 欄か Animator Controller の Parameters タブを確認してください。",
+                    this);
+        }
+    }
+
+    /// <summary>
+    /// PlayerStateManager.states に登録されている State が s_stateTypeToIndex のエントリを
+    /// 全て持っているか検証する。登録漏れがあれば LogError。
+    /// （Inspector 順と enum 値の一致までは検証しない。State Int は enum で固定されているので Inspector 順非依存）
+    /// </summary>
+    private void ValidateStateOrder()
+    {
+        if (m_states == null) return;
+
+        foreach (var kv in s_stateTypeToIndex)
+        {
+            if (!m_states.ContainsStateOfType(kv.Key))
+                Debug.LogError(
+                    $"[PlayerAnimator] Type '{kv.Key.Name}' (expected Int = {kv.Value}) が " +
+                    "PlayerStateManager.states に登録されていません。Inspector で追加するか、" +
+                    "s_stateTypeToIndex から該当エントリを削除してください。",
+                    this);
+        }
+    }
+
+    void OnEnable()
+    {
+        if (m_events != null)
+        {
+            m_events.OnShoot.AddListener(HandleShoot);
+            m_events.OnSelfShoot.AddListener(HandleSelfShoot);
+            m_events.OnReload.AddListener(HandleReload);
+        }
         if (m_states != null)
         {
             m_states.OnStateChanged += HandleStateChange;
         }
     }
 
-    void OnEnable()
-    {
-        if (m_events == null) return;
-        m_events.OnShoot.AddListener(HandleShoot);
-        m_events.OnSelfShoot.AddListener(HandleSelfShoot);
-        m_events.OnReload.AddListener(HandleReload);
-    }
-
     void OnDisable()
     {
-        if (m_events == null) return;
-        m_events.OnShoot.RemoveListener(HandleShoot);
-        m_events.OnSelfShoot.RemoveListener(HandleSelfShoot);
-        m_events.OnReload.RemoveListener(HandleReload);
-    }
-
-    void OnDestroy()
-    {
+        if (m_events != null)
+        {
+            m_events.OnShoot.RemoveListener(HandleShoot);
+            m_events.OnSelfShoot.RemoveListener(HandleSelfShoot);
+            m_events.OnReload.RemoveListener(HandleReload);
+        }
         if (m_states != null)
+        {
             m_states.OnStateChanged -= HandleStateChange;
+        }
     }
 
     void LateUpdate()
@@ -132,8 +218,12 @@ public class PlayerAnimator : MonoBehaviour
     private void HandleStateChange()
     {
         if (m_animator == null || m_states == null) return;
-        m_animator.SetInteger(m_hState, m_states.index);
-        m_animator.SetInteger(m_hLastState, m_states.lastIndex);
+
+        int currentIdx = GetStateIndex(m_states.current?.GetType());
+        int lastIdx    = GetStateIndex(m_states.last?.GetType());
+
+        m_animator.SetInteger(m_hState, currentIdx);
+        m_animator.SetInteger(m_hLastState, lastIdx);
         ResetTriggersExceptStateChange();
         m_animator.SetTrigger(m_hOnStateChanged);
     }

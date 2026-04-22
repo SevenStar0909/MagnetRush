@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 
 /// <summary>
 /// プレイヤーの死亡ステート。一定時間後にリスポーンする。
@@ -17,10 +18,13 @@ public class DiePlayerState : EntityState<Player>
         if (controller != null && controller.collider != null)
             controller.collider.enabled = false;
 
-        Respawn();
+        // Enter() のコールスタック上で Change<IdlePlayerState>() すると
+        // EntityStateManager.Change の last/current 代入と OnStateChanged 発火が再入し
+        // Die ステートをスキップして購読者に伝わってしまう。1 フレーム遅延で回避。
+        entity.StartCoroutine(RespawnNextFrame());
     }
 
-    public override void Step(float dt) { }
+    public override void UpdateState(float dt) { }
 
     public override void Exit()
     {
@@ -29,6 +33,12 @@ public class DiePlayerState : EntityState<Player>
         var controller = m_entity.GetComponent<EntityController>();
         if (controller != null && controller.collider != null)
             controller.collider.enabled = true;
+    }
+
+    private IEnumerator RespawnNextFrame()
+    {
+        yield return null;
+        Respawn();
     }
 
     private void Respawn()
