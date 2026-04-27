@@ -36,6 +36,10 @@ public class PlayerSettings : ScriptableObject
     public float cameraDistance = 5f;
     [Tooltip("肩越しカメラのオフセット (X=右, Y=上, Z=前)")]
     public Vector3 shoulderOffset;
+    [Tooltip("カメラのピッチ下限（度）。負ほど下を向ける。-10 で地面貫通防止")]
+    public float cameraPitchMin = -10f;
+    [Tooltip("カメラのピッチ上限（度）。正ほど上を向ける")]
+    public float cameraPitchMax = 60f;
 
     [Header("射撃")]
     [Tooltip("弾の発射位置の高さ（プレイヤー足元からの距離）")]
