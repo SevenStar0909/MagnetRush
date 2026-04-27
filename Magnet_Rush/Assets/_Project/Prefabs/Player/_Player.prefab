@@ -20,6 +20,8 @@ GameObject:
   - component: {fileID: 5883000521983637742}
   - component: {fileID: 7317581137853359079}
   - component: {fileID: 2694998518391623765}
+  - component: {fileID: 4235728603453565852}
+  - component: {fileID: 460711517580896566}
   m_Layer: 8
   m_Name: _Player
   m_TagString: Player
@@ -241,6 +243,58 @@ MonoBehaviour:
   m_EditorClassIdentifier: MagnetRush.Player::ShootingController
   m_bulletSettings: {fileID: 11400000, guid: 425ee2473071b7a4fa2afd4ccb6a162c, type: 2}
   m_firePoint: {fileID: 5721768207443567397}
+--- !u!95 &4235728603453565852
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1725508640444081474}
+  m_Enabled: 1
+  m_Avatar: {fileID: 9000000, guid: d3691ddd34703714080c1233f654a554, type: 3}
+  m_Controller: {fileID: 9100000, guid: fc83acf053d69024a9871d39cfe4a046, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &460711517580896566
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1725508640444081474}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce3f3cd8bd3c81847bf48beed2325720, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Player::PlayerAnimator
+  m_animator: {fileID: 612316032829856372}
+  m_events: {fileID: 0}
+  m_input: {fileID: 0}
+  m_states: {fileID: 0}
+  m_entity: {fileID: 0}
+  m_player: {fileID: 0}
+  m_aim: {fileID: 0}
+  m_stateName: State
+  m_lastStateName: LastState
+  m_onStateChangedName: OnStateChanged
+  m_moveSpeedName: MoveSpeed
+  m_moveInputXName: MoveInputX
+  m_moveInputZName: MoveInputZ
+  m_isAimingName: IsAiming
+  m_isGroundedName: IsGrounded
+  m_shootName: Shoot
+  m_selfShootName: SelfShoot
+  m_reloadName: Reload
 --- !u!1 &1986303900024006054
 GameObject:
   m_ObjectHideFlags: 0
@@ -271,7 +325,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 6818255104410664974}
   m_Father: {fileID: 890088630592913366}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &1590626984636618721
@@ -289,7 +344,7 @@ MeshRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1986303900024006054}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
@@ -519,3 +574,90 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Entity::Hitbox
   m_health: {fileID: 8415192833665430904}
+--- !u!1001 &6419309084429330405
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 8727765356199317844}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: d3691ddd34703714080c1233f654a554, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1.35
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: d3691ddd34703714080c1233f654a554, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1.35
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: d3691ddd34703714080c1233f654a554, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1.35
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: d3691ddd34703714080c1233f654a554, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: d3691ddd34703714080c1233f654a554, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.93
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: d3691ddd34703714080c1233f654a554, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 1.07
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: d3691ddd34703714080c1233f654a554, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: d3691ddd34703714080c1233f654a554, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: d3691ddd34703714080c1233f654a554, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: d3691ddd34703714080c1233f654a554, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: d3691ddd34703714080c1233f654a554, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: d3691ddd34703714080c1233f654a554, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: d3691ddd34703714080c1233f654a554, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: d3691ddd34703714080c1233f654a554, type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: d3691ddd34703714080c1233f654a554, type: 3}
+      propertyPath: m_Name
+      value: Player_Run_v_1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5866666021909216657, guid: d3691ddd34703714080c1233f654a554, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: fc83acf053d69024a9871d39cfe4a046, type: 2}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: d3691ddd34703714080c1233f654a554, type: 3}
+--- !u!95 &612316032829856372 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: d3691ddd34703714080c1233f654a554, type: 3}
+  m_PrefabInstance: {fileID: 6419309084429330405}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &6818255104410664974 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: d3691ddd34703714080c1233f654a554, type: 3}
+  m_PrefabInstance: {fileID: 6419309084429330405}
+  m_PrefabAsset: {fileID: 0}
