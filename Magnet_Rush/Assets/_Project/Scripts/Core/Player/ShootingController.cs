@@ -72,6 +72,9 @@ public class ShootingController : MonoBehaviour
 
         Vector3 direction = (targetPoint - spawnPos).normalized;
 
+        // 撃った瞬間に体を弾の方向（水平成分のみ）へスナップ。Hipfire 時の見栄え用、エイム中も無害
+        m_player.FaceHorizontalInstant(direction);
+
         GameObject bulletObj = Instantiate(m_bulletSettings.bulletPrefab, spawnPos, Quaternion.LookRotation(direction));
         var bullet = bulletObj.GetComponent<MagnetBullet>();
         if (bullet != null)
