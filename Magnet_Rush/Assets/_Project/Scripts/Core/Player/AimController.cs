@@ -21,6 +21,9 @@ public class AimController : MonoBehaviour
     private Player m_player;
     private float m_aimReleaseGrace;
 
+    private float m_baselineFixedDeltaTime;
+    private float m_targetTimeScale = 1f;
+
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void ResetStatics()
     {
@@ -32,6 +35,28 @@ public class AimController : MonoBehaviour
         m_input = GetComponent<PlayerInputHandler>();
         m_states = GetComponent<PlayerStateManager>();
         m_player = GetComponent<Player>();
+        // 元の物理タイムステップを退避。Time.timeScale 変動に追従させて実時間で物理を一定にする
+        m_baselineFixedDeltaTime = Time.fixedDeltaTime;
+    }
+
+    void OnDisable()
+    {
+        // 無効化・シーン破棄時に確実に元へ戻す（スロー残留事故の保険）
+        // OnDestroy より広く拾える（コンポーネント単独 disable でも動く）
+        Time.timeScale = 1f;
+        Time.fixedDeltaTime = m_baselineFixedDeltaTime;
+        m_targetTimeScale = 1f;
+    }
+
+    void Update()
+    {
+        // 目標値へ実時間でなめらかに追従。スナップ切替えのカクつきを除去
+        float duration = (m_targetTimeScale < Time.timeScale)
+            ? m_player.Settings.aimEnterDuration
+            : m_player.Settings.aimExitDuration;
+        float maxDelta = (duration > 0f) ? (Time.unscaledDeltaTime / duration) : 1f;
+        Time.timeScale = Mathf.MoveTowards(Time.timeScale, m_targetTimeScale, maxDelta);
+        Time.fixedDeltaTime = m_baselineFixedDeltaTime * Time.timeScale;
     }
 
     /// <summary>LT 入力に応じてエイムモードを開始/維持する。Player.Update から毎フレーム呼ぶ。</summary>
@@ -49,20 +74,20 @@ public class AimController : MonoBehaviour
         }
     }
 
-    /// <summary>エイムモード開始。スロー + ステート遷移。</summary>
+    /// <summary>エイムモード開始。スロー目標値セット + ステート遷移。実際の timeScale 補間は Update で進む。</summary>
     public void StartAim()
     {
         IsAiming = true;
-        Time.timeScale = m_player.Settings.aimTimeScale;
+        m_targetTimeScale = m_player.Settings.aimTimeScale;
         OnAimChanged?.Invoke(true);
         m_states.Change<AimPlayerState>();
     }
 
-    /// <summary>エイムモード終了。入力があれば Move、なければ Idle に戻る。</summary>
+    /// <summary>エイムモード終了。入力があれば Move、なければ Idle に戻る。timeScale は Update で 1.0 に戻る。</summary>
     public void StopAim()
     {
         IsAiming = false;
-        Time.timeScale = 1f;
+        m_targetTimeScale = 1f;
         OnAimChanged?.Invoke(false);
 
         if (m_input.MoveInput.sqrMagnitude > 0.01f)

@@ -36,6 +36,10 @@ public class PlayerSettings : ScriptableObject
     public float cameraDistance = 5f;
     [Tooltip("肩越しカメラのオフセット (X=右, Y=上, Z=前)")]
     public Vector3 shoulderOffset;
+    [Tooltip("カメラのピッチ下限（度）。負ほど下を向ける。-10 で地面貫通防止")]
+    public float cameraPitchMin = -10f;
+    [Tooltip("カメラのピッチ上限（度）。正ほど上を向ける")]
+    public float cameraPitchMax = 60f;
 
     [Header("射撃")]
     [Tooltip("弾の発射位置の高さ（プレイヤー足元からの距離）")]
@@ -46,6 +50,10 @@ public class PlayerSettings : ScriptableObject
     public float aimReleaseGraceTime = 0.15f;
     [Tooltip("エイム中のゲーム内時間倍率（0.3=70%スロー）")]
     public float aimTimeScale = 0.3f;
+    [Tooltip("エイム開始時に aimTimeScale へ到達するまでの秒数（実時間）")]
+    public float aimEnterDuration = 0.12f;
+    [Tooltip("エイム解除時に 1.0 へ復帰するまでの秒数（実時間）")]
+    public float aimExitDuration = 0.18f;
     [Tooltip("エイム中の視野角（度）。小さいほどズーム")]
     public float aimFOV = 40f;
     [Tooltip("エイム中のカメラ距離")]

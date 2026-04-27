@@ -108,8 +108,7 @@ public class CameraSettingsApplier : MonoBehaviour
 
         m_yaw += look.x * m_settings.cameraSensitivityX * Time.unscaledDeltaTime;
         m_pitch -= look.y * m_settings.cameraSensitivityY * Time.unscaledDeltaTime;
-        // 下向き-10°で地面貫通を防ぎ、上向き60°で自然な範囲に制限
-        m_pitch = Mathf.Clamp(m_pitch, -10f, 60f);
+        m_pitch = Mathf.Clamp(m_pitch, m_settings.cameraPitchMin, m_settings.cameraPitchMax);
 
         m_cameraPivot.rotation = Quaternion.Euler(m_pitch, m_yaw, 0f);
     }
