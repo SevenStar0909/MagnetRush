@@ -194,4 +194,16 @@ public class Player : Entity
     {
         Decelerate(m_settings.deceleration, dt);
     }
+
+    /// <summary>
+    /// 指定ワールド方向の水平成分に体を即座に向ける。射撃時に弾の発射方向へスナップする用途。
+    /// 仰角（Y成分）は無視するためモデルが空を向くことはない。
+    /// </summary>
+    public void FaceHorizontalInstant(Vector3 worldDirection)
+    {
+        Vector3 flat = worldDirection;
+        flat.y = 0f;
+        if (flat.sqrMagnitude < 0.0001f) return;
+        transform.rotation = Quaternion.LookRotation(flat.normalized);
+    }
 }
