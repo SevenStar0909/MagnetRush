@@ -12,6 +12,7 @@ public class DiePlayerState : EntityState<Player>
 
         entity.velocity = UnityEngine.Vector3.zero;
         entity.externalVelocity = UnityEngine.Vector3.zero;
+        entity.input.ClearBuffers();
         entity.input.enabled = false;
 
         var controller = entity.GetComponent<EntityController>();

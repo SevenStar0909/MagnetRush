@@ -5,13 +5,13 @@ using UnityEngine;
 /// PlayerEvents を購読して射撃系 Trigger を、LateUpdate で連続値を、
 /// ステート変化で State(Int)+OnStateChanged(Trigger) を更新する。
 /// Animator の直接操作はこのクラスのみに集約し、他からは触らない。
-/// 依存: Animator, PlayerEvents, PlayerInputHandler, PlayerStateManager, Entity, Player
+/// 依存: PlayerEvents, PlayerInputHandler, PlayerStateManager, Entity, Player
+/// 設計: 駆動対象の Animator は FBX 子オブジェクトに付くため、m_animator は Inspector で明示アサイン必須。
 /// </summary>
-[RequireComponent(typeof(Animator))]
 public class PlayerAnimator : MonoBehaviour
 {
     [Header("References")]
-    [Tooltip("このプレイヤーの Animator。未設定なら自身の GetComponent<Animator>()")]
+    [Tooltip("駆動対象の Animator（通常は FBX モデル子オブジェクトの Animator）。Inspector で必ずアサインする。")]
     [SerializeField] private Animator m_animator;
 
     [Tooltip("イベントハブ。未設定なら親の GetComponentInParent<PlayerEvents>()")]
@@ -42,7 +42,6 @@ public class PlayerAnimator : MonoBehaviour
     [SerializeField] private string m_isAimingName = "IsAiming";
     [SerializeField] private string m_isGroundedName = "IsGrounded";
     [SerializeField] private string m_shootName = "Shoot";
-    [SerializeField] private string m_selfShootName = "SelfShoot";
     [SerializeField] private string m_reloadName = "Reload";
 
     /// <summary>
@@ -74,18 +73,22 @@ public class PlayerAnimator : MonoBehaviour
     private int m_hIsAiming;
     private int m_hIsGrounded;
     private int m_hShoot;
-    private int m_hSelfShoot;
     private int m_hReload;
 
     void Awake()
     {
-        if (m_animator == null) m_animator = GetComponent<Animator>();
         if (m_events   == null) m_events   = GetComponentInParent<PlayerEvents>();
         if (m_input    == null) m_input    = GetComponentInParent<PlayerInputHandler>();
         if (m_states   == null) m_states   = GetComponentInParent<PlayerStateManager>();
         if (m_entity   == null) m_entity   = GetComponentInParent<Entity>();
         if (m_player   == null) m_player   = GetComponentInParent<Player>();
         if (m_aim      == null) m_aim      = GetComponentInParent<AimController>();
+
+        if (m_animator == null)
+        {
+            ChannelLogger.LogGuardReturn("Game", "PlayerAnimator.m_animator が未アサイン（Inspectorで FBX 子の Animator を割り当ててください）");
+            enabled = false;
+        }
     }
 
     void Start()
@@ -99,10 +102,15 @@ public class PlayerAnimator : MonoBehaviour
         m_hIsAiming        = Animator.StringToHash(m_isAimingName);
         m_hIsGrounded      = Animator.StringToHash(m_isGroundedName);
         m_hShoot           = Animator.StringToHash(m_shootName);
-        m_hSelfShoot       = Animator.StringToHash(m_selfShootName);
         m_hReload          = Animator.StringToHash(m_reloadName);
 
         ValidateAnimatorParameters();
+        StartCoroutine(ValidateStateOrderDelayed());
+    }
+
+    private System.Collections.IEnumerator ValidateStateOrderDelayed()
+    {
+        yield return null;
         ValidateStateOrder();
     }
 
@@ -126,7 +134,6 @@ public class PlayerAnimator : MonoBehaviour
             (m_isAimingName,        "IsAiming (Bool)"),
             (m_isGroundedName,      "IsGrounded (Bool)"),
             (m_shootName,           "Shoot (Trigger)"),
-            (m_selfShootName,       "SelfShoot (Trigger)"),
             (m_reloadName,          "Reload (Trigger)"),
         };
 
@@ -168,9 +175,8 @@ public class PlayerAnimator : MonoBehaviour
     {
         if (m_events != null)
         {
-            m_events.OnShoot.AddListener(HandleShoot);
-            m_events.OnSelfShoot.AddListener(HandleSelfShoot);
-            m_events.OnReload.AddListener(HandleReload);
+            m_events.onShoot.AddListener(HandleShoot);
+            m_events.onReload.AddListener(HandleReload);
         }
         if (m_states != null)
         {
@@ -182,9 +188,8 @@ public class PlayerAnimator : MonoBehaviour
     {
         if (m_events != null)
         {
-            m_events.OnShoot.RemoveListener(HandleShoot);
-            m_events.OnSelfShoot.RemoveListener(HandleSelfShoot);
-            m_events.OnReload.RemoveListener(HandleReload);
+            m_events.onShoot.RemoveListener(HandleShoot);
+            m_events.onReload.RemoveListener(HandleReload);
         }
         if (m_states != null)
         {
@@ -228,15 +233,13 @@ public class PlayerAnimator : MonoBehaviour
         m_animator.SetTrigger(m_hOnStateChanged);
     }
 
-    private void HandleShoot()     { if (m_animator != null) m_animator.SetTrigger(m_hShoot); }
-    private void HandleSelfShoot() { if (m_animator != null) m_animator.SetTrigger(m_hSelfShoot); }
-    private void HandleReload()    { if (m_animator != null) m_animator.SetTrigger(m_hReload); }
+    private void HandleShoot()  { if (m_animator != null) m_animator.SetTrigger(m_hShoot); }
+    private void HandleReload() { if (m_animator != null) m_animator.SetTrigger(m_hReload); }
 
     private void ResetTriggersExceptStateChange()
     {
         if (m_animator == null) return;
         m_animator.ResetTrigger(m_hShoot);
-        m_animator.ResetTrigger(m_hSelfShoot);
         m_animator.ResetTrigger(m_hReload);
     }
 }

@@ -27,7 +27,8 @@ public class PoleController : MonoBehaviour
     /// <summary>Y 入力があれば磁極を切り替える。毎フレーム呼ぶ前提。</summary>
     public void Switch()
     {
-        if (!m_input.ConsumeSwitchPole()) return;
+        if (!m_input.IsSwitchPolePressed) return;
+        m_input.ConsumeSwitchPole();
         CurrentPole = CurrentPole == MagneticPole.S ? MagneticPole.N : MagneticPole.S;
         OnPoleChanged?.Invoke(CurrentPole);
         m_events.FirePoleSwitch();
