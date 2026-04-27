@@ -10,20 +10,24 @@ using UnityEngine.Serialization;
 public class PlayerEvents : MonoBehaviour
 {
     [Tooltip("通常射撃時に発火")]
-    public UnityEvent OnShoot;
+    [FormerlySerializedAs("OnShoot")]
+    public UnityEvent onShoot;
 
     [Tooltip("セルフファイア時に発火")]
-    public UnityEvent OnSelfShoot;
+    [FormerlySerializedAs("OnSelfShoot")]
+    public UnityEvent onSelfShoot;
 
     [Tooltip("磁極切替時に発火。極は PoleController.CurrentPole から取得")]
     [FormerlySerializedAs("OnPolaritySwitch")]
-    public UnityEvent OnPoleSwitch;
+    [FormerlySerializedAs("OnPoleSwitch")]
+    public UnityEvent onPoleSwitch;
 
     [Tooltip("リロード時に発火")]
-    public UnityEvent OnReload;
+    [FormerlySerializedAs("OnReload")]
+    public UnityEvent onReload;
 
-    public void FireShoot() => OnShoot?.Invoke();
-    public void FireSelfShoot() => OnSelfShoot?.Invoke();
-    public void FirePoleSwitch() => OnPoleSwitch?.Invoke();
-    public void FireReload() => OnReload?.Invoke();
+    public void FireShoot() => onShoot?.Invoke();
+    public void FireSelfShoot() => onSelfShoot?.Invoke();
+    public void FirePoleSwitch() => onPoleSwitch?.Invoke();
+    public void FireReload() => onReload?.Invoke();
 }
