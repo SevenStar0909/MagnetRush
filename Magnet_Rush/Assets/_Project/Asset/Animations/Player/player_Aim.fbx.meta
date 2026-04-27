@@ -1,0 +1,3830 @@
+fileFormatVersion: 2
+guid: d30fdd852d72c334e954a885c0834348
+ModelImporter:
+  serializedVersion: 24200
+  internalIDToNameTable: []
+  externalObjects: {}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleCurves: 1
+    optimizeGameObjects: 0
+    removeConstantScaleCurves: 0
+    motionNodeName: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    importAnimatedCustomProperties: 0
+    importConstraints: 0
+    animationCompression: 3
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    extraUserProperties: []
+    clipAnimations:
+    - serializedVersion: 16
+      name: A_Aim
+      takeName: Take 001
+      internalID: 1827226128182048838
+      firstFrame: 0
+      lastFrame: 7
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 1
+      loopBlendPositionY: 1
+      loopBlendPositionXZ: 1
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 0
+    isReadable: 0
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    useSRGBMaterialColor: 1
+    sortHierarchyByName: 1
+    importPhysicalCameras: 1
+    importVisibility: 1
+    importBlendShapes: 1
+    importCameras: 1
+    importLights: 1
+    nodeNameCollisionStrategy: 1
+    fileIdsGeneration: 2
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    keepQuads: 0
+    weldVertices: 1
+    bakeAxisConversion: 0
+    preserveHierarchy: 0
+    skinWeightsMode: 0
+    maxBonesPerVertex: 4
+    minBoneWeight: 0.001
+    optimizeBones: 1
+    generateMeshLods: 0
+    meshLodGenerationFlags: 0
+    maximumMeshLod: -1
+    meshOptimizationFlags: -1
+    indexFormat: 0
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVMarginMethod: 1
+    secondaryUVMinLightmapResolution: 40
+    secondaryUVMinObjectScale: 1
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+    strictVertexDataChecks: 0
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalCalculationMode: 4
+    legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0
+    blendShapeNormalImportMode: 1
+    normalSmoothingSource: 0
+  referencedClips: []
+  importAnimation: 1
+  humanDescription:
+    serializedVersion: 3
+    human:
+    - boneName: SKM_Mannequin_Rig:pelvis
+      humanName: Hips
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: SKM_Mannequin_Rig:thigh_l
+      humanName: LeftUpperLeg
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: SKM_Mannequin_Rig:thigh_r
+      humanName: RightUpperLeg
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: SKM_Mannequin_Rig:calf_l
+      humanName: LeftLowerLeg
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: SKM_Mannequin_Rig:calf_r
+      humanName: RightLowerLeg
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: SKM_Mannequin_Rig:foot_l
+      humanName: LeftFoot
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: SKM_Mannequin_Rig:foot_r
+      humanName: RightFoot
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: SKM_Mannequin_Rig:spine_01
+      humanName: Spine
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: SKM_Mannequin_Rig:spine_02
+      humanName: Chest
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: SKM_Mannequin_Rig:neck_01
+      humanName: Neck
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: SKM_Mannequin_Rig:head
+      humanName: Head
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: SKM_Mannequin_Rig:clavicle_l
+      humanName: LeftShoulder
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: SKM_Mannequin_Rig:clavicle_r
+      humanName: RightShoulder
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: SKM_Mannequin_Rig:upperarm_l
+      humanName: LeftUpperArm
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: SKM_Mannequin_Rig:upperarm_r
+      humanName: RightUpperArm
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: SKM_Mannequin_Rig:lowerarm_l
+      humanName: LeftLowerArm
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: SKM_Mannequin_Rig:lowerarm_r
+      humanName: RightLowerArm
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: SKM_Mannequin_Rig:hand_l
+      humanName: LeftHand
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: SKM_Mannequin_Rig:hand_r
+      humanName: RightHand
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: SKM_Mannequin_Rig:ball_l
+      humanName: LeftToes
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: SKM_Mannequin_Rig:ball_r
+      humanName: RightToes
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: SKM_Mannequin_Rig:thumb_01_l
+      humanName: Left Thumb Proximal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: SKM_Mannequin_Rig:thumb_02_l
+      humanName: Left Thumb Intermediate
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: SKM_Mannequin_Rig:thumb_03_l
+      humanName: Left Thumb Distal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: SKM_Mannequin_Rig:index_01_l
+      humanName: Left Index Proximal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: SKM_Mannequin_Rig:index_02_l
+      humanName: Left Index Intermediate
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: SKM_Mannequin_Rig:index_03_l
+      humanName: Left Index Distal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: SKM_Mannequin_Rig:middle_01_l
+      humanName: Left Middle Proximal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: SKM_Mannequin_Rig:middle_02_l
+      humanName: Left Middle Intermediate
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: SKM_Mannequin_Rig:middle_03_l
+      humanName: Left Middle Distal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: SKM_Mannequin_Rig:ring_01_l
+      humanName: Left Ring Proximal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: SKM_Mannequin_Rig:ring_02_l
+      humanName: Left Ring Intermediate
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: SKM_Mannequin_Rig:ring_03_l
+      humanName: Left Ring Distal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: SKM_Mannequin_Rig:pinky_01_l
+      humanName: Left Little Proximal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: SKM_Mannequin_Rig:pinky_02_l
+      humanName: Left Little Intermediate
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: SKM_Mannequin_Rig:pinky_03_l
+      humanName: Left Little Distal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: SKM_Mannequin_Rig:thumb_01_r
+      humanName: Right Thumb Proximal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: SKM_Mannequin_Rig:thumb_02_r
+      humanName: Right Thumb Intermediate
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: SKM_Mannequin_Rig:thumb_03_r
+      humanName: Right Thumb Distal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: SKM_Mannequin_Rig:index_01_r
+      humanName: Right Index Proximal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: SKM_Mannequin_Rig:index_02_r
+      humanName: Right Index Intermediate
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: SKM_Mannequin_Rig:index_03_r
+      humanName: Right Index Distal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: SKM_Mannequin_Rig:middle_01_r
+      humanName: Right Middle Proximal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: SKM_Mannequin_Rig:middle_02_r
+      humanName: Right Middle Intermediate
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: SKM_Mannequin_Rig:middle_03_r
+      humanName: Right Middle Distal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: SKM_Mannequin_Rig:ring_01_r
+      humanName: Right Ring Proximal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: SKM_Mannequin_Rig:ring_02_r
+      humanName: Right Ring Intermediate
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: SKM_Mannequin_Rig:ring_03_r
+      humanName: Right Ring Distal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: SKM_Mannequin_Rig:pinky_01_r
+      humanName: Right Little Proximal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: SKM_Mannequin_Rig:pinky_02_r
+      humanName: Right Little Intermediate
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: SKM_Mannequin_Rig:pinky_03_r
+      humanName: Right Little Distal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: SKM_Mannequin_Rig:spine_03
+      humanName: UpperChest
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    skeleton:
+    - name: player_Aim(Clone)
+      parentName: 
+      position: {x: 0, y: 0, z: 0}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:root
+      parentName: player_Aim(Clone)
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:ik_foot_root
+      parentName: SKM_Mannequin_Rig:root
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: -1.110223e-16, y: 0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:ik_foot_l
+      parentName: SKM_Mannequin_Rig:ik_foot_root
+      position: {x: -0.05943445, y: 0.14266112, z: 0.42964357}
+      rotation: {x: 0.54967207, y: 0.46795383, z: 0.53705883, w: 0.43640313}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:ik_foot_r
+      parentName: SKM_Mannequin_Rig:ik_foot_root
+      position: {x: 0.04653255, y: 0.080737315, z: 0.13465708}
+      rotation: {x: 0.7015449, y: 0.011717229, z: 0.71223295, w: -0.020536507}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:ik_hand_root
+      parentName: SKM_Mannequin_Rig:root
+      position: {x: 7.105427e-17, y: 5.3290704e-17, z: -1.1832913e-32}
+      rotation: {x: -1.3877788e-17, y: 2.623e-42, z: -1.6190754e-17, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:ik_hand_gun
+      parentName: SKM_Mannequin_Rig:ik_hand_root
+      position: {x: 0.2700228, y: -0.21029854, z: 1.1194235}
+      rotation: {x: -0.003422075, y: -0.11433547, z: -0.6685121, w: 0.73485196}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:ik_hand_l
+      parentName: SKM_Mannequin_Rig:ik_hand_gun
+      position: {x: 0.530677, y: -0.19454342, z: -0.1290466}
+      rotation: {x: -0.37071577, y: 0.92743444, z: -0.023633135, w: -0.043321908}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:ik_hand_r
+      parentName: SKM_Mannequin_Rig:ik_hand_gun
+      position: {x: 0.0000013829825, y: 0.00000026260443, z: 0.0000027669485}
+      rotation: {x: 0.0000067696806, y: 0.000005619522, z: -0.0000034698817, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:pelvis
+      parentName: SKM_Mannequin_Rig:root
+      position: {x: -1.2464002e-30, y: -0.054478884, z: 0.96492565}
+      rotation: {x: 0.0012919306, y: 0.7071056, z: 0.0012919008, w: 0.7071057}
+      scale: {x: 1.0000001, y: 1.0000002, z: 1}
+    - name: SKM_Mannequin_Rig:spine_01
+      parentName: SKM_Mannequin_Rig:pelvis
+      position: {x: -0.10808878, y: -0.008514159, z: 0.0000000025088212}
+      rotation: {x: -0.00000003562309, y: 0.000000029802322, z: 0.062388588, w: 0.998052}
+      scale: {x: 1.0000002, y: 1, z: 1.0000005}
+    - name: SKM_Mannequin_Rig:spine_02
+      parentName: SKM_Mannequin_Rig:spine_01
+      position: {x: -0.18875349, y: 0.038011584, z: 5.966095e-10}
+      rotation: {x: -0.00000001481434, y: -0.00000003352852, z: 0.12241985, w: -0.9924785}
+      scale: {x: 1.0000001, y: 1, z: 1.0000001}
+    - name: SKM_Mannequin_Rig:spine_03
+      parentName: SKM_Mannequin_Rig:spine_02
+      position: {x: -0.13407329, y: 0.0042047743, z: 9.557528e-11}
+      rotation: {x: -0.00000001894516, y: -0.000000030343525, z: -0.024252525, w: 0.9997059}
+      scale: {x: 0.9999998, y: 1, z: 1.0000002}
+    - name: SKM_Mannequin_Rig:clavicle_l
+      parentName: SKM_Mannequin_Rig:spine_03
+      position: {x: -0.11883688, y: -0.027320916, z: -0.03781982}
+      rotation: {x: -0.15407139, y: 0.72627795, z: 0.06670587, w: -0.6665829}
+      scale: {x: 1, y: 1, z: 1.0000004}
+    - name: SKM_Mannequin_Rig:upperarm_l
+      parentName: SKM_Mannequin_Rig:clavicle_l
+      position: {x: -0.15784776, y: -0.0000012492784, z: 0.0000004775834}
+      rotation: {x: 0.05995804, y: 0.03741143, z: 0.1513205, w: 0.9859551}
+      scale: {x: 0.9999996, y: 1.0000007, z: 0.9999997}
+    - name: SKM_Mannequin_Rig:lowerarm_l
+      parentName: SKM_Mannequin_Rig:upperarm_l
+      position: {x: -0.30339926, y: 0.000000014454861, z: -0.0000000051848996}
+      rotation: {x: -0.061964974, y: 0.029637085, z: 0.027705051, w: 0.9972534}
+      scale: {x: 1.0000002, y: 1.0000002, z: 1}
+    - name: SKM_Mannequin_Rig:hand_l
+      parentName: SKM_Mannequin_Rig:lowerarm_l
+      position: {x: -0.26975158, y: -0.000000019796483, z: -0.00000029226658}
+      rotation: {x: 0.6178952, y: 0.019371983, z: 0.010653272, w: -0.78594965}
+      scale: {x: 1.0000001, y: 1.0000002, z: 1.0000001}
+    - name: SKM_Mannequin_Rig:index_01_l
+      parentName: SKM_Mannequin_Rig:hand_l
+      position: {x: -0.12068216, y: 0.017635435, z: -0.0210939}
+      rotation: {x: 0.13733707, y: 0.009895423, z: -0.1334671, w: 0.9814414}
+      scale: {x: 1.0000004, y: 1.0000002, z: 1.0000002}
+    - name: SKM_Mannequin_Rig:index_02_l
+      parentName: SKM_Mannequin_Rig:index_01_l
+      position: {x: -0.04287613, y: -0.0000010988282, z: 0.00000026706752}
+      rotation: {x: 0.012101806, y: 0.0010638033, z: -0.03838096, w: 0.9991894}
+      scale: {x: 1.0000005, y: 1.0000005, z: 1.0000005}
+    - name: SKM_Mannequin_Rig:index_03_l
+      parentName: SKM_Mannequin_Rig:index_02_l
+      position: {x: -0.033938225, y: -0.0000019381853, z: 0.0000005667624}
+      rotation: {x: 0.010611155, y: -0.007850852, z: 0.08285517, w: 0.9964742}
+      scale: {x: 0.99999994, y: 1.0000002, z: 1.0000002}
+    - name: SKM_Mannequin_Rig:middle_01_l
+      parentName: SKM_Mannequin_Rig:hand_l
+      position: {x: -0.122442804, y: 0.012937046, z: 0.0057114987}
+      rotation: {x: 0.029485866, y: 0.040345874, z: -0.13033879, w: 0.9902094}
+      scale: {x: 1, y: 1.0000002, z: 1.0000002}
+    - name: SKM_Mannequin_Rig:middle_02_l
+      parentName: SKM_Mannequin_Rig:middle_01_l
+      position: {x: -0.04640534, y: -0.00000042241584, z: -0.000000026524624}
+      rotation: {x: -0.018723518, y: -0.0028407553, z: -0.03813797, w: 0.99909306}
+      scale: {x: 1.0000002, y: 1.0000002, z: 1.0000004}
+    - name: SKM_Mannequin_Rig:middle_03_l
+      parentName: SKM_Mannequin_Rig:middle_02_l
+      position: {x: -0.036491126, y: -0.0000012946108, z: 0.00000024606354}
+      rotation: {x: 0.0016215866, y: 0.038866967, z: 0.13362394, w: 0.9902684}
+      scale: {x: 1.0000004, y: 1.0000005, z: 1.0000004}
+    - name: SKM_Mannequin_Rig:pinky_01_l
+      parentName: SKM_Mannequin_Rig:hand_l
+      position: {x: -0.101406686, y: 0.022631431, z: 0.04643139}
+      rotation: {x: -0.13504818, y: 0.09654313, z: -0.08908212, w: 0.98209256}
+      scale: {x: 1.0000004, y: 1.0000004, z: 1}
+    - name: SKM_Mannequin_Rig:pinky_02_l
+      parentName: SKM_Mannequin_Rig:pinky_01_l
+      position: {x: -0.03571232, y: -0.000000030783372, z: -0.00000045738423}
+      rotation: {x: 0.010402165, y: 0.004135286, z: -0.038464118, w: 0.99919736}
+      scale: {x: 1.0000005, y: 1, z: 1.0000002}
+    - name: SKM_Mannequin_Rig:pinky_03_l
+      parentName: SKM_Mannequin_Rig:pinky_02_l
+      position: {x: -0.029855654, y: 0.00000011059669, z: -0.0000000057629697}
+      rotation: {x: 0.0035808727, y: -0.03379648, z: -0.008930238, w: 0.99938244}
+      scale: {x: 1, y: 1.0000005, z: 1}
+    - name: SKM_Mannequin_Rig:ring_01_l
+      parentName: SKM_Mannequin_Rig:hand_l
+      position: {x: -0.11498005, y: 0.017534692, z: 0.028469682}
+      rotation: {x: -0.09728463, y: 0.070560046, z: -0.11622273, w: 0.98592556}
+      scale: {x: 1.0000005, y: 1.0000005, z: 1.0000002}
+    - name: SKM_Mannequin_Rig:ring_02_l
+      parentName: SKM_Mannequin_Rig:ring_01_l
+      position: {x: -0.044301633, y: 0.0000005704709, z: 0.000000052567565}
+      rotation: {x: 0.0043274285, y: 0.0045790495, z: -0.037469067, w: 0.99927795}
+      scale: {x: 0.99999994, y: 0.9999997, z: 0.99999994}
+    - name: SKM_Mannequin_Rig:ring_03_l
+      parentName: SKM_Mannequin_Rig:ring_02_l
+      position: {x: -0.034765735, y: 0.00000047423256, z: -0.00000007823204}
+      rotation: {x: -0.00019872875, y: -0.026257772, z: 0.112212844, w: 0.99333715}
+      scale: {x: 0.9999998, y: 1, z: 1.0000001}
+    - name: SKM_Mannequin_Rig:thumb_01_l
+      parentName: SKM_Mannequin_Rig:hand_l
+      position: {x: -0.047621492, y: 0.023748597, z: -0.025378792}
+      rotation: {x: -0.6005164, y: 0.29970625, z: -0.18535833, w: -0.7177733}
+      scale: {x: 0.9999997, y: 1.0000004, z: 0.9999998}
+    - name: SKM_Mannequin_Rig:thumb_02_l
+      parentName: SKM_Mannequin_Rig:thumb_01_l
+      position: {x: -0.038696636, y: -0.0000004343731, z: -0.00000045204715}
+      rotation: {x: 0.0026342254, y: -0.019821871, z: -0.02971285, w: 0.99935853}
+      scale: {x: 1, y: 0.9999998, z: 1.0000002}
+    - name: SKM_Mannequin_Rig:thumb_03_l
+      parentName: SKM_Mannequin_Rig:thumb_02_l
+      position: {x: -0.040621676, y: -0.0000006817204, z: 0.00000016233622}
+      rotation: {x: 0.021399075, y: -0.0018834386, z: 0.10793731, w: 0.99392563}
+      scale: {x: 1.0000001, y: 0.9999997, z: 0.99999994}
+    - name: SKM_Mannequin_Rig:lowerarm_twist_01_l
+      parentName: SKM_Mannequin_Rig:lowerarm_l
+      position: {x: -0.14, y: -0.0000001348622, z: -0.00000012221629}
+      rotation: {x: 0.000000018626444, y: -0.00000007450578, z: -0.000000033993263, w: 1}
+      scale: {x: 1.0000002, y: 1, z: 1.0000002}
+    - name: SKM_Mannequin_Rig:upperarm_twist_01_l
+      parentName: SKM_Mannequin_Rig:upperarm_l
+      position: {x: -0.005, y: -1.7763568e-17, z: 0}
+      rotation: {x: -0.000000007450577, y: -0, z: 0.0000000037252885, w: 1}
+      scale: {x: 1.0000004, y: 1.0000002, z: 1.0000001}
+    - name: SKM_Mannequin_Rig:clavicle_r
+      parentName: SKM_Mannequin_Rig:spine_03
+      position: {x: -0.118837886, y: -0.027321024, z: 0.037820026}
+      rotation: {x: -0.72627753, y: -0.15407187, z: -0.66658324, w: -0.06670652}
+      scale: {x: 1.0000004, y: 1.0000005, z: 1.0000004}
+    - name: SKM_Mannequin_Rig:upperarm_r
+      parentName: SKM_Mannequin_Rig:clavicle_r
+      position: {x: 0.15784799, y: -0.000000086751456, z: -0.00000011832768}
+      rotation: {x: 0.059959803, y: 0.037411086, z: 0.15131599, w: 0.9859557}
+      scale: {x: 1.0000002, y: 1.0000012, z: 1.0000002}
+    - name: SKM_Mannequin_Rig:lowerarm_r
+      parentName: SKM_Mannequin_Rig:upperarm_r
+      position: {x: 0.3034005, y: -0.000000032094285, z: 0.000000014334968}
+      rotation: {x: -0.061965108, y: 0.029636266, z: 0.02770433, w: 0.99725354}
+      scale: {x: 1.0000004, y: 1, z: 1.0000005}
+    - name: SKM_Mannequin_Rig:hand_r
+      parentName: SKM_Mannequin_Rig:lowerarm_r
+      position: {x: 0.26975244, y: 0.0000002356731, z: -0.000000010447904}
+      rotation: {x: -0.61789525, y: -0.01937197, z: -0.010653225, w: 0.7859496}
+      scale: {x: 1.0000004, y: 1.0000005, z: 1.0000005}
+    - name: SKM_Mannequin_Rig:index_01_r
+      parentName: SKM_Mannequin_Rig:hand_r
+      position: {x: 0.120679416, y: -0.017637253, z: 0.021094281}
+      rotation: {x: 0.13733783, y: 0.009891716, z: -0.13346508, w: 0.98144156}
+      scale: {x: 1.0000002, y: 1.0000001, z: 1.0000001}
+    - name: SKM_Mannequin_Rig:index_02_r
+      parentName: SKM_Mannequin_Rig:index_01_r
+      position: {x: 0.04287688, y: 0.00000092459834, z: -0.00000074262095}
+      rotation: {x: 0.012101607, y: 0.0010720126, z: -0.038371462, w: 0.9991897}
+      scale: {x: 1.0000004, y: 0.99999994, z: 0.9999998}
+    - name: SKM_Mannequin_Rig:index_03_r
+      parentName: SKM_Mannequin_Rig:index_02_r
+      position: {x: 0.03393798, y: 0.0000012069698, z: -0.00000012407956}
+      rotation: {x: 0.010611213, y: -0.007850692, z: 0.0828552, w: 0.99647415}
+      scale: {x: 1, y: 1, z: 1.0000002}
+    - name: SKM_Mannequin_Rig:middle_01_r
+      parentName: SKM_Mannequin_Rig:hand_r
+      position: {x: 0.12244113, y: -0.012937241, z: -0.005711302}
+      rotation: {x: 0.029485883, y: 0.040342867, z: -0.13031808, w: 0.99021226}
+      scale: {x: 0.99999994, y: 0.9999997, z: 0.9999997}
+    - name: SKM_Mannequin_Rig:middle_02_r
+      parentName: SKM_Mannequin_Rig:middle_01_r
+      position: {x: 0.046405688, y: -0.0000014491056, z: 0.00000007636955}
+      rotation: {x: -0.01872361, y: -0.0028385976, z: -0.038145855, w: 0.9990927}
+      scale: {x: 1.0000005, y: 1.0000001, z: 1.0000002}
+    - name: SKM_Mannequin_Rig:middle_03_r
+      parentName: SKM_Mannequin_Rig:middle_02_r
+      position: {x: 0.03648909, y: 0.0000003299681, z: -0.00000002266643}
+      rotation: {x: 0.0016213948, y: 0.03886698, z: 0.13362384, w: 0.99026835}
+      scale: {x: 0.9999996, y: 0.99999994, z: 0.9999997}
+    - name: SKM_Mannequin_Rig:pinky_01_r
+      parentName: SKM_Mannequin_Rig:hand_r
+      position: {x: 0.101405926, y: -0.022633547, z: -0.046430945}
+      rotation: {x: -0.1350494, y: 0.09653543, z: -0.08907349, w: 0.98209393}
+      scale: {x: 1.0000002, y: 1, z: 0.99999994}
+    - name: SKM_Mannequin_Rig:pinky_02_r
+      parentName: SKM_Mannequin_Rig:pinky_01_r
+      position: {x: 0.03571057, y: -0.0000007801968, z: -0.00000008107984}
+      rotation: {x: 0.010402907, y: 0.004137519, z: -0.038531404, w: 0.9991947}
+      scale: {x: 1.0000002, y: 1, z: 1.0000001}
+    - name: SKM_Mannequin_Rig:pinky_03_r
+      parentName: SKM_Mannequin_Rig:pinky_02_r
+      position: {x: 0.029854191, y: 0.0000031727668, z: -0.00000035056928}
+      rotation: {x: 0.0035809488, y: -0.033796314, z: -0.008930356, w: 0.9993825}
+      scale: {x: 1.0000002, y: 1.0000004, z: 1.0000001}
+    - name: SKM_Mannequin_Rig:ring_01_r
+      parentName: SKM_Mannequin_Rig:hand_r
+      position: {x: 0.11497973, y: -0.01753766, z: -0.028469147}
+      rotation: {x: -0.097283766, y: 0.07056145, z: -0.1162369, w: 0.9859239}
+      scale: {x: 1, y: 0.9999998, z: 0.9999997}
+    - name: SKM_Mannequin_Rig:ring_02_r
+      parentName: SKM_Mannequin_Rig:ring_01_r
+      position: {x: 0.04429864, y: 0.0000008447988, z: -0.00000018378698}
+      rotation: {x: 0.0043282756, y: 0.0045803953, z: -0.03747599, w: 0.99927765}
+      scale: {x: 1.0000005, y: 1, z: 1.0000002}
+    - name: SKM_Mannequin_Rig:ring_03_r
+      parentName: SKM_Mannequin_Rig:ring_02_r
+      position: {x: 0.03476659, y: 0.0000007194164, z: -0.000000028431277}
+      rotation: {x: -0.00019890991, y: -0.026257815, z: 0.11221299, w: 0.99333715}
+      scale: {x: 1.0000001, y: 1.0000001, z: 0.99999994}
+    - name: SKM_Mannequin_Rig:thumb_01_r
+      parentName: SKM_Mannequin_Rig:hand_r
+      position: {x: 0.047621243, y: -0.0237512, z: 0.025378017}
+      rotation: {x: 0.6005164, y: -0.29970282, z: 0.18535553, w: 0.7177755}
+      scale: {x: 0.9999998, y: 1.0000001, z: 0.99999994}
+    - name: SKM_Mannequin_Rig:thumb_02_r
+      parentName: SKM_Mannequin_Rig:thumb_01_r
+      position: {x: 0.03869569, y: 0.000001135705, z: 0.0000005595489}
+      rotation: {x: 0.0026338373, y: -0.01981857, z: -0.029695796, w: 0.999359}
+      scale: {x: 1.0000006, y: 0.99999994, z: 0.99999994}
+    - name: SKM_Mannequin_Rig:thumb_03_r
+      parentName: SKM_Mannequin_Rig:thumb_02_r
+      position: {x: 0.04062176, y: 0.000000020121734, z: 0.00000003204959}
+      rotation: {x: 0.021399062, y: -0.0018833119, z: 0.10793754, w: 0.9939256}
+      scale: {x: 1.0000004, y: 1.0000001, z: 1.0000006}
+    - name: SKM_Mannequin_Rig:lowerarm_twist_01_r
+      parentName: SKM_Mannequin_Rig:lowerarm_r
+      position: {x: 0.14, y: 0.00000021223684, z: -0.00000010473181}
+      rotation: {x: -0.11762726, y: -0.000000014901156, z: -0.000000087544294, w: 0.99305785}
+      scale: {x: 1.0000001, y: 1.0000001, z: 1.0000002}
+    - name: SKM_Mannequin_Rig:upperarm_twist_01_r
+      parentName: SKM_Mannequin_Rig:upperarm_r
+      position: {x: 0.005, y: -0.00000003700794, z: -0.000000011559804}
+      rotation: {x: -0.17323488, y: 0.00000014901156, z: 0.000000022351735, w: 0.9848805}
+      scale: {x: 0.99999994, y: 0.9999998, z: 1.0000001}
+    - name: SKM_Mannequin_Rig:neck_01
+      parentName: SKM_Mannequin_Rig:spine_03
+      position: {x: -0.16558783, y: -0.0035531663, z: 1.0134988e-10}
+      rotation: {x: -0.00000007656543, y: 0.00000003270538, z: -0.20371054, w: -0.9790312}
+      scale: {x: 0.99999994, y: 1.0000001, z: 0.99999994}
+    - name: SKM_Mannequin_Rig:head
+      parentName: SKM_Mannequin_Rig:neck_01
+      position: {x: -0.09283611, y: 0.0036416003, z: 8.888194e-10}
+      rotation: {x: 0.00000008269473, y: 0.000000054341854, z: 0.13354222, w: -0.99104315}
+      scale: {x: 1.0000001, y: 1.0000002, z: 1}
+    - name: SKM_Mannequin_Rig:thigh_l
+      parentName: SKM_Mannequin_Rig:pelvis
+      position: {x: 0.014487629, y: -0.0053156796, z: -0.090057835}
+      rotation: {x: 0.073704965, y: 0.06213878, z: 0.0085843075, w: 0.9953053}
+      scale: {x: 1.0000004, y: 1.0000006, z: 1.0000002}
+    - name: SKM_Mannequin_Rig:calf_l
+      parentName: SKM_Mannequin_Rig:thigh_l
+      position: {x: 0.42335483, y: -0.0035719122, z: 0.00043812007}
+      rotation: {x: -0.04888431, y: -0.018863875, z: 0.06552231, w: 0.9964745}
+      scale: {x: 1.0000004, y: 0.9999998, z: 1.0000001}
+    - name: SKM_Mannequin_Rig:calf_twist_01_l
+      parentName: SKM_Mannequin_Rig:calf_l
+      position: {x: 0.20476791, y: 0.00023125605, z: 0.00005685024}
+      rotation: {x: 0.0028089767, y: 0.0019334143, z: 0.007612635, w: 0.99996525}
+      scale: {x: 1.0000001, y: 0.99999994, z: 1.0000002}
+    - name: SKM_Mannequin_Rig:foot_l
+      parentName: SKM_Mannequin_Rig:calf_l
+      position: {x: 0.40196708, y: -0.0000006331417, z: 0.0000001768035}
+      rotation: {x: -0.005885801, y: -0.031991214, z: -0.07035482, w: 0.9969915}
+      scale: {x: 1, y: 0.9999998, z: 1.0000001}
+    - name: SKM_Mannequin_Rig:ball_l
+      parentName: SKM_Mannequin_Rig:foot_l
+      position: {x: 0.10453837, y: -0.16577853, z: 0.00080155884}
+      rotation: {x: 0.00008006393, y: -0.000029651444, z: 0.71863365, w: 0.69538885}
+      scale: {x: 1, y: 1.0000002, z: 1.0000002}
+    - name: SKM_Mannequin_Rig:thigh_twist_01_l
+      parentName: SKM_Mannequin_Rig:thigh_l
+      position: {x: 0.2209423, y: -0.00019046928, z: -0.000019582705}
+      rotation: {x: 0.047443636, y: 0.000021420417, z: -0.00049113197, w: -0.9988739}
+      scale: {x: 1.0000001, y: 1.0000004, z: 1.0000005}
+    - name: SKM_Mannequin_Rig:thigh_r
+      parentName: SKM_Mannequin_Rig:pelvis
+      position: {x: 0.014486449, y: -0.005314268, z: 0.09005803}
+      rotation: {x: -0.06213886, y: 0.07370495, z: 0.99530536, w: -0.008584305}
+      scale: {x: 0.9999998, y: 0.9999998, z: 0.99999976}
+    - name: SKM_Mannequin_Rig:calf_r
+      parentName: SKM_Mannequin_Rig:thigh_r
+      position: {x: -0.42363665, y: 0.0012084771, z: -0.00011716006}
+      rotation: {x: -0.048884295, y: -0.018863916, z: 0.06552239, w: 0.9964745}
+      scale: {x: 0.9999998, y: 0.99999994, z: 1}
+    - name: SKM_Mannequin_Rig:calf_twist_01_r
+      parentName: SKM_Mannequin_Rig:calf_r
+      position: {x: -0.20476909, y: 0.000072068804, z: 0.000015428048}
+      rotation: {x: 0.0028073487, y: 0.0019336564, z: 0.007612423, w: 0.9999653}
+      scale: {x: 1, y: 1.0000005, z: 1.0000002}
+    - name: SKM_Mannequin_Rig:foot_r
+      parentName: SKM_Mannequin_Rig:calf_r
+      position: {x: -0.40196818, y: 0.000000010422203, z: -0.00000010998547}
+      rotation: {x: -0.005885738, y: -0.03199138, z: -0.07035488, w: 0.9969916}
+      scale: {x: 1.0000002, y: 1.0000001, z: 1.0000002}
+    - name: SKM_Mannequin_Rig:ball_r
+      parentName: SKM_Mannequin_Rig:foot_r
+      position: {x: -0.104538165, y: 0.16577797, z: -0.000801584}
+      rotation: {x: 0.00008012911, y: -0.000029547133, z: 0.71863365, w: 0.6953888}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:thigh_twist_01_r
+      parentName: SKM_Mannequin_Rig:thigh_r
+      position: {x: -0.22094236, y: 0.00013712558, z: 0.000014776828}
+      rotation: {x: -0.047445267, y: -0.000021939164, z: 0.0004911614, w: 0.9988738}
+      scale: {x: 0.9999998, y: 0.99999994, z: 1.0000002}
+    - name: SKM_Mannequin_Rig:Group
+      parentName: player_Aim(Clone)
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:Geometry
+      parentName: SKM_Mannequin_Rig:Group
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:geo
+      parentName: SKM_Mannequin_Rig:Geometry
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:SK_Mannequin
+      parentName: SKM_Mannequin_Rig:geo
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: -1.110223e-16, y: 0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:MainExtra1
+      parentName: SKM_Mannequin_Rig:Group
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:Main
+      parentName: SKM_Mannequin_Rig:MainExtra1
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FitSkeleton
+      parentName: SKM_Mannequin_Rig:Main
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:Root
+      parentName: SKM_Mannequin_Rig:FitSkeleton
+      position: {x: -1.93374e-17, y: 0.967506, z: -0.010561532}
+      rotation: {x: 0.5201368, y: -0.47901747, z: -0.5201368, w: 0.47901747}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:Hip
+      parentName: SKM_Mannequin_Rig:Root
+      position: {x: 0.014024398, y: 0.006435438, z: -0.09005803}
+      rotation: {x: -0.029621067, y: 0.9983239, z: -0.0069509917, w: -0.04923078}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:Knee
+      parentName: SKM_Mannequin_Rig:Hip
+      position: {x: -0.4257752, y: 3.5527136e-17, z: 3.1974422e-16}
+      rotation: {x: -1.7702434e-16, y: 7.345682e-18, z: 0.07007429, w: 0.9975418}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:Ankle
+      parentName: SKM_Mannequin_Rig:Knee
+      position: {x: -0.40202406, y: 1.0658141e-16, z: 1.0658141e-16}
+      rotation: {x: 0.016821528, y: -0.051053315, z: -0.08014277, w: 0.995333}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:Heel
+      parentName: SKM_Mannequin_Rig:Ankle
+      position: {x: -0.13424242, y: -0.059679158, z: 0.0030238496}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:Toes
+      parentName: SKM_Mannequin_Rig:Ankle
+      position: {x: -0.10654028, y: 0.16450039, z: 6.0396133e-16}
+      rotation: {x: -0.020369435, y: -0.015021447, z: -0.5933262, w: 0.80456424}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FootSideInner
+      parentName: SKM_Mannequin_Rig:Toes
+      position: {x: -0.007861661, y: -0.025418865, z: -0.039244864}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FootSideOuter
+      parentName: SKM_Mannequin_Rig:Toes
+      position: {x: 0.01699518, y: -0.032451045, z: 0.05762136}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:ToesEnd
+      parentName: SKM_Mannequin_Rig:Toes
+      position: {x: -0.06615663, y: -4.4408918e-17, z: -1.1849109e-10}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:Spine1
+      parentName: SKM_Mannequin_Rig:Root
+      position: {x: -0.10842358, y: 7.105427e-17, z: -8.2145354e-17}
+      rotation: {x: -0.000000007015847, y: 0.000000091848705, z: 0.07616296, w: 0.9970954}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:Spine2
+      parentName: SKM_Mannequin_Rig:Spine1
+      position: {x: -0.19254287, y: -9.7699626e-17, z: -4.392259e-17}
+      rotation: {x: 0.0000000035880001, y: -0.00000009185605, z: 0.039031353, w: 0.999238}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:Chest
+      parentName: SKM_Mannequin_Rig:Spine2
+      position: {x: -0.13413925, y: -5.32907e-16, z: -1.2737936e-16}
+      rotation: {x: -8.416839e-17, y: 1.399314e-15, z: -0.0021480632, w: 0.99999774}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:Scapula
+      parentName: SKM_Mannequin_Rig:Chest
+      position: {x: -0.119396664, y: 0.024765305, z: -0.037819996}
+      rotation: {x: -0.22773264, y: -0.736429, z: 0.09903299, w: 0.62928754}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:Shoulder
+      parentName: SKM_Mannequin_Rig:Scapula
+      position: {x: -0.15784797, y: -5.8264504e-15, z: 1.2221334e-14}
+      rotation: {x: 0.08758846, y: -0.3490073, z: -0.11647461, w: 0.9257191}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:Elbow
+      parentName: SKM_Mannequin_Rig:Shoulder
+      position: {x: -0.30340052, y: 1.0658141e-16, z: 8.5265126e-16}
+      rotation: {x: 8.005502e-17, y: -2.2902871e-17, z: -0.27505428, w: 0.9614287}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:Wrist
+      parentName: SKM_Mannequin_Rig:Elbow
+      position: {x: -0.26975247, y: 4.2632563e-16, z: -9.947598e-16}
+      rotation: {x: -0.1751758, y: -0.06536449, z: 0.03535273, w: 0.9817287}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:MiddleFinger1
+      parentName: SKM_Mannequin_Rig:Wrist
+      position: {x: -0.12325508, y: 3.5527135e-16, z: 1.847411e-15}
+      rotation: {x: 0.053896535, y: -0.13561438, z: 0.06495367, w: 0.98716}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:MiddleFinger2
+      parentName: SKM_Mannequin_Rig:MiddleFinger1
+      position: {x: -0.04640569, y: -1.7763567e-16, z: -2.842171e-16}
+      rotation: {x: 0.027385034, y: -0.10463088, z: 0.02419802, w: 0.9938395}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:MiddleFinger3
+      parentName: SKM_Mannequin_Rig:MiddleFinger2
+      position: {x: -0.036489043, y: 2.4868996e-16, z: -1.2789769e-15}
+      rotation: {x: -0.027259732, y: 0.10812168, z: -0.018777966, w: 0.9935865}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:MiddleFinger4
+      parentName: SKM_Mannequin_Rig:MiddleFinger3
+      position: {x: -0.03175198, y: -3.5527135e-16, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:ThumbFinger1
+      parentName: SKM_Mannequin_Rig:Wrist
+      position: {x: -0.048623785, y: 0.025119, z: -0.021925027}
+      rotation: {x: -0.6873398, y: 0.105961695, z: -0.36051467, w: 0.6215829}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:ThumbFinger2
+      parentName: SKM_Mannequin_Rig:ThumbFinger1
+      position: {x: -0.038695693, y: 8.5265126e-16, z: -4.973799e-16}
+      rotation: {x: 0.14290793, y: -0.14133708, z: -0.06705986, w: 0.9772943}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:ThumbFinger3
+      parentName: SKM_Mannequin_Rig:ThumbFinger2
+      position: {x: -0.04062173, y: -7.105427e-16, z: 9.237055e-16}
+      rotation: {x: -0.030160012, y: 0.024989478, z: -0.019428635, w: 0.99904376}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:ThumbFinger4
+      parentName: SKM_Mannequin_Rig:ThumbFinger3
+      position: {x: -0.0342029, y: 0, z: 7.105427e-17}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IndexFinger1
+      parentName: SKM_Mannequin_Rig:Wrist
+      position: {x: -0.12075625, y: 0.025902322, z: -0.00815832}
+      rotation: {x: -0.06209334, y: -0.16799721, z: 0.021643417, w: 0.98359185}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IndexFinger2
+      parentName: SKM_Mannequin_Rig:IndexFinger1
+      position: {x: -0.04287684, y: -7.9936054e-17, z: -2.842171e-16}
+      rotation: {x: 0.014634846, y: -0.098761335, z: 0.03409812, w: 0.9944191}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IndexFinger3
+      parentName: SKM_Mannequin_Rig:IndexFinger2
+      position: {x: -0.03393803, y: 4.1078252e-17, z: 7.105427e-16}
+      rotation: {x: -0.012499188, y: 0.043780092, z: -0.053971015, w: 0.997504}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IndexFinger4
+      parentName: SKM_Mannequin_Rig:IndexFinger3
+      position: {x: -0.028520169, y: -1.7763568e-17, z: -9.947598e-16}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:RingFinger1
+      parentName: SKM_Mannequin_Rig:Wrist
+      position: {x: -0.11738035, y: -0.023543632, z: -0.002437289}
+      rotation: {x: 0.09916085, y: -0.1272154, z: 0.10570811, w: 0.9812284}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:RingFinger2
+      parentName: SKM_Mannequin_Rig:RingFinger1
+      position: {x: -0.04429869, y: -1.7763567e-16, z: -7.105427e-16}
+      rotation: {x: 0.02595605, y: -0.112305306, z: 0.032177735, w: 0.99281335}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:RingFinger3
+      parentName: SKM_Mannequin_Rig:RingFinger2
+      position: {x: -0.034766562, y: -1.7763567e-16, z: 1.4210854e-16}
+      rotation: {x: -0.010385887, y: 0.058281068, z: -0.0026657996, w: 0.9982426}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:RingFinger4
+      parentName: SKM_Mannequin_Rig:RingFinger3
+      position: {x: -0.028288774, y: 1.0658141e-16, z: -1.4210854e-16}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:PinkyFinger1
+      parentName: SKM_Mannequin_Rig:Wrist
+      position: {x: -0.105263375, y: -0.042752728, z: -0.0065642414}
+      rotation: {x: 0.15830919, y: -0.07231844, z: 0.17075932, w: 0.9698193}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:PinkyFinger2
+      parentName: SKM_Mannequin_Rig:PinkyFinger1
+      position: {x: -0.035710614, y: -4.2632563e-16, z: 0}
+      rotation: {x: 0.028143968, y: -0.09341458, z: 0.030441435, w: 0.9947638}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:PinkyFinger3
+      parentName: SKM_Mannequin_Rig:PinkyFinger2
+      position: {x: -0.029854195, y: -1.4210854e-16, z: -4.2632563e-16}
+      rotation: {x: -0.0027701932, y: 0.050129972, z: -0.016008658, w: 0.99861056}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:PinkyFinger4
+      parentName: SKM_Mannequin_Rig:PinkyFinger3
+      position: {x: -0.024414318, y: 7.105427e-17, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:Neck
+      parentName: SKM_Mannequin_Rig:Chest
+      position: {x: -0.16562594, y: 3.5882408e-15, z: 4.4199587e-16}
+      rotation: {x: -6.381788e-18, y: 1.0511087e-16, z: -0.17392729, w: 0.9847585}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:Head
+      parentName: SKM_Mannequin_Rig:Neck
+      position: {x: -0.092907414, y: -7.105427e-17, z: -5.691285e-17}
+      rotation: {x: 2.5254615e-17, y: 1.3443638e-16, z: 0.10263622, w: 0.99471897}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:HeadEnd
+      parentName: SKM_Mannequin_Rig:Head
+      position: {x: -0.14733477, y: -5.018208e-16, z: -5.6607576e-17}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:MotionSystem
+      parentName: SKM_Mannequin_Rig:Main
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKSystem
+      parentName: SKM_Mannequin_Rig:MotionSystem
+      position: {x: -0, y: -1.4210854e-16, z: 1.3322676e-17}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKParentConstraintToRoot_M
+      parentName: SKM_Mannequin_Rig:FKSystem
+      position: {x: -1.93374e-17, y: 0.8480552, z: 0.054478806}
+      rotation: {x: 0.59787303, y: -0.3775551, z: -0.59787303, w: 0.3775551}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKOffsetHip_R
+      parentName: SKM_Mannequin_Rig:FKParentConstraintToRoot_M
+      position: {x: 0.014024398, y: 0.006435438, z: -0.09005803}
+      rotation: {x: -0.029621048, y: 0.9983239, z: -0.006950998, w: -0.049230814}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKExtraHip_R
+      parentName: SKM_Mannequin_Rig:FKOffsetHip_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKHip_R
+      parentName: SKM_Mannequin_Rig:FKExtraHip_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKXHip_R
+      parentName: SKM_Mannequin_Rig:FKHip_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:AlignIKToHip_R
+      parentName: SKM_Mannequin_Rig:FKXHip_R
+      position: {x: -0, y: 4.440892e-18, z: 0}
+      rotation: {x: 0.48279887, y: 0.52081954, z: 0.5273531, w: -0.4664237}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKOffsetKnee_R
+      parentName: SKM_Mannequin_Rig:FKXHip_R
+      position: {x: -0.4257752, y: 2.9753975e-16, z: 3.5527135e-16}
+      rotation: {x: 0, y: 0, z: 0.07007429, w: 0.9975418}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKExtraKnee_R
+      parentName: SKM_Mannequin_Rig:FKOffsetKnee_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKKnee_R
+      parentName: SKM_Mannequin_Rig:FKExtraKnee_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKXKnee_R
+      parentName: SKM_Mannequin_Rig:FKKnee_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKOffsetAnkle_R
+      parentName: SKM_Mannequin_Rig:FKXKnee_R
+      position: {x: -0.40202406, y: 1.0658141e-16, z: 4.2632563e-16}
+      rotation: {x: 0.016821528, y: -0.05105332, z: -0.08014278, w: 0.995333}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKExtraAnkle_R
+      parentName: SKM_Mannequin_Rig:FKOffsetAnkle_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKAnkle_R
+      parentName: SKM_Mannequin_Rig:FKExtraAnkle_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKXAnkle_R
+      parentName: SKM_Mannequin_Rig:FKAnkle_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:AlignIKToAnkle_R
+      parentName: SKM_Mannequin_Rig:FKXAnkle_R
+      position: {x: -3.5527136e-17, y: -8.881784e-18, z: 3.5527136e-17}
+      rotation: {x: 0.5124948, y: 0.5124948, z: 0.4871849, w: -0.4871849}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKOffsetToes_R
+      parentName: SKM_Mannequin_Rig:FKXAnkle_R
+      position: {x: -0.10654028, y: 0.16450039, z: 4.4558808e-11}
+      rotation: {x: -0.020370448, y: -0.015022192, z: -0.59332615, w: 0.8045641}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKExtraToes_R
+      parentName: SKM_Mannequin_Rig:FKOffsetToes_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKToes_R
+      parentName: SKM_Mannequin_Rig:FKExtraToes_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKXToes_R
+      parentName: SKM_Mannequin_Rig:FKToes_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:AlignIKToToes_R
+      parentName: SKM_Mannequin_Rig:FKXToes_R
+      position: {x: 8.881784e-18, y: -1.7763568e-17, z: 3.5527136e-17}
+      rotation: {x: -0.10294487, y: -0.68124884, z: -0.108293116, w: 0.7166414}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKPS1Ankle_R
+      parentName: SKM_Mannequin_Rig:FKXKnee_R
+      position: {x: -7.105427e-17, y: 3.5527136e-17, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKPS2Ankle_R
+      parentName: SKM_Mannequin_Rig:FKPS1Ankle_R
+      position: {x: -0.40202406, y: 1.5987211e-16, z: 4.6185276e-16}
+      rotation: {x: 0.016821528, y: -0.05105332, z: -0.08014278, w: 0.995333}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKPS1Knee_R
+      parentName: SKM_Mannequin_Rig:FKXHip_R
+      position: {x: 1.4210854e-16, y: 0, z: 3.5527136e-17}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKPS2Knee_R
+      parentName: SKM_Mannequin_Rig:FKPS1Knee_R
+      position: {x: -0.4257752, y: 2.9309886e-16, z: 4.2632563e-16}
+      rotation: {x: 0, y: 0, z: 0.07007429, w: 0.9975418}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKOffsetHip_L
+      parentName: SKM_Mannequin_Rig:FKParentConstraintToRoot_M
+      position: {x: 0.014024398, y: 0.006435438, z: 0.09005803}
+      rotation: {x: 0.9983239, y: 0.029621048, z: 0.049230814, w: -0.006950998}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKExtraHip_L
+      parentName: SKM_Mannequin_Rig:FKOffsetHip_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKHip_L
+      parentName: SKM_Mannequin_Rig:FKExtraHip_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKXHip_L
+      parentName: SKM_Mannequin_Rig:FKHip_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:AlignIKToHip_L
+      parentName: SKM_Mannequin_Rig:FKXHip_L
+      position: {x: -1.4210854e-16, y: 0, z: 0}
+      rotation: {x: -0.4664237, y: 0.5273531, z: -0.52081954, w: -0.48279887}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKOffsetKnee_L
+      parentName: SKM_Mannequin_Rig:FKXHip_L
+      position: {x: 0.4257752, y: -4.796163e-16, z: -2.1316282e-16}
+      rotation: {x: 0, y: 0, z: 0.07007429, w: 0.9975418}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKExtraKnee_L
+      parentName: SKM_Mannequin_Rig:FKOffsetKnee_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKKnee_L
+      parentName: SKM_Mannequin_Rig:FKExtraKnee_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKXKnee_L
+      parentName: SKM_Mannequin_Rig:FKKnee_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKOffsetAnkle_L
+      parentName: SKM_Mannequin_Rig:FKXKnee_L
+      position: {x: 0.40202406, y: -5.3290704e-17, z: -2.1316282e-16}
+      rotation: {x: 0.016821528, y: -0.05105332, z: -0.08014277, w: 0.995333}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKExtraAnkle_L
+      parentName: SKM_Mannequin_Rig:FKOffsetAnkle_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKAnkle_L
+      parentName: SKM_Mannequin_Rig:FKExtraAnkle_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKXAnkle_L
+      parentName: SKM_Mannequin_Rig:FKAnkle_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:AlignIKToAnkle_L
+      parentName: SKM_Mannequin_Rig:FKXAnkle_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0.4871849, y: -0.4871849, z: 0.5124948, w: 0.5124948}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKOffsetToes_L
+      parentName: SKM_Mannequin_Rig:FKXAnkle_L
+      position: {x: 0.10654028, y: -0.16450039, z: -0.0000000037896015}
+      rotation: {x: -0.020369435, y: -0.015021446, z: -0.5933262, w: 0.80456424}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKExtraToes_L
+      parentName: SKM_Mannequin_Rig:FKOffsetToes_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKToes_L
+      parentName: SKM_Mannequin_Rig:FKExtraToes_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKXToes_L
+      parentName: SKM_Mannequin_Rig:FKToes_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:AlignIKToToes_L
+      parentName: SKM_Mannequin_Rig:FKXToes_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0.7166406, y: -0.10829299, z: 0.68124974, w: 0.10294501}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKPS1Ankle_L
+      parentName: SKM_Mannequin_Rig:FKXKnee_L
+      position: {x: -0, y: 1.7763568e-17, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKPS2Ankle_L
+      parentName: SKM_Mannequin_Rig:FKPS1Ankle_L
+      position: {x: 0.40202406, y: -5.3290704e-17, z: -1.7763567e-16}
+      rotation: {x: 0.016821528, y: -0.05105332, z: -0.08014277, w: 0.995333}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKPS1Knee_L
+      parentName: SKM_Mannequin_Rig:FKXHip_L
+      position: {x: 1.4210854e-16, y: 0, z: 3.5527136e-17}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKPS2Knee_L
+      parentName: SKM_Mannequin_Rig:FKPS1Knee_L
+      position: {x: 0.4257752, y: -4.1744386e-16, z: -2.4868996e-16}
+      rotation: {x: 0, y: 0, z: 0.07007429, w: 0.9975418}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKParentConstraintToWrist_R
+      parentName: SKM_Mannequin_Rig:FKSystem
+      position: {x: 0.27002278, y: 1.1194235, z: 0.21029855}
+      rotation: {x: -0.053764928, y: 0.70093846, z: -0.024945712, w: 0.71075475}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKOffsetMiddleFinger1_R
+      parentName: SKM_Mannequin_Rig:FKParentConstraintToWrist_R
+      position: {x: -0.12325508, y: 3.5527135e-16, z: 2.2737367e-15}
+      rotation: {x: 0.05389653, y: -0.13561437, z: 0.06495367, w: 0.98716}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:SDKFKMiddleFinger1_R
+      parentName: SKM_Mannequin_Rig:FKOffsetMiddleFinger1_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKExtraMiddleFinger1_R
+      parentName: SKM_Mannequin_Rig:SDKFKMiddleFinger1_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKMiddleFinger1_R
+      parentName: SKM_Mannequin_Rig:FKExtraMiddleFinger1_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKXMiddleFinger1_R
+      parentName: SKM_Mannequin_Rig:FKMiddleFinger1_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKOffsetMiddleFinger2_R
+      parentName: SKM_Mannequin_Rig:FKXMiddleFinger1_R
+      position: {x: -0.04640569, y: -1.7763567e-16, z: -2.842171e-16}
+      rotation: {x: 0.027385043, y: -0.10463086, z: 0.024198018, w: 0.9938395}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:SDKFKMiddleFinger2_R
+      parentName: SKM_Mannequin_Rig:FKOffsetMiddleFinger2_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKExtraMiddleFinger2_R
+      parentName: SKM_Mannequin_Rig:SDKFKMiddleFinger2_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKMiddleFinger2_R
+      parentName: SKM_Mannequin_Rig:FKExtraMiddleFinger2_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKXMiddleFinger2_R
+      parentName: SKM_Mannequin_Rig:FKMiddleFinger2_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKOffsetMiddleFinger3_R
+      parentName: SKM_Mannequin_Rig:FKXMiddleFinger2_R
+      position: {x: -0.036489043, y: 1.7763567e-16, z: -9.947598e-16}
+      rotation: {x: -0.027259717, y: 0.108121686, z: -0.018777966, w: 0.9935864}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:SDKFKMiddleFinger3_R
+      parentName: SKM_Mannequin_Rig:FKOffsetMiddleFinger3_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKExtraMiddleFinger3_R
+      parentName: SKM_Mannequin_Rig:SDKFKMiddleFinger3_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKMiddleFinger3_R
+      parentName: SKM_Mannequin_Rig:FKExtraMiddleFinger3_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKXMiddleFinger3_R
+      parentName: SKM_Mannequin_Rig:FKMiddleFinger3_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKOffsetThumbFinger1_R
+      parentName: SKM_Mannequin_Rig:FKParentConstraintToWrist_R
+      position: {x: -0.048623785, y: 0.025119, z: -0.021925027}
+      rotation: {x: -0.6873398, y: 0.10596171, z: -0.36051464, w: 0.6215829}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:SDKFKThumbFinger1_R
+      parentName: SKM_Mannequin_Rig:FKOffsetThumbFinger1_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKExtraThumbFinger1_R
+      parentName: SKM_Mannequin_Rig:SDKFKThumbFinger1_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKThumbFinger1_R
+      parentName: SKM_Mannequin_Rig:FKExtraThumbFinger1_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKXThumbFinger1_R
+      parentName: SKM_Mannequin_Rig:FKThumbFinger1_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKOffsetThumbFinger2_R
+      parentName: SKM_Mannequin_Rig:FKXThumbFinger1_R
+      position: {x: -0.038695693, y: 9.947598e-16, z: -7.105427e-16}
+      rotation: {x: 0.14290793, y: -0.1413371, z: -0.067059845, w: 0.9772943}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:SDKFKThumbFinger2_R
+      parentName: SKM_Mannequin_Rig:FKOffsetThumbFinger2_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKExtraThumbFinger2_R
+      parentName: SKM_Mannequin_Rig:SDKFKThumbFinger2_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKThumbFinger2_R
+      parentName: SKM_Mannequin_Rig:FKExtraThumbFinger2_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKXThumbFinger2_R
+      parentName: SKM_Mannequin_Rig:FKThumbFinger2_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKOffsetThumbFinger3_R
+      parentName: SKM_Mannequin_Rig:FKXThumbFinger2_R
+      position: {x: -0.04062173, y: -5.684342e-16, z: 1.065814e-15}
+      rotation: {x: -0.030160012, y: 0.02498948, z: -0.019428615, w: 0.99904376}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:SDKFKThumbFinger3_R
+      parentName: SKM_Mannequin_Rig:FKOffsetThumbFinger3_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKExtraThumbFinger3_R
+      parentName: SKM_Mannequin_Rig:SDKFKThumbFinger3_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKThumbFinger3_R
+      parentName: SKM_Mannequin_Rig:FKExtraThumbFinger3_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKXThumbFinger3_R
+      parentName: SKM_Mannequin_Rig:FKThumbFinger3_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKOffsetIndexFinger1_R
+      parentName: SKM_Mannequin_Rig:FKParentConstraintToWrist_R
+      position: {x: -0.12075625, y: 0.025902322, z: -0.00815832}
+      rotation: {x: -0.06209334, y: -0.1679972, z: 0.021643428, w: 0.98359185}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:SDKFKIndexFinger1_R
+      parentName: SKM_Mannequin_Rig:FKOffsetIndexFinger1_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKExtraIndexFinger1_R
+      parentName: SKM_Mannequin_Rig:SDKFKIndexFinger1_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKIndexFinger1_R
+      parentName: SKM_Mannequin_Rig:FKExtraIndexFinger1_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKXIndexFinger1_R
+      parentName: SKM_Mannequin_Rig:FKIndexFinger1_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKOffsetIndexFinger2_R
+      parentName: SKM_Mannequin_Rig:FKXIndexFinger1_R
+      position: {x: -0.04287684, y: -6.661338e-17, z: -4.2632563e-16}
+      rotation: {x: 0.014634845, y: -0.09876133, z: 0.03409812, w: 0.9944191}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:SDKFKIndexFinger2_R
+      parentName: SKM_Mannequin_Rig:FKOffsetIndexFinger2_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKExtraIndexFinger2_R
+      parentName: SKM_Mannequin_Rig:SDKFKIndexFinger2_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKIndexFinger2_R
+      parentName: SKM_Mannequin_Rig:FKExtraIndexFinger2_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKXIndexFinger2_R
+      parentName: SKM_Mannequin_Rig:FKIndexFinger2_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKOffsetIndexFinger3_R
+      parentName: SKM_Mannequin_Rig:FKXIndexFinger2_R
+      position: {x: -0.03393803, y: 3.9968027e-17, z: 7.105427e-16}
+      rotation: {x: -0.012499176, y: 0.043780107, z: -0.05397101, w: 0.997504}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:SDKFKIndexFinger3_R
+      parentName: SKM_Mannequin_Rig:FKOffsetIndexFinger3_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKExtraIndexFinger3_R
+      parentName: SKM_Mannequin_Rig:SDKFKIndexFinger3_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKIndexFinger3_R
+      parentName: SKM_Mannequin_Rig:FKExtraIndexFinger3_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKXIndexFinger3_R
+      parentName: SKM_Mannequin_Rig:FKIndexFinger3_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKOffsetRingFinger1_R
+      parentName: SKM_Mannequin_Rig:FKParentConstraintToWrist_R
+      position: {x: -0.11738035, y: -0.023543632, z: -0.002437289}
+      rotation: {x: 0.09916084, y: -0.12721539, z: 0.10570811, w: 0.9812284}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:SDKFKRingFinger1_R
+      parentName: SKM_Mannequin_Rig:FKOffsetRingFinger1_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKExtraRingFinger1_R
+      parentName: SKM_Mannequin_Rig:SDKFKRingFinger1_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKRingFinger1_R
+      parentName: SKM_Mannequin_Rig:FKExtraRingFinger1_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKXRingFinger1_R
+      parentName: SKM_Mannequin_Rig:FKRingFinger1_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKOffsetRingFinger2_R
+      parentName: SKM_Mannequin_Rig:FKXRingFinger1_R
+      position: {x: -0.04429869, y: -2.1316282e-16, z: -8.5265126e-16}
+      rotation: {x: 0.025956063, y: -0.11230529, z: 0.032177735, w: 0.99281335}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:SDKFKRingFinger2_R
+      parentName: SKM_Mannequin_Rig:FKOffsetRingFinger2_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKExtraRingFinger2_R
+      parentName: SKM_Mannequin_Rig:SDKFKRingFinger2_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKRingFinger2_R
+      parentName: SKM_Mannequin_Rig:FKExtraRingFinger2_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKXRingFinger2_R
+      parentName: SKM_Mannequin_Rig:FKRingFinger2_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKOffsetRingFinger3_R
+      parentName: SKM_Mannequin_Rig:FKXRingFinger2_R
+      position: {x: -0.034766562, y: -2.4868996e-16, z: 0}
+      rotation: {x: -0.010385873, y: 0.058281083, z: -0.0026658005, w: 0.9982426}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:SDKFKRingFinger3_R
+      parentName: SKM_Mannequin_Rig:FKOffsetRingFinger3_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKExtraRingFinger3_R
+      parentName: SKM_Mannequin_Rig:SDKFKRingFinger3_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKRingFinger3_R
+      parentName: SKM_Mannequin_Rig:FKExtraRingFinger3_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKXRingFinger3_R
+      parentName: SKM_Mannequin_Rig:FKRingFinger3_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKOffsetPinkyFinger1_R
+      parentName: SKM_Mannequin_Rig:FKParentConstraintToWrist_R
+      position: {x: -0.105263375, y: -0.042752728, z: -0.0065642414}
+      rotation: {x: 0.15830918, y: -0.07231843, z: 0.17075932, w: 0.9698193}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:SDKFKPinkyFinger1_R
+      parentName: SKM_Mannequin_Rig:FKOffsetPinkyFinger1_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKExtraPinkyFinger1_R
+      parentName: SKM_Mannequin_Rig:SDKFKPinkyFinger1_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKPinkyFinger1_R
+      parentName: SKM_Mannequin_Rig:FKExtraPinkyFinger1_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKXPinkyFinger1_R
+      parentName: SKM_Mannequin_Rig:FKPinkyFinger1_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKOffsetPinkyFinger2_R
+      parentName: SKM_Mannequin_Rig:FKXPinkyFinger1_R
+      position: {x: -0.035710614, y: -2.842171e-16, z: 1.4210854e-16}
+      rotation: {x: 0.028143983, y: -0.09341457, z: 0.030441439, w: 0.9947638}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:SDKFKPinkyFinger2_R
+      parentName: SKM_Mannequin_Rig:FKOffsetPinkyFinger2_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKExtraPinkyFinger2_R
+      parentName: SKM_Mannequin_Rig:SDKFKPinkyFinger2_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKPinkyFinger2_R
+      parentName: SKM_Mannequin_Rig:FKExtraPinkyFinger2_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKXPinkyFinger2_R
+      parentName: SKM_Mannequin_Rig:FKPinkyFinger2_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKOffsetPinkyFinger3_R
+      parentName: SKM_Mannequin_Rig:FKXPinkyFinger2_R
+      position: {x: -0.029854195, y: 0, z: -5.684342e-16}
+      rotation: {x: -0.0027701792, y: 0.05012999, z: -0.016008658, w: 0.99861056}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:SDKFKPinkyFinger3_R
+      parentName: SKM_Mannequin_Rig:FKOffsetPinkyFinger3_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKExtraPinkyFinger3_R
+      parentName: SKM_Mannequin_Rig:SDKFKPinkyFinger3_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKPinkyFinger3_R
+      parentName: SKM_Mannequin_Rig:FKExtraPinkyFinger3_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKXPinkyFinger3_R
+      parentName: SKM_Mannequin_Rig:FKPinkyFinger3_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKParentConstraintToScapula_R
+      parentName: SKM_Mannequin_Rig:FKSystem
+      position: {x: 0.051012594, y: 1.3593537, z: 0.2673516}
+      rotation: {x: 0.37976485, y: 0.41748083, z: 0.73497725, w: -0.37589478}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKOffsetShoulder_R
+      parentName: SKM_Mannequin_Rig:FKParentConstraintToScapula_R
+      position: {x: -0.15784797, y: -5.595524e-15, z: 1.1937118e-14}
+      rotation: {x: 0.08758847, y: -0.3490073, z: -0.116474606, w: 0.9257191}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKGlobalStaticShoulder_R
+      parentName: SKM_Mannequin_Rig:FKOffsetShoulder_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKGlobalShoulder_R
+      parentName: SKM_Mannequin_Rig:FKGlobalStaticShoulder_R
+      position: {x: 1.4210854e-16, y: 7.105427e-17, z: -1.4210854e-16}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKExtraShoulder_R
+      parentName: SKM_Mannequin_Rig:FKGlobalShoulder_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKShoulder_R
+      parentName: SKM_Mannequin_Rig:FKExtraShoulder_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: -0.3245742, y: -0.11298031, z: -0.09423313, w: 0.9343485}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKXShoulder_R
+      parentName: SKM_Mannequin_Rig:FKShoulder_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:AlignIKToShoulder_R
+      parentName: SKM_Mannequin_Rig:FKXShoulder_R
+      position: {x: -1.4210854e-16, y: 3.5527136e-17, z: 0}
+      rotation: {x: 0.36586636, y: 0.74112403, z: 0.5226424, w: -0.20909794}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKOffsetElbow_R
+      parentName: SKM_Mannequin_Rig:FKXShoulder_R
+      position: {x: -0.30340052, y: -7.105427e-17, z: 7.105427e-16}
+      rotation: {x: 0.0000000053043965, y: 0.000000018541064, z: -0.27505428, w: 0.9614287}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKExtraElbow_R
+      parentName: SKM_Mannequin_Rig:FKOffsetElbow_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKElbow_R
+      parentName: SKM_Mannequin_Rig:FKExtraElbow_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0.63651365, w: 0.7712655}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKXElbow_R
+      parentName: SKM_Mannequin_Rig:FKElbow_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKOffsetWrist_R
+      parentName: SKM_Mannequin_Rig:FKXElbow_R
+      position: {x: -0.26975247, y: 1.4210854e-16, z: -1.1368684e-15}
+      rotation: {x: -0.1751758, y: -0.065364465, z: 0.03535273, w: 0.9817287}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKExtraWrist_R
+      parentName: SKM_Mannequin_Rig:FKOffsetWrist_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKWrist_R
+      parentName: SKM_Mannequin_Rig:FKExtraWrist_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0.37049228, y: 0.04620969, z: -0.23264864, w: 0.89803946}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKXWrist_R
+      parentName: SKM_Mannequin_Rig:FKWrist_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:AlignIKToWrist_R
+      parentName: SKM_Mannequin_Rig:FKXWrist_R
+      position: {x: 7.105427e-17, y: 7.105427e-17, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKPS1Wrist_R
+      parentName: SKM_Mannequin_Rig:FKXElbow_R
+      position: {x: -0, y: -7.105427e-17, z: 1.4210854e-16}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKPS2Wrist_R
+      parentName: SKM_Mannequin_Rig:FKPS1Wrist_R
+      position: {x: -0.26975247, y: 2.842171e-16, z: -7.105427e-16}
+      rotation: {x: -0.1751758, y: -0.065364465, z: 0.03535273, w: 0.9817287}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKPS1Elbow_R
+      parentName: SKM_Mannequin_Rig:FKXShoulder_R
+      position: {x: -0, y: 0, z: -1.4210854e-16}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKPS2Elbow_R
+      parentName: SKM_Mannequin_Rig:FKPS1Elbow_R
+      position: {x: -0.30340052, y: -1.7763567e-16, z: 5.684342e-16}
+      rotation: {x: 0.000000003820625, y: 0.0000000133546685, z: -0.27505428, w: 0.9614287}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKParentConstraintToChest_M
+      parentName: SKM_Mannequin_Rig:FKSystem
+      position: {x: 0.0047634374, y: 1.2479846, z: 0.22543247}
+      rotation: {x: 0.42922515, y: -0.19088323, z: -0.6843338, w: 0.55768865}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKOffsetScapula_R
+      parentName: SKM_Mannequin_Rig:FKParentConstraintToChest_M
+      position: {x: -0.119396664, y: 0.024765305, z: -0.037819996}
+      rotation: {x: -0.22773266, y: -0.736429, z: 0.099033006, w: 0.62928754}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKExtraScapula_R
+      parentName: SKM_Mannequin_Rig:FKOffsetScapula_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKScapula_R
+      parentName: SKM_Mannequin_Rig:FKExtraScapula_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKXScapula_R
+      parentName: SKM_Mannequin_Rig:FKScapula_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKOffsetNeck_M
+      parentName: SKM_Mannequin_Rig:FKParentConstraintToChest_M
+      position: {x: -0.16562594, y: 3.694822e-15, z: 4.5918175e-16}
+      rotation: {x: -0.0000000135954865, y: 0.0000000024012243, z: -0.17392729, w: 0.9847585}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKExtraNeck_M
+      parentName: SKM_Mannequin_Rig:FKOffsetNeck_M
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKNeck_M
+      parentName: SKM_Mannequin_Rig:FKExtraNeck_M
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0.14925079, y: 0.0010541561, z: 0.01201534, w: 0.9887258}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKXNeck_M
+      parentName: SKM_Mannequin_Rig:FKNeck_M
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKOffsetHead_M
+      parentName: SKM_Mannequin_Rig:FKXNeck_M
+      position: {x: -0.092907414, y: -3.5527135e-16, z: 0.0000000014392244}
+      rotation: {x: 0, y: 0, z: 0.10263622, w: 0.99471897}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKGlobalStaticHead_M
+      parentName: SKM_Mannequin_Rig:FKOffsetHead_M
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKGlobalHead_M
+      parentName: SKM_Mannequin_Rig:FKGlobalStaticHead_M
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0.18359673, y: 0.02665652, z: 0.2308184, w: 0.9551464}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKExtraHead_M
+      parentName: SKM_Mannequin_Rig:FKGlobalHead_M
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKHead_M
+      parentName: SKM_Mannequin_Rig:FKExtraHead_M
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0.09215014, w: 0.9957451}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKXHead_M
+      parentName: SKM_Mannequin_Rig:FKHead_M
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKPS1Head_M
+      parentName: SKM_Mannequin_Rig:FKXNeck_M
+      position: {x: 2.842171e-16, y: 0, z: -4.2351646e-24}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKPS2Head_M
+      parentName: SKM_Mannequin_Rig:FKPS1Head_M
+      position: {x: -0.092907414, y: -2.1316282e-16, z: 0.0000000014392246}
+      rotation: {x: 0, y: 0, z: 0.10263622, w: 0.99471897}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKOffsetScapula_L
+      parentName: SKM_Mannequin_Rig:FKParentConstraintToChest_M
+      position: {x: -0.119396664, y: 0.024765307, z: 0.037819922}
+      rotation: {x: 0.736429, y: -0.22773266, z: 0.62928754, w: -0.099033006}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKExtraScapula_L
+      parentName: SKM_Mannequin_Rig:FKOffsetScapula_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKScapula_L
+      parentName: SKM_Mannequin_Rig:FKExtraScapula_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0.13797823, w: 0.9904353}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKXScapula_L
+      parentName: SKM_Mannequin_Rig:FKScapula_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKOffsetRoot_M
+      parentName: SKM_Mannequin_Rig:FKSystem
+      position: {x: -1.93374e-17, y: 0.967506, z: -0.010561532}
+      rotation: {x: 0.5201368, y: -0.47901747, z: -0.5201368, w: 0.47901747}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKExtraRoot_M
+      parentName: SKM_Mannequin_Rig:FKOffsetRoot_M
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKRoot_M
+      parentName: SKM_Mannequin_Rig:FKExtraRoot_M
+      position: {x: 0.11370261, y: 0.07463556, z: -3.7287955e-17}
+      rotation: {x: 0, y: -0, z: -0.18002264, w: 0.9836625}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKXRoot_M
+      parentName: SKM_Mannequin_Rig:FKRoot_M
+      position: {x: 1.4210854e-16, y: 0, z: -3.9443043e-32}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:AlignIKToRoot_M
+      parentName: SKM_Mannequin_Rig:FKXRoot_M
+      position: {x: 1.4210854e-16, y: 0, z: -2.3665827e-32}
+      rotation: {x: 0.5201368, y: -0.47901747, z: -0.5201368, w: -0.47901747}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKOffsetSpine1_M
+      parentName: SKM_Mannequin_Rig:FKXRoot_M
+      position: {x: -0.10842358, y: 5.3290704e-17, z: -7.010792e-17}
+      rotation: {x: -0.0000000070158466, y: 0.000000091848705, z: 0.07616295, w: 0.9970954}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:HipSwingerStabilizer
+      parentName: SKM_Mannequin_Rig:FKOffsetSpine1_M
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: -4.4792775e-16, y: -3.275158e-15, z: 0.0000000024313174, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKExtraSpine1_M
+      parentName: SKM_Mannequin_Rig:HipSwingerStabilizer
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKSpine1_M
+      parentName: SKM_Mannequin_Rig:FKExtraSpine1_M
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: -0.32133868, y: 0.0075502414, z: -0.053247523, w: 0.945436}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKXSpine1_M
+      parentName: SKM_Mannequin_Rig:FKSpine1_M
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKOffsetSpine2_M
+      parentName: SKM_Mannequin_Rig:FKXSpine1_M
+      position: {x: -0.19254287, y: -5.3290704e-17, z: -1.7763669e-17}
+      rotation: {x: 0.000000003588, y: -0.000000091856045, z: 0.039031353, w: 0.999238}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKExtraSpine2_M
+      parentName: SKM_Mannequin_Rig:FKOffsetSpine2_M
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKSpine2_M
+      parentName: SKM_Mannequin_Rig:FKExtraSpine2_M
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0.028306687, w: 0.9995993}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKXSpine2_M
+      parentName: SKM_Mannequin_Rig:FKSpine2_M
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKOffsetChest_M
+      parentName: SKM_Mannequin_Rig:FKXSpine2_M
+      position: {x: -0.13413925, y: -6.0396133e-16, z: -1.4210856e-16}
+      rotation: {x: 0, y: -0, z: -0.0021480632, w: 0.99999774}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKExtraChest_M
+      parentName: SKM_Mannequin_Rig:FKOffsetChest_M
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKChest_M
+      parentName: SKM_Mannequin_Rig:FKExtraChest_M
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0.0057978043, y: -0, z: -0, w: 0.9999832}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKXChest_M
+      parentName: SKM_Mannequin_Rig:FKChest_M
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:AlignIKToChest_M
+      parentName: SKM_Mannequin_Rig:FKXChest_M
+      position: {x: -0, y: 3.5527136e-17, z: -1.2705494e-23}
+      rotation: {x: -0.46273616, y: 0.53467304, z: 0.46273613, w: 0.53467304}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKPS1Chest_M
+      parentName: SKM_Mannequin_Rig:FKXSpine2_M
+      position: {x: -0, y: 0, z: 4.2351646e-24}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKPS2Chest_M
+      parentName: SKM_Mannequin_Rig:FKPS1Chest_M
+      position: {x: -0.13413925, y: -6.750156e-16, z: -1.5641161e-16}
+      rotation: {x: 0, y: -0, z: -0.0021480632, w: 0.99999774}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKPS1Spine2_M
+      parentName: SKM_Mannequin_Rig:FKXSpine1_M
+      position: {x: -0, y: 1.7763568e-17, z: 3.3881317e-23}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKPS2Spine2_M
+      parentName: SKM_Mannequin_Rig:FKPS1Spine2_M
+      position: {x: -0.19254287, y: -7.105427e-17, z: -6.725069e-18}
+      rotation: {x: 0.000000003588, y: -0.000000091856045, z: 0.039031353, w: 0.999238}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKPS1Spine1_M
+      parentName: SKM_Mannequin_Rig:FKXRoot_M
+      position: {x: 1.4210854e-16, y: 0, z: -2.3665827e-32}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKPS2Spine1_M
+      parentName: SKM_Mannequin_Rig:FKPS1Spine1_M
+      position: {x: -0.10842358, y: 8.8817837e-17, z: -7.0107885e-17}
+      rotation: {x: -0.0000000070158466, y: 0.000000091848705, z: 0.07616295, w: 0.9970954}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKParentConstraintToWrist_L
+      parentName: SKM_Mannequin_Rig:FKSystem
+      position: {x: 0.14229797, y: 1.0565959, z: 0.7723114}
+      rotation: {x: 0.9524025, y: 0.05201298, z: 0.29890054, w: -0.02971137}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKOffsetMiddleFinger1_L
+      parentName: SKM_Mannequin_Rig:FKParentConstraintToWrist_L
+      position: {x: 0.12325508, y: -0.0000000011769259, z: 0.000000003246858}
+      rotation: {x: 0.053896535, y: -0.1356144, z: 0.06495366, w: 0.98716}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:SDKFKMiddleFinger1_L
+      parentName: SKM_Mannequin_Rig:FKOffsetMiddleFinger1_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKExtraMiddleFinger1_L
+      parentName: SKM_Mannequin_Rig:SDKFKMiddleFinger1_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKMiddleFinger1_L
+      parentName: SKM_Mannequin_Rig:FKExtraMiddleFinger1_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0.36269137, z: -0, w: 0.9319093}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKXMiddleFinger1_L
+      parentName: SKM_Mannequin_Rig:FKMiddleFinger1_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKOffsetMiddleFinger2_L
+      parentName: SKM_Mannequin_Rig:FKXMiddleFinger1_L
+      position: {x: 0.04640569, y: -2.4119257e-10, z: 0.0000000012271529}
+      rotation: {x: 0.027385034, y: -0.104630895, z: 0.024198018, w: 0.9938395}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:SDKFKMiddleFinger2_L
+      parentName: SKM_Mannequin_Rig:FKOffsetMiddleFinger2_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKExtraMiddleFinger2_L
+      parentName: SKM_Mannequin_Rig:SDKFKMiddleFinger2_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKMiddleFinger2_L
+      parentName: SKM_Mannequin_Rig:FKExtraMiddleFinger2_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: -0.025812909, y: -0.34638736, z: 0.069687225, w: 0.9351434}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKXMiddleFinger2_L
+      parentName: SKM_Mannequin_Rig:FKMiddleFinger2_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKOffsetMiddleFinger3_L
+      parentName: SKM_Mannequin_Rig:FKXMiddleFinger2_L
+      position: {x: 0.036489043, y: -6.6752645e-11, z: 9.558007e-10}
+      rotation: {x: -0.027259732, y: 0.10812166, z: -0.018777965, w: 0.9935865}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:SDKFKMiddleFinger3_L
+      parentName: SKM_Mannequin_Rig:FKOffsetMiddleFinger3_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKExtraMiddleFinger3_L
+      parentName: SKM_Mannequin_Rig:SDKFKMiddleFinger3_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKMiddleFinger3_L
+      parentName: SKM_Mannequin_Rig:FKExtraMiddleFinger3_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0.56599283, z: -0, w: 0.82441014}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKXMiddleFinger3_L
+      parentName: SKM_Mannequin_Rig:FKMiddleFinger3_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKOffsetThumbFinger1_L
+      parentName: SKM_Mannequin_Rig:FKParentConstraintToWrist_L
+      position: {x: 0.048623785, y: -0.025119, z: 0.021925027}
+      rotation: {x: -0.6873398, y: 0.1059617, z: -0.36051467, w: 0.6215829}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:SDKFKThumbFinger1_L
+      parentName: SKM_Mannequin_Rig:FKOffsetThumbFinger1_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKExtraThumbFinger1_L
+      parentName: SKM_Mannequin_Rig:SDKFKThumbFinger1_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKThumbFinger1_L
+      parentName: SKM_Mannequin_Rig:FKExtraThumbFinger1_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: -0.0073963436, y: -0.013703914, z: -0.47490385, w: 0.8798999}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKXThumbFinger1_L
+      parentName: SKM_Mannequin_Rig:FKThumbFinger1_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKOffsetThumbFinger2_L
+      parentName: SKM_Mannequin_Rig:FKXThumbFinger1_L
+      position: {x: 0.038695693, y: -8.682592e-10, z: -5.2231974e-10}
+      rotation: {x: 0.14290793, y: -0.14133707, z: -0.067059875, w: 0.9772943}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:SDKFKThumbFinger2_L
+      parentName: SKM_Mannequin_Rig:FKOffsetThumbFinger2_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKExtraThumbFinger2_L
+      parentName: SKM_Mannequin_Rig:SDKFKThumbFinger2_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKThumbFinger2_L
+      parentName: SKM_Mannequin_Rig:FKExtraThumbFinger2_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: -0.3408181, y: -0.097770564, z: 0.3665549, w: 0.86018693}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKXThumbFinger2_L
+      parentName: SKM_Mannequin_Rig:FKThumbFinger2_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKOffsetThumbFinger3_L
+      parentName: SKM_Mannequin_Rig:FKXThumbFinger2_L
+      position: {x: 0.04062173, y: -0.000000001104259, z: -2.870722e-10}
+      rotation: {x: -0.030160012, y: 0.024989478, z: -0.01942865, w: 0.99904376}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:SDKFKThumbFinger3_L
+      parentName: SKM_Mannequin_Rig:FKOffsetThumbFinger3_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKExtraThumbFinger3_L
+      parentName: SKM_Mannequin_Rig:SDKFKThumbFinger3_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKThumbFinger3_L
+      parentName: SKM_Mannequin_Rig:FKExtraThumbFinger3_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0.37759262, z: -0, w: 0.92597187}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKXThumbFinger3_L
+      parentName: SKM_Mannequin_Rig:FKThumbFinger3_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKOffsetIndexFinger1_L
+      parentName: SKM_Mannequin_Rig:FKParentConstraintToWrist_L
+      position: {x: 0.12075625, y: -0.025902323, z: 0.008158323}
+      rotation: {x: -0.06209334, y: -0.16799723, z: 0.021643417, w: 0.98359185}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:SDKFKIndexFinger1_L
+      parentName: SKM_Mannequin_Rig:FKOffsetIndexFinger1_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKExtraIndexFinger1_L
+      parentName: SKM_Mannequin_Rig:SDKFKIndexFinger1_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKIndexFinger1_L
+      parentName: SKM_Mannequin_Rig:FKExtraIndexFinger1_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0.012320513, y: -0.29109854, z: -0.055554785, w: 0.95499927}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKXIndexFinger1_L
+      parentName: SKM_Mannequin_Rig:FKIndexFinger1_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKOffsetIndexFinger2_L
+      parentName: SKM_Mannequin_Rig:FKXIndexFinger1_L
+      position: {x: 0.04287684, y: -4.7579385e-10, z: 0.0000000010643139}
+      rotation: {x: 0.014634846, y: -0.09876135, z: 0.03409812, w: 0.9944191}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:SDKFKIndexFinger2_L
+      parentName: SKM_Mannequin_Rig:FKOffsetIndexFinger2_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKExtraIndexFinger2_L
+      parentName: SKM_Mannequin_Rig:SDKFKIndexFinger2_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKIndexFinger2_L
+      parentName: SKM_Mannequin_Rig:FKExtraIndexFinger2_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: -0.016114555, y: -0.3588784, z: 0.02987115, w: 0.93276703}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKXIndexFinger2_L
+      parentName: SKM_Mannequin_Rig:FKIndexFinger2_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKOffsetIndexFinger3_L
+      parentName: SKM_Mannequin_Rig:FKXIndexFinger2_L
+      position: {x: 0.03393803, y: -2.9081762e-10, z: 8.3113716e-10}
+      rotation: {x: -0.012499189, y: 0.043780077, z: -0.05397101, w: 0.997504}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:SDKFKIndexFinger3_L
+      parentName: SKM_Mannequin_Rig:FKOffsetIndexFinger3_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKExtraIndexFinger3_L
+      parentName: SKM_Mannequin_Rig:SDKFKIndexFinger3_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKIndexFinger3_L
+      parentName: SKM_Mannequin_Rig:FKExtraIndexFinger3_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0.41698015, z: -0, w: 0.9089156}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKXIndexFinger3_L
+      parentName: SKM_Mannequin_Rig:FKIndexFinger3_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKOffsetRingFinger1_L
+      parentName: SKM_Mannequin_Rig:FKParentConstraintToWrist_L
+      position: {x: 0.11738035, y: 0.023543632, z: 0.0024372921}
+      rotation: {x: 0.09916085, y: -0.12721542, z: 0.1057081, w: 0.9812284}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:SDKFKRingFinger1_L
+      parentName: SKM_Mannequin_Rig:FKOffsetRingFinger1_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKExtraRingFinger1_L
+      parentName: SKM_Mannequin_Rig:SDKFKRingFinger1_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKRingFinger1_L
+      parentName: SKM_Mannequin_Rig:FKExtraRingFinger1_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0.2850209, z: -0, w: 0.9585213}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKXRingFinger1_L
+      parentName: SKM_Mannequin_Rig:FKRingFinger1_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKOffsetRingFinger2_L
+      parentName: SKM_Mannequin_Rig:FKXRingFinger1_L
+      position: {x: 0.04429869, y: -1.1619707e-10, z: 0.000000001162077}
+      rotation: {x: 0.025956046, y: -0.11230533, z: 0.032177724, w: 0.99281335}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:SDKFKRingFinger2_L
+      parentName: SKM_Mannequin_Rig:FKOffsetRingFinger2_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKExtraRingFinger2_L
+      parentName: SKM_Mannequin_Rig:SDKFKRingFinger2_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKRingFinger2_L
+      parentName: SKM_Mannequin_Rig:FKExtraRingFinger2_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: -0.04491832, y: -0.38425836, z: 0.10706468, w: 0.91589576}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKXRingFinger2_L
+      parentName: SKM_Mannequin_Rig:FKRingFinger2_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKOffsetRingFinger3_L
+      parentName: SKM_Mannequin_Rig:FKXRingFinger2_L
+      position: {x: 0.034766562, y: 4.0540158e-11, z: 8.890946e-10}
+      rotation: {x: -0.010385887, y: 0.05828105, z: -0.0026657993, w: 0.9982426}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:SDKFKRingFinger3_L
+      parentName: SKM_Mannequin_Rig:FKOffsetRingFinger3_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKExtraRingFinger3_L
+      parentName: SKM_Mannequin_Rig:SDKFKRingFinger3_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKRingFinger3_L
+      parentName: SKM_Mannequin_Rig:FKExtraRingFinger3_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0.07344604, y: -0.469324, z: 0.15750684, w: 0.8657553}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKXRingFinger3_L
+      parentName: SKM_Mannequin_Rig:FKRingFinger3_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKOffsetPinkyFinger1_L
+      parentName: SKM_Mannequin_Rig:FKParentConstraintToWrist_L
+      position: {x: 0.105263375, y: 0.042752728, z: 0.0065642446}
+      rotation: {x: 0.15830918, y: -0.07231846, z: 0.17075932, w: 0.9698193}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:SDKFKPinkyFinger1_L
+      parentName: SKM_Mannequin_Rig:FKOffsetPinkyFinger1_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKExtraPinkyFinger1_L
+      parentName: SKM_Mannequin_Rig:SDKFKPinkyFinger1_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKPinkyFinger1_L
+      parentName: SKM_Mannequin_Rig:FKExtraPinkyFinger1_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: -0.03141399, y: -0.0028297205, z: 0.027183732, w: 0.99913275}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKXPinkyFinger1_L
+      parentName: SKM_Mannequin_Rig:FKPinkyFinger1_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKOffsetPinkyFinger2_L
+      parentName: SKM_Mannequin_Rig:FKXPinkyFinger1_L
+      position: {x: 0.035710614, y: -2.433609e-13, z: 9.021323e-10}
+      rotation: {x: 0.02814397, y: -0.0934146, z: 0.030441437, w: 0.9947638}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:SDKFKPinkyFinger2_L
+      parentName: SKM_Mannequin_Rig:FKOffsetPinkyFinger2_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKExtraPinkyFinger2_L
+      parentName: SKM_Mannequin_Rig:SDKFKPinkyFinger2_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKPinkyFinger2_L
+      parentName: SKM_Mannequin_Rig:FKExtraPinkyFinger2_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: -0.1260432, y: -0.45807245, z: -0.065799326, w: 0.8774698}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKXPinkyFinger2_L
+      parentName: SKM_Mannequin_Rig:FKPinkyFinger2_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKOffsetPinkyFinger3_L
+      parentName: SKM_Mannequin_Rig:FKXPinkyFinger2_L
+      position: {x: 0.029854195, y: 1.14465805e-10, z: 7.2724443e-10}
+      rotation: {x: -0.0027701934, y: 0.050129957, z: -0.016008658, w: 0.99861056}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:SDKFKPinkyFinger3_L
+      parentName: SKM_Mannequin_Rig:FKOffsetPinkyFinger3_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKExtraPinkyFinger3_L
+      parentName: SKM_Mannequin_Rig:SDKFKPinkyFinger3_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKPinkyFinger3_L
+      parentName: SKM_Mannequin_Rig:FKExtraPinkyFinger3_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0.29112598, z: -0, w: 0.9566847}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKXPinkyFinger3_L
+      parentName: SKM_Mannequin_Rig:FKPinkyFinger3_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKParentConstraintToScapula_L
+      parentName: SKM_Mannequin_Rig:FKSystem
+      position: {x: -0.009527578, y: 1.3429025, z: 0.3096085}
+      rotation: {x: -0.2130631, y: 0.8610066, z: -0.45494017, w: -0.07938001}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKOffsetShoulder_L
+      parentName: SKM_Mannequin_Rig:FKParentConstraintToScapula_L
+      position: {x: 0.15784797, y: 5.2935434e-15, z: -1.1652901e-14}
+      rotation: {x: 0.08758847, y: -0.3490073, z: -0.116474606, w: 0.9257191}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKGlobalStaticShoulder_L
+      parentName: SKM_Mannequin_Rig:FKOffsetShoulder_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKGlobalShoulder_L
+      parentName: SKM_Mannequin_Rig:FKGlobalStaticShoulder_L
+      position: {x: -2.842171e-16, y: 7.105427e-17, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKExtraShoulder_L
+      parentName: SKM_Mannequin_Rig:FKGlobalShoulder_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKShoulder_L
+      parentName: SKM_Mannequin_Rig:FKExtraShoulder_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0.055288795, y: -0.14137527, z: -0.5432164, w: 0.8257555}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKXShoulder_L
+      parentName: SKM_Mannequin_Rig:FKShoulder_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:AlignIKToShoulder_L
+      parentName: SKM_Mannequin_Rig:FKXShoulder_L
+      position: {x: -1.4210854e-16, y: 0, z: -1.4210854e-16}
+      rotation: {x: 0.20909795, y: -0.5226424, z: 0.74112403, w: 0.36586636}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKOffsetElbow_L
+      parentName: SKM_Mannequin_Rig:FKXShoulder_L
+      position: {x: 0.30340052, y: -1.7763567e-16, z: -1.2789769e-15}
+      rotation: {x: 0, y: -0, z: -0.27505428, w: 0.9614287}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKExtraElbow_L
+      parentName: SKM_Mannequin_Rig:FKOffsetElbow_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKElbow_L
+      parentName: SKM_Mannequin_Rig:FKExtraElbow_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: 0, z: 0.052773055, w: 0.99860656}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKXElbow_L
+      parentName: SKM_Mannequin_Rig:FKElbow_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKOffsetWrist_L
+      parentName: SKM_Mannequin_Rig:FKXElbow_L
+      position: {x: 0.26975247, y: -7.105427e-17, z: 0.000000007590829}
+      rotation: {x: -0.1751758, y: -0.0653645, z: 0.035352737, w: 0.9817287}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKExtraWrist_L
+      parentName: SKM_Mannequin_Rig:FKOffsetWrist_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKWrist_L
+      parentName: SKM_Mannequin_Rig:FKExtraWrist_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0.2678751, y: -0.05326137, z: -0.21196352, w: 0.9383377}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKXWrist_L
+      parentName: SKM_Mannequin_Rig:FKWrist_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:AlignIKToWrist_L
+      parentName: SKM_Mannequin_Rig:FKXWrist_L
+      position: {x: 2.1316282e-16, y: 0, z: 1.4210854e-16}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKPS1Wrist_L
+      parentName: SKM_Mannequin_Rig:FKXElbow_L
+      position: {x: 7.105427e-17, y: -1.4210854e-16, z: 2.842171e-16}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKPS2Wrist_L
+      parentName: SKM_Mannequin_Rig:FKPS1Wrist_L
+      position: {x: 0.26975247, y: -1.4210854e-16, z: 0.00000000759083}
+      rotation: {x: -0.1751758, y: -0.0653645, z: 0.035352737, w: 0.9817287}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKPS1Elbow_L
+      parentName: SKM_Mannequin_Rig:FKXShoulder_L
+      position: {x: -0, y: 7.105427e-17, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:FKPS2Elbow_L
+      parentName: SKM_Mannequin_Rig:FKPS1Elbow_L
+      position: {x: 0.30340052, y: -2.842171e-16, z: -9.947598e-16}
+      rotation: {x: 0, y: -0, z: -0.27505428, w: 0.9614287}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKSystem
+      parentName: SKM_Mannequin_Rig:MotionSystem
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKJoints
+      parentName: SKM_Mannequin_Rig:IKSystem
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKParentConstraintHip_R
+      parentName: SKM_Mannequin_Rig:IKJoints
+      position: {x: -1.93374e-17, y: 0.8480552, z: 0.054478806}
+      rotation: {x: 0.59787303, y: -0.3775551, z: -0.59787303, w: 0.3775551}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKXOffsetHip_R
+      parentName: SKM_Mannequin_Rig:IKParentConstraintHip_R
+      position: {x: 0.014024398, y: 0.006435438, z: -0.09005803}
+      rotation: {x: -0.029621048, y: 0.9983239, z: -0.006950998, w: -0.049230814}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKXHip_R
+      parentName: SKM_Mannequin_Rig:IKXOffsetHip_R
+      position: {x: -0, y: 4.440892e-18, z: 0}
+      rotation: {x: 0.023567306, y: -0.07726456, z: -0.3469541, w: 0.934397}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKX2Hip_R
+      parentName: SKM_Mannequin_Rig:IKXHip_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKXKnee_R
+      parentName: SKM_Mannequin_Rig:IKXHip_R
+      position: {x: -0.4257752, y: 1.1546319e-16, z: 2.1316282e-16}
+      rotation: {x: 1.6069753e-15, y: 2.2550588e-15, z: 0.50983423, w: 0.86027265}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKX2Knee_R
+      parentName: SKM_Mannequin_Rig:IKXKnee_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKXAnkle_R
+      parentName: SKM_Mannequin_Rig:IKXKnee_R
+      position: {x: -0.40202406, y: -4.440892e-16, z: 5.32907e-16}
+      rotation: {x: 0.022488615, y: 0.0220723, z: -0.3637255, w: 0.93097305}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKX2Ankle_R
+      parentName: SKM_Mannequin_Rig:IKXAnkle_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKXToes_R
+      parentName: SKM_Mannequin_Rig:IKXAnkle_R
+      position: {x: -0.10654028, y: 0.16450039, z: 4.4558808e-11}
+      rotation: {x: -0.020370446, y: -0.015022195, z: -0.59332615, w: 0.8045641}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKX2Toes_R
+      parentName: SKM_Mannequin_Rig:IKXToes_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKXToesEnd_R
+      parentName: SKM_Mannequin_Rig:IKXToes_R
+      position: {x: -0.06615663, y: -2.3634428e-13, z: 0.0000003185061}
+      rotation: {x: -0.0000005695126, y: -0.000001210876, z: -6.896091e-13, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKX2ToesEnd_R
+      parentName: SKM_Mannequin_Rig:IKXToesEnd_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:PoleAnnotationLeg_R
+      parentName: SKM_Mannequin_Rig:IKXKnee_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKParentConstraintShoulder_R
+      parentName: SKM_Mannequin_Rig:IKJoints
+      position: {x: 0.051012594, y: 1.3593537, z: 0.2673516}
+      rotation: {x: 0.37976485, y: 0.41748083, z: 0.73497725, w: -0.37589478}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKXOffsetShoulder_R
+      parentName: SKM_Mannequin_Rig:IKParentConstraintShoulder_R
+      position: {x: -0.15784797, y: -5.5244696e-15, z: 1.1937118e-14}
+      rotation: {x: 0.08758847, y: -0.3490073, z: -0.116474606, w: 0.9257191}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKXShoulder_R
+      parentName: SKM_Mannequin_Rig:IKXOffsetShoulder_R
+      position: {x: 1.4210854e-16, y: 7.105427e-17, z: -1.4210854e-16}
+      rotation: {x: -0.042006757, y: 0.0060222703, z: -0.19416928, w: 0.9800497}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKX2Shoulder_R
+      parentName: SKM_Mannequin_Rig:IKXShoulder_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKXElbow_R
+      parentName: SKM_Mannequin_Rig:IKXShoulder_R
+      position: {x: -0.30340052, y: 1.7763567e-16, z: 1.4210854e-15}
+      rotation: {x: 0.0000000051452775, y: 0.000000021130255, z: -0.31308335, w: 0.9497256}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKX2Elbow_R
+      parentName: SKM_Mannequin_Rig:IKXElbow_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKXWrist_R
+      parentName: SKM_Mannequin_Rig:IKXElbow_R
+      position: {x: -0.26975247, y: 2.1316282e-16, z: -1.1368684e-15}
+      rotation: {x: -0.09428641, y: -0.18601881, z: -0.13422257, w: 0.9687577}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKX2Wrist_R
+      parentName: SKM_Mannequin_Rig:IKXWrist_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:PoleAnnotationArm_R
+      parentName: SKM_Mannequin_Rig:IKXElbow_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKParentConstraintRoot_M
+      parentName: SKM_Mannequin_Rig:IKJoints
+      position: {x: -1.93374e-17, y: 0.967506, z: -0.010561532}
+      rotation: {x: 0.5201368, y: -0.47901747, z: -0.5201368, w: 0.47901747}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKXOffsetRoot_M
+      parentName: SKM_Mannequin_Rig:IKParentConstraintRoot_M
+      position: {x: 1.4210854e-16, y: 0, z: -2.3665827e-32}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKXRoot_M
+      parentName: SKM_Mannequin_Rig:IKXOffsetRoot_M
+      position: {x: -1.4210854e-16, y: 3.5527136e-17, z: -7.888609e-33}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKX2Root_M
+      parentName: SKM_Mannequin_Rig:IKXRoot_M
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKXSpine1_M
+      parentName: SKM_Mannequin_Rig:IKXRoot_M
+      position: {x: -0.10842358, y: 7.105427e-17, z: -7.010791e-17}
+      rotation: {x: -0.000000007015846, y: 0.000000091848705, z: 0.07616295, w: 0.9970954}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKX2Spine1_M
+      parentName: SKM_Mannequin_Rig:IKXSpine1_M
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKXSpine2_M
+      parentName: SKM_Mannequin_Rig:IKXSpine1_M
+      position: {x: -0.19254287, y: -8.8817837e-17, z: -1.5901689e-17}
+      rotation: {x: -0.0000000035954222, y: -0.00000009204607, z: 0.039031353, w: 0.999238}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKX2Spine2_M
+      parentName: SKM_Mannequin_Rig:IKXSpine2_M
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKXChest_M
+      parentName: SKM_Mannequin_Rig:IKXSpine2_M
+      position: {x: -0.13413925, y: -9.592326e-16, z: 1.4099884e-10}
+      rotation: {x: 0, y: -0, z: -0.0021480632, w: 0.99999774}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKX2Chest_M
+      parentName: SKM_Mannequin_Rig:IKXChest_M
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKfake0Spine_M
+      parentName: SKM_Mannequin_Rig:IKParentConstraintRoot_M
+      position: {x: 1.4210854e-16, y: 5.3290704e-17, z: -5.5220264e-32}
+      rotation: {x: -0.00000002978946, y: 0.000000030909224, z: 0.029376958, w: 0.9995684}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKSpSpine1_M
+      parentName: SKM_Mannequin_Rig:IKfake0Spine_M
+      position: {x: -0.10842358, y: 7.105427e-17, z: -7.010792e-17}
+      rotation: {x: 0.000000050062223, y: -0.00000006646603, z: -0.03535432, w: 0.99937487}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKSpSpine2_M
+      parentName: SKM_Mannequin_Rig:IKSpSpine1_M
+      position: {x: -0.19030906, y: -0.029244076, z: 0.000000035472663}
+      rotation: {x: -0.000000045478945, y: 0.000000059333235, z: -0.008733741, w: 0.99996185}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKSpChest_M
+      parentName: SKM_Mannequin_Rig:IKSpSpine2_M
+      position: {x: -0.13058984, y: -0.030653358, z: -2.4279058e-11}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKfake1Spine_M
+      parentName: SKM_Mannequin_Rig:IKSpChest_M
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKFixedOrientRoot_M
+      parentName: SKM_Mannequin_Rig:IKfake0Spine_M
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0.00000002978946, y: -0.000000030909224, z: -0.029376958, w: 0.9995684}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKAcRootFollowOffset_M
+      parentName: SKM_Mannequin_Rig:IKFixedOrientRoot_M
+      position: {x: -0, y: -1.7763568e-17, z: 2.3665827e-32}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKSpRootFollowOffset_M
+      parentName: SKM_Mannequin_Rig:IKFixedOrientRoot_M
+      position: {x: -0, y: 0, z: 6.310887e-32}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKNonFixedOrientRoot_M
+      parentName: SKM_Mannequin_Rig:IKfake0Spine_M
+      position: {x: -0, y: 2.6645352e-17, z: -8.470329e-24}
+      rotation: {x: 0.00000002978946, y: -0.000000030909224, z: -0.029376958, w: 0.9995684}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKParentConstraintHip_L
+      parentName: SKM_Mannequin_Rig:IKJoints
+      position: {x: -1.93374e-17, y: 0.8480552, z: 0.054478806}
+      rotation: {x: 0.59787303, y: -0.3775551, z: -0.59787303, w: 0.3775551}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKXOffsetHip_L
+      parentName: SKM_Mannequin_Rig:IKParentConstraintHip_L
+      position: {x: 0.014024398, y: 0.006435438, z: 0.09005803}
+      rotation: {x: 0.9983239, y: 0.029621048, z: 0.049230814, w: -0.006950998}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKXHip_L
+      parentName: SKM_Mannequin_Rig:IKXOffsetHip_L
+      position: {x: -1.4210854e-16, y: 0, z: 0}
+      rotation: {x: 0.031554617, y: -0.077377625, z: -0.42579028, w: 0.90095484}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKX2Hip_L
+      parentName: SKM_Mannequin_Rig:IKXHip_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKXKnee_L
+      parentName: SKM_Mannequin_Rig:IKXHip_L
+      position: {x: 0.4257752, y: -4.6185276e-16, z: -3.907985e-16}
+      rotation: {x: -3.1245235e-15, y: -3.0311663e-15, z: 0.8400214, w: 0.5425534}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKX2Knee_L
+      parentName: SKM_Mannequin_Rig:IKXKnee_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKXAnkle_L
+      parentName: SKM_Mannequin_Rig:IKXKnee_L
+      position: {x: 0.40202406, y: 3.0198067e-16, z: -1.0658141e-16}
+      rotation: {x: 0.056962922, y: 0.015245172, z: 0.12169756, w: 0.9908141}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKX2Ankle_L
+      parentName: SKM_Mannequin_Rig:IKXAnkle_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKXToes_L
+      parentName: SKM_Mannequin_Rig:IKXAnkle_L
+      position: {x: 0.10654028, y: -0.16450039, z: -0.0000000037896015}
+      rotation: {x: -0.020369435, y: -0.015021448, z: -0.5933262, w: 0.80456424}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKX2Toes_L
+      parentName: SKM_Mannequin_Rig:IKXToes_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKXToesEnd_L
+      parentName: SKM_Mannequin_Rig:IKXToes_L
+      position: {x: 0.06615663, y: -1.341262e-10, z: -0.0000000012713091}
+      rotation: {x: 0.00000018633953, y: 0.000001232946, z: -2.2974661e-13, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKX2ToesEnd_L
+      parentName: SKM_Mannequin_Rig:IKXToesEnd_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:PoleAnnotationLeg_L
+      parentName: SKM_Mannequin_Rig:IKXKnee_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKParentConstraintShoulder_L
+      parentName: SKM_Mannequin_Rig:IKJoints
+      position: {x: -0.009527578, y: 1.3429025, z: 0.3096085}
+      rotation: {x: -0.2130631, y: 0.8610066, z: -0.45494017, w: -0.07938001}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKXOffsetShoulder_L
+      parentName: SKM_Mannequin_Rig:IKParentConstraintShoulder_L
+      position: {x: 0.15784797, y: 5.2580163e-15, z: -1.1937118e-14}
+      rotation: {x: 0.08758847, y: -0.3490073, z: -0.116474606, w: 0.9257191}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKXShoulder_L
+      parentName: SKM_Mannequin_Rig:IKXOffsetShoulder_L
+      position: {x: -2.842171e-16, y: 7.105427e-17, z: 0}
+      rotation: {x: 0.45390013, y: 0.22788514, z: 0.40687388, w: 0.7592738}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKX2Shoulder_L
+      parentName: SKM_Mannequin_Rig:IKXShoulder_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKXElbow_L
+      parentName: SKM_Mannequin_Rig:IKXShoulder_L
+      position: {x: 0.30340052, y: -3.5527136e-17, z: -8.5265126e-16}
+      rotation: {x: -2.545617e-10, y: 0.000000029184676, z: 0.000000072760486, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKX2Elbow_L
+      parentName: SKM_Mannequin_Rig:IKXElbow_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKXWrist_L
+      parentName: SKM_Mannequin_Rig:IKXElbow_L
+      position: {x: 0.26975247, y: -7.105427e-17, z: 0.00000000759083}
+      rotation: {x: -0.1291419, y: -0.2561656, z: -0.47644198, w: 0.8310864}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKX2Wrist_L
+      parentName: SKM_Mannequin_Rig:IKXWrist_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:PoleAnnotationArm_L
+      parentName: SKM_Mannequin_Rig:IKXElbow_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKSpSpineOffset_M
+      parentName: SKM_Mannequin_Rig:IKJoints
+      position: {x: -1.93374e-17, y: 0.967506, z: -0.010561532}
+      rotation: {x: 0.5201368, y: -0.47901747, z: -0.5201368, w: 0.47901747}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKSpRoot_M
+      parentName: SKM_Mannequin_Rig:IKSpSpineOffset_M
+      position: {x: 1.4210854e-16, y: 1.7763568e-17, z: -1.5777218e-32}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKAcSpineOffset_M
+      parentName: SKM_Mannequin_Rig:IKJoints
+      position: {x: -1.93374e-17, y: 0.967506, z: -0.010561532}
+      rotation: {x: 0.5201368, y: -0.47901747, z: -0.5201368, w: 0.47901747}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKAcRoot_M
+      parentName: SKM_Mannequin_Rig:IKAcSpineOffset_M
+      position: {x: 1.4210854e-16, y: 7.105427e-17, z: -2.3665827e-32}
+      rotation: {x: -2.3853207e-17, y: 0.000000031784722, z: 0.029376954, w: 0.9995684}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKAcSpine1_M
+      parentName: SKM_Mannequin_Rig:IKAcSpineOffset_M
+      position: {x: -0.108236425, y: -0.0063675586, z: 0.000000006889451}
+      rotation: {x: 0.000000048441315, y: 0.000000057821467, z: 0.0701985, w: 0.9975331}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKAcSpine2_M
+      parentName: SKM_Mannequin_Rig:IKAcSpineOffset_M
+      position: {x: -0.2988817, y: -0.033333313, z: 0.000000027791259}
+      rotation: {x: -0.00000004870083, y: 0.000000024530044, z: 0.100281954, w: 0.99495906}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKAcChest_M
+      parentName: SKM_Mannequin_Rig:IKAcSpineOffset_M
+      position: {x: -0.4293225, y: -0.059897434, z: 0.000000035589377}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKHandle
+      parentName: SKM_Mannequin_Rig:IKSystem
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKOffsetLeg_R
+      parentName: SKM_Mannequin_Rig:IKHandle
+      position: {x: 0.17076291, y: 0.13465708, z: -0.08073733}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKExtraLeg_R
+      parentName: SKM_Mannequin_Rig:IKOffsetLeg_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKLeg_R
+      parentName: SKM_Mannequin_Rig:IKExtraLeg_R
+      position: {x: -0.12423037, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKOffsetArm_R
+      parentName: SKM_Mannequin_Rig:IKHandle
+      position: {x: 0.566461, y: 1.1167965, z: -0.0033510162}
+      rotation: {x: 0.14263722, y: 0.6925996, z: 0.5818092, w: 0.40181902}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKExtraArm_R
+      parentName: SKM_Mannequin_Rig:IKOffsetArm_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKArm_R
+      parentName: SKM_Mannequin_Rig:IKExtraArm_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKOffsetLeg_L
+      parentName: SKM_Mannequin_Rig:IKHandle
+      position: {x: -0.17076291, y: 0.13465708, z: -0.08073733}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKExtraLeg_L
+      parentName: SKM_Mannequin_Rig:IKOffsetLeg_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKLeg_L
+      parentName: SKM_Mannequin_Rig:IKExtraLeg_L
+      position: {x: 0.111328095, y: 0.294987, z: -0.06192526}
+      rotation: {x: 0.76465154, y: 0, z: 0, w: 0.644444}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKOffsetArm_L
+      parentName: SKM_Mannequin_Rig:IKHandle
+      position: {x: -0.566461, y: 1.1167965, z: -0.0033510071}
+      rotation: {x: 0.40181905, y: -0.5818092, z: 0.69259953, w: -0.14263725}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKExtraArm_L
+      parentName: SKM_Mannequin_Rig:IKOffsetArm_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IKArm_L
+      parentName: SKM_Mannequin_Rig:IKExtraArm_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwistSystem
+      parentName: SKM_Mannequin_Rig:MotionSystem
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwistFollowParentOffsetSpine2_M
+      parentName: SKM_Mannequin_Rig:TwistSystem
+      position: {x: -0.00000001883693, y: 1.1844175, z: -0.012606299}
+      rotation: {x: 0.5201368, y: -0.47901747, z: -0.5201368, w: 0.47901747}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwistFollowParentSpine2_M
+      parentName: SKM_Mannequin_Rig:TwistFollowParentOffsetSpine2_M
+      position: {x: 1.4210854e-16, y: 0, z: -2.1175823e-24}
+      rotation: {x: 1.6653345e-16, y: -2.220446e-16, z: -1.110223e-16, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:UnTwistSpine2_M
+      parentName: SKM_Mannequin_Rig:TwistFollowParentSpine2_M
+      position: {x: -0, y: 1.7763568e-17, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:UnTwistEndSpine2_M
+      parentName: SKM_Mannequin_Rig:UnTwistSpine2_M
+      position: {x: -0.15017335, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwistBalancerSpine2_M
+      parentName: SKM_Mannequin_Rig:UnTwistSpine2_M
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwistFollowParentOffsetAnkle_R
+      parentName: SKM_Mannequin_Rig:TwistSystem
+      position: {x: 0.13208562, y: 0.52942115, z: -0.015248829}
+      rotation: {x: 0.51810807, y: 0.4857074, z: 0.55874103, w: 0.42832324}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwistFollowParentAnkle_R
+      parentName: SKM_Mannequin_Rig:TwistFollowParentOffsetAnkle_R
+      position: {x: -0.058150113, y: 0.21808131, z: -0.073155455}
+      rotation: {x: -0.027061604, y: -0.073814675, z: 0.28589788, w: 0.9550296}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:UnTwistAnkle_R
+      parentName: SKM_Mannequin_Rig:TwistFollowParentAnkle_R
+      position: {x: -0.40202406, y: -5.32907e-16, z: 3.9968028e-16}
+      rotation: {x: 0.03575708, y: 0.016885253, z: -0.36400318, w: 0.9305579}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:UnTwistEndAnkle_R
+      parentName: SKM_Mannequin_Rig:UnTwistAnkle_R
+      position: {x: -0.10494165, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwistBalancerAnkle_R
+      parentName: SKM_Mannequin_Rig:UnTwistAnkle_R
+      position: {x: 7.105427e-17, y: -5.3290704e-17, z: 0}
+      rotation: {x: -0.014254713, y: 0, z: -0, w: 0.99989843}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwisterAnkle0_R
+      parentName: SKM_Mannequin_Rig:UnTwistAnkle_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwisterAnkle1_R
+      parentName: SKM_Mannequin_Rig:UnTwistAnkle_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: -0.007127537, y: 0, z: -0, w: 0.9999746}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwistFollowParentOffsetKnee_R
+      parentName: SKM_Mannequin_Rig:TwistSystem
+      position: {x: 0.09005803, y: 0.95300025, z: -0.005300228}
+      rotation: {x: 0.48279887, y: 0.5208195, z: 0.5273531, w: 0.4664237}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwistFollowParentKnee_R
+      parentName: SKM_Mannequin_Rig:TwistFollowParentOffsetKnee_R
+      position: {x: -0.11836139, y: 0.06223882, z: -0.012426972}
+      rotation: {x: 0.019734187, y: -0.076101884, z: -0.17257829, w: 0.98185325}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:UnTwistKnee_R
+      parentName: SKM_Mannequin_Rig:TwistFollowParentKnee_R
+      position: {x: -0.4257752, y: 7.105427e-17, z: 2.3980816e-16}
+      rotation: {x: -6.9694485e-12, y: -1.1760695e-11, z: 0.50983423, w: 0.86027265}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:UnTwistEndKnee_R
+      parentName: SKM_Mannequin_Rig:UnTwistKnee_R
+      position: {x: -0.10494165, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwistBalancerKnee_R
+      parentName: SKM_Mannequin_Rig:UnTwistKnee_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwisterKnee0_R
+      parentName: SKM_Mannequin_Rig:UnTwistKnee_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwisterKnee1_R
+      parentName: SKM_Mannequin_Rig:UnTwistKnee_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: -0.007127537, y: 0, z: -0, w: 0.9999746}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwistFollowParentOffsetHip_R
+      parentName: SKM_Mannequin_Rig:TwistSystem
+      position: {x: -1.93374e-17, y: 0.967506, z: -0.010561532}
+      rotation: {x: 0.5201368, y: -0.47901747, z: -0.5201368, w: 0.47901747}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwistFollowParentHip_R
+      parentName: SKM_Mannequin_Rig:TwistFollowParentOffsetHip_R
+      position: {x: 0.11370261, y: 0.07463556, z: -3.7287955e-17}
+      rotation: {x: 3.6082248e-16, y: -1.110223e-16, z: -0.18002264, w: 0.9836625}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:UnTwistHip_R
+      parentName: SKM_Mannequin_Rig:TwistFollowParentHip_R
+      position: {x: 0.014024398, y: 0.006435438, z: -0.09005803}
+      rotation: {x: -0.37636998, y: 0.92616785, z: 0.012702994, w: 0.019936902}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:UnTwistEndHip_R
+      parentName: SKM_Mannequin_Rig:UnTwistHip_R
+      position: {x: -0.10494165, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwistBalancerHip_R
+      parentName: SKM_Mannequin_Rig:UnTwistHip_R
+      position: {x: 1.4210854e-16, y: 1.0658141e-16, z: -8.881784e-18}
+      rotation: {x: 0.02521392, y: -0, z: -0, w: 0.99968207}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwisterHip0_R
+      parentName: SKM_Mannequin_Rig:UnTwistHip_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0.02521392, y: -0, z: -0, w: 0.99968207}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwisterHip1_R
+      parentName: SKM_Mannequin_Rig:UnTwistHip_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0.012607963, y: -0, z: -0, w: 0.99992055}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwistFollowParentOffsetWrist_R
+      parentName: SKM_Mannequin_Rig:TwistSystem
+      position: {x: 0.37264633, y: 1.264455, z: -0.11910616}
+      rotation: {x: 0.1479051, y: 0.813171, z: 0.44497016, w: 0.3447878}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwistFollowParentWrist_R
+      parentName: SKM_Mannequin_Rig:TwistFollowParentOffsetWrist_R
+      position: {x: 0.026630929, y: 0.018217435, z: -0.17956524}
+      rotation: {x: -0.01308568, y: -0.2038385, z: -0.36959904, w: 0.906463}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:UnTwistWrist_R
+      parentName: SKM_Mannequin_Rig:TwistFollowParentWrist_R
+      position: {x: -0.26975247, y: 1.4210854e-16, z: -1.4210854e-15}
+      rotation: {x: -0.16191792, y: 0.030955924, z: -0.18251619, w: 0.9692844}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:UnTwistEndWrist_R
+      parentName: SKM_Mannequin_Rig:UnTwistWrist_R
+      position: {x: -0.10494165, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwistBalancerWrist_R
+      parentName: SKM_Mannequin_Rig:UnTwistWrist_R
+      position: {x: -1.4210854e-16, y: 1.4210854e-16, z: 2.842171e-16}
+      rotation: {x: 0.3813758, y: -0, z: -0, w: 0.9244201}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwisterWrist0_R
+      parentName: SKM_Mannequin_Rig:UnTwistWrist_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwisterWrist1_R
+      parentName: SKM_Mannequin_Rig:UnTwistWrist_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0.19439638, y: -0, z: -0, w: 0.98092306}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwistFollowParentOffsetElbow_R
+      parentName: SKM_Mannequin_Rig:TwistSystem
+      position: {x: 0.17700161, y: 1.4953038, z: -0.09710976}
+      rotation: {x: 0.36586636, y: 0.74112403, z: 0.5226424, w: 0.20909794}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwistFollowParentElbow_R
+      parentName: SKM_Mannequin_Rig:TwistFollowParentOffsetElbow_R
+      position: {x: -0.021138439, y: 0.17316481, z: -0.18482743}
+      rotation: {x: -0.19742306, y: -0.052397523, z: 0.29191706, w: 0.93437845}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:UnTwistElbow_R
+      parentName: SKM_Mannequin_Rig:TwistFollowParentElbow_R
+      position: {x: -0.30340052, y: 1.4210854e-16, z: 7.105427e-16}
+      rotation: {x: -0.000000008584729, y: 0.000000002137215, z: -0.82410234, w: 0.56644094}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:UnTwistEndElbow_R
+      parentName: SKM_Mannequin_Rig:UnTwistElbow_R
+      position: {x: -0.10494165, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwistBalancerElbow_R
+      parentName: SKM_Mannequin_Rig:UnTwistElbow_R
+      position: {x: 1.0658141e-16, y: 1.4210854e-16, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwisterElbow0_R
+      parentName: SKM_Mannequin_Rig:UnTwistElbow_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwisterElbow1_R
+      parentName: SKM_Mannequin_Rig:UnTwistElbow_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0.19439638, y: -0, z: -0, w: 0.98092306}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwistFollowParentOffsetShoulder_R
+      parentName: SKM_Mannequin_Rig:TwistSystem
+      position: {x: 0.03781996, y: 1.5220132, z: -0.02760395}
+      rotation: {x: 0.22429101, y: 0.67065775, z: 0.7007786, w: -0.093920626}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwistFollowParentShoulder_R
+      parentName: SKM_Mannequin_Rig:TwistFollowParentOffsetShoulder_R
+      position: {x: 0.09072276, y: 0.28399396, z: -0.15731427}
+      rotation: {x: -0.1517145, y: 0.1116044, z: 0.35544455, w: 0.9155252}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:UnTwistShoulder_R
+      parentName: SKM_Mannequin_Rig:TwistFollowParentShoulder_R
+      position: {x: -0.15784797, y: -5.755396e-15, z: 1.2221334e-14}
+      rotation: {x: 0.088730946, y: -0.46808207, z: -0.17534646, w: 0.86155653}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:UnTwistEndShoulder_R
+      parentName: SKM_Mannequin_Rig:UnTwistShoulder_R
+      position: {x: -0.10494165, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwistBalancerShoulder_R
+      parentName: SKM_Mannequin_Rig:UnTwistShoulder_R
+      position: {x: -0, y: 1.3766766e-16, z: 1.4210854e-16}
+      rotation: {x: -0.3281449, y: 0, z: -0, w: 0.9446274}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwisterShoulder0_R
+      parentName: SKM_Mannequin_Rig:UnTwistShoulder_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: -0.3281449, y: 0, z: -0, w: 0.9446274}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwisterShoulder1_R
+      parentName: SKM_Mannequin_Rig:UnTwistShoulder_R
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: -0.16639203, y: 0, z: -0, w: 0.9860597}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwistFollowParentOffsetAnkle_L
+      parentName: SKM_Mannequin_Rig:TwistSystem
+      position: {x: -0.13208562, y: 0.52942115, z: -0.015248828}
+      rotation: {x: -0.42832324, y: 0.55874103, z: -0.4857074, w: 0.51810807}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwistFollowParentAnkle_L
+      parentName: SKM_Mannequin_Rig:TwistFollowParentOffsetAnkle_L
+      position: {x: 0.018654287, y: -0.27949965, z: 0.06885109}
+      rotation: {x: -0.05326239, y: -0.0613503, z: 0.61681724, w: 0.7829021}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:UnTwistAnkle_L
+      parentName: SKM_Mannequin_Rig:TwistFollowParentAnkle_L
+      position: {x: 0.40202406, y: 2.842171e-16, z: -7.9936054e-17}
+      rotation: {x: 0.011275113, y: 0.0096247755, z: 0.12227049, w: 0.9923861}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:UnTwistEndAnkle_L
+      parentName: SKM_Mannequin_Rig:UnTwistAnkle_L
+      position: {x: 0.10494165, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwistBalancerAnkle_L
+      parentName: SKM_Mannequin_Rig:UnTwistAnkle_L
+      position: {x: -7.105427e-17, y: 1.4210854e-16, z: -8.881784e-18}
+      rotation: {x: 0.0460504, y: -0, z: -0, w: 0.99893916}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwisterAnkle0_L
+      parentName: SKM_Mannequin_Rig:UnTwistAnkle_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwisterAnkle1_L
+      parentName: SKM_Mannequin_Rig:UnTwistAnkle_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0.023031307, y: -0, z: -0, w: 0.99973476}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwistFollowParentOffsetKnee_L
+      parentName: SKM_Mannequin_Rig:TwistSystem
+      position: {x: -0.09005803, y: 0.95300025, z: -0.005300228}
+      rotation: {x: -0.4664237, y: 0.5273531, z: -0.5208195, w: 0.48279887}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwistFollowParentKnee_L
+      parentName: SKM_Mannequin_Rig:TwistFollowParentOffsetKnee_L
+      position: {x: 0.11836139, y: -0.06223882, z: 0.012426973}
+      rotation: {x: 0.028049942, y: -0.07624922, z: -0.25613084, w: 0.96322185}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:UnTwistKnee_L
+      parentName: SKM_Mannequin_Rig:TwistFollowParentKnee_L
+      position: {x: 0.4257752, y: -1.4210854e-16, z: -4.396483e-16}
+      rotation: {x: 5.5301656e-11, y: -1.1081865e-10, z: 0.8400214, w: 0.5425534}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:UnTwistEndKnee_L
+      parentName: SKM_Mannequin_Rig:UnTwistKnee_L
+      position: {x: 0.10494165, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwistBalancerKnee_L
+      parentName: SKM_Mannequin_Rig:UnTwistKnee_L
+      position: {x: -7.105427e-17, y: 7.105427e-17, z: 4.440892e-18}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwisterKnee0_L
+      parentName: SKM_Mannequin_Rig:UnTwistKnee_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwisterKnee1_L
+      parentName: SKM_Mannequin_Rig:UnTwistKnee_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0.023031307, y: -0, z: -0, w: 0.99973476}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwistFollowParentOffsetHip_L
+      parentName: SKM_Mannequin_Rig:TwistSystem
+      position: {x: -1.93374e-17, y: 0.967506, z: -0.010561532}
+      rotation: {x: 0.5201368, y: -0.47901747, z: -0.5201368, w: 0.47901747}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwistFollowParentHip_L
+      parentName: SKM_Mannequin_Rig:TwistFollowParentOffsetHip_L
+      position: {x: 0.11370261, y: 0.07463556, z: -3.7287955e-17}
+      rotation: {x: 3.6082248e-16, y: -1.110223e-16, z: -0.18002264, w: 0.9836625}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:UnTwistHip_L
+      parentName: SKM_Mannequin_Rig:TwistFollowParentHip_L
+      position: {x: 0.014024398, y: 0.006435438, z: 0.09005803}
+      rotation: {x: 0.89038473, y: 0.4546575, z: -0.014963434, w: 0.01666524}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:UnTwistEndHip_L
+      parentName: SKM_Mannequin_Rig:UnTwistHip_L
+      position: {x: 0.10494165, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwistBalancerHip_L
+      parentName: SKM_Mannequin_Rig:UnTwistHip_L
+      position: {x: -0, y: 7.105427e-17, z: -2.6645352e-17}
+      rotation: {x: 0.035002064, y: -0, z: -0, w: 0.99938726}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwisterHip0_L
+      parentName: SKM_Mannequin_Rig:UnTwistHip_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0.035002064, y: -0, z: -0, w: 0.99938726}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwisterHip1_L
+      parentName: SKM_Mannequin_Rig:UnTwistHip_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0.017503714, y: -0, z: -0, w: 0.9998468}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwistFollowParentOffsetWrist_L
+      parentName: SKM_Mannequin_Rig:TwistSystem
+      position: {x: -0.37264633, y: 1.264455, z: -0.11910614}
+      rotation: {x: 0.3447878, y: -0.44497013, z: 0.813171, w: -0.1479051}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwistFollowParentWrist_L
+      parentName: SKM_Mannequin_Rig:TwistFollowParentOffsetWrist_L
+      position: {x: 0.12343605, y: -0.50241435, z: 0.5889131}
+      rotation: {x: -0.05704261, y: -0.5487572, z: -0.43991384, w: 0.7085813}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:UnTwistWrist_L
+      parentName: SKM_Mannequin_Rig:TwistFollowParentWrist_L
+      position: {x: 0.26975247, y: 0, z: 0.000000007590829}
+      rotation: {x: -0.15690906, y: -0.09520622, z: -0.18117341, w: 0.96617365}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:UnTwistEndWrist_L
+      parentName: SKM_Mannequin_Rig:UnTwistWrist_L
+      position: {x: 0.10494165, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwistBalancerWrist_L
+      parentName: SKM_Mannequin_Rig:UnTwistWrist_L
+      position: {x: -0, y: -1.4210854e-16, z: 0}
+      rotation: {x: 0.2745114, y: -0, z: -0, w: 0.96158385}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwisterWrist0_L
+      parentName: SKM_Mannequin_Rig:UnTwistWrist_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwisterWrist1_L
+      parentName: SKM_Mannequin_Rig:UnTwistWrist_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0.13859321, y: -0, z: -0, w: 0.9903494}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwistFollowParentOffsetElbow_L
+      parentName: SKM_Mannequin_Rig:TwistSystem
+      position: {x: -0.17700161, y: 1.4953038, z: -0.09710976}
+      rotation: {x: 0.20909795, y: -0.5226424, z: 0.74112403, w: -0.36586636}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwistFollowParentElbow_L
+      parentName: SKM_Mannequin_Rig:TwistFollowParentOffsetElbow_L
+      position: {x: 0.10134728, y: -0.38032, z: 0.30969492}
+      rotation: {x: -0.3151863, y: -0.45282, z: -0.47669482, w: 0.6843784}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:UnTwistElbow_L
+      parentName: SKM_Mannequin_Rig:TwistFollowParentElbow_L
+      position: {x: 0.30340052, y: 0, z: -1.3500312e-15}
+      rotation: {x: 5.8291436e-16, y: 2.109007e-15, z: -0.22393347, w: 0.9746044}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:UnTwistEndElbow_L
+      parentName: SKM_Mannequin_Rig:UnTwistElbow_L
+      position: {x: 0.10494165, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwistBalancerElbow_L
+      parentName: SKM_Mannequin_Rig:UnTwistElbow_L
+      position: {x: 2.1316282e-16, y: -1.4210854e-16, z: -1.4210854e-16}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwisterElbow0_L
+      parentName: SKM_Mannequin_Rig:UnTwistElbow_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwisterElbow1_L
+      parentName: SKM_Mannequin_Rig:UnTwistElbow_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0.13859321, y: -0, z: -0, w: 0.9903494}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwistFollowParentOffsetShoulder_L
+      parentName: SKM_Mannequin_Rig:TwistSystem
+      position: {x: -0.03781996, y: 1.5220132, z: -0.027603947}
+      rotation: {x: 0.09392062, y: 0.7007786, z: -0.67065775, w: 0.22429103}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwistFollowParentShoulder_L
+      parentName: SKM_Mannequin_Rig:TwistFollowParentOffsetShoulder_L
+      position: {x: -0.14312541, y: -0.30535427, z: 0.18129323}
+      rotation: {x: -0.29896116, y: 0.06312317, z: -0.38545215, w: 0.8706689}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:UnTwistShoulder_L
+      parentName: SKM_Mannequin_Rig:TwistFollowParentShoulder_L
+      position: {x: 0.15784797, y: 4.902745e-15, z: -1.1084466e-14}
+      rotation: {x: 0.25274482, y: -0.33752656, z: -0.61605704, w: 0.6653342}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:UnTwistEndShoulder_L
+      parentName: SKM_Mannequin_Rig:UnTwistShoulder_L
+      position: {x: 0.10494165, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwistBalancerShoulder_L
+      parentName: SKM_Mannequin_Rig:UnTwistShoulder_L
+      position: {x: -1.4210854e-16, y: -2.842171e-16, z: -2.842171e-16}
+      rotation: {x: 0.06680583, y: -0, z: -0, w: 0.997766}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwisterShoulder0_L
+      parentName: SKM_Mannequin_Rig:UnTwistShoulder_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0.06680583, y: -0, z: -0, w: 0.997766}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:TwisterShoulder1_L
+      parentName: SKM_Mannequin_Rig:UnTwistShoulder_L
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0.03342159, y: -0, z: -0, w: 0.9994414}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:DeformationSystem
+      parentName: SKM_Mannequin_Rig:Main
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:Root_M
+      parentName: SKM_Mannequin_Rig:DeformationSystem
+      position: {x: -1.93374e-17, y: 0.8480552, z: 0.054478806}
+      rotation: {x: 0.59787303, y: -0.3775551, z: -0.59787303, w: 0.3775551}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:Hip_R
+      parentName: SKM_Mannequin_Rig:Root_M
+      position: {x: 0.014024398, y: 0.006435438, z: -0.09005803}
+      rotation: {x: -0.37574765, y: 0.92619365, z: -0.010653317, w: 0.029420305}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:HipPart1_R
+      parentName: SKM_Mannequin_Rig:Hip_R
+      position: {x: -0.2128876, y: 2.842171e-16, z: 2.842171e-16}
+      rotation: {x: -0.012607963, y: 9.117523e-18, z: 1.332561e-17, w: 0.99992055}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:Knee_R
+      parentName: SKM_Mannequin_Rig:HipPart1_R
+      position: {x: -0.2128876, y: 1.4210854e-16, z: 1.0658141e-16}
+      rotation: {x: 0.010846285, y: -0.0064279716, z: 0.50979376, w: 0.8602043}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:KneePart1_R
+      parentName: SKM_Mannequin_Rig:Knee_R
+      position: {x: -0.20101203, y: -4.6185276e-16, z: 2.0428103e-16}
+      rotation: {x: -0.007127537, y: -3.7791913e-18, z: 5.353855e-18, w: 0.9999746}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:Ankle_R
+      parentName: SKM_Mannequin_Rig:KneePart1_R
+      position: {x: -0.20101203, y: -5.1514347e-16, z: 1.5543122e-16}
+      rotation: {x: 0.029123586, y: 0.024664208, z: -0.36355898, w: 0.9307891}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:Toes_R
+      parentName: SKM_Mannequin_Rig:Ankle_R
+      position: {x: -0.10654028, y: 0.16450039, z: 4.45588e-11}
+      rotation: {x: -0.020370446, y: -0.015022195, z: -0.59332615, w: 0.8045641}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:ToesEnd_R
+      parentName: SKM_Mannequin_Rig:Toes_R
+      position: {x: -0.06615663, y: -5.9214854e-14, z: 0.00000015909437}
+      rotation: {x: 0.00000037216518, y: 0.0000012033023, z: -4.4782724e-13, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:Spine1_M
+      parentName: SKM_Mannequin_Rig:Root_M
+      position: {x: -0.10842358, y: 3.5527136e-17, z: -7.499833e-17}
+      rotation: {x: -0.32098034, y: -0.016945701, z: 0.018914368, w: 0.94674534}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:Spine2_M
+      parentName: SKM_Mannequin_Rig:Spine1_M
+      position: {x: -0.19254287, y: 7.105427e-17, z: 0}
+      rotation: {x: 9.84841e-10, y: -0.0000000917735, z: 0.010730593, w: 0.9999424}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:Chest_M
+      parentName: SKM_Mannequin_Rig:Spine2_M
+      position: {x: -0.13413925, y: -6.0396133e-16, z: -7.105427e-17}
+      rotation: {x: 0.0057977918, y: -0.000012454049, z: -0.002148027, w: 0.9999809}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:Scapula_R
+      parentName: SKM_Mannequin_Rig:Chest_M
+      position: {x: -0.119396664, y: 0.024765305, z: -0.037819996}
+      rotation: {x: -0.22773264, y: -0.736429, z: 0.09903299, w: 0.62928754}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:Shoulder_R
+      parentName: SKM_Mannequin_Rig:Scapula_R
+      position: {x: -0.15784797, y: -5.6132873e-15, z: 1.2221334e-14}
+      rotation: {x: -0.19889769, y: -0.3846241, z: -0.31923583, w: 0.8429665}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:ShoulderPart1_R
+      parentName: SKM_Mannequin_Rig:Shoulder_R
+      position: {x: -0.15170026, y: -7.105427e-17, z: 2.842171e-16}
+      rotation: {x: 0.16639203, y: 4.935927e-16, z: -8.1182814e-19, w: 0.9860597}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:Elbow_R
+      parentName: SKM_Mannequin_Rig:ShoulderPart1_R
+      position: {x: -0.15170026, y: -1.0658141e-16, z: 7.105427e-16}
+      rotation: {x: -0.09425126, y: -0.13712403, z: -0.8126141, w: 0.55854464}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:ElbowPart1_R
+      parentName: SKM_Mannequin_Rig:Elbow_R
+      position: {x: -0.13487624, y: 2.842171e-16, z: -9.947598e-16}
+      rotation: {x: 0.19439638, y: -6.22995e-16, z: 5.8352444e-16, w: 0.98092306}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:Wrist_R
+      parentName: SKM_Mannequin_Rig:ElbowPart1_R
+      position: {x: -0.13487624, y: -1.4210854e-16, z: -3.5527135e-16}
+      rotation: {x: 0.02959636, y: -0.07530288, z: -0.16911505, w: 0.98226964}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:MiddleFinger1_R
+      parentName: SKM_Mannequin_Rig:Wrist_R
+      position: {x: -0.12325508, y: 5.684342e-16, z: 2.3092638e-15}
+      rotation: {x: 0.053896535, y: -0.13561437, z: 0.06495367, w: 0.98716}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:MiddleFinger2_R
+      parentName: SKM_Mannequin_Rig:MiddleFinger1_R
+      position: {x: -0.04640569, y: -5.684342e-16, z: -3.5527135e-16}
+      rotation: {x: 0.027385043, y: -0.10463086, z: 0.024198018, w: 0.9938395}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:MiddleFinger3_R
+      parentName: SKM_Mannequin_Rig:MiddleFinger2_R
+      position: {x: -0.036489043, y: 5.684342e-16, z: -9.592326e-16}
+      rotation: {x: -0.027259717, y: 0.108121686, z: -0.018777965, w: 0.9935864}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:MiddleFinger4_R
+      parentName: SKM_Mannequin_Rig:MiddleFinger3_R
+      position: {x: -0.03175198, y: -3.5527135e-16, z: 0}
+      rotation: {x: 0.000000010828096, y: 0.000000015692725, z: -1.6992233e-16, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:ThumbFinger1_R
+      parentName: SKM_Mannequin_Rig:Wrist_R
+      position: {x: -0.048623785, y: 0.025119, z: -0.021925027}
+      rotation: {x: -0.6873398, y: 0.10596171, z: -0.36051464, w: 0.6215829}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:ThumbFinger2_R
+      parentName: SKM_Mannequin_Rig:ThumbFinger1_R
+      position: {x: -0.038695693, y: 1.065814e-15, z: -9.947598e-16}
+      rotation: {x: 0.14290793, y: -0.14133708, z: -0.067059845, w: 0.9772943}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:ThumbFinger3_R
+      parentName: SKM_Mannequin_Rig:ThumbFinger2_R
+      position: {x: -0.04062173, y: -4.973799e-16, z: 1.2789769e-15}
+      rotation: {x: -0.03016001, y: 0.02498948, z: -0.019428616, w: 0.99904376}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:ThumbFinger4_R
+      parentName: SKM_Mannequin_Rig:ThumbFinger3_R
+      position: {x: -0.0342029, y: 1.4210854e-16, z: 7.105427e-17}
+      rotation: {x: 0, y: 0, z: 0.00000001844764, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IndexFinger1_R
+      parentName: SKM_Mannequin_Rig:Wrist_R
+      position: {x: -0.12075625, y: 0.025902322, z: -0.00815832}
+      rotation: {x: -0.06209334, y: -0.16799721, z: 0.021643426, w: 0.98359185}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IndexFinger2_R
+      parentName: SKM_Mannequin_Rig:IndexFinger1_R
+      position: {x: -0.04287684, y: -1.4210854e-16, z: -4.973799e-16}
+      rotation: {x: 0.014634845, y: -0.09876133, z: 0.03409812, w: 0.9944191}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IndexFinger3_R
+      parentName: SKM_Mannequin_Rig:IndexFinger2_R
+      position: {x: -0.03393803, y: -1.4210854e-16, z: 5.684342e-16}
+      rotation: {x: -0.012499176, y: 0.043780103, z: -0.053971015, w: 0.997504}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IndexFinger4_R
+      parentName: SKM_Mannequin_Rig:IndexFinger3_R
+      position: {x: -0.028520169, y: -1.7763568e-17, z: -8.5265126e-16}
+      rotation: {x: 0.000000010905684, y: 0.00000001472901, z: -1.6062994e-16, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:RingFinger1_R
+      parentName: SKM_Mannequin_Rig:Wrist_R
+      position: {x: -0.11738035, y: -0.023543632, z: -0.002437289}
+      rotation: {x: 0.09916084, y: -0.12721539, z: 0.1057081, w: 0.9812284}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:RingFinger2_R
+      parentName: SKM_Mannequin_Rig:RingFinger1_R
+      position: {x: -0.04429869, y: -2.842171e-16, z: -8.5265126e-16}
+      rotation: {x: 0.02595606, y: -0.11230529, z: 0.032177735, w: 0.99281335}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:RingFinger3_R
+      parentName: SKM_Mannequin_Rig:RingFinger2_R
+      position: {x: -0.034766562, y: -2.842171e-16, z: -3.5527136e-17}
+      rotation: {x: -0.010385873, y: 0.058281083, z: -0.0026658003, w: 0.9982426}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:RingFinger4_R
+      parentName: SKM_Mannequin_Rig:RingFinger3_R
+      position: {x: -0.028288774, y: 1.4210854e-16, z: 0}
+      rotation: {x: 0.000000013147508, y: 0.00000001511809, z: -1.9876521e-16, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:PinkyFinger1_R
+      parentName: SKM_Mannequin_Rig:Wrist_R
+      position: {x: -0.105263375, y: -0.042752728, z: -0.0065642414}
+      rotation: {x: 0.15830916, y: -0.07231843, z: 0.17075932, w: 0.9698193}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:PinkyFinger2_R
+      parentName: SKM_Mannequin_Rig:PinkyFinger1_R
+      position: {x: -0.035710614, y: -5.684342e-16, z: 1.4210854e-16}
+      rotation: {x: 0.028143983, y: -0.09341457, z: 0.030441439, w: 0.9947638}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:PinkyFinger3_R
+      parentName: SKM_Mannequin_Rig:PinkyFinger2_R
+      position: {x: -0.029854195, y: 1.4210854e-16, z: -5.595524e-16}
+      rotation: {x: -0.0027701792, y: 0.05012999, z: -0.016008658, w: 0.99861056}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:PinkyFinger4_R
+      parentName: SKM_Mannequin_Rig:PinkyFinger3_R
+      position: {x: -0.024414318, y: 7.105427e-17, z: 0}
+      rotation: {x: 0.000000013556133, y: 0.000000015007185, z: -2.0343941e-16, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:R_prop_ref
+      parentName: SKM_Mannequin_Rig:Wrist_R
+      position: {x: -0.07648886, y: -0.021876045, z: -0.106454246}
+      rotation: {x: -0.13326672, y: 0.69446355, z: 0.6912911, w: -0.14858356}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:Neck_M
+      parentName: SKM_Mannequin_Rig:Chest_M
+      position: {x: -0.16562594, y: 3.8014034e-15, z: 5.506706e-16}
+      rotation: {x: 0.14715932, y: -0.024920698, z: -0.16013421, w: 0.975746}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:Head_M
+      parentName: SKM_Mannequin_Rig:Neck_M
+      position: {x: -0.092907414, y: -5.684342e-16, z: 0.0000000014392244}
+      rotation: {x: 0.17494592, y: 0.06174342, z: 0.24086905, w: 0.9526614}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:HeadEnd_M
+      parentName: SKM_Mannequin_Rig:Head_M
+      position: {x: -0.14733477, y: -5.018208e-16, z: 2.8645938e-10}
+      rotation: {x: 0, y: 0.00000002028103, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:Scapula_L
+      parentName: SKM_Mannequin_Rig:Chest_M
+      position: {x: -0.119396664, y: 0.024765307, z: 0.037819922}
+      rotation: {x: 0.76080734, y: -0.123943284, z: 0.6369329, w: -0.011257798}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:Shoulder_L
+      parentName: SKM_Mannequin_Rig:Scapula_L
+      position: {x: 0.15784797, y: 5.1159075e-15, z: -1.1510792e-14}
+      rotation: {x: 0.29662842, y: -0.37792873, z: -0.59213203, w: 0.646963}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:ShoulderPart1_L
+      parentName: SKM_Mannequin_Rig:Shoulder_L
+      position: {x: 0.15170026, y: -1.4210854e-16, z: -1.065814e-15}
+      rotation: {x: -0.03342159, y: 6.913939e-17, z: 2.1915883e-16, w: 0.9994414}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:Elbow_L
+      parentName: SKM_Mannequin_Rig:ShoulderPart1_L
+      position: {x: 0.15170026, y: -1.4210854e-16, z: -1.2079227e-15}
+      rotation: {x: 0.03257283, y: 0.0074842125, z: -0.22380838, w: 0.97406}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:ElbowPart1_L
+      parentName: SKM_Mannequin_Rig:Elbow_L
+      position: {x: 0.13487624, y: 1.4210854e-16, z: 0.000000003795415}
+      rotation: {x: 0.13859321, y: -9.7882763e-17, z: 0.0000000039000105, w: 0.9903494}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:Wrist_L
+      parentName: SKM_Mannequin_Rig:ElbowPart1_L
+      position: {x: 0.13487624, y: 0.0000000010418845, z: 0.00000000364961}
+      rotation: {x: -0.021489685, y: -0.16044211, z: -0.12706834, w: 0.97859603}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:MiddleFinger1_L
+      parentName: SKM_Mannequin_Rig:Wrist_L
+      position: {x: 0.12325508, y: -0.0000000011769258, z: 0.000000003246858}
+      rotation: {x: 0.073784836, y: -0.48441473, z: 0.040983126, w: 0.87075746}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:MiddleFinger2_L
+      parentName: SKM_Mannequin_Rig:MiddleFinger1_L
+      position: {x: 0.04640569, y: -2.4119245e-10, z: 0.0000000012271529}
+      rotation: {x: 0.0010454905, y: -0.4446313, z: 0.079699874, w: 0.89216024}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:MiddleFinger3_L
+      parentName: SKM_Mannequin_Rig:MiddleFinger2_L
+      position: {x: 0.036489043, y: -6.675279e-11, z: 9.558007e-10}
+      rotation: {x: -0.03310139, y: -0.47322622, z: -0.00005193314, w: 0.8803188}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:MiddleFinger4_L
+      parentName: SKM_Mannequin_Rig:MiddleFinger3_L
+      position: {x: 0.03175198, y: -1.6767479e-10, z: 8.366055e-10}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:ThumbFinger1_L
+      parentName: SKM_Mannequin_Rig:Wrist_L
+      position: {x: 0.048623785, y: -0.025119, z: 0.021925027}
+      rotation: {x: 0.6646497, y: 0.23903626, z: 0.602206, w: -0.37208924}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:ThumbFinger2_L
+      parentName: SKM_Mannequin_Rig:ThumbFinger1_L
+      position: {x: 0.038695693, y: -8.68259e-10, z: -5.2231974e-10}
+      rotation: {x: -0.26851633, y: -0.24665529, z: 0.23840559, w: 0.90012383}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:ThumbFinger3_L
+      parentName: SKM_Mannequin_Rig:ThumbFinger2_L
+      position: {x: 0.04062173, y: -0.0000000011042591, z: -2.8707214e-10}
+      rotation: {x: -0.035263434, y: -0.354092, z: -0.006602185, w: 0.9345222}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:ThumbFinger4_L
+      parentName: SKM_Mannequin_Rig:ThumbFinger3_L
+      position: {x: 0.0342029, y: -9.095849e-10, z: -3.002122e-10}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IndexFinger1_L
+      parentName: SKM_Mannequin_Rig:Wrist_L
+      position: {x: 0.12075625, y: -0.025902323, z: 0.008158323}
+      rotation: {x: -0.031547327, y: -0.4499423, z: -0.013828694, w: 0.8923932}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IndexFinger2_L
+      parentName: SKM_Mannequin_Rig:IndexFinger1_L
+      position: {x: 0.04287684, y: -4.757942e-10, z: 0.0000000010643139}
+      rotation: {x: 0.006913244, y: -0.4499835, z: 0.054666415, w: 0.8913353}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IndexFinger3_L
+      parentName: SKM_Mannequin_Rig:IndexFinger2_L
+      position: {x: 0.03393803, y: -2.9081745e-10, z: 8.311371e-10}
+      rotation: {x: -0.03386555, y: -0.37614694, z: -0.043843184, w: 0.9249024}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:IndexFinger4_L
+      parentName: SKM_Mannequin_Rig:IndexFinger3_L
+      position: {x: 0.028520169, y: -2.8504998e-10, z: 7.2003314e-10}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:RingFinger1_L
+      parentName: SKM_Mannequin_Rig:Wrist_L
+      position: {x: 0.11738035, y: 0.023543632, z: 0.0024372921}
+      rotation: {x: 0.1251768, y: -0.4016093, z: 0.07306055, w: 0.9042693}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:RingFinger2_L
+      parentName: SKM_Mannequin_Rig:RingFinger1_L
+      position: {x: 0.04429869, y: -1.1619704e-10, z: 0.000000001162077}
+      rotation: {x: -0.020481845, y: -0.48858115, z: 0.1207483, w: 0.8638801}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:RingFinger3_L
+      parentName: SKM_Mannequin_Rig:RingFinger2_L
+      position: {x: 0.034766562, y: 4.0540158e-11, z: 8.8909463e-10}
+      rotation: {x: 0.07225388, y: -0.41660205, z: 0.15551597, w: 0.8927693}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:RingFinger4_L
+      parentName: SKM_Mannequin_Rig:RingFinger3_L
+      position: {x: 0.028288774, y: -2.0496884e-11, z: 7.253233e-10}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:PinkyFinger1_L
+      parentName: SKM_Mannequin_Rig:Wrist_L
+      position: {x: 0.105263375, y: 0.042752728, z: 0.0065642446}
+      rotation: {x: 0.1262233, y: -0.08466772, z: 0.19425474, w: 0.9691048}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:PinkyFinger2_L
+      parentName: SKM_Mannequin_Rig:PinkyFinger1_L
+      position: {x: 0.035710614, y: -2.4328982e-13, z: 9.0213254e-10}
+      rotation: {x: -0.080596745, y: -0.53962743, z: -0.06340961, w: 0.8356348}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:PinkyFinger3_L
+      parentName: SKM_Mannequin_Rig:PinkyFinger2_L
+      position: {x: 0.029854195, y: 1.14465736e-10, z: 7.272444e-10}
+      rotation: {x: -0.007310738, y: -0.24276291, z: -0.014508764, w: 0.9699496}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:PinkyFinger4_L
+      parentName: SKM_Mannequin_Rig:PinkyFinger3_L
+      position: {x: 0.024414318, y: 5.763624e-11, z: 6.055731e-10}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:L_prop_ref
+      parentName: SKM_Mannequin_Rig:Wrist_L
+      position: {x: 0.076488614, y: 0.021875953, z: 0.106453925}
+      rotation: {x: -0.13326678, y: 0.6944635, z: 0.69129115, w: -0.1485837}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:Hip_L
+      parentName: SKM_Mannequin_Rig:Root_M
+      position: {x: 0.014024398, y: 0.006435438, z: 0.09005803}
+      rotation: {x: 0.89042246, y: 0.45385513, z: -0.030868232, w: -0.014510306}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:HipPart1_L
+      parentName: SKM_Mannequin_Rig:Hip_L
+      position: {x: 0.2128876, y: -1.4210854e-16, z: -2.1316282e-16}
+      rotation: {x: -0.017503714, y: 3.8947423e-18, z: 2.2029636e-17, w: 0.9998468}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:Knee_L
+      parentName: SKM_Mannequin_Rig:HipPart1_L
+      position: {x: 0.2128876, y: -2.842171e-16, z: -1.5099033e-16}
+      rotation: {x: 0.009496699, y: -0.014703493, z: 0.8398927, w: 0.5424702}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:KneePart1_L
+      parentName: SKM_Mannequin_Rig:Knee_L
+      position: {x: 0.20101203, y: 4.973799e-16, z: -1.2878587e-16}
+      rotation: {x: 0.023031307, y: 4.070584e-18, z: -1.0939694e-17, w: 0.99973476}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:Ankle_L
+      parentName: SKM_Mannequin_Rig:KneePart1_L
+      position: {x: 0.20101203, y: 1.4210854e-16, z: 0}
+      rotation: {x: 0.03412807, y: 0.018043984, z: 0.12131415, w: 0.9918632}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:Toes_L
+      parentName: SKM_Mannequin_Rig:Ankle_L
+      position: {x: 0.10654028, y: -0.16450039, z: -0.0000000037896015}
+      rotation: {x: -0.020369435, y: -0.015021448, z: -0.5933262, w: 0.80456424}
+      scale: {x: 1, y: 1, z: 1}
+    - name: SKM_Mannequin_Rig:ToesEnd_L
+      parentName: SKM_Mannequin_Rig:Toes_L
+      position: {x: 0.06615663, y: -1.341262e-10, z: -0.0000000012714548}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    globalScale: 1
+    rootMotionBoneName: 
+    hasTranslationDoF: 0
+    hasExtraRoot: 1
+    skeletonHasParents: 1
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  autoGenerateAvatarMappingIfUnspecified: 1
+  animationType: 3
+  humanoidOversampling: 1
+  avatarSetup: 1
+  addHumanoidExtraRootOnlyWhenUsingAvatar: 1
+  importBlendShapeDeformPercent: 1
+  remapMaterialsIfMaterialImportModeIsNone: 0
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
