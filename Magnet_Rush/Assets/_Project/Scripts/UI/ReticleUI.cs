@@ -49,9 +49,9 @@ public class ReticleUI : MonoBehaviour
                 m_poleController.OnPoleChanged += OnPoleChanged;
                 m_currentPole = m_poleController.CurrentPole;
             }
-            if (m_playerEvents != null && m_playerEvents.OnShoot != null)
+            if (m_playerEvents != null && m_playerEvents.onShoot != null)
             {
-                m_playerEvents.OnShoot.AddListener(OnShoot);
+                m_playerEvents.onShoot.AddListener(OnShoot);
             }
         }
 
@@ -63,8 +63,8 @@ public class ReticleUI : MonoBehaviour
     {
         if (m_poleController != null)
             m_poleController.OnPoleChanged -= OnPoleChanged;
-        if (m_playerEvents != null && m_playerEvents.OnShoot != null)
-            m_playerEvents.OnShoot.RemoveListener(OnShoot);
+        if (m_playerEvents != null && m_playerEvents.onShoot != null)
+            m_playerEvents.onShoot.RemoveListener(OnShoot);
     }
 
     void Update()
