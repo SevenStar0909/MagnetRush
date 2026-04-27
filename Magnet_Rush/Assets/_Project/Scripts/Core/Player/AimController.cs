@@ -34,8 +34,8 @@ public class AimController : MonoBehaviour
         m_player = GetComponent<Player>();
     }
 
-    /// <summary>LT 入力に応じてエイムモードを開始/維持する。毎フレーム呼ぶ。</summary>
-    public void HandleAimInput()
+    /// <summary>LT 入力に応じてエイムモードを開始/維持する。Player.Update から毎フレーム呼ぶ。</summary>
+    public void UpdateInput()
     {
         if (m_input.AimHeld)
         {
