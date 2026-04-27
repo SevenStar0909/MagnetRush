@@ -50,6 +50,10 @@ public class PlayerSettings : ScriptableObject
     public float aimReleaseGraceTime = 0.15f;
     [Tooltip("エイム中のゲーム内時間倍率（0.3=70%スロー）")]
     public float aimTimeScale = 0.3f;
+    [Tooltip("エイム開始時に aimTimeScale へ到達するまでの秒数（実時間）")]
+    public float aimEnterDuration = 0.12f;
+    [Tooltip("エイム解除時に 1.0 へ復帰するまでの秒数（実時間）")]
+    public float aimExitDuration = 0.18f;
     [Tooltip("エイム中の視野角（度）。小さいほどズーム")]
     public float aimFOV = 40f;
     [Tooltip("エイム中のカメラ距離")]
