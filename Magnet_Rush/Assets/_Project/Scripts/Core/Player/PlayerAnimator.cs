@@ -42,7 +42,6 @@ public class PlayerAnimator : MonoBehaviour
     [SerializeField] private string m_isAimingName = "IsAiming";
     [SerializeField] private string m_isGroundedName = "IsGrounded";
     [SerializeField] private string m_shootName = "Shoot";
-    [SerializeField] private string m_selfShootName = "SelfShoot";
     [SerializeField] private string m_reloadName = "Reload";
 
     /// <summary>
@@ -74,7 +73,6 @@ public class PlayerAnimator : MonoBehaviour
     private int m_hIsAiming;
     private int m_hIsGrounded;
     private int m_hShoot;
-    private int m_hSelfShoot;
     private int m_hReload;
 
     void Awake()
@@ -99,7 +97,6 @@ public class PlayerAnimator : MonoBehaviour
         m_hIsAiming        = Animator.StringToHash(m_isAimingName);
         m_hIsGrounded      = Animator.StringToHash(m_isGroundedName);
         m_hShoot           = Animator.StringToHash(m_shootName);
-        m_hSelfShoot       = Animator.StringToHash(m_selfShootName);
         m_hReload          = Animator.StringToHash(m_reloadName);
 
         ValidateAnimatorParameters();
@@ -126,7 +123,6 @@ public class PlayerAnimator : MonoBehaviour
             (m_isAimingName,        "IsAiming (Bool)"),
             (m_isGroundedName,      "IsGrounded (Bool)"),
             (m_shootName,           "Shoot (Trigger)"),
-            (m_selfShootName,       "SelfShoot (Trigger)"),
             (m_reloadName,          "Reload (Trigger)"),
         };
 
@@ -169,7 +165,6 @@ public class PlayerAnimator : MonoBehaviour
         if (m_events != null)
         {
             m_events.OnShoot.AddListener(HandleShoot);
-            m_events.OnSelfShoot.AddListener(HandleSelfShoot);
             m_events.OnReload.AddListener(HandleReload);
         }
         if (m_states != null)
@@ -183,7 +178,6 @@ public class PlayerAnimator : MonoBehaviour
         if (m_events != null)
         {
             m_events.OnShoot.RemoveListener(HandleShoot);
-            m_events.OnSelfShoot.RemoveListener(HandleSelfShoot);
             m_events.OnReload.RemoveListener(HandleReload);
         }
         if (m_states != null)
@@ -228,15 +222,13 @@ public class PlayerAnimator : MonoBehaviour
         m_animator.SetTrigger(m_hOnStateChanged);
     }
 
-    private void HandleShoot()     { if (m_animator != null) m_animator.SetTrigger(m_hShoot); }
-    private void HandleSelfShoot() { if (m_animator != null) m_animator.SetTrigger(m_hSelfShoot); }
-    private void HandleReload()    { if (m_animator != null) m_animator.SetTrigger(m_hReload); }
+    private void HandleShoot()  { if (m_animator != null) m_animator.SetTrigger(m_hShoot); }
+    private void HandleReload() { if (m_animator != null) m_animator.SetTrigger(m_hReload); }
 
     private void ResetTriggersExceptStateChange()
     {
         if (m_animator == null) return;
         m_animator.ResetTrigger(m_hShoot);
-        m_animator.ResetTrigger(m_hSelfShoot);
         m_animator.ResetTrigger(m_hReload);
     }
 }

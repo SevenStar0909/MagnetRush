@@ -44,13 +44,15 @@ public class ShootingController : MonoBehaviour
     /// <summary>RT 入力があれば通常射撃。毎フレーム呼ぶ。</summary>
     public void Fire()
     {
-        if (!m_input.ConsumeFire()) return;
+        if (!m_input.IsFirePressed) return;
         if (m_bulletSettings == null || m_bulletSettings.bulletPrefab == null)
         { ChannelLogger.LogGuardReturn("Player", "BulletSettings未設定"); return; }
         if (BulletManager.Instance == null || !BulletManager.Instance.CanShoot())
         { ChannelLogger.LogGuardReturn("Player", "BulletManager未初期化 or 射撃不可"); return; }
         if (m_mainCamera == null)
         { ChannelLogger.LogGuardReturn("Player", "MainCameraなし"); return; }
+
+        m_input.ConsumeFire();
 
         float height = m_player.Settings != null ? m_player.Settings.firePointHeight : 1.2f;
         Vector3 spawnPos = m_firePoint != null ? m_firePoint.position : transform.position + Vector3.up * height;
@@ -91,11 +93,13 @@ public class ShootingController : MonoBehaviour
     /// <summary>A / F 入力があればセルフファイア（自己磁化）。毎フレーム呼ぶ。</summary>
     public void SelfFire()
     {
-        if (!m_input.ConsumeSelfFire()) return;
+        if (!m_input.IsSelfFirePressed) return;
         if (m_bulletSettings == null || m_bulletSettings.bulletPrefab == null)
         { ChannelLogger.LogGuardReturn("Player", "BulletSettings未設定(SelfFire)"); return; }
         if (BulletManager.Instance == null || !BulletManager.Instance.CanShoot())
         { ChannelLogger.LogGuardReturn("Player", "BulletManager未初期化 or 射撃不可(SelfFire)"); return; }
+
+        m_input.ConsumeSelfFire();
 
         m_magnetizable.SetPole(m_pole.CurrentPole);
 
@@ -142,8 +146,9 @@ public class ShootingController : MonoBehaviour
     /// <summary>X 入力があればリロード（全弾クリア）。毎フレーム呼ぶ。</summary>
     public void Reload()
     {
-        if (!m_input.ConsumeReload()) return;
+        if (!m_input.IsReloadPressed) return;
         if (BulletManager.Instance == null) return;
+        m_input.ConsumeReload();
         BulletManager.Instance.ClearAll();
         m_events.FireReload();
     }
