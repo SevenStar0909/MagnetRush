@@ -115,10 +115,25 @@ public class Player : Entity
     {
         float dt = Mathf.Min(Time.deltaTime, Time.fixedDeltaTime * 3f);
         UpdateMagneticInfluence();
-        states.UpdateState(dt);   // State 側で Controller を呼ぶ
+
+        bool isDying = states.IsCurrentOfType<DiePlayerState>();
+
+        // 入力消費系を State 横断で1箇所に集約。死亡中は処理しない
+        // pole/aim/shooting の入力処理で State 遷移が発生する場合があり
+        // （aim.StopAim() → MovePlayerState 遷移など）、入力処理直後の最新Stateで移動処理が走る
+        if (!isDying)
+        {
+            pole.Switch();
+            aim.UpdateInput();
+            shooting.Fire();
+            shooting.SelfFire();
+            shooting.Reload();
+        }
+
+        states.UpdateState(dt);   // State は移動・遷移判定のみ
 
         // 死亡中は重力・移動処理をスキップ（UpdateEntityがvelocityを上書きして落下するのを防ぐ）
-        if (!states.IsCurrentOfType<DiePlayerState>())
+        if (!isDying)
             UpdateEntity(dt);
     }
 
