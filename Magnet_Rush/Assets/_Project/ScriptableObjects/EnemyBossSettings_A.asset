@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 20f418b8a91078a4c8502133f347c9d4, type: 3}
+  m_Name: EnemyBossSettings_A
+  m_EditorClassIdentifier: MagnetRush.Data::EnemyBossSettings
+  maxHp: 500
+  moveSpeed: 3.5
+  acceleration: 8
+  chaseRange: 20
+  stopDistance: 1.5
+  turningDrag: 15
+  deceleration: 20
+  gravity: -20
+  snapForce: 2
+  groundCheckDistance: 0.3
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  externalDrag: 3
+  attackDamage: 1
+  attackRange: 20
+  attackInterval: 1.2
+  rotationSpeed: 10
+  attackHitboxDuration: 0.2
