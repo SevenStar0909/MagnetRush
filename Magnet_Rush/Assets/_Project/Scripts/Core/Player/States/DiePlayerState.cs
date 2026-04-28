@@ -16,8 +16,8 @@ public class DiePlayerState : EntityState<Player>
         entity.input.enabled = false;
 
         var controller = entity.GetComponent<EntityController>();
-        if (controller != null && controller.collider != null)
-            controller.collider.enabled = false;
+        if (controller != null && controller.GetComponent<Collider>() != null)
+            controller.GetComponent<Collider>().enabled = false;
 
         // Enter() のコールスタック上で Change<IdlePlayerState>() すると
         // EntityStateManager.Change の last/current 代入と OnStateChanged 発火が再入し
@@ -32,8 +32,8 @@ public class DiePlayerState : EntityState<Player>
         m_entity.input.enabled = true;
 
         var controller = m_entity.GetComponent<EntityController>();
-        if (controller != null && controller.collider != null)
-            controller.collider.enabled = true;
+        if (controller != null && controller.GetComponent<Collider>() != null)
+            controller.GetComponent<Collider>().enabled = true;
     }
 
     private IEnumerator RespawnNextFrame()
