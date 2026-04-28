@@ -27,11 +27,13 @@ MonoBehaviour:
   cameraSensitivityY: 35
   cameraDistance: 5
   shoulderOffset: {x: 0.8, y: 0.3, z: 0}
-  cameraPitchMin: -10
-  cameraPitchMax: 60
+  cameraPitchMin: -90
+  cameraPitchMax: 90
   firePointHeight: 1.2
   aimReleaseGraceTime: 0.15
   aimTimeScale: 0.3
+  aimEnterDuration: 0.12
+  aimExitDuration: 0.18
   aimFOV: 40
   aimCameraDistance: 3
   aimMoveSpeedMultiplier: 0.5
