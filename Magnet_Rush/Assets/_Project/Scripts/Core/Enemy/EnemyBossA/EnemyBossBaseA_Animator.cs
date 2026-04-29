@@ -126,6 +126,42 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
         SetIsStunned(false);
     }
 
+    /// <summary>AttackStance または AttackMotion 中なら true。AI が攻撃中判定に使う。</summary>
+    public bool IsAttacking
+    {
+        get
+        {
+            if (m_animator == null) return false;
+            int hash = m_animator.GetCurrentAnimatorStateInfo(0).shortNameHash;
+            return hash == s_hAttackStanceState || hash == s_hAttackMotionState;
+        }
+    }
+
+    /// <summary>AttackMotion 中（振りかぶり～振り抜き）なら true。AI が腕Hitbox期待中の判定に使う。</summary>
+    public bool IsInAttackMotion
+    {
+        get
+        {
+            if (m_animator == null) return false;
+            return m_animator.GetCurrentAnimatorStateInfo(0).shortNameHash == s_hAttackMotionState;
+        }
+    }
+
+    /// <summary>AttackStun 中なら true。Bool ではなく現在 State を見ることで AnimEvent 配線漏れに対しても堅牢。</summary>
+    public bool IsStunned
+    {
+        get
+        {
+            if (m_animator == null) return false;
+            return m_animator.GetCurrentAnimatorStateInfo(0).shortNameHash == s_hAttackStunState;
+        }
+    }
+
+    // Animator State 名のハッシュ（State 名は EnemyBossA_Animator.controller の Layer0 上の State 名と一致する必要がある）
+    private static readonly int s_hAttackStanceState = Animator.StringToHash("AttackStance");
+    private static readonly int s_hAttackMotionState = Animator.StringToHash("AttackMotion");
+    private static readonly int s_hAttackStunState   = Animator.StringToHash("AttackStun");
+
     /// <summary>
     /// Hitbox からのヒットイベントを処理する。被弾したら即中断トリガーを送る。
     /// </summary>
