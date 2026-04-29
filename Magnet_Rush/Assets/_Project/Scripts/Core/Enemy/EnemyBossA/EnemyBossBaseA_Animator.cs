@@ -10,6 +10,12 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
     [Tooltip("Hitbox。未設定ならルートの子から取得")]
     [SerializeField] private Hitbox m_hitbox;
 
+    [Tooltip("AI(EnemyBossAI)。AnimationEvent で OnAttackFinished/OnStunEnd を転送する")]
+    [SerializeField] private EnemyBossAI m_ai;
+
+    [Tooltip("腕の近接Hitbox。AnimationEvent で Enable/Disable を転送する")]
+    [SerializeField] private BossArmHitbox m_armHitbox;
+
     [Header("Debug")]
     [SerializeField] private bool m_enableDebugInput = true;
 
@@ -35,6 +41,12 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
 
         if (m_hitbox == null)
             m_hitbox = transform.root.GetComponentInChildren<Hitbox>();
+
+        if (m_ai == null)
+            m_ai = transform.root.GetComponentInChildren<EnemyBossAI>();
+
+        if (m_armHitbox == null)
+            m_armHitbox = transform.root.GetComponentInChildren<BossArmHitbox>(true);
 
         m_hAttack = Animator.StringToHash(m_attackName);
         m_hAttackFinished = Animator.StringToHash(m_attackFinishedName);
@@ -161,6 +173,32 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
     private static readonly int s_hAttackStanceState = Animator.StringToHash("AttackStance");
     private static readonly int s_hAttackMotionState = Animator.StringToHash("AttackMotion");
     private static readonly int s_hAttackStunState   = Animator.StringToHash("AttackStun");
+
+    // === AnimationEvent から直接呼ばれるエントリ（Forwarder ではなく Animator 直に置く） ===
+
+    /// <summary>AttackMotion 振り始まりのAnimEventから呼ばれる。腕HitboxをONに。</summary>
+    public void EnableArmHitboxEvent()
+    {
+        if (m_armHitbox != null) m_armHitbox.EnableHitbox();
+    }
+
+    /// <summary>AttackMotion 振り終わりのAnimEventから呼ばれる。腕HitboxをOFFに。</summary>
+    public void DisableArmHitboxEvent()
+    {
+        if (m_armHitbox != null) m_armHitbox.DisableHitbox();
+    }
+
+    /// <summary>AttackMotion clip 末尾のAnimEventから呼ばれる。AIにStaggerへの遷移を通知。</summary>
+    public void OnAttackFinishedEvent()
+    {
+        if (m_ai != null) m_ai.OnAttackFinished();
+    }
+
+    /// <summary>AttackStun clip 末尾のAnimEventから呼ばれる。AIにStaggerへの遷移を通知。</summary>
+    public void OnStunEndEvent()
+    {
+        if (m_ai != null) m_ai.OnStunEnd();
+    }
 
     /// <summary>
     /// Hitbox からのヒットイベントを処理する。被弾したら即中断トリガーを送る。
