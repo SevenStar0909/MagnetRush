@@ -170,9 +170,9 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
     }
 
     // Animator State 名のハッシュ（State 名は EnemyBossA_Animator.controller の Layer0 上の State 名と一致する必要がある）
-    private static readonly int s_hAttackStanceState = Animator.StringToHash("AttackStance");
-    private static readonly int s_hAttackMotionState = Animator.StringToHash("AttackMotion");
-    private static readonly int s_hAttackStunState   = Animator.StringToHash("AttackStun");
+    private static readonly int s_hAttackStanceState = Animator.StringToHash("AttackStanceAnim");
+    private static readonly int s_hAttackMotionState = Animator.StringToHash("AttackMotionAnim");
+    private static readonly int s_hAttackStunState   = Animator.StringToHash("AttackStunAnim");
 
     // === AnimationEvent から直接呼ばれるエントリ（Forwarder ではなく Animator 直に置く） ===
 
