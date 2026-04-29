@@ -4,30 +4,22 @@ using UnityEngine.InputSystem;
 public class EnemyBossBaseA_Animator : MonoBehaviour
 {
     [Header("References")]
-    [Tooltip("ï¿½ì“®ï¿½ÎÛ‚ï¿½ Animatorï¿½iï¿½ï¿½ï¿½İ’ï¿½È‚ï¿½qï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½ï¿½ï¿½ï¿½æ“¾ï¿½j")]
+    [Tooltip("‹ì“®‘ÎÛ‚Ì Animatori–¢İ’è‚È‚çqƒIƒuƒWƒFƒNƒg‚©‚çæ“¾j")]
     [SerializeField] private Animator m_animator;
 
-    [Tooltip("Hitboxï¿½Bï¿½ï¿½ï¿½İ’ï¿½È‚çƒ‹ï¿½[ï¿½gï¿½Ìqï¿½ï¿½ï¿½ï¿½æ“¾")]
+    [Tooltip("HitboxB–¢İ’è‚È‚çƒ‹[ƒg‚Ìq‚©‚çæ“¾")]
     [SerializeField] private Hitbox m_hitbox;
-
-    [Tooltip("AI å¸ä»¤å¡”ã€‚æœªè¨­å®šãªã‚‰è¦ªã® GetComponentInParent<EnemyBossAI>()")]
-    [SerializeField] private EnemyBossAI m_ai;
-
-    [Tooltip("è…•ã®æ‰“æ’ƒãƒ’ãƒƒãƒˆãƒœãƒƒã‚¯ã‚¹ã€‚æœªè¨­å®šãªã‚‰å­ã® GetComponentInChildren<BossArmHitbox>()")]
-    [SerializeField] private BossArmHitbox m_armHitbox;
 
     [Header("Debug")]
     [SerializeField] private bool m_enableDebugInput = true;
 
-    [Header("Animator Parameter Names (Inspector ï¿½Pï¿½ï¿½Óï¿½ï¿½Ç—ï¿½)")]
+    [Header("Animator Parameter Names (Inspector ’Pˆê‰ÓŠŠÇ—)")]
     [SerializeField] private string m_attackName = "Attack";
     [SerializeField] private string m_attackFinishedName = "AttackFinished";
     [SerializeField] private string m_beInterruptedName = "BeInterrupted";
     [SerializeField] private string m_stunEndName = "StunEnd";
     [SerializeField] private string m_canInterruptName = "CanInterrupt";
     [SerializeField] private string m_isStunnedName = "IsStunned";
-    [SerializeField] private string m_attackMotionStateName = "AttackMotionAnim";
-    [SerializeField] private string m_stunStateName = "AttackStunAnim";
 
     private int m_hAttack;
     private int m_hAttackFinished;
@@ -44,12 +36,6 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
         if (m_hitbox == null)
             m_hitbox = transform.root.GetComponentInChildren<Hitbox>();
 
-        if (m_ai == null)
-            m_ai = GetComponentInParent<EnemyBossAI>();
-
-        if (m_armHitbox == null)
-            m_armHitbox = GetComponentInChildren<BossArmHitbox>(includeInactive: true);
-
         m_hAttack = Animator.StringToHash(m_attackName);
         m_hAttackFinished = Animator.StringToHash(m_attackFinishedName);
         m_hBeInterrupted = Animator.StringToHash(m_beInterruptedName);
@@ -59,7 +45,7 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
 
         if (m_animator == null)
         {
-            ChannelLogger.LogGuardReturn("Enemy", "EnemyBossBaseA_Animator.m_animator ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½Tï¿½Cï¿½ï¿½ï¿½Å‚ï¿½");
+            ChannelLogger.LogGuardReturn("Enemy", "EnemyBossBaseA_Animator.m_animator ‚ª–¢ƒAƒTƒCƒ“‚Å‚·");
             enabled = false;
         }
     }
@@ -87,29 +73,6 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
 
         if (Keyboard.current != null && Keyboard.current.lKey.wasPressedThisFrame)
             TriggerBeInterrupted();
-    }
-
-    public bool IsCanInterrupt => m_animator != null && m_animator.GetBool(m_hCanInterrupt);
-    public bool IsStunned => m_animator != null && m_animator.GetBool(m_hIsStunned);
-
-    public bool IsInAttackMotion
-    {
-        get
-        {
-            if (m_animator == null) return false;
-            var info = m_animator.GetCurrentAnimatorStateInfo(0);
-            return info.IsName(m_attackMotionStateName);
-        }
-    }
-
-    public bool IsInStun
-    {
-        get
-        {
-            if (m_animator == null) return false;
-            var info = m_animator.GetCurrentAnimatorStateInfo(0);
-            return info.IsName(m_stunStateName);
-        }
     }
 
     public void TriggerAttack()
@@ -164,43 +127,15 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
     }
 
     /// <summary>
-    /// Hitbox ï¿½ï¿½ï¿½ï¿½Ìƒqï¿½bï¿½gï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Bï¿½ï¿½eï¿½ï¿½ï¿½ï¿½ï¿½ç‘¦ï¿½ï¿½ï¿½fï¿½gï¿½ï¿½ï¿½Kï¿½[ï¿½ğ‘—‚ï¿½B
+    /// Hitbox ‚©‚ç‚ÌƒqƒbƒgƒCƒxƒ“ƒg‚ğˆ—‚·‚éB”í’e‚µ‚½‚ç‘¦’†’fƒgƒŠƒK[‚ğ‘—‚éB
     /// </summary>
     private void HandleHit(HitData hit)
     {
         TriggerBeInterrupted();
     }
 
-    /// <summary>AnimationEvent: æ”»æ’ƒãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®å½“ãŸã‚Šåˆ¤å®šçª“é–‹å§‹</summary>
-    public void EnableArmHitboxEvent()
-    {
-        if (m_armHitbox == null) { ChannelLogger.LogGuardReturn("Enemy", "BossArmHitbox æœªè¨­å®š"); return; }
-        m_armHitbox.EnableHitbox();
-    }
-
-    /// <summary>AnimationEvent: æ”»æ’ƒãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®å½“ãŸã‚Šåˆ¤å®šçª“çµ‚äº†</summary>
-    public void DisableArmHitboxEvent()
-    {
-        if (m_armHitbox == null) { ChannelLogger.LogGuardReturn("Enemy", "BossArmHitbox æœªè¨­å®š"); return; }
-        m_armHitbox.DisableHitbox();
-    }
-
-    /// <summary>AnimationEvent: AttackMotion ã‚¯ãƒªãƒƒãƒ—æœ«å°¾</summary>
-    public void OnAttackFinishedEvent()
-    {
-        if (m_ai == null) { ChannelLogger.LogGuardReturn("Enemy", "EnemyBossAI æœªè¨­å®š"); return; }
-        m_ai.OnAttackFinished();
-    }
-
-    /// <summary>AnimationEvent: AttackStun ã‚¯ãƒªãƒƒãƒ—æœ«å°¾</summary>
-    public void OnStunEndEvent()
-    {
-        if (m_ai == null) { ChannelLogger.LogGuardReturn("Enemy", "EnemyBossAI æœªè¨­å®š"); return; }
-        m_ai.OnStunEnd();
-    }
-
     /// <summary>
-    /// Animator Controller ï¿½É•Kï¿½vï¿½Èƒpï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½^ï¿½ï¿½ï¿½ï¿½`ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½é‚©ï¿½ï¿½ï¿½`ï¿½Fï¿½bï¿½Nï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½ï¿½ï¿½Ì‚ï¿½ï¿½ï¿½ï¿½ï¿½ÎƒGï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½oï¿½ï¿½ï¿½B
+    /// Animator Controller ‚É•K—v‚Èƒpƒ‰ƒ[ƒ^‚ª’è‹`‚³‚ê‚Ä‚¢‚é‚©‚ğƒ`ƒFƒbƒN‚µA‘«‚è‚È‚¢‚à‚Ì‚ª‚ ‚ê‚ÎƒGƒ‰[‚ğo‚·B
     /// </summary>
     private void ValidateAnimatorParameters()
     {
@@ -224,7 +159,7 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
         {
             if (!existing.Contains(name))
                 Debug.LogError(
-                    $"[EnemyBossBaseA_Animator] Animator ï¿½pï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½^ '{name}' ({purpose}) ï¿½ï¿½ Controller ï¿½É’ï¿½`ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½B",
+                    $"[EnemyBossBaseA_Animator] Animator ƒpƒ‰ƒ[ƒ^ '{name}' ({purpose}) ‚ª Controller ‚É’è‹`‚³‚ê‚Ä‚¢‚Ü‚¹‚ñB",
                     this);
         }
     }

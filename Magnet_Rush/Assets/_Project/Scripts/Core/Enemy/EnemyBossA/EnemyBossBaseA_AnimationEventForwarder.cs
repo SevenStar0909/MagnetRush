@@ -1,7 +1,7 @@
 using UnityEngine;
 
 /// <summary>
-/// EnemyBossBaseA_Animator ï¿½ÌƒAï¿½jï¿½ï¿½ï¿½[ï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ó‚¯ï¿½ï¿½ï¿½Ä“]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Rï¿½ï¿½ï¿½|ï¿½[ï¿½lï¿½ï¿½ï¿½gï¿½B
+/// EnemyBossBaseA_Animator ‚ÌƒAƒjƒ[ƒVƒ‡ƒ“ƒCƒxƒ“ƒg‚ğó‚¯æ‚Á‚Ä“]‘—‚·‚éƒRƒ“ƒ|[ƒlƒ“ƒgB
 /// </summary>
 public class EnemyBossBaseA_AnimationEventForwarder : MonoBehaviour
 {
@@ -13,7 +13,7 @@ public class EnemyBossBaseA_AnimationEventForwarder : MonoBehaviour
             m_target = GetComponentInParent<EnemyBossBaseA_Animator>();
 
         if (m_target == null)
-            ChannelLogger.LogGuardReturn("Enemy", "EnemyBossBaseA_AnimationEventForwarder.m_target ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½Tï¿½Cï¿½ï¿½ï¿½Å‚ï¿½");
+            ChannelLogger.LogGuardReturn("Enemy", "EnemyBossBaseA_AnimationEventForwarder.m_target ‚ª–¢ƒAƒTƒCƒ“‚Å‚·");
     }
 
     public void TriggerAttack()
@@ -54,25 +54,5 @@ public class EnemyBossBaseA_AnimationEventForwarder : MonoBehaviour
     public void SetIsStunnedFalse()
     {
         if (m_target != null) m_target.SetIsStunnedFalse();
-    }
-
-    public void EnableArmHitboxEvent()
-    {
-        if (m_target != null) m_target.EnableArmHitboxEvent();
-    }
-
-    public void DisableArmHitboxEvent()
-    {
-        if (m_target != null) m_target.DisableArmHitboxEvent();
-    }
-
-    public void OnAttackFinishedEvent()
-    {
-        if (m_target != null) m_target.OnAttackFinishedEvent();
-    }
-
-    public void OnStunEndEvent()
-    {
-        if (m_target != null) m_target.OnStunEndEvent();
     }
 }
