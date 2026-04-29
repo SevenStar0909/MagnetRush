@@ -61,7 +61,7 @@ public class EnemyBossBase : Entity
 
     void Update()
     {
-        //UpdateEntity(Time.deltaTime);
+        UpdateEntity(Time.deltaTime);
     }
 
     /// <summary>指定方向（ワールド空間）に加速する。AIが計算した移動方向を渡す。</summary>
