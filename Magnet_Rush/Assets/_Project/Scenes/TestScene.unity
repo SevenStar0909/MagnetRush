@@ -253,7 +253,15 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4801883723113897257, guid: 6b054d6dbebac8b49be1e9aed68e9497, type: 3}
+      propertyPath: m_additiveScenes.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4801883723113897257, guid: 6b054d6dbebac8b49be1e9aed68e9497, type: 3}
       propertyPath: 'm_additiveScenes.Array.data[0]'
+      value: TestMapScene
+      objectReference: {fileID: 0}
+    - target: {fileID: 4801883723113897257, guid: 6b054d6dbebac8b49be1e9aed68e9497, type: 3}
+      propertyPath: 'm_additiveScenes.Array.data[1]'
       value: TestMapScene
       objectReference: {fileID: 0}
     - target: {fileID: 5587081181866657333, guid: 6b054d6dbebac8b49be1e9aed68e9497, type: 3}
