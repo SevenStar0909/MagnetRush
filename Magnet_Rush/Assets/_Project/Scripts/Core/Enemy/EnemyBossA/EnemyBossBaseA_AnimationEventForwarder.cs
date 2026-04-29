@@ -55,4 +55,24 @@ public class EnemyBossBaseA_AnimationEventForwarder : MonoBehaviour
     {
         if (m_target != null) m_target.SetIsStunnedFalse();
     }
+
+    public void EnableArmHitboxEvent()
+    {
+        if (m_target != null) m_target.EnableArmHitboxEvent();
+    }
+
+    public void DisableArmHitboxEvent()
+    {
+        if (m_target != null) m_target.DisableArmHitboxEvent();
+    }
+
+    public void OnAttackFinishedEvent()
+    {
+        if (m_target != null) m_target.OnAttackFinishedEvent();
+    }
+
+    public void OnStunEndEvent()
+    {
+        if (m_target != null) m_target.OnStunEndEvent();
+    }
 }
