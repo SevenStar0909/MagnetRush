@@ -26,6 +26,7 @@ public class EnemyBossAI : MonoBehaviour
     private BossState m_state = BossState.Idle;
     private float m_cooldownTimer;
     private float m_staggerTimer;
+    private bool m_playerCollidersIgnored;
     private Vector3 m_lastDirection;
 
     public BossState State => m_state;
@@ -54,10 +55,45 @@ public class EnemyBossAI : MonoBehaviour
             m_agent.speed = m_settings.moveSpeed;
             m_agent.stoppingDistance = m_settings.stopDistance;
         }
+
+        // プレイヤーの Pushbox/MovementCapsule を EntityController の無視リストに追加。
+        // これがないと、ボスがプレイヤーに密着した瞬間に HandlePenetration が
+        // めり込み解決でボスを後退させてしまう（攻撃時の不自然な後退の根本原因）。
+        IgnorePlayerColliders();
+    }
+
+    private void IgnorePlayerColliders()
+    {
+        if (m_playerCollidersIgnored) return;
+
+        // m_player が未取得なら FindWithTag フォールバック
+        if (m_player == null)
+        {
+            var playerObj = GameObject.FindWithTag(GameTags.Player);
+            if (playerObj != null) m_player = playerObj.transform;
+        }
+        if (m_player == null) { ChannelLogger.LogGuardReturn("Enemy", "プレイヤー未取得（無視リスト登録延期）"); return; }
+
+        var controller = m_boss != null ? m_boss.GetComponent<EntityController>() : null;
+        if (controller == null) { ChannelLogger.LogGuardReturn("Enemy", "EntityController 未取得"); return; }
+
+        var playerColliders = m_player.GetComponentsInChildren<Collider>(true);
+        int count = 0;
+        foreach (var col in playerColliders)
+        {
+            if (col == null) continue;
+            controller.IgnoreCollider(col, true);
+            count++;
+        }
+        Debug.Log($"[EnemyBossAI] プレイヤーの Collider {count} 個を EntityController 無視リストに登録");
+        m_playerCollidersIgnored = true;
     }
 
     void Update()
     {
+        // 無視リスト登録は Start でのタイミング都合で失敗することがあるため、毎フレーム未登録なら試行
+        if (!m_playerCollidersIgnored) IgnorePlayerColliders();
+
         if (m_player == null || m_settings == null)
         {
             ChannelLogger.LogGuardReturn("Enemy", "プレイヤー/設定未取得"); return;
@@ -112,6 +148,18 @@ public class EnemyBossAI : MonoBehaviour
             return;
         }
 
+        // プレイヤーが近すぎる場合は前進せず停止する（EntityController の HandlePenetration による
+        // 押し戻し競合を防ぐ。stopDistance 内に入ったら接触状態とみなして待機）
+        if (distance <= m_settings.stopDistance)
+        {
+            ChannelLogger.LogGuardReturn("Enemy", "停止距離内");
+            if (m_agent != null && m_agent.enabled && m_agent.isOnNavMesh) m_agent.ResetPath();
+            Vector3 look = GetDirectionToPlayer();
+            if (look.sqrMagnitude > 0.0001f) m_boss.FaceToward(look, dt);
+            m_boss.SlowDown(dt);
+            return;
+        }
+
         // 通常追跡
         if (m_agent != null && m_agent.enabled && m_agent.isOnNavMesh)
         {
@@ -158,8 +206,9 @@ public class EnemyBossAI : MonoBehaviour
     {
         float distance = DistanceToPlayer();
 
-        if (distance > m_settings.chaseRange)
+        if (distance > m_settings.chaseRange || distance <= m_settings.stopDistance)
         {
+            // 範囲外 or 接触距離内は移動しない
             m_boss.SlowDown(dt);
         }
         else if (m_agent != null && m_agent.enabled && m_agent.isOnNavMesh)
