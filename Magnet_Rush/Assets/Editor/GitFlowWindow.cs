@@ -42,8 +42,13 @@ public class GitFlowWindow : EditorWindow
 
     // 環境チェック結果
     private bool hasGitRepo = false;
-    private bool hasOrigin = false;
+    private bool hasRemote = false;
     private string envError = "";
+
+    // 複数リモート対応（origin / upstream 両対応）
+    private List<string> m_availableRemotes = new List<string>();
+    private string m_remoteName = "origin";
+    private int m_selectedRemoteIndex = 0;
 
     // origin 登録用
     private string newOriginUrl = "";
@@ -169,7 +174,7 @@ public class GitFlowWindow : EditorWindow
         isAboutToReloadAssemblies = false;
         repoRoot = FindGitRoot(System.IO.Path.GetFullPath(System.IO.Path.Combine(Application.dataPath, "..")));
         CheckEnvironment();
-        if (hasGitRepo && hasOrigin)
+        if (hasGitRepo && hasRemote)
         {
             RefreshStatus();
             RefreshBranches();
@@ -239,13 +244,15 @@ public class GitFlowWindow : EditorWindow
     }
 
     /// <summary>
-    /// Git リポジトリと origin リモートの存在を確認する
+    /// Git リポジトリと利用可能なリモート（origin / upstream 等）を検出する。
+    /// 優先順位: origin > upstream > 先頭の remote
     /// </summary>
     private void CheckEnvironment()
     {
         envError = "";
         hasGitRepo = false;
-        hasOrigin = false;
+        hasRemote = false;
+        m_availableRemotes.Clear();
 
         if (!System.IO.Directory.Exists(System.IO.Path.Combine(repoRoot, ".git")) && !System.IO.File.Exists(System.IO.Path.Combine(repoRoot, ".git")))
         {
@@ -254,13 +261,38 @@ public class GitFlowWindow : EditorWindow
         }
         hasGitRepo = true;
 
-        var (code, output) = RunGit("remote get-url origin");
-        if (code != 0 || string.IsNullOrEmpty(output))
+        // 全 remote を列挙
+        var (listCode, listOutput) = RunGit("remote");
+        if (listCode == 0 && !string.IsNullOrEmpty(listOutput))
         {
-            envError = "リモート origin が設定されていません。\n以下のコマンドでリモートを設定してください:\n  git remote add origin <リポジトリURL>";
+            foreach (string line in listOutput.Split('\n'))
+            {
+                string name = line.Trim();
+                if (!string.IsNullOrEmpty(name)) m_availableRemotes.Add(name);
+            }
+        }
+
+        if (m_availableRemotes.Count == 0)
+        {
+            envError = "リモートが設定されていません。\n以下のコマンドでリモートを設定してください:\n  git remote add origin <リポジトリURL>\n  または\n  git remote add upstream <リポジトリURL>";
             return;
         }
-        hasOrigin = true;
+
+        // 優先順位で active remote を決定: origin > upstream > 先頭
+        string preferred = null;
+        if (m_availableRemotes.Contains("origin")) preferred = "origin";
+        else if (m_availableRemotes.Contains("upstream")) preferred = "upstream";
+        else preferred = m_availableRemotes[0];
+
+        // 既に選択済みのリモートがまだ存在するなら維持、無ければ priority 適用
+        if (string.IsNullOrEmpty(m_remoteName) || !m_availableRemotes.Contains(m_remoteName))
+        {
+            m_remoteName = preferred;
+        }
+        m_selectedRemoteIndex = m_availableRemotes.IndexOf(m_remoteName);
+        if (m_selectedRemoteIndex < 0) m_selectedRemoteIndex = 0;
+
+        hasRemote = true;
     }
 
     private void OnGUI()
@@ -273,18 +305,25 @@ public class GitFlowWindow : EditorWindow
         EditorGUILayout.Space();
 
         // 環境エラー表示
-        if (!hasGitRepo || !hasOrigin)
+        if (!hasGitRepo || !hasRemote)
         {
             EditorGUILayout.HelpBox(envError, MessageType.Error);
 
-            // origin 未設定の場合、エディタ上で登録できるUIを表示
-            if (hasGitRepo && !hasOrigin)
+            // リモート未設定の場合、エディタ上で origin / upstream を登録できるUIを表示
+            if (hasGitRepo && !hasRemote)
             {
                 EditorGUILayout.Space();
-                EditorGUILayout.LabelField("リモート origin の登録", EditorStyles.boldLabel);
+                EditorGUILayout.LabelField("リモートの登録", EditorStyles.boldLabel);
                 newOriginUrl = EditorGUILayout.TextField("リポジトリURL", newOriginUrl);
-                if (GUILayout.Button("origin を登録"))
+
+                EditorGUILayout.BeginHorizontal();
+                bool addOrigin = GUILayout.Button("origin を登録");
+                bool addUpstream = GUILayout.Button("upstream を登録");
+                EditorGUILayout.EndHorizontal();
+
+                if (addOrigin || addUpstream)
                 {
+                    string remoteToAdd = addOrigin ? "origin" : "upstream";
                     if (!string.IsNullOrEmpty(newOriginUrl))
                     {
                         // URL バリデーション（コマンドインジェクション防止）
@@ -297,13 +336,13 @@ public class GitFlowWindow : EditorWindow
                         }
                         else
                         {
-                            var (code, output) = RunGit($"remote add origin {trimmedUrl}");
+                            var (code, output) = RunGit($"remote add {remoteToAdd} {trimmedUrl}");
                             if (code == 0)
                             {
-                                Log("成功", $"origin を登録しました: {trimmedUrl}");
+                                Log("成功", $"{remoteToAdd} を登録しました: {trimmedUrl}");
                                 newOriginUrl = "";
                                 CheckEnvironment();
-                                if (hasGitRepo && hasOrigin)
+                                if (hasGitRepo && hasRemote)
                                 {
                                     RefreshStatus();
                                     RefreshBranches();
@@ -311,7 +350,7 @@ public class GitFlowWindow : EditorWindow
                             }
                             else
                             {
-                                Log("エラー", $"origin の登録に失敗しました: {output}");
+                                Log("エラー", $"{remoteToAdd} の登録に失敗しました: {output}");
                             }
                         }
                     }
@@ -322,7 +361,7 @@ public class GitFlowWindow : EditorWindow
             if (GUILayout.Button("再チェック"))
             {
                 CheckEnvironment();
-                if (hasGitRepo && hasOrigin)
+                if (hasGitRepo && hasRemote)
                 {
                     RefreshStatus();
                     RefreshBranches();
@@ -331,6 +370,24 @@ public class GitFlowWindow : EditorWindow
 
             EditorGUILayout.EndScrollView();
             return;
+        }
+
+        // 複数リモートがある場合、切替 popup を表示
+        if (m_availableRemotes.Count >= 2)
+        {
+            int newIndex = EditorGUILayout.Popup("リモート", m_selectedRemoteIndex, m_availableRemotes.ToArray());
+            if (newIndex != m_selectedRemoteIndex)
+            {
+                m_selectedRemoteIndex = newIndex;
+                m_remoteName = m_availableRemotes[newIndex];
+                Log("情報", $"アクティブリモートを {m_remoteName} に切り替えました。");
+                RefreshStatus();
+                RefreshBranches();
+            }
+        }
+        else if (m_availableRemotes.Count == 1)
+        {
+            EditorGUILayout.LabelField("リモート", m_remoteName);
         }
 
         EditorGUILayout.LabelField("ブランチ", currentBranch);
@@ -561,15 +618,15 @@ public class GitFlowWindow : EditorWindow
 
         if (currentBranch != "(detached HEAD)")
         {
-            (code, _) = RunGit($"rev-parse --verify origin/{currentBranch}");
+            (code, _) = RunGit($"rev-parse --verify {m_remoteName}/{currentBranch}");
             if (code == 0)
             {
                 remoteExists = true;
 
-                (code, output) = RunGit($"rev-list --count origin/{currentBranch}..HEAD");
+                (code, output) = RunGit($"rev-list --count {m_remoteName}/{currentBranch}..HEAD");
                 if (code == 0) int.TryParse(output.Trim(), out ahead);
 
-                (code, output) = RunGit($"rev-list --count HEAD..origin/{currentBranch}");
+                (code, output) = RunGit($"rev-list --count HEAD..{m_remoteName}/{currentBranch}");
                 if (code == 0) int.TryParse(output.Trim(), out behind);
             }
         }
@@ -633,17 +690,43 @@ public class GitFlowWindow : EditorWindow
         }
 
         // リモートブランチ（ローカルにないもの）
+        // 全 remote をスキャンするが、active remote (m_remoteName) のブランチを優先表示。
+        // 同じブランチ名が複数 remote にある場合は重複させない。
         (code, output) = RunGit("branch -r --format=%(refname:short)");
         if (code == 0 && !string.IsNullOrEmpty(output))
         {
+            HashSet<string> addedRemoteNames = new HashSet<string>();
+            string activePrefix = m_remoteName + "/";
+
+            // active remote 優先パス
             foreach (string line in output.Split('\n'))
             {
                 string name = line.Trim();
                 if (string.IsNullOrEmpty(name)) continue;
-                if (name.Contains("origin/HEAD")) continue;
+                if (name.EndsWith("/HEAD")) continue;
+                if (!name.StartsWith(activePrefix)) continue;
 
-                string localName = name.StartsWith("origin/") ? name.Substring("origin/".Length) : name;
-                if (!localSet.Contains(localName))
+                string localName = name.Substring(activePrefix.Length);
+                if (!localSet.Contains(localName) && addedRemoteNames.Add(localName))
+                {
+                    branches.Add(localName);
+                    branchIsRemoteOnly.Add(true);
+                }
+            }
+
+            // 他 remote にしか存在しないブランチも追加（active remote には無いが見たいケース）
+            foreach (string line in output.Split('\n'))
+            {
+                string name = line.Trim();
+                if (string.IsNullOrEmpty(name)) continue;
+                if (name.EndsWith("/HEAD")) continue;
+                if (name.StartsWith(activePrefix)) continue;
+
+                int slash = name.IndexOf('/');
+                if (slash < 0) continue;
+                string localName = name.Substring(slash + 1);
+
+                if (!localSet.Contains(localName) && addedRemoteNames.Add(localName))
                 {
                     branches.Add(localName);
                     branchIsRemoteOnly.Add(true);
@@ -1572,7 +1655,7 @@ public class GitFlowWindow : EditorWindow
             ctx.Stage = OperationStage.GitRunning;
     
 
-            RunStepAsync(title, "リモート取得", 2, 4, "fetch origin", (code, output) =>
+            RunStepAsync(title, "リモート取得", 2, 4, $"fetch {m_remoteName}", (code, output) =>
             {
                 if (code != 0)
                 {
@@ -1582,23 +1665,23 @@ public class GitFlowWindow : EditorWindow
                 }
 
                 // Step 3: rebase
-                var (checkCode, _) = RunGit($"rev-parse --verify origin/{currentBranch}");
+                var (checkCode, _) = RunGit($"rev-parse --verify {m_remoteName}/{currentBranch}");
                 if (checkCode != 0)
                 {
                     BeginStep(title, "リベース", 3, 4);
-                    Log("情報", $"リモートにブランチ {currentBranch} が存在しません。pull をスキップします。");
+                    Log("情報", $"リモート {m_remoteName} にブランチ {currentBranch} が存在しません。pull をスキップします。");
                     EndStep(title, "リベース (スキップ)", 3, 4);
                     FetchLfsStep();
                     return;
                 }
 
-                RunStepAsync(title, $"リベース ({currentBranch})", 3, 4, $"rebase origin/{currentBranch}", (rebaseCode, rebaseOutput) =>
+                RunStepAsync(title, $"リベース ({currentBranch})", 3, 4, $"rebase {m_remoteName}/{currentBranch}", (rebaseCode, rebaseOutput) =>
                 {
                     if (rebaseCode != 0)
                     {
                         Log("警告", $"リベースでコンフリクトが発生しました。merge にフォールバックします...");
                         RunGit("rebase --abort");
-                        var (mergeCode, mergeOutput) = RunGit($"merge origin/{currentBranch}");
+                        var (mergeCode, mergeOutput) = RunGit($"merge {m_remoteName}/{currentBranch}");
                         if (mergeCode != 0)
                         {
                             Log("エラー", $"merge でもコンフリクトが発生しました: {mergeOutput}");
@@ -1798,7 +1881,7 @@ public class GitFlowWindow : EditorWindow
             ctx.Stage = OperationStage.GitRunning;
     
 
-            RunStepAsync(title, $"プッシュ ({currentBranch})", 2, 2, $"push -u origin {currentBranch}", (code, output) =>
+            RunStepAsync(title, $"プッシュ ({currentBranch})", 2, 2, $"push -u {m_remoteName} {currentBranch}", (code, output) =>
             {
                 if (code != 0)
                 {
@@ -1900,7 +1983,7 @@ public class GitFlowWindow : EditorWindow
         ctx.Stage = OperationStage.GitRunning;
 
 
-        RunStepAsync(title, "リモート情報取得", 1, 3, "fetch origin", (fetchCode, fetchOutput) =>
+        RunStepAsync(title, "リモート情報取得", 1, 3, $"fetch {m_remoteName}", (fetchCode, fetchOutput) =>
         {
             if (fetchCode != 0)
             {
@@ -1911,15 +1994,15 @@ public class GitFlowWindow : EditorWindow
 
             // ローカルブランチの存在を優先チェック
             int localBaseCode = RunGit($"rev-parse --verify {baseBranch}").exitCode;
-            int remoteBaseCode = RunGit($"rev-parse --verify origin/{baseBranch}").exitCode;
+            int remoteBaseCode = RunGit($"rev-parse --verify {m_remoteName}/{baseBranch}").exitCode;
             bool useLocal = localBaseCode == 0;
             if (!useLocal && remoteBaseCode != 0)
             {
-                Log("エラー", $"{baseBranch} ブランチがローカルにもリモートにも存在しません。");
+                Log("エラー", $"{baseBranch} ブランチがローカルにもリモート ({m_remoteName}) にも存在しません。");
                 FinalizeOperation(ctx);
                 return;
             }
-            string baseRef = useLocal ? baseBranch : $"origin/{baseBranch}";
+            string baseRef = useLocal ? baseBranch : $"{m_remoteName}/{baseBranch}";
 
             // delayCall で UI に描画フレームを挟む
             EditorApplication.delayCall += () =>
@@ -2107,7 +2190,7 @@ public class GitFlowWindow : EditorWindow
 
 
             string checkoutArgs = isRemoteOnly
-                ? $"checkout -b {target} origin/{target}"
+                ? $"checkout -b {target} {m_remoteName}/{target}"
                 : $"checkout {target}";
 
             RunStepAsync(title, $"チェックアウト ({target})", 2, 3, checkoutArgs, (code, output) =>
