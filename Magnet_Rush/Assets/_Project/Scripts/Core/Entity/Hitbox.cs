@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 /// <summary>
@@ -9,6 +10,8 @@ public class Hitbox : MonoBehaviour, IHittable
 {
     [SerializeField] private Health m_health;
 
+    public event Action<HitData> OnHitEvent;
+
     void Awake()
     {
         if (m_health == null)
@@ -18,6 +21,8 @@ public class Hitbox : MonoBehaviour, IHittable
     public void OnHit(HitData hit)
     {
         if (m_health == null) { ChannelLogger.LogGuardReturn("Entity", "Health未設定"); return; }
+
+        OnHitEvent?.Invoke(hit);
         m_health.Damage(hit.damage);
     }
 }

@@ -3,9 +3,8 @@ using System.Collections.Generic;
 
 /// <summary>
 /// Collide-and-Slideベースの衝突制御。
-/// 自前のTrigger CapsuleColliderで衝突判定し、衝突面に沿ってスライドする。
-/// めり込み時はComputePenetrationで押し出す。
-/// 動的Rigidbodyは押しながらプレイヤーと一緒に動く。
+/// Hitbox/MovementCapsule（disabled CapsuleCollider）の形状で衝突判定し、衝突面に沿ってスライドする。
+/// めり込み時はComputePenetrationで押し出す。動的Rigidbodyは押しながらプレイヤーと一緒に動く。
 /// 参考: PLAYER TWO Platformer Project の EntityController
 /// </summary>
 [DefaultExecutionOrder(-100)]
@@ -23,26 +22,13 @@ public class EntityController : MonoBehaviour
     [Tooltip("壁との間に保つスキン幅。ジッター防止。")]
     public float skinWidth = 0.01f;
 
-    [Tooltip("衝突判定用カプセルの中心。")]
-    public Vector3 center;
-
-    [Min(0)]
-    [SerializeField]
-    [Tooltip("衝突判定用カプセルの半径。")]
-    private float m_radius = 0.5f;
-
-    [Min(0)]
-    [SerializeField]
-    [Tooltip("衝突判定用カプセルの高さ。")]
-    private float m_height = 2f;
-
     [Tooltip("衝突判定のレイヤーマスク。Awakeで未設定なら自動でPhysicsLayers.MaskEntityCollisionを適用。")]
     public LayerMask collisionLayer = -5;
 
     private const int k_MaxCollisionSteps = 3;
 
     private Rigidbody m_rigidbody;
-    private CapsuleCollider m_collider;
+    private CapsuleCollider m_movementCapsule;
     private Transform m_hitboxContainer;
     private Collider[] m_overlaps = new Collider[128];
     private HashSet<Collider> m_ignoredColliders = new();
@@ -60,19 +46,14 @@ public class EntityController : MonoBehaviour
         public Collider col;
     }
 
-    public float radius
-    {
-        get => Mathf.Max(m_radius, skinWidth);
-        set => m_radius = value;
-    }
+    public float radius => m_movementCapsule != null
+        ? Mathf.Max(m_movementCapsule.radius, skinWidth) : skinWidth;
 
-    public float height
-    {
-        get => Mathf.Max(m_height, radius * 2f);
-        set => m_height = value;
-    }
+    public float height => m_movementCapsule != null
+        ? Mathf.Max(m_movementCapsule.height, radius * 2f) : 0f;
 
-    public new CapsuleCollider collider => m_collider;
+    public Vector3 center => m_movementCapsule != null
+        ? m_movementCapsule.center : Vector3.zero;
 
     private Vector3 capsuleOffset => transform.up * (height * 0.5f - radius);
 
@@ -82,12 +63,10 @@ public class EntityController : MonoBehaviour
         if (collisionLayer == 0 || collisionLayer == -5)
             collisionLayer = PhysicsLayers.MaskEntityCollision;
 
-        DisableExistingCollider();
         InitializeRigidbody();
         CreateHitboxContainer();
-        InitializeCollider();
+        InitializeMovementCapsule();
         InitializePushbox();
-        RefreshCollider();
 
         // 磁気例外チェック用キャッシュ（親階層探索を毎フレーム避ける）
         m_ownerMagnetPole = GetComponent<IMagnetPoleProvider>();
@@ -130,47 +109,30 @@ public class EntityController : MonoBehaviour
         }
     }
 
-    private void DisableExistingCollider()
+    private void InitializeMovementCapsule()
     {
-        var existing = GetComponent<CapsuleCollider>();
-        if (existing != null)
-        {
-            m_radius = existing.radius;
-            m_height = existing.height;
-            center = existing.center;
-            existing.enabled = false;
-        }
-    }
+        if (m_hitboxContainer == null) return;
 
-    // Hurtbox生成。名前は歴史的経緯でInitializeColliderのまま
-    private void InitializeCollider()
-    {
-        // プレハブに既存のHurtboxがあれば再利用
-        if (m_hitboxContainer != null)
+        var mc = m_hitboxContainer.Find("MovementCapsule");
+        if (mc == null)
         {
-            var existing = m_hitboxContainer.Find("Hurtbox");
-            if (existing != null)
-            {
-                existing.gameObject.layer = gameObject.layer;
-                existing.gameObject.tag = gameObject.tag;
-                m_collider = existing.GetComponent<CapsuleCollider>();
-                if (m_collider == null)
-                    m_collider = existing.gameObject.AddComponent<CapsuleCollider>();
-                // Hurtboxは必ずTrigger。OverlapCapsule+ComputePenetrationが自己Hurtboxを
-                // 検出して地面貫通する事故があったため。詳細: collision-design-principles.md 原則5
-                m_collider.isTrigger = true;
-                return;
-            }
+            Debug.LogError($"[EntityController] {name} の Hitbox/MovementCapsule が見つかりません。プレハブで設定してください。", this);
+            return;
         }
 
-        var hurtbox = new GameObject("Hurtbox");
-        hurtbox.transform.SetParent(m_hitboxContainer, false);
-        hurtbox.layer = gameObject.layer;
-        hurtbox.tag = gameObject.tag;
+        m_movementCapsule = mc.GetComponent<CapsuleCollider>();
+        if (m_movementCapsule == null)
+        {
+            Debug.LogError($"[EntityController] {name} の MovementCapsule に CapsuleCollider がありません。プレハブで設定してください。", this);
+            return;
+        }
 
-        m_collider = hurtbox.AddComponent<CapsuleCollider>();
-        // 同上: Trigger必須(地面貫通バグ防止)
-        m_collider.isTrigger = true;
+        // disabled で運用するルール: enabled だと Bullet/Melee の Trigger イベントが
+        // MovementCapsule と Hurtbox 両方で発火し、ダメージ二重適用の事故になる。
+        // ComputePenetration は Collider の shape のみ参照（位置は引数指定）するので、
+        // disabled でも shape取得可能。
+        if (m_movementCapsule.enabled)
+            Debug.LogWarning($"[EntityController] {name} の MovementCapsule は disabled で運用してください（物理イベント二重発火防止）。", this);
     }
 
     private void InitializeRigidbody()
@@ -185,43 +147,24 @@ public class EntityController : MonoBehaviour
 
     private void InitializePushbox()
     {
-        // プレハブに既存のPushboxがあれば再利用
-        if (m_hitboxContainer != null)
+        // プレハブで静的に配置された EntityBody レイヤーの Collider を無視リストに登録する。
+        // 自動生成・自動設定は行わない（プレハブでサイズ・形状を確定させる）。
+        // 自身の SweepTest / OverlapCapsule が自 Pushbox を誤検出してジッタる事故を防ぐため。
+        var colliders = GetComponentsInChildren<Collider>(true);
+        bool found = false;
+        foreach (var col in colliders)
         {
-            var existing = m_hitboxContainer.Find("Pushbox");
-            if (existing != null)
+            if (col.gameObject.layer == PhysicsLayers.EntityBody)
             {
-                existing.gameObject.layer = PhysicsLayers.EntityBody;
-                var col = existing.GetComponent<CapsuleCollider>();
-                if (col == null)
-                    col = existing.gameObject.AddComponent<CapsuleCollider>();
-                col.isTrigger = false;
-                col.radius = m_radius;
-                col.height = m_height;
-                col.center = center;
                 m_ignoredColliders.Add(col);
-                return;
+                found = true;
             }
         }
 
-        var body = new GameObject("Pushbox");
-        body.transform.SetParent(m_hitboxContainer, false);
-        body.layer = PhysicsLayers.EntityBody;
-
-        var newCol = body.AddComponent<CapsuleCollider>();
-        newCol.isTrigger = false;
-        newCol.radius = m_radius;
-        newCol.height = m_height;
-        newCol.center = center;
-
-        m_ignoredColliders.Add(newCol);
-    }
-
-    private void RefreshCollider()
-    {
-        m_collider.radius = radius - skinWidth;
-        m_collider.height = height - skinWidth;
-        m_collider.center = center;
+        if (!found)
+        {
+            Debug.LogWarning($"[EntityController] {name} に EntityBody レイヤーの Pushbox が見つかりません。プレハブで設定してください。", this);
+        }
     }
 
     /// <summary>
@@ -229,6 +172,12 @@ public class EntityController : MonoBehaviour
     /// </summary>
     public Vector3 Move(Vector3 currentPosition, Vector3 motion)
     {
+        if (m_movementCapsule == null)
+        {
+            ChannelLogger.LogGuardReturn("Entity", "MovementCapsule未初期化");
+            return currentPosition;
+        }
+
         // 前フレームの押し状態をリセット
         ReleasePushedObjects();
 
@@ -258,11 +207,12 @@ public class EntityController : MonoBehaviour
 
     public void Resize(float newHeight)
     {
-        var originalHeight = height;
-        height = newHeight;
-        var delta = height - originalHeight;
-        center += Vector3.up * delta * 0.5f;
-        RefreshCollider();
+        if (m_movementCapsule == null) return;
+        var delta = newHeight - m_movementCapsule.height;
+        m_movementCapsule.height = newHeight;
+        var c = m_movementCapsule.center;
+        c.y += delta * 0.5f;
+        m_movementCapsule.center = c;
     }
 
     // --- Collide-and-Slide（pushEnabled時は動的オブジェクトを押す） ---
@@ -384,7 +334,7 @@ public class EntityController : MonoBehaviour
             var overlapRb = m_overlaps[i].attachedRigidbody;
             if (overlapRb != null && !overlapRb.isKinematic) continue;
 
-            if (Physics.ComputePenetration(m_collider, position, transform.rotation,
+            if (Physics.ComputePenetration(m_movementCapsule, position, transform.rotation,
                 m_overlaps[i], m_overlaps[i].transform.position, m_overlaps[i].transform.rotation,
                 out var direction, out var dist))
             {
@@ -447,5 +397,4 @@ public class EntityController : MonoBehaviour
         return Physics.Raycast(position, direction, out hit,
             distance, collisionLayer, QueryTriggerInteraction.Ignore);
     }
-
 }
