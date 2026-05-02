@@ -24,6 +24,11 @@ public class AimController : MonoBehaviour
     private float m_baselineFixedDeltaTime;
     private float m_targetTimeScale = 1f;
 
+    // エイム継続時間の上限管理
+    private float m_aimElapsed;
+    // 上限到達後、LTを離すまで再エイムをロックするフラグ。連打による即座再エイムを防止
+    private bool m_aimLockoutWhileHeld;
+
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void ResetStatics()
     {
@@ -46,6 +51,8 @@ public class AimController : MonoBehaviour
         Time.timeScale = 1f;
         Time.fixedDeltaTime = m_baselineFixedDeltaTime;
         m_targetTimeScale = 1f;
+        m_aimElapsed = 0f;
+        m_aimLockoutWhileHeld = false;
     }
 
     void Update()
@@ -64,13 +71,30 @@ public class AimController : MonoBehaviour
     {
         if (m_input.AimHeld)
         {
+            // 上限到達でロック中は LT を離すまで再エイムさせない
+            if (m_aimLockoutWhileHeld) return;
+
             m_aimReleaseGrace = m_player.Settings.aimReleaseGraceTime;
             if (!IsAiming) StartAim();
+
+            // 実時間で経過を加算。Time.timeScale の影響を受けないため期待通りに上限が機能する
+            m_aimElapsed += Time.unscaledDeltaTime;
+            float max = m_player.Settings.aimMaxDuration;
+            if (max > 0f && m_aimElapsed >= max)
+            {
+                m_aimLockoutWhileHeld = true;
+                StopAim();
+            }
         }
-        else if (IsAiming)
+        else
         {
-            m_aimReleaseGrace -= Time.unscaledDeltaTime;
-            if (m_aimReleaseGrace <= 0f) StopAim();
+            // LT を離した瞬間にロック解除（次回押下で再エイム可能になる）
+            m_aimLockoutWhileHeld = false;
+            if (IsAiming)
+            {
+                m_aimReleaseGrace -= Time.unscaledDeltaTime;
+                if (m_aimReleaseGrace <= 0f) StopAim();
+            }
         }
     }
 
@@ -78,6 +102,7 @@ public class AimController : MonoBehaviour
     public void StartAim()
     {
         IsAiming = true;
+        m_aimElapsed = 0f;
         m_targetTimeScale = m_player.Settings.aimTimeScale;
         OnAimChanged?.Invoke(true);
         m_states.Change<AimPlayerState>();

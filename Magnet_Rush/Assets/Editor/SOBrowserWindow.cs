@@ -1,195 +1,486 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
 /// <summary>
-/// ScriptableObjectブラウザ。カードグリッドで複数SOを横並び表示・編集。
-/// ウィンドウ幅に応じて列数が自動調整される。
-/// メニュー: Tools/SO Browser
+/// プランナー用調整シート。同じ型の ScriptableObject 群を行=フィールド・列=アセットのテーブル形式で並べて編集する。
+/// 1 ウィンドウ内に複数のシートを行（縦）+列（横）のグリッド配置でき、行間ドラッグで高さ調整可能。
+/// メニュー: Tools/プランナー用調整シート
 /// </summary>
 public class SOBrowserWindow : EditorWindow
 {
-    const float k_CardWidth = 280f;
-    const float k_CardPadding = 6f;
+    const float k_FieldColumnWidth = 240f;
+    const float k_AssetColumnWidth = 200f;
+    const float k_RowHeight = 20f;
+    const float k_SplitterSize = 4f;
+    const float k_MinPaneHeight = 80f;
+    const float k_MinPaneWidth = 200f;
 
-    private Vector2 m_scrollPos;
-    private List<ScriptableObject> m_assets = new List<ScriptableObject>();
-    private Dictionary<ScriptableObject, Editor> m_editors = new Dictionary<ScriptableObject, Editor>();
-    private Dictionary<ScriptableObject, bool> m_foldouts = new Dictionary<ScriptableObject, bool>();
-    private string m_searchFilter = "";
-    private int m_typeFilterIndex;
-    private string[] m_typeOptions = { "All" };
+    /// <summary>1 シート分の状態。</summary>
+    [Serializable]
+    public class Pane
+    {
+        public int selectedTypeIndex = -1;
+        public string searchFilter = "";
+        public Vector2 scrollPos;
+        public bool showReferences;
+        public ScriptableObject trackingTarget;
 
-    // 使用箇所追跡
-    private ScriptableObject m_trackingTarget;
-    private List<string> m_references = new List<string>();
-    private bool m_showReferences;
+        [NonSerialized] public List<ScriptableObject> assets = new List<ScriptableObject>();
+        [NonSerialized] public Dictionary<ScriptableObject, SerializedObject> serObjects = new Dictionary<ScriptableObject, SerializedObject>();
+        [NonSerialized] public List<SheetRow> rows = new List<SheetRow>();
+        [NonSerialized] public List<string> references = new List<string>();
+    }
 
-    [MenuItem("Tools/SO Browser")]
+    /// <summary>横方向に並ぶペイン群を持つ 1 行。行ごとに高さを保持。</summary>
+    [Serializable]
+    public class Row
+    {
+        public List<Pane> panes = new List<Pane>();
+        public float height = 300f;
+    }
+
+    public class SheetRow
+    {
+        public bool IsHeader;
+        public string HeaderText;
+        public string Label;
+        public string FieldName;
+    }
+
+    [SerializeField] List<Row> m_rows = new List<Row>();
+
+    List<Type> m_availableTypes = new List<Type>();
+    string[] m_typeNames = new string[0];
+
+    // 行間ドラッグ状態
+    int m_draggingRow = -1;
+    float m_dragStartY;
+    float m_dragStartHeight;
+
+    [MenuItem("Tools/プランナー用調整シート")]
     static void ShowWindow()
     {
-        var w = GetWindow<SOBrowserWindow>("SO Browser");
-        w.minSize = new Vector2(320, 300);
+        var w = GetWindow<SOBrowserWindow>("プランナー用調整シート");
+        w.minSize = new Vector2(540, 400);
+    }
+
+    static void OpenNewWindow()
+    {
+        var w = CreateInstance<SOBrowserWindow>();
+        w.titleContent = new GUIContent("プランナー用調整シート");
+        w.minSize = new Vector2(540, 400);
+        w.Show();
     }
 
     void OnEnable()
     {
-        RefreshAssets();
+        ScanAvailableTypes();
+        if (m_rows == null) m_rows = new List<Row>();
+        EnsureAtLeastOneRowAndPane();
+        foreach (var r in m_rows)
+            foreach (var p in r.panes)
+                ReloadPaneData(p);
     }
 
-    void OnDisable()
+    void EnsureAtLeastOneRowAndPane()
     {
-        foreach (var editor in m_editors.Values)
+        if (m_rows.Count == 0)
         {
-            if (editor != null) DestroyImmediate(editor);
+            m_rows.Add(new Row());
         }
-        m_editors.Clear();
+        if (m_rows[0].panes.Count == 0)
+        {
+            var p = new Pane();
+            if (m_availableTypes.Count > 0) p.selectedTypeIndex = 0;
+            m_rows[0].panes.Add(p);
+        }
     }
 
     void OnGUI()
     {
-        DrawToolbar();
+        DrawGlobalToolbar();
 
-        if (m_showReferences && m_trackingTarget != null)
+        if (m_availableTypes.Count == 0)
         {
-            DrawReferences();
+            EditorGUILayout.HelpBox("Assets/_Project/ScriptableObjects 配下に ScriptableObject が見つかりません。", MessageType.Info);
             return;
         }
 
-        DrawCardGrid();
-    }
+        EnsureAtLeastOneRowAndPane();
 
-    void DrawToolbar()
-    {
-        EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
+        // 行高さの正規化（最終行を残り高さに）
+        NormalizeRowHeights();
 
-        if (GUILayout.Button("更新", EditorStyles.toolbarButton, GUILayout.Width(40)))
-            RefreshAssets();
-
-        // 型フィルタ
-        int newIdx = EditorGUILayout.Popup(m_typeFilterIndex, m_typeOptions,
-            EditorStyles.toolbarPopup, GUILayout.Width(140));
-        if (newIdx != m_typeFilterIndex)
+        for (int r = 0; r < m_rows.Count; r++)
         {
-            m_typeFilterIndex = newIdx;
+            var row = m_rows[r];
+            DrawRow(row, r);
+
+            if (r < m_rows.Count - 1)
+                DrawRowSplitter(r);
         }
 
-        // 検索
-        m_searchFilter = EditorGUILayout.TextField(m_searchFilter, EditorStyles.toolbarSearchField);
+        HandleRowSplitterDrag();
+    }
 
-        if (m_showReferences && GUILayout.Button("← 一覧", EditorStyles.toolbarButton, GUILayout.Width(60)))
-            m_showReferences = false;
+    // ボタンスタイル（一度だけ作って使い回す）
+    static GUIStyle s_btnRefresh, s_btnAdd, s_btnNew, s_btnClose, s_btnNeutral;
+    static void EnsureStyles()
+    {
+        if (s_btnRefresh != null) return;
+        GUIStyle Make(Color color) => new GUIStyle(GUI.skin.button)
+        {
+            fontStyle = FontStyle.Bold,
+            fontSize = 12,
+            alignment = TextAnchor.MiddleCenter,
+            fixedHeight = 24,
+            margin = new RectOffset(2, 2, 2, 2),
+            padding = new RectOffset(8, 8, 2, 2),
+            normal = { textColor = color },
+            hover = { textColor = Color.white },
+        };
+        s_btnRefresh = Make(new Color(0.55f, 0.85f, 1f));   // 水色
+        s_btnAdd     = Make(new Color(0.55f, 1f, 0.55f));   // 緑
+        s_btnNew     = Make(new Color(1f, 0.85f, 0.45f));   // 黄
+        s_btnClose   = Make(new Color(1f, 0.55f, 0.55f));   // 赤
+        s_btnNeutral = Make(new Color(0.85f, 0.85f, 0.90f));// 灰白
+    }
+
+    void DrawGlobalToolbar()
+    {
+        EnsureStyles();
+        EditorGUILayout.BeginHorizontal(GUILayout.Height(28));
+
+        if (GUILayout.Button("⟳ 更新", s_btnRefresh, GUILayout.Width(70)))
+        {
+            ScanAvailableTypes();
+            foreach (var r in m_rows) foreach (var p in r.panes) ReloadPaneData(p);
+        }
+
+        if (GUILayout.Button("＋ 縦分割（行追加）", s_btnAdd, GUILayout.Width(160)))
+        {
+            EditorApplication.delayCall += () =>
+            {
+                var p = new Pane();
+                if (m_availableTypes.Count > 0) p.selectedTypeIndex = 0;
+                ReloadPaneData(p);
+                var newRow = new Row();
+                newRow.panes.Add(p);
+                m_rows.Add(newRow);
+                NormalizeRowHeights();
+                Repaint();
+            };
+        }
+
+        if (GUILayout.Button("＋ 横分割（列追加）", s_btnAdd, GUILayout.Width(160)))
+        {
+            EditorApplication.delayCall += () =>
+            {
+                var p = new Pane();
+                if (m_availableTypes.Count > 0) p.selectedTypeIndex = 0;
+                ReloadPaneData(p);
+                var lastRow = m_rows[m_rows.Count - 1];
+                lastRow.panes.Add(p);
+                Repaint();
+            };
+        }
+
+        if (GUILayout.Button("⧉ 新規ウィンドウ", s_btnNew, GUILayout.Width(140)))
+        {
+            OpenNewWindow();
+        }
+
+        GUILayout.FlexibleSpace();
+        EditorGUILayout.EndHorizontal();
+    }
+
+    void NormalizeRowHeights()
+    {
+        if (m_rows.Count == 0) return;
+        float toolbarHeight = EditorStyles.toolbar.fixedHeight;
+        float available = position.height - toolbarHeight - k_SplitterSize * (m_rows.Count - 1);
+        if (m_rows.Count == 1)
+        {
+            m_rows[0].height = Mathf.Max(k_MinPaneHeight, available);
+        }
+        else
+        {
+            // 既存値の合計が available を超えたら均等再分配
+            float sum = m_rows.Sum(r => r.height);
+            if (sum > available + 0.5f || sum < available - 0.5f)
+            {
+                float each = Mathf.Max(k_MinPaneHeight, available / m_rows.Count);
+                foreach (var r in m_rows) r.height = each;
+            }
+        }
+    }
+
+    void DrawRow(Row row, int rowIndex)
+    {
+        EditorGUILayout.BeginHorizontal(GUILayout.Height(row.height));
+
+        int paneCount = row.panes.Count;
+        float paneWidth = Mathf.Max(k_MinPaneWidth, position.width / paneCount);
+
+        for (int c = 0; c < paneCount; c++)
+        {
+            var pane = row.panes[c];
+            EditorGUILayout.BeginVertical(GUILayout.Width(paneWidth), GUILayout.Height(row.height));
+            DrawPane(pane, rowIndex, c);
+            EditorGUILayout.EndVertical();
+        }
 
         EditorGUILayout.EndHorizontal();
     }
 
-    void DrawCardGrid()
+    void DrawPane(Pane pane, int rowIndex, int colIndex)
     {
-        string typeFilter = m_typeOptions[m_typeFilterIndex];
-        string search = m_searchFilter.ToLower();
+        DrawPaneToolbar(pane, rowIndex, colIndex);
 
-        var filtered = m_assets.Where(so =>
+        if (pane.showReferences && pane.trackingTarget != null)
         {
-            if (so == null) return false;
-            if (typeFilter != "All" && so.GetType().Name != typeFilter) return false;
-            if (!string.IsNullOrEmpty(search) && !so.name.ToLower().Contains(search)) return false;
-            return true;
-        }).ToList();
-
-        if (filtered.Count == 0)
-        {
-            EditorGUILayout.HelpBox("該当するScriptableObjectがありません。", MessageType.Info);
+            DrawReferences(pane);
             return;
         }
 
-        // ウィンドウ幅から列数を自動計算
-        float available = position.width - k_CardPadding * 2;
-        int columns = Mathf.Max(1, Mathf.FloorToInt(available / (k_CardWidth + k_CardPadding)));
-
-        m_scrollPos = EditorGUILayout.BeginScrollView(m_scrollPos);
-
-        for (int i = 0; i < filtered.Count; i += columns)
+        if (pane.selectedTypeIndex < 0 || pane.selectedTypeIndex >= m_availableTypes.Count)
         {
-            EditorGUILayout.BeginHorizontal();
-            for (int col = 0; col < columns; col++)
+            EditorGUILayout.HelpBox("型を選択してください。", MessageType.Info);
+            return;
+        }
+
+        DrawSheet(pane);
+    }
+
+    void DrawPaneToolbar(Pane pane, int rowIndex, int colIndex)
+    {
+        EnsureStyles();
+        EditorGUILayout.BeginHorizontal(GUILayout.Height(28));
+
+        if (m_typeNames.Length > 0)
+        {
+            int newIdx = EditorGUILayout.Popup(pane.selectedTypeIndex, m_typeNames, GUILayout.Width(180), GUILayout.Height(22));
+            if (newIdx != pane.selectedTypeIndex)
             {
-                int idx = i + col;
-                if (idx < filtered.Count)
-                    DrawCard(filtered[idx]);
-                else
-                    GUILayout.Space(k_CardWidth + k_CardPadding);
+                pane.selectedTypeIndex = newIdx;
+                ReloadPaneData(pane);
             }
-            GUILayout.FlexibleSpace();
-            EditorGUILayout.EndHorizontal();
+        }
+
+        GUILayout.FlexibleSpace();
+
+        pane.searchFilter = GUILayout.TextField(pane.searchFilter, GUILayout.Width(120), GUILayout.Height(22));
+
+        if (pane.showReferences && GUILayout.Button("← 戻る", s_btnNeutral, GUILayout.Width(70)))
+            pane.showReferences = false;
+
+        // ペイン削除（最後の1ペインなら無効）
+        bool canClose = !(m_rows.Count == 1 && m_rows[0].panes.Count == 1);
+        EditorGUI.BeginDisabledGroup(!canClose);
+        if (GUILayout.Button("× 閉じる", s_btnClose, GUILayout.Width(80)))
+        {
+            int rIdx = rowIndex; int cIdx = colIndex;
+            EditorApplication.delayCall += () =>
+            {
+                if (rIdx < m_rows.Count && cIdx < m_rows[rIdx].panes.Count)
+                {
+                    m_rows[rIdx].panes.RemoveAt(cIdx);
+                    if (m_rows[rIdx].panes.Count == 0)
+                        m_rows.RemoveAt(rIdx);
+                    EnsureAtLeastOneRowAndPane();
+                    NormalizeRowHeights();
+                    Repaint();
+                }
+            };
+        }
+        EditorGUI.EndDisabledGroup();
+
+        EditorGUILayout.EndHorizontal();
+    }
+
+    void DrawSheet(Pane pane)
+    {
+        var visibleAssets = string.IsNullOrEmpty(pane.searchFilter)
+            ? pane.assets
+            : pane.assets.Where(a => a.name.ToLower().Contains(pane.searchFilter.ToLower())).ToList();
+
+        if (visibleAssets.Count == 0)
+        {
+            EditorGUILayout.HelpBox("この型のアセットが見つかりません（または検索にヒットしません）。", MessageType.Info);
+            return;
+        }
+        if (pane.rows.Count == 0)
+        {
+            EditorGUILayout.HelpBox("シリアライズ可能なフィールドが見つかりません。", MessageType.Info);
+            return;
+        }
+
+        pane.scrollPos = EditorGUILayout.BeginScrollView(pane.scrollPos, true, true);
+
+        DrawAssetHeaderRow(pane, visibleAssets);
+
+        foreach (var row in pane.rows)
+        {
+            if (row.IsHeader)
+                DrawHeaderRow(row, visibleAssets.Count);
+            else
+                DrawFieldRow(pane, row, visibleAssets);
         }
 
         EditorGUILayout.EndScrollView();
     }
 
-    void DrawCard(ScriptableObject so)
+    void DrawAssetHeaderRow(Pane pane, List<ScriptableObject> assets)
     {
-        if (!m_editors.ContainsKey(so)) return;
+        var headerStyle = new GUIStyle(EditorStyles.toolbar) { fixedHeight = 0 };
+        EditorGUILayout.BeginHorizontal(headerStyle, GUILayout.Height(k_RowHeight * 2 + 4));
 
-        EditorGUILayout.BeginVertical("box", GUILayout.Width(k_CardWidth));
-
-        // ヘッダー
-        EditorGUILayout.BeginHorizontal();
-        var icon = EditorGUIUtility.ObjectContent(so, so.GetType()).image;
-        if (icon != null)
-            GUILayout.Label(icon, GUILayout.Width(16), GUILayout.Height(16));
-
-        if (!m_foldouts.ContainsKey(so)) m_foldouts[so] = true;
-        m_foldouts[so] = EditorGUILayout.Foldout(m_foldouts[so], so.name, true, EditorStyles.boldLabel);
-
-        if (GUILayout.Button("使用箇所", EditorStyles.miniButton, GUILayout.Width(50)))
-        {
-            m_trackingTarget = so;
-            FindReferences(AssetDatabase.GetAssetPath(so));
-            m_showReferences = true;
-        }
-        if (GUILayout.Button("Ping", EditorStyles.miniButton, GUILayout.Width(32)))
-        {
-            Selection.activeObject = so;
-            EditorGUIUtility.PingObject(so);
-        }
-        EditorGUILayout.EndHorizontal();
-
-        // 型名
-        EditorGUILayout.LabelField(so.GetType().Name, EditorStyles.miniLabel);
-
-        // Inspector
-        if (m_foldouts[so] && m_editors[so] != null)
-        {
-            EditorGUILayout.Space(2);
-            m_editors[so].OnInspectorGUI();
-        }
-
+        EditorGUILayout.BeginVertical(GUILayout.Width(k_FieldColumnWidth));
+        GUILayout.Label("フィールド", EditorStyles.boldLabel);
+        GUILayout.Label("", EditorStyles.miniLabel);
         EditorGUILayout.EndVertical();
+
+        foreach (var asset in assets)
+        {
+            EditorGUILayout.BeginVertical(GUILayout.Width(k_AssetColumnWidth));
+            GUILayout.Label(new GUIContent(asset.name, asset.name), EditorStyles.boldLabel);
+            EditorGUILayout.BeginHorizontal();
+            if (GUILayout.Button("📁 表示", s_btnNeutral, GUILayout.Width(70), GUILayout.Height(20)))
+            {
+                Selection.activeObject = asset;
+                EditorGUIUtility.PingObject(asset);
+            }
+            if (GUILayout.Button("使用箇所", s_btnNeutral, GUILayout.Width(70), GUILayout.Height(20)))
+            {
+                pane.trackingTarget = asset;
+                FindReferences(pane, AssetDatabase.GetAssetPath(asset));
+                pane.showReferences = true;
+            }
+            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.EndVertical();
+        }
+
+        EditorGUILayout.EndHorizontal();
     }
 
-    void DrawReferences()
+    void DrawHeaderRow(SheetRow row, int assetCount)
     {
-        EditorGUILayout.LabelField($"\"{m_trackingTarget.name}\" の使用箇所", EditorStyles.boldLabel);
-        EditorGUILayout.ObjectField("対象", m_trackingTarget, typeof(ScriptableObject), false);
+        var rect = EditorGUILayout.BeginHorizontal(GUILayout.Height(k_RowHeight + 4));
+        EditorGUI.DrawRect(rect, new Color(0.18f, 0.18f, 0.20f, 1f));
+        var style = new GUIStyle(EditorStyles.boldLabel) { normal = { textColor = new Color(0.85f, 0.95f, 1f) } };
+        GUILayout.Space(4);
+        GUILayout.Label(row.HeaderText, style, GUILayout.Width(k_FieldColumnWidth - 4));
+        GUILayout.Space(k_AssetColumnWidth * assetCount);
+        EditorGUILayout.EndHorizontal();
+    }
+
+    void DrawFieldRow(Pane pane, SheetRow row, List<ScriptableObject> assets)
+    {
+        EditorGUILayout.BeginHorizontal(GUILayout.Height(k_RowHeight + 2));
+
+        GUILayout.Label(new GUIContent("  " + row.Label, row.Label), EditorStyles.label, GUILayout.Width(k_FieldColumnWidth));
+
+        foreach (var asset in assets)
+        {
+            var so = pane.serObjects[asset];
+            so.Update();
+            var prop = so.FindProperty(row.FieldName);
+            var cellRect = GUILayoutUtility.GetRect(k_AssetColumnWidth, k_RowHeight,
+                GUILayout.Width(k_AssetColumnWidth), GUILayout.Height(k_RowHeight));
+            if (prop != null)
+            {
+                EditorGUI.BeginChangeCheck();
+                DrawCell(cellRect, prop);
+                if (EditorGUI.EndChangeCheck())
+                    so.ApplyModifiedProperties();
+            }
+            else
+            {
+                EditorGUI.LabelField(cellRect, "-");
+            }
+        }
+
+        EditorGUILayout.EndHorizontal();
+    }
+
+    /// <summary>セル 1 つを型別に値だけ描画する。ラベルは出さない（左端列が担当）。</summary>
+    void DrawCell(Rect rect, SerializedProperty prop)
+    {
+        rect.x += 2;
+        rect.width -= 4;
+
+        switch (prop.propertyType)
+        {
+            case SerializedPropertyType.Integer:
+                prop.intValue = EditorGUI.IntField(rect, prop.intValue);
+                break;
+            case SerializedPropertyType.Float:
+                prop.floatValue = EditorGUI.FloatField(rect, prop.floatValue);
+                break;
+            case SerializedPropertyType.Boolean:
+                prop.boolValue = EditorGUI.Toggle(rect, prop.boolValue);
+                break;
+            case SerializedPropertyType.String:
+                prop.stringValue = EditorGUI.TextField(rect, prop.stringValue);
+                break;
+            case SerializedPropertyType.Color:
+                prop.colorValue = EditorGUI.ColorField(rect, prop.colorValue);
+                break;
+            case SerializedPropertyType.ObjectReference:
+                prop.objectReferenceValue = EditorGUI.ObjectField(rect,
+                    prop.objectReferenceValue, typeof(UnityEngine.Object), false);
+                break;
+            case SerializedPropertyType.Enum:
+                prop.enumValueIndex = EditorGUI.Popup(rect, prop.enumValueIndex, prop.enumDisplayNames);
+                break;
+            case SerializedPropertyType.Vector2:
+                prop.vector2Value = EditorGUI.Vector2Field(rect, GUIContent.none, prop.vector2Value);
+                break;
+            case SerializedPropertyType.Vector3:
+                prop.vector3Value = EditorGUI.Vector3Field(rect, GUIContent.none, prop.vector3Value);
+                break;
+            case SerializedPropertyType.Vector4:
+                prop.vector4Value = EditorGUI.Vector4Field(rect, GUIContent.none, prop.vector4Value);
+                break;
+            case SerializedPropertyType.LayerMask:
+                prop.intValue = EditorGUI.MaskField(rect, prop.intValue,
+                    UnityEditorInternal.InternalEditorUtility.layers);
+                break;
+            case SerializedPropertyType.AnimationCurve:
+                prop.animationCurveValue = EditorGUI.CurveField(rect, prop.animationCurveValue);
+                break;
+            default:
+                EditorGUI.LabelField(rect, $"({prop.propertyType})");
+                break;
+        }
+    }
+
+    void DrawReferences(Pane pane)
+    {
+        EditorGUILayout.LabelField($"\"{pane.trackingTarget.name}\" の使用箇所", EditorStyles.boldLabel);
+        EditorGUILayout.ObjectField("対象", pane.trackingTarget, typeof(ScriptableObject), false);
         EditorGUILayout.Space();
 
-        if (m_references.Count == 0)
+        if (pane.references.Count == 0)
         {
             EditorGUILayout.HelpBox("使用箇所が見つかりませんでした。未使用の可能性があります。", MessageType.Warning);
             return;
         }
 
-        EditorGUILayout.LabelField($"{m_references.Count} 件のアセットから参照:");
-        m_scrollPos = EditorGUILayout.BeginScrollView(m_scrollPos);
-        foreach (string refPath in m_references)
+        EditorGUILayout.LabelField($"{pane.references.Count} 件のアセットから参照:");
+        pane.scrollPos = EditorGUILayout.BeginScrollView(pane.scrollPos);
+        foreach (string refPath in pane.references)
         {
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField(refPath);
             if (GUILayout.Button("開く", GUILayout.Width(40)))
             {
-                var obj = AssetDatabase.LoadAssetAtPath<Object>(refPath);
+                var obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(refPath);
                 if (obj != null) Selection.activeObject = obj;
             }
             EditorGUILayout.EndHorizontal();
@@ -197,40 +488,141 @@ public class SOBrowserWindow : EditorWindow
         EditorGUILayout.EndScrollView();
     }
 
-    void RefreshAssets()
+    void DrawRowSplitter(int rowIndex)
     {
-        foreach (var editor in m_editors.Values)
+        var rect = GUILayoutUtility.GetRect(1, k_SplitterSize, GUILayout.ExpandWidth(true));
+        EditorGUI.DrawRect(rect, new Color(0.10f, 0.10f, 0.10f));
+        EditorGUIUtility.AddCursorRect(rect, MouseCursor.ResizeVertical);
+
+        var ev = Event.current;
+        if (ev.type == EventType.MouseDown && rect.Contains(ev.mousePosition))
         {
-            if (editor != null) DestroyImmediate(editor);
+            m_draggingRow = rowIndex;
+            m_dragStartY = ev.mousePosition.y;
+            m_dragStartHeight = m_rows[rowIndex].height;
+            ev.Use();
         }
-        m_editors.Clear();
-        m_foldouts.Clear();
-        m_assets.Clear();
-
-        var guids = AssetDatabase.FindAssets("t:ScriptableObject", new[] { "Assets/_Project/ScriptableObjects" });
-        foreach (string guid in guids)
-        {
-            string path = AssetDatabase.GUIDToAssetPath(guid);
-            var so = AssetDatabase.LoadAssetAtPath<ScriptableObject>(path);
-            if (so == null) continue;
-
-            m_assets.Add(so);
-            m_editors[so] = Editor.CreateEditor(so);
-            m_foldouts[so] = true;
-        }
-
-        m_assets = m_assets.OrderBy(so => so.GetType().Name).ThenBy(so => so.name).ToList();
-
-        // 型フィルタ選択肢を構築
-        var types = m_assets.Select(so => so.GetType().Name).Distinct().ToList();
-        types.Insert(0, "All");
-        m_typeOptions = types.ToArray();
-        m_typeFilterIndex = 0;
     }
 
-    void FindReferences(string soPath)
+    void HandleRowSplitterDrag()
     {
-        m_references.Clear();
+        var ev = Event.current;
+        if (m_draggingRow < 0) return;
+
+        if (ev.type == EventType.MouseDrag)
+        {
+            float delta = ev.mousePosition.y - m_dragStartY;
+            m_rows[m_draggingRow].height = Mathf.Max(k_MinPaneHeight, m_dragStartHeight + delta);
+            // 最終行の高さは OnGUI 内で再計算されるので、ここでは触らない
+            Repaint();
+            ev.Use();
+        }
+        else if (ev.type == EventType.MouseUp)
+        {
+            m_draggingRow = -1;
+            ev.Use();
+        }
+    }
+
+    void ScanAvailableTypes()
+    {
+        var guids = AssetDatabase.FindAssets("t:ScriptableObject", new[] { "Assets/_Project/ScriptableObjects" });
+        var typeSet = new HashSet<Type>();
+        foreach (var guid in guids)
+        {
+            var path = AssetDatabase.GUIDToAssetPath(guid);
+            var so = AssetDatabase.LoadAssetAtPath<ScriptableObject>(path);
+            if (so == null) continue;
+            typeSet.Add(so.GetType());
+        }
+        m_availableTypes = typeSet.OrderBy(t => t.Name).ToList();
+        m_typeNames = m_availableTypes.Select(t => t.Name).ToArray();
+    }
+
+    void ReloadPaneData(Pane pane)
+    {
+        pane.serObjects.Clear();
+        pane.assets.Clear();
+        pane.rows.Clear();
+
+        if (pane.selectedTypeIndex < 0 || pane.selectedTypeIndex >= m_availableTypes.Count) return;
+        var type = m_availableTypes[pane.selectedTypeIndex];
+
+        var guids = AssetDatabase.FindAssets($"t:{type.Name}", new[] { "Assets/_Project/ScriptableObjects" });
+        foreach (var guid in guids)
+        {
+            var path = AssetDatabase.GUIDToAssetPath(guid);
+            var so = AssetDatabase.LoadAssetAtPath<ScriptableObject>(path);
+            if (so == null || so.GetType() != type) continue;
+            pane.assets.Add(so);
+            pane.serObjects[so] = new SerializedObject(so);
+        }
+        pane.assets = pane.assets.OrderBy(a => a.name).ToList();
+
+        BuildRows(pane, type);
+    }
+
+    void BuildRows(Pane pane, Type type)
+    {
+        pane.rows.Clear();
+
+        var inheritanceChain = new List<Type>();
+        var t = type;
+        while (t != null && t != typeof(ScriptableObject) && t != typeof(UnityEngine.Object))
+        {
+            inheritanceChain.Add(t);
+            t = t.BaseType;
+        }
+        inheritanceChain.Reverse();
+
+        var bindings = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly;
+        var allFields = new List<FieldInfo>();
+        foreach (var cls in inheritanceChain)
+        {
+            var fields = cls.GetFields(bindings).OrderBy(f => f.MetadataToken).ToList();
+            allFields.AddRange(fields);
+        }
+
+        foreach (var f in allFields)
+        {
+            bool isSerialized;
+            if (f.IsPublic)
+                isSerialized = !HasAttribute(f, "System.NonSerializedAttribute");
+            else
+                isSerialized = f.GetCustomAttribute<SerializeField>() != null;
+
+            if (!isSerialized) continue;
+            if (f.GetCustomAttribute<HideInInspector>() != null) continue;
+
+            var headerAttr = f.GetCustomAttribute<HeaderAttribute>();
+            if (headerAttr != null)
+                pane.rows.Add(new SheetRow { IsHeader = true, HeaderText = headerAttr.header });
+
+            string label = ObjectNames.NicifyVariableName(f.Name);
+            var labelAttr = f.GetCustomAttribute<LabelAttribute>();
+            if (labelAttr != null)
+            {
+                label = labelAttr.Text;
+            }
+            else
+            {
+                var lr = f.GetCustomAttribute<LabelRangeAttribute>();
+                if (lr != null) label = lr.Text;
+            }
+            pane.rows.Add(new SheetRow { IsHeader = false, Label = label, FieldName = f.Name });
+        }
+    }
+
+    static bool HasAttribute(FieldInfo f, string fullTypeName)
+    {
+        foreach (var attr in f.GetCustomAttributes(false))
+            if (attr.GetType().FullName == fullTypeName) return true;
+        return false;
+    }
+
+    void FindReferences(Pane pane, string soPath)
+    {
+        pane.references.Clear();
         string soGuid = AssetDatabase.AssetPathToGUID(soPath);
         if (string.IsNullOrEmpty(soGuid)) return;
 
@@ -238,15 +630,13 @@ public class SOBrowserWindow : EditorWindow
             .Where(p => p.StartsWith("Assets/_Project/")
                 && (p.EndsWith(".prefab") || p.EndsWith(".unity") || p.EndsWith(".asset")));
 
-        foreach (string assetPath in allPaths)
+        foreach (var assetPath in allPaths)
         {
             if (assetPath == soPath) continue;
             string fullPath = Path.GetFullPath(assetPath);
             if (!File.Exists(fullPath)) continue;
-
             string content = File.ReadAllText(fullPath);
-            if (content.Contains(soGuid))
-                m_references.Add(assetPath);
+            if (content.Contains(soGuid)) pane.references.Add(assetPath);
         }
     }
 }
