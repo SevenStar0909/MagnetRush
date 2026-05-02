@@ -6,13 +6,16 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "MagnetRush/ContactDamageSettings")]
 public class ContactDamageSettings : ScriptableObject
 {
-    [Header("ダメージ")]
+    [Header("[ダメージ]")]
+    [Label("ダメージ")]
     public int damage = 1;
 
-    [Header("判定")]
+    [Header("[判定]")]
+    [Label("最低速度")]
     [Tooltip("磁力衝突とみなす最低速度")]
     public float minVelocity = 2f;
 
+    [Label("Overlap判定半径")]
     [Tooltip("Overlap判定の半径")]
     public float overlapRadius = 0.5f;
 }

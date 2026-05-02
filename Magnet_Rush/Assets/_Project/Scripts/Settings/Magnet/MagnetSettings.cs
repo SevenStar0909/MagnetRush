@@ -3,43 +3,53 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "MagnetSettings", menuName = "MagnetRush/MagnetSettings")]
 public class MagnetSettings : ScriptableObject
 {
-    [Header("磁力")]
+    [Header("[磁力]")]
+    [Label("磁力の強さ")]
     [Tooltip("磁力の基本の強さ。inner範囲内でこの値がフルで適用される")]
     public float magnetForce = 15f;
+    [Label("ペア検索カットオフ距離（m）")]
     [Tooltip("ペア検索のハードカットオフ距離（m）。この距離以上のペアは力を計算しない（パフォーマンス用）")]
     public float magnetRange = 10f;
 
-    [Header("制限")]
+    [Header("[制限]")]
+    [Label("合力上限（0で無制限）")]
     [Tooltip("1オブジェクトが受ける合力の上限。0=無制限")]
     public float maxForcePerObject = 50f;
 
-    [Header("接触")]
+    [Header("[接触]")]
+    [Label("FixedJoint発動距離")]
     [Tooltip("Object×Object の FixedJoint 発動距離（Entity絡みは holdEngageDistance を使用）")]
     public float snapDistance = 1.5f;
 
-    [Header("スナップ")]
+    [Header("[スナップ]")]
+    [Label("FixedJoint破壊力")]
     [Tooltip("FixedJoint の破壊力（同極反発で分離）")]
     public float snapBreakForce = 100f;
 
-    [Header("PDホールド")]
+    [Header("[PDホールド]")]
+    [Label("PDホールド開始距離")]
     [Tooltip("この距離内に入ると PD 保持に切り替わる (Entity絡みペア専用)")]
     public float holdEngageDistance = 1.5f;
 
+    [Label("バネ定数（追従の強さ）")]
     [Tooltip("位置エラーに対するバネ定数。大きいほどガッチリ追従するが振動しやすい")]
     public float holdStiffness = 80f;
 
+    [Label("ダンパ係数（振動抑制）")]
     [Tooltip("速度に対するダンパ係数。大きいほど振動が収まるが追従が重くなる")]
     public float holdDamping = 15f;
 
+    [Label("吸着最大許容距離")]
     [Tooltip("吸着中の最大許容距離。超過で吸着解除")]
     public float holdMaxDistance = 3f;
 
-    [Header("弾同士")]
+    [Header("[弾同士]")]
+    [Label("弾近接ダメージ範囲")]
     [Tooltip("異極の弾が近接した時にダメージ蓄積が発生する距離")]
     public float bulletProximityRange = 1f;
 
-    [Header("移動変調")]
+    [Header("[移動変調]")]
+    [LabelRange("磁力場内速度低下率（0=影響なし, 1=完全停止）", 0f, 1f)]
     [Tooltip("磁力場内での最高速度低下率(0=影響なし, 1=完全停止)")]
-    [Range(0f, 1f)]
     public float magnetSpeedDamping = 0.3f;
 }
