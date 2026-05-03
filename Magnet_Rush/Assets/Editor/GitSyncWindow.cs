@@ -11,13 +11,12 @@ using Debug = UnityEngine.Debug;
 /// <summary>
 /// Git 同期ウィンドウ。GitFlowWindow とは別の役割で、リモート状態への強制同期を担当する。
 /// 主な機能:
+///   - 現在ブランチを fast-forward pull
 ///   - 現在ブランチを origin/<current> で上書き
 ///   - 現在ブランチを別ブランチ (origin/...) で上書き
-///   - develop / main を origin の状態へ更新（元のブランチに自動復帰）
-///   - 現在ブランチを fast-forward pull
 /// 安全策: 操作前にシーン保存 + AssetDatabase.SaveAssets()、操作後に AssetDatabase.Refresh()。
 ///         破壊的操作は確認ダイアログを表示し、未コミット変更がある場合は abort する。
-/// メニュー: Tools/Git 同期
+/// メニュー: Tools/Git/同期
 /// </summary>
 public class GitSyncWindow : EditorWindow
 {
@@ -27,13 +26,11 @@ public class GitSyncWindow : EditorWindow
     string m_lastOutput = "";
     Vector2 m_scrollPos;
 
-    static GUIStyle s_btnPrimary, s_btnDanger, s_btnNeutral;
-
     [MenuItem("Tools/Git/同期")]
     static void Open()
     {
         var w = GetWindow<GitSyncWindow>("Git 同期");
-        w.minSize = new Vector2(460, 380);
+        w.minSize = new Vector2(460, 480);
     }
 
     void OnEnable()
@@ -41,41 +38,15 @@ public class GitSyncWindow : EditorWindow
         RefreshState();
     }
 
-    static void EnsureStyles()
-    {
-        if (s_btnPrimary != null) return;
-        GUIStyle Make(Color c) => new GUIStyle(GUI.skin.button)
-        {
-            fontStyle = FontStyle.Bold,
-            fontSize = 12,
-            alignment = TextAnchor.MiddleCenter,
-            fixedHeight = 26,
-            margin = new RectOffset(2, 2, 2, 2),
-            padding = new RectOffset(8, 8, 2, 2),
-            normal = { textColor = c },
-            hover = { textColor = Color.white },
-        };
-        s_btnPrimary = Make(new Color(0.55f, 0.85f, 1f));
-        s_btnDanger  = Make(new Color(1f, 0.55f, 0.55f));
-        s_btnNeutral = Make(new Color(0.85f, 0.85f, 0.90f));
-    }
-
     void OnGUI()
     {
-        EnsureStyles();
-
         EditorGUILayout.Space(4);
         EditorGUILayout.LabelField("現在ブランチ", string.IsNullOrEmpty(m_currentBranch) ? "(unknown)" : m_currentBranch, EditorStyles.boldLabel);
-
-        if (GUILayout.Button("⟳ 状態更新（git fetch + ブランチ一覧再取得）", s_btnNeutral))
-        {
-            ExecuteWithSafety(() => RunGit("fetch origin --prune"), "fetch");
-        }
 
         EditorGUILayout.Space(8);
         EditorGUILayout.LabelField("▼ クイック操作", EditorStyles.boldLabel);
 
-        if (GUILayout.Button($"現在ブランチを pull（fast-forward only）", s_btnPrimary))
+        if (GUILayout.Button($"現在ブランチを pull（fast-forward only）"))
         {
             ExecuteWithSafety(() =>
             {
@@ -85,7 +56,7 @@ public class GitSyncWindow : EditorWindow
             }, "pull --ff-only");
         }
 
-        if (GUILayout.Button($"現在ブランチを origin/{m_currentBranch} で上書き（reset --hard）", s_btnDanger))
+        if (GUILayout.Button($"現在ブランチを origin/{m_currentBranch} で上書き（reset --hard）"))
         {
             if (ConfirmDanger($"現在ブランチ {m_currentBranch} を origin/{m_currentBranch} の状態に強制上書きします。\n\n未push のコミット・未commitの変更は失われます。"))
             {
@@ -99,22 +70,6 @@ public class GitSyncWindow : EditorWindow
         }
 
         EditorGUILayout.Space(8);
-        EditorGUILayout.LabelField("▼ 共有ブランチ更新（元のブランチに自動復帰）", EditorStyles.boldLabel);
-
-        EditorGUILayout.BeginHorizontal();
-        if (GUILayout.Button("develop を更新", s_btnPrimary))
-        {
-            if (ConfirmDanger("ローカル develop を origin/develop で上書きします。\nそのあと現在のブランチに戻ります。"))
-                UpdateBranchAndReturn("develop");
-        }
-        if (GUILayout.Button("main を更新", s_btnPrimary))
-        {
-            if (ConfirmDanger("ローカル main を origin/main で上書きします。\nそのあと現在のブランチに戻ります。"))
-                UpdateBranchAndReturn("main");
-        }
-        EditorGUILayout.EndHorizontal();
-
-        EditorGUILayout.Space(8);
         EditorGUILayout.LabelField("▼ 別ブランチで上書き（高度）", EditorStyles.boldLabel);
 
         if (m_remoteBranches.Count > 0)
@@ -123,7 +78,7 @@ public class GitSyncWindow : EditorWindow
             m_selectedRemoteIndex = EditorGUILayout.Popup("ベースブランチ", m_selectedRemoteIndex, m_remoteBranches.ToArray());
 
             string target = m_remoteBranches[m_selectedRemoteIndex];
-            if (GUILayout.Button($"現在 ({m_currentBranch}) を {target} で上書き", s_btnDanger))
+            if (GUILayout.Button($"現在 ({m_currentBranch}) を {target} で上書き"))
             {
                 if (ConfirmDanger($"現在ブランチ {m_currentBranch} の内容を {target} の状態で完全に上書きします。\n\nブランチの内容が別物になります。"))
                 {
@@ -138,35 +93,16 @@ public class GitSyncWindow : EditorWindow
         }
         else
         {
-            EditorGUILayout.HelpBox("リモートブランチ一覧が取得できていません。「状態更新」を押してください。", MessageType.Info);
+            EditorGUILayout.HelpBox("リモートブランチ一覧が取得できていません。ウィンドウを開き直してください。", MessageType.Info);
         }
 
-        EditorGUILayout.Space(8);
+        EditorGUILayout.Space(20);
         EditorGUILayout.LabelField("▼ ログ出力", EditorStyles.boldLabel);
         var logTextStyle = new GUIStyle(EditorStyles.textArea) { wordWrap = true, richText = false };
         m_scrollPos = EditorGUILayout.BeginScrollView(m_scrollPos,
-            GUILayout.MinHeight(220), GUILayout.ExpandHeight(true));
-        EditorGUILayout.TextArea(m_lastOutput, logTextStyle, GUILayout.ExpandHeight(true), GUILayout.MinHeight(200));
+            GUILayout.MinHeight(280), GUILayout.ExpandHeight(true));
+        EditorGUILayout.TextArea(m_lastOutput, logTextStyle, GUILayout.ExpandHeight(true), GUILayout.MinHeight(260));
         EditorGUILayout.EndScrollView();
-    }
-
-    void UpdateBranchAndReturn(string branch)
-    {
-        ExecuteWithSafety(() =>
-        {
-            var fetch = RunGit("fetch origin");
-            var dirty = RunGit("status --porcelain").Trim();
-            // 出力に "$ git ..." の echo 部分が含まれるので、コマンド行を除いた残りで判定
-            var statusOnly = string.Join("\n", dirty.Split('\n').Where(l => !l.StartsWith("$ git "))).Trim();
-            if (!string.IsNullOrEmpty(statusOnly))
-            {
-                return fetch + "\n[ABORT] 未コミットの変更があります。先にコミットまたは破棄してください:\n" + statusOnly;
-            }
-            var co = RunGit($"checkout {branch}");
-            var reset = RunGit($"reset --hard origin/{branch}");
-            var back = RunGit($"checkout {m_currentBranch}");
-            return $"{fetch}\n{co}\n{reset}\n{back}";
-        }, $"update {branch}");
     }
 
     bool ConfirmDanger(string msg)
