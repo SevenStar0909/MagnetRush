@@ -143,8 +143,10 @@ public class GitSyncWindow : EditorWindow
 
         EditorGUILayout.Space(8);
         EditorGUILayout.LabelField("▼ ログ出力", EditorStyles.boldLabel);
-        m_scrollPos = EditorGUILayout.BeginScrollView(m_scrollPos, GUILayout.MinHeight(100));
-        EditorGUILayout.TextArea(m_lastOutput, GUILayout.ExpandHeight(true));
+        var logTextStyle = new GUIStyle(EditorStyles.textArea) { wordWrap = true, richText = false };
+        m_scrollPos = EditorGUILayout.BeginScrollView(m_scrollPos,
+            GUILayout.MinHeight(220), GUILayout.ExpandHeight(true));
+        EditorGUILayout.TextArea(m_lastOutput, logTextStyle, GUILayout.ExpandHeight(true), GUILayout.MinHeight(200));
         EditorGUILayout.EndScrollView();
     }
 
@@ -172,17 +174,60 @@ public class GitSyncWindow : EditorWindow
         return EditorUtility.DisplayDialog("確認: 破壊的な git 操作", msg, "実行", "キャンセル");
     }
 
-    /// <summary>シーン保存 → 任意の git 操作 → AssetDatabase.Refresh() を順番に実行する。</summary>
+    /// <summary>シーン退避 → AutoRefresh/AssemblyReload 一時停止 → 任意の git 操作 → 状態復元 を順番に実行する。
+    /// 「Open Scenes have been modified externally」ダイアログを回避するため、操作前に空シーンへ切替えて
+    /// 元のシーン構成を SceneManagerSetup として退避し、操作後に復元する。</summary>
     void ExecuteWithSafety(Func<string> action, string label)
     {
+        // 1. 現在のシーン構成を退避
+        var sceneSetup = EditorSceneManager.GetSceneManagerSetup();
         EditorSceneManager.SaveOpenScenes();
         AssetDatabase.SaveAssets();
 
-        string output;
-        try { output = action(); }
-        catch (Exception ex) { output = "[EXCEPTION] " + ex.Message; }
+        // 2. 選択解除して空シーンに切替（git 操作中に開いているシーンが外部変更されるとダイアログが出るため）
+        Selection.activeObject = null;
+        try
+        {
+            EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogWarning($"[GitSync] 空シーン作成に失敗（操作は続行）: {ex.Message}");
+        }
 
-        AssetDatabase.Refresh();
+        // 3. AutoRefresh/AssemblyReload を一時抑止
+        AssetDatabase.DisallowAutoRefresh();
+        EditorApplication.LockReloadAssemblies();
+        AssetDatabase.StartAssetEditing();
+
+        string output;
+        try
+        {
+            output = action();
+        }
+        catch (Exception ex)
+        {
+            output = "[EXCEPTION] " + ex.Message;
+        }
+        finally
+        {
+            AssetDatabase.StopAssetEditing();
+            EditorApplication.UnlockReloadAssemblies();
+            AssetDatabase.AllowAutoRefresh();
+        }
+
+        // 4. 同期リフレッシュ + シーン復元
+        AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
+        try
+        {
+            if (sceneSetup != null && sceneSetup.Length > 0)
+                EditorSceneManager.RestoreSceneManagerSetup(sceneSetup);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogWarning($"[GitSync] シーン復元に失敗: {ex.Message}");
+        }
+
         RefreshState();
 
         m_lastOutput = $"=== {label} ===\n{output}\n";
@@ -212,13 +257,18 @@ public class GitSyncWindow : EditorWindow
 
     string RunGit(string args)
     {
-        var psi = new ProcessStartInfo("git", args)
+        // -c core.quotepath=false: 日本語ファイル名の \xxx エスケープを抑制
+        var psi = new ProcessStartInfo("git", "-c core.quotepath=false " + args)
         {
             WorkingDirectory = Path.GetDirectoryName(Application.dataPath),
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,
             CreateNoWindow = true,
+            // git の出力はデフォルトで UTF-8。Windows のデフォルトエンコーディング（CP932 等）と
+            // 不一致だと日本語が化けるため明示的に UTF-8 を指定する
+            StandardOutputEncoding = System.Text.Encoding.UTF8,
+            StandardErrorEncoding = System.Text.Encoding.UTF8,
         };
         try
         {
@@ -228,7 +278,8 @@ public class GitSyncWindow : EditorWindow
                 string stderr = p.StandardError.ReadToEnd();
                 p.WaitForExit();
                 string body = stdout;
-                if (!string.IsNullOrEmpty(stderr)) body += "[stderr] " + stderr;
+                string filteredStderr = FilterNoise(stderr);
+                if (!string.IsNullOrEmpty(filteredStderr)) body += "[stderr] " + filteredStderr;
                 return $"$ git {args}\n{body}";
             }
         }
@@ -236,5 +287,26 @@ public class GitSyncWindow : EditorWindow
         {
             return $"$ git {args}\n[git failed] {ex.Message}";
         }
+    }
+
+    /// <summary>git の冗長な警告（LF/CRLF 変換警告・Auto packing 等）を除去する。</summary>
+    static string FilterNoise(string raw)
+    {
+        if (string.IsNullOrEmpty(raw)) return string.Empty;
+        var keep = new List<string>();
+        foreach (var line in raw.Split('\n'))
+        {
+            var trimmed = line.TrimEnd('\r');
+            if (string.IsNullOrWhiteSpace(trimmed)) continue;
+            // 無害な warning / 進捗メッセージは捨てる
+            if (trimmed.StartsWith("warning: in the working copy of")) continue;
+            if (trimmed.StartsWith("warning: LF will be replaced")) continue;
+            if (trimmed.Contains("LF will be replaced by CRLF")) continue;
+            if (trimmed.StartsWith("Auto packing the repository")) continue;
+            if (trimmed.StartsWith("See \"git help gc\"")) continue;
+            if (trimmed.StartsWith("nothing")) continue; // "nothing now to do" 等
+            keep.Add(trimmed);
+        }
+        return keep.Count == 0 ? string.Empty : string.Join("\n", keep);
     }
 }
