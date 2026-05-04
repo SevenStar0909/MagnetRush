@@ -45,6 +45,15 @@ public class ShootingController : MonoBehaviour
     public void Fire()
     {
         if (!m_input.IsFirePressed) return;
+        //追加↓
+        if (!m_aim.IsAiming)
+        {
+            m_input.ConsumeFire();  //バッファクリア(消さないとLT入った瞬間に暴発する)
+            ChannelLogger.LogGuardReturn("Player", "エイム中ではないため射撃をスキップ");
+            return;
+
+        }
+        /////////////
         if (m_bulletSettings == null || m_bulletSettings.bulletPrefab == null)
         { ChannelLogger.LogGuardReturn("Player", "BulletSettings未設定"); return; }
         if (BulletManager.Instance == null || !BulletManager.Instance.CanShoot())
@@ -84,7 +93,6 @@ public class ShootingController : MonoBehaviour
             // 着弾時にエイム解除、自己 unsubscribe で累積・ダングリング参照を防ぐ
             void HandleImpact()
             {
-                m_aim.StopAim();
                 bullet.OnImpact -= HandleImpact;
             }
             bullet.OnImpact += HandleImpact;
