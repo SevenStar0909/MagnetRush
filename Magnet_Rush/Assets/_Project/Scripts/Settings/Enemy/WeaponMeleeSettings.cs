@@ -8,14 +8,6 @@ public class WeaponMeleeSettings : ScriptableObject
     [Tooltip("武器の基本ダメージ量")]
     public int damage = 10;
 
-    [Label("攻撃クールダウン（秒）")]
-    [Tooltip("次の攻撃を行えるようになるまでの待機時間")]
-    public float attackCooldown = 0.5f;
-
-    [Label("攻撃判定持続時間（秒）")]
-    [Tooltip("攻撃判定のコライダーを有効にしておく時間")]
-    public float attackActiveTime = 0.15f;
-
     [Header("[拾得]")]
     [Label("磁化中は拾得不可")]
     [Tooltip("磁化中は拾えないようにするかどうか")]
