@@ -90,19 +90,23 @@ public class PlayerSettings : ScriptableObject
     [Header("[死亡・リスポーン]")]
     [Label("リスポーン待機時間（秒）")]
     [Tooltip("死亡からリスポーンまでの待機時間（秒）")]
+    // TODO: リスポーン機構実装時に Player の死亡→復帰フローで配線
     public float respawnDelay = 3f;
 
     [Header("[斜面]")]
     [Label("上り坂減速力")]
     [Tooltip("上り坂での減速力")]
+    // TODO: 斜面物理実装時に EntityController の重力/接地補正で配線
     public float slopeUpwardForce = 15f;
     [Label("下り坂加速力")]
     [Tooltip("下り坂での加速力")]
+    // TODO: 斜面物理実装時に EntityController の重力/接地補正で配線
     public float slopeDownwardForce = 25f;
 
     [Header("[磁力]")]
     [Label("磁力への抵抗度（0=影響なし, 1=完全抵抗）")]
     [Tooltip("磁力への抵抗度（0=影響なし, 1=完全抵抗）")]
+    // TODO: Player の OnMagnetForce で受信力に (1 - magnetResistance) を乗算する処理を追加
     public float magnetResistance = 0.5f;
     [Label("外部力減衰率")]
     [Tooltip("外部力（磁力等）の指数減衰率。大きいほど早く減速する")]

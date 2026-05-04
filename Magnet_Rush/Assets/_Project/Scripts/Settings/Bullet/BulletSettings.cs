@@ -21,14 +21,6 @@ public class BulletSettings : ScriptableObject
     [Label("レイキャスト最大距離")]
     [Tooltip("射撃レイキャストの最大距離")]
     public float raycastDistance = 200f;
-    [Label("磁力場デフォルト範囲（未使用）")]
-    [Tooltip("磁力場のデフォルト範囲（未使用）")]
-    public float defaultMagnetRange = 5f;
-
-    [Header("[フォールバック]")]
-    [Label("敵にくっつくモード")]
-    [Tooltip("ONの場合、敵に当たっても弾を消さず壁と同じくくっつく")]
-    public bool useFallbackMode = false;
 
     [Header("[磁力場]")]
     [Label("着弾時磁力場設定")]
@@ -39,6 +31,7 @@ public class BulletSettings : ScriptableObject
     public float fieldAttractionFactor = 5f;
     [Label("蓄積ダメージ値")]
     [Tooltip("フィールドへの蓄積ダメージ値")]
+    // TODO: 弾の着弾時に MagnetField.AddDamage(bulletDamage) を呼ぶ処理を実装
     public float bulletDamage = 10f;
 
     [Header("[弾マテリアル]")]
