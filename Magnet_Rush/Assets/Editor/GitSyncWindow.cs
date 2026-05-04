@@ -23,8 +23,9 @@ public class GitSyncWindow : EditorWindow
     string m_currentBranch = "";
     List<string> m_remoteBranches = new List<string>();
     int m_selectedRemoteIndex;
-    string m_lastOutput = "";
+    string m_logText = "";
     Vector2 m_scrollPos;
+    const int k_MaxLogLines = 500;
 
     [MenuItem("Tools/Git/同期")]
     static void Open()
@@ -97,12 +98,66 @@ public class GitSyncWindow : EditorWindow
         }
 
         EditorGUILayout.Space(20);
-        EditorGUILayout.LabelField("▼ ログ出力", EditorStyles.boldLabel);
-        var logTextStyle = new GUIStyle(EditorStyles.textArea) { wordWrap = true, richText = false };
-        m_scrollPos = EditorGUILayout.BeginScrollView(m_scrollPos,
-            GUILayout.MinHeight(280), GUILayout.ExpandHeight(true));
-        EditorGUILayout.TextArea(m_lastOutput, logTextStyle, GUILayout.ExpandHeight(true), GUILayout.MinHeight(260));
+        EditorGUILayout.BeginHorizontal();
+        GUILayout.Label("ログ", EditorStyles.boldLabel);
+        if (GUILayout.Button("クリア", GUILayout.Width(60)))
+        {
+            m_logText = "";
+            GUIUtility.keyboardControl = 0;
+        }
+        EditorGUILayout.EndHorizontal();
+
+        m_scrollPos = EditorGUILayout.BeginScrollView(m_scrollPos, GUILayout.ExpandHeight(true));
+        var logStyle = new GUIStyle(EditorStyles.label)
+        {
+            richText = true,
+            wordWrap = true,
+            alignment = TextAnchor.UpperLeft,
+            padding = new RectOffset(4, 4, 4, 4),
+            font = EditorStyles.miniFont
+        };
+        float height = logStyle.CalcHeight(new GUIContent(m_logText), EditorGUIUtility.currentViewWidth - 30);
+        GUILayout.Label(m_logText, logStyle, GUILayout.ExpandWidth(true), GUILayout.MinHeight(Mathf.Max(height, 260)));
         EditorGUILayout.EndScrollView();
+    }
+
+    /// <summary>タイムスタンプ + タグ付きでログに1行追記する。色は richText で着色。</summary>
+    void Log(string tag, string message)
+    {
+        string timestamp = DateTime.Now.ToString("HH:mm:ss");
+        string color = tag switch
+        {
+            "エラー" => "#ff6b6b",
+            "警告"   => "#ffb347",
+            "成功"   => "#7ed957",
+            "情報"   => "#88ddff",
+            _        => null
+        };
+        string line = color != null
+            ? $"<color={color}>[{timestamp}] [{tag}] {message}</color>"
+            : $"[{timestamp}] [{tag}] {message}";
+        m_logText += line + "\n";
+
+        string[] lines = m_logText.Split('\n');
+        if (lines.Length > k_MaxLogLines)
+        {
+            m_logText = string.Join("\n", lines, lines.Length - k_MaxLogLines, k_MaxLogLines);
+        }
+        m_scrollPos.y = float.MaxValue;
+    }
+
+    /// <summary>git コマンドの生出力をそのまま追記する（タイムスタンプ無し）。</summary>
+    void AppendRaw(string text)
+    {
+        if (string.IsNullOrEmpty(text)) return;
+        m_logText += text.TrimEnd('\n') + "\n";
+
+        string[] lines = m_logText.Split('\n');
+        if (lines.Length > k_MaxLogLines)
+        {
+            m_logText = string.Join("\n", lines, lines.Length - k_MaxLogLines, k_MaxLogLines);
+        }
+        m_scrollPos.y = float.MaxValue;
     }
 
     bool ConfirmDanger(string msg)
@@ -166,7 +221,10 @@ public class GitSyncWindow : EditorWindow
 
         RefreshState();
 
-        m_lastOutput = $"=== {label} ===\n{output}\n";
+        Log("情報", $"=== {label} ===");
+        AppendRaw(output);
+        bool hadError = output.Contains("[stderr]") || output.Contains("[EXCEPTION]") || output.Contains("[git failed]");
+        if (hadError) Log("警告", "stderr / 例外を検出しました（上の出力を確認してください）");
         Repaint();
         Debug.Log($"[GitSync] {label}\n{output}");
     }
