@@ -168,7 +168,14 @@ public class Player : Entity
         if (direction.sqrMagnitude > 0.01f)
         {
             Accelerate(direction, m_settings.turningDrag, m_settings.acceleration, m_settings.topSpeed, dt);
-            FaceDirection(direction, m_settings.rotationSpeed, dt);
+        }
+
+        // ↓追加: カメラ方向を向く（FaceDirection は if の外、移動入力なくても回る）
+        if (m_cachedCameraTransform != null)
+        {
+            Vector3 camForward = m_cachedCameraTransform.forward;
+            camForward.y = 0f;
+            FaceDirection(camForward, m_settings.rotationSpeed * 2f, dt, false);
         }
     }
 
