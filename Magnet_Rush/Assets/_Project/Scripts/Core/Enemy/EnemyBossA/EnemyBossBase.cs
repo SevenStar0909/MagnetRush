@@ -1,9 +1,9 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEngine.Serialization;
 
 /// <summary>
-/// “G‚ÌŠî’êƒNƒ‰ƒXBEntity‚ğŒp³‚µHealthEIMagnetTarget‚ğ‹¤—L‚·‚éB
-/// ˆÚ“®‚ÍUpdateEntity() ¨ EntityControllerŒo—RBAIƒTƒuƒNƒ‰ƒX‚ªAccelerateToward“™‚Å‘¬“x‚ğ‹ì“®‚·‚éB
+/// æ•µã®åŸºåº•ã‚¯ãƒ©ã‚¹ã€‚Entityã‚’ç¶™æ‰¿ã—Healthãƒ»IMagnetTargetã‚’å…±æœ‰ã™ã‚‹ã€‚
+/// ç§»å‹•ã¯UpdateEntity() â†’ EntityControllerçµŒç”±ã€‚AIã‚µãƒ–ã‚¯ãƒ©ã‚¹ãŒAccelerateTowardç­‰ã§é€Ÿåº¦ã‚’é§†å‹•ã™ã‚‹ã€‚
 /// </summary>
 public class EnemyBossBase : Entity
 {
@@ -23,7 +23,7 @@ public class EnemyBossBase : Entity
     public EnemyBossSettings StatusData => m_statusData;
     public Transform Player => m_player;
 
-    /// <summary>MagneticMover ‚ª¥—ÍˆÚ“®ƒ‚[ƒh’†‚©‚Ç‚¤‚©BAI ‚Í‚±‚ÌŠÔƒXƒLƒbƒv‚³‚ê‚éB</summary>
+    /// <summary>MagneticMover ãŒç£åŠ›ç§»å‹•ãƒ¢ãƒ¼ãƒ‰ä¸­ã‹ã©ã†ã‹ã€‚AI ã¯ã“ã®é–“ã‚¹ã‚­ãƒƒãƒ—ã•ã‚Œã‚‹ã€‚</summary>
     //public bool IsMagnetControlled => m_mover != null && m_mover.IsMagnetActive;
 
     protected override float Gravity => m_statusData != null ? m_statusData.gravity : base.Gravity;
@@ -41,7 +41,7 @@ public class EnemyBossBase : Entity
         if (magnetizable != null)
             magnetizable.mass = float.PositiveInfinity;
 
-        // Playerƒ^ƒO•t‚«ƒIƒuƒWƒFƒNƒg‚ğí‚Éæ“¾
+        // Playerã‚¿ã‚°ä»˜ãã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’å¸¸ã«å–å¾—
         GameObject playerObj = GameObject.FindWithTag(GameTags.Player);
         if (playerObj != null)
             m_player = playerObj.transform;
@@ -50,7 +50,7 @@ public class EnemyBossBase : Entity
             m_health.OnDie += Die;
 
         if (m_controller == null)
-            Debug.LogWarning($"[EnemyBase] {name}: EntityController‚ª‚ ‚è‚Ü‚¹‚ñBÕ“Ë”»’è‚È‚µ‚Å“®ì‚µ‚Ü‚·", this);
+            Debug.LogWarning($"[EnemyBase] {name}: EntityControllerãŒã‚ã‚Šã¾ã›ã‚“ã€‚è¡çªåˆ¤å®šãªã—ã§å‹•ä½œã—ã¾ã™", this);
     }
 
     void OnDestroy()
@@ -61,15 +61,15 @@ public class EnemyBossBase : Entity
 
     void Update()
     {
-        //UpdateEntity(Time.deltaTime);
+        UpdateEntity(Time.deltaTime);
     }
 
-    /// <summary>w’è•ûŒüiƒ[ƒ‹ƒh‹óŠÔj‚É‰Á‘¬‚·‚éBAI‚ªŒvZ‚µ‚½ˆÚ“®•ûŒü‚ğ“n‚·B</summary>
+    /// <summary>æŒ‡å®šæ–¹å‘ï¼ˆãƒ¯ãƒ¼ãƒ«ãƒ‰ç©ºé–“ï¼‰ã«åŠ é€Ÿã™ã‚‹ã€‚AIãŒè¨ˆç®—ã—ãŸç§»å‹•æ–¹å‘ã‚’æ¸¡ã™ã€‚</summary>
     public void AccelerateToward(Vector3 worldDirection, float dt)
     {
         if (worldDirection.sqrMagnitude > 0.01f)
         {
-            // Accelerate()‚ÍlateralVelocityiƒ[ƒJƒ‹‹óŠÔj‚ÅŒvZ‚·‚é‚½‚ß•ÏŠ·‚ª•K—v
+            // Accelerate()ã¯lateralVelocityï¼ˆãƒ­ãƒ¼ã‚«ãƒ«ç©ºé–“ï¼‰ã§è¨ˆç®—ã™ã‚‹ãŸã‚å¤‰æ›ãŒå¿…è¦
             Vector3 localDir = Quaternion.FromToRotation(transform.up, Vector3.up) * worldDirection;
             localDir = localDir.normalized;
 
@@ -79,13 +79,13 @@ public class EnemyBossBase : Entity
         }
     }
 
-    /// <summary>‰¡ˆÚ“®‚ğŒ¸‘¬‚·‚éB</summary>
+    /// <summary>æ¨ªç§»å‹•ã‚’æ¸›é€Ÿã™ã‚‹ã€‚</summary>
     public void SlowDown(float dt)
     {
         Decelerate(m_statusData.deceleration, dt);
     }
 
-    /// <summary>w’è•ûŒü‚ğŒü‚­B</summary>
+    /// <summary>æŒ‡å®šæ–¹å‘ã‚’å‘ãã€‚</summary>
     public void FaceToward(Vector3 direction, float dt)
     {
         FaceDirection(direction, m_statusData.rotationSpeed, dt);

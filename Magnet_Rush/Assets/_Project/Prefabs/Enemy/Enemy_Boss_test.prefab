@@ -1,5 +1,73 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &459863362125723178
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8157444902257284641}
+  - component: {fileID: 2390914165087404266}
+  - component: {fileID: 2564770328425022347}
+  m_Layer: 12
+  m_Name: ArmHitbox_R
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8157444902257284641
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 459863362125723178}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 9017729074501802420}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &2390914165087404266
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 459863362125723178}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.4, y: 0.4, z: 0.8}
+  m_Center: {x: 0, y: 0, z: 0.3}
+--- !u!114 &2564770328425022347
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 459863362125723178}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a5ac75e081cba22448b1c0ed8924bc03, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Enemy::BossArmHitbox
+  m_settings: {fileID: 0}
+  m_owner: {fileID: 0}
 --- !u!1 &1908529387695711724
 GameObject:
   m_ObjectHideFlags: 0
@@ -65,7 +133,6 @@ GameObject:
   m_Component:
   - component: {fileID: 4741949058502093249}
   - component: {fileID: 1228642292521872716}
-  - component: {fileID: 9114343843596670080}
   m_Layer: 9
   m_Name: Hurtbox
   m_TagString: Untagged
@@ -111,27 +178,6 @@ CapsuleCollider:
   m_Height: 10
   m_Direction: 1
   m_Center: {x: 0, y: 5, z: 0}
---- !u!65 &9114343843596670080
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2344365542143385722}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 1
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 5, y: 5, z: 5}
-  m_Center: {x: 0, y: 2.5, z: 2}
 --- !u!1 &2534587917385209852
 GameObject:
   m_ObjectHideFlags: 0
@@ -180,6 +226,8 @@ GameObject:
   - component: {fileID: 3558066087296287263}
   - component: {fileID: 1241752798607539066}
   - component: {fileID: 7808257153795759916}
+  - component: {fileID: 4087379410233519132}
+  - component: {fileID: 7916764348118710148}
   m_Layer: 9
   m_Name: Enemy_Boss_test
   m_TagString: Untagged
@@ -286,9 +334,6 @@ MonoBehaviour:
   slopeLimit: 0
   stepOffset: 0
   skinWidth: 0.01
-  center: {x: 0, y: 5, z: 0}
-  m_radius: 4
-  m_height: 10
   collisionLayer:
     serializedVersion: 2
     m_Bits: 65523
@@ -333,6 +378,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: MagnetRush.Enemy::EnemyBossBaseA_Animator
   m_animator: {fileID: 4493106431990948641}
   m_hitbox: {fileID: 1736075274321553787}
+  m_ai: {fileID: 7916764348118710148}
+  m_armHitbox: {fileID: 2564770328425022347}
   m_enableDebugInput: 1
   m_attackName: Attack
   m_attackFinishedName: AttackFinished
@@ -340,6 +387,42 @@ MonoBehaviour:
   m_stunEndName: StunEnd
   m_canInterruptName: CanInterrupt
   m_isStunnedName: IsStunned
+--- !u!195 &4087379410233519132
+NavMeshAgent:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3633170644263179407}
+  m_Enabled: 1
+  m_AgentTypeID: 0
+  m_Radius: 0.5
+  m_Speed: 3.5
+  m_Acceleration: 8
+  avoidancePriority: 50
+  m_AngularSpeed: 0
+  m_StoppingDistance: 1.5
+  m_AutoTraverseOffMeshLink: 1
+  m_AutoBraking: 1
+  m_AutoRepath: 1
+  m_Height: 2
+  m_BaseOffset: 0
+  m_WalkableMask: 4294967295
+  m_ObstacleAvoidanceType: 4
+--- !u!114 &7916764348118710148
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3633170644263179407}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 26af372d0941d9e48adec06a96dd5e47, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Enemy::EnemyBossAI
+  m_animator: {fileID: 7808257153795759916}
+  m_logStateChange: 1
 --- !u!1 &4771497792663904707
 GameObject:
   m_ObjectHideFlags: 0
@@ -485,7 +568,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1082545509210932301}
   - component: {fileID: 6433249732489302944}
-  m_Layer: 9
+  m_Layer: 15
   m_Name: Pushbox
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1332,6 +1415,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -4592311537671613275, guid: d3e489ef0e05c934ea55c7f96c2d0889, type: 3}
       insertIndex: 1
       addedObject: {fileID: 2023403957424003683}
+    - targetCorrespondingSourceObject: {fileID: 1303023567276017412, guid: d3e489ef0e05c934ea55c7f96c2d0889, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8157444902257284641}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: d3e489ef0e05c934ea55c7f96c2d0889, type: 3}
       insertIndex: -1
@@ -1368,5 +1454,10 @@ MonoBehaviour:
 --- !u!4 &7546507583841515867 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: d3e489ef0e05c934ea55c7f96c2d0889, type: 3}
+  m_PrefabInstance: {fileID: 8011954140330024624}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &9017729074501802420 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1303023567276017412, guid: d3e489ef0e05c934ea55c7f96c2d0889, type: 3}
   m_PrefabInstance: {fileID: 8011954140330024624}
   m_PrefabAsset: {fileID: 0}

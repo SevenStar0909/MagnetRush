@@ -6,6 +6,7 @@ public class EnemyBossSettings : ScriptableObject
     [Header("[ステータス]")]
     [Label("最大HP")]
     [Tooltip("最大HP")]
+    // TODO: Health.cs の m_maxHealth を廃止し、本フィールドを参照するよう配線
     public int maxHp = 10;
 
     [Header("[移動]")]
@@ -63,4 +64,11 @@ public class EnemyBossSettings : ScriptableObject
     [Label("ヒットボックス持続時間（秒）")]
     [Tooltip("攻撃ヒットボックスの持続時間（秒）")]
     public float attackHitboxDuration = 0.2f;
+
+    [Header("スタッガー")]
+    [Tooltip("スタンorAttack終了後の隙時間（秒）")]
+    public float staggerDuration = 1.5f;
+    [Tooltip("スタッガー中の移動速度倍率")]
+    [Range(0f, 1f)]
+    public float staggerMoveMultiplier = 0.5f;
 }

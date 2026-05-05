@@ -8,16 +8,9 @@ public class EnemyTurretMagneticAim : MonoBehaviour, IMagneticResponse
     [Header("Aim")]
     [Tooltip("回転させる砲塔のTransform。未指定なら自身を使用。")]
     [SerializeField] private Transform m_yawPivot;
-    [Tooltip("磁性オブジェクト探索半径（m）。0以下ならMagnetSettings.magnetRangeを使用。")]
-    [SerializeField] private float m_detectionMagRange = 0f;
-    [Tooltip("未磁化時にプレイヤーを追従する最大距離（m）。0以下なら無制限。")]
-    [SerializeField] private float m_aimToPlayerRange = 20f;
-    [Tooltip("探索更新間隔（秒）")]
-    [SerializeField] private float m_targetRefreshInterval = 0.1f;
-    [Tooltip("回転速度（度/秒）")]
-    [SerializeField] private float m_rotationSpeed = 120f;
 
     private EnemyTurretBase m_turretBase;
+    private EnemyTurretSettings m_data;
     private Magnetizable m_selfMagnetizable;
     private Magnetizable m_currentTarget;
     private float m_refreshTimer;
@@ -28,6 +21,7 @@ public class EnemyTurretMagneticAim : MonoBehaviour, IMagneticResponse
     {
         m_turretBase = GetComponent<EnemyTurretBase>();
         m_selfMagnetizable = GetComponent<Magnetizable>();
+        m_data = m_turretBase != null ? m_turretBase.StatusData : null;
 
         if (m_yawPivot == null)
             m_yawPivot = transform;
@@ -44,7 +38,8 @@ public class EnemyTurretMagneticAim : MonoBehaviour, IMagneticResponse
         m_refreshTimer -= Time.deltaTime;
         if (m_refreshTimer <= 0f)
         {
-            m_refreshTimer = Mathf.Max(0.02f, m_targetRefreshInterval);
+            float refresh = m_data != null ? m_data.targetRefreshInterval : 0.1f;
+            m_refreshTimer = Mathf.Max(0.02f, refresh);
             m_currentTarget = FindNearestMagnetizable();
         }
 
@@ -86,7 +81,8 @@ public class EnemyTurretMagneticAim : MonoBehaviour, IMagneticResponse
             return;
         }
 
-        if (checkRange && m_aimToPlayerRange > 0f && sqrDist > m_aimToPlayerRange * m_aimToPlayerRange)
+        float aimRange = m_data != null ? m_data.aimToPlayerRange : 20f;
+        if (checkRange && aimRange > 0f && sqrDist > aimRange * aimRange)
         {
             ChannelLogger.LogGuardReturn("Enemy", "プレイヤー照準範囲外");
             return;
@@ -123,7 +119,8 @@ public class EnemyTurretMagneticAim : MonoBehaviour, IMagneticResponse
         float targetPitch = Mathf.Atan2(localDir.y, horizontalDist) * Mathf.Rad2Deg;
 
         Quaternion targetLocalRot = Quaternion.Euler(targetPitch, targetYaw, 0f);
-        float maxDelta = Mathf.Max(1f, m_rotationSpeed) * Time.deltaTime;
+        float rotSpeed = m_data != null ? m_data.rotationSpeed : 120f;
+        float maxDelta = Mathf.Max(1f, rotSpeed) * Time.deltaTime;
         m_yawPivot.localRotation = Quaternion.RotateTowards(
             m_yawPivot.localRotation, targetLocalRot, maxDelta);
     }
@@ -176,8 +173,9 @@ public class EnemyTurretMagneticAim : MonoBehaviour, IMagneticResponse
 
     private float ResolveDetectionRange()
     {
-        if (m_detectionMagRange > 0f)
-            return m_detectionMagRange;
+        float detRange = m_data != null ? m_data.detectionMagRange : 0f;
+        if (detRange > 0f)
+            return detRange;
 
         if (MagnetManager.Instance != null && MagnetManager.Instance.Settings != null)
             return MagnetManager.Instance.Settings.magnetRange;
