@@ -1,25 +1,25 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class EnemyBossBaseA_Animator : MonoBehaviour
 {
     [Header("References")]
-    [Tooltip("‹ì“®‘ÎÛ‚Ì Animatori–¢İ’è‚È‚çqƒIƒuƒWƒFƒNƒg‚©‚çæ“¾j")]
+    [Tooltip("é§†å‹•å¯¾è±¡ã® Animatorï¼ˆæœªè¨­å®šãªã‚‰å­ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‹ã‚‰å–å¾—ï¼‰")]
     [SerializeField] private Animator m_animator;
 
-    [Tooltip("HitboxB–¢İ’è‚È‚çƒ‹[ƒg‚Ìq‚©‚çæ“¾")]
+    [Tooltip("Hitboxã€‚æœªè¨­å®šãªã‚‰ãƒ«ãƒ¼ãƒˆã®å­ã‹ã‚‰å–å¾—")]
     [SerializeField] private Hitbox m_hitbox;
 
-    [Tooltip("AI(EnemyBossAI)BAnimationEvent ‚Å OnAttackFinished/OnStunEnd ‚ğ“]‘—‚·‚é")]
+    [Tooltip("AI(EnemyBossAI)ã€‚AnimationEvent ã§ OnAttackFinished/OnStunEnd ã‚’è»¢é€ã™ã‚‹")]
     [SerializeField] private EnemyBossAI m_ai;
 
-    [Tooltip("˜r‚Ì‹ßÚHitboxBAnimationEvent ‚Å Enable/Disable ‚ğ“]‘—‚·‚é")]
+    [Tooltip("è…•ã®è¿‘æ¥Hitboxã€‚AnimationEvent ã§ Enable/Disable ã‚’è»¢é€ã™ã‚‹")]
     [SerializeField] private BossArmHitbox m_armHitbox;
 
     [Header("Debug")]
     [SerializeField] private bool m_enableDebugInput = true;
 
-    [Header("Animator Parameter Names (Inspector ’Pˆê‰ÓŠŠÇ—)")]
+    [Header("Animator Parameter Names (Inspector å˜ä¸€ç®‡æ‰€ç®¡ç†)")]
     [SerializeField] private string m_attackName = "Attack";
     [SerializeField] private string m_attackFinishedName = "AttackFinished";
     [SerializeField] private string m_beInterruptedName = "BeInterrupted";
@@ -57,7 +57,7 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
 
         if (m_animator == null)
         {
-            ChannelLogger.LogGuardReturn("Enemy", "EnemyBossBaseA_Animator.m_animator ‚ª–¢ƒAƒTƒCƒ“‚Å‚·");
+            ChannelLogger.LogGuardReturn("Enemy", "EnemyBossBaseA_Animator.m_animator ãŒæœªã‚¢ã‚µã‚¤ãƒ³ã§ã™");
             enabled = false;
         }
     }
@@ -138,7 +138,7 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
         SetIsStunned(false);
     }
 
-    /// <summary>AttackStance ‚Ü‚½‚Í AttackMotion ’†‚È‚ç trueBAI ‚ªUŒ‚’†”»’è‚Ég‚¤B</summary>
+    /// <summary>AttackStance ã¾ãŸã¯ AttackMotion ä¸­ãªã‚‰ trueã€‚AI ãŒæ”»æ’ƒä¸­åˆ¤å®šã«ä½¿ã†ã€‚</summary>
     public bool IsAttacking
     {
         get
@@ -149,7 +149,7 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
         }
     }
 
-    /// <summary>AttackMotion ’†iU‚è‚©‚Ô‚è`U‚è”²‚«j‚È‚ç trueBAI ‚ª˜rHitboxŠú‘Ò’†‚Ì”»’è‚Ég‚¤B</summary>
+    /// <summary>AttackMotion ä¸­ï¼ˆæŒ¯ã‚Šã‹ã¶ã‚Šï½æŒ¯ã‚ŠæŠœãï¼‰ãªã‚‰ trueã€‚AI ãŒè…•HitboxæœŸå¾…ä¸­ã®åˆ¤å®šã«ä½¿ã†ã€‚</summary>
     public bool IsInAttackMotion
     {
         get
@@ -159,7 +159,7 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
         }
     }
 
-    /// <summary>AttackStun ’†‚È‚ç trueBBool ‚Å‚Í‚È‚­Œ»İ State ‚ğŒ©‚é‚±‚Æ‚Å AnimEvent ”zü˜R‚ê‚É‘Î‚µ‚Ä‚àŒ˜˜SB</summary>
+    /// <summary>AttackStun ä¸­ãªã‚‰ trueã€‚Bool ã§ã¯ãªãç¾åœ¨ State ã‚’è¦‹ã‚‹ã“ã¨ã§ AnimEvent é…ç·šæ¼ã‚Œã«å¯¾ã—ã¦ã‚‚å …ç‰¢ã€‚</summary>
     public bool IsStunned
     {
         get
@@ -169,39 +169,39 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
         }
     }
 
-    // Animator State –¼‚ÌƒnƒbƒVƒ…iState –¼‚Í EnemyBossA_Animator.controller ‚Ì Layer0 ã‚Ì State –¼‚Æˆê’v‚·‚é•K—v‚ª‚ ‚éj
+    // Animator State åã®ãƒãƒƒã‚·ãƒ¥ï¼ˆState åã¯ EnemyBossA_Animator.controller ã® Layer0 ä¸Šã® State åã¨ä¸€è‡´ã™ã‚‹å¿…è¦ãŒã‚ã‚‹ï¼‰
     private static readonly int s_hAttackStanceState = Animator.StringToHash("AttackStanceAnim");
     private static readonly int s_hAttackMotionState = Animator.StringToHash("AttackMotionAnim");
     private static readonly int s_hAttackStunState   = Animator.StringToHash("AttackStunAnim");
 
-    // === AnimationEvent ‚©‚ç’¼ÚŒÄ‚Î‚ê‚éƒGƒ“ƒgƒŠiForwarder ‚Å‚Í‚È‚­ Animator ’¼‚É’u‚­j ===
+    // === AnimationEvent ã‹ã‚‰ç›´æ¥å‘¼ã°ã‚Œã‚‹ã‚¨ãƒ³ãƒˆãƒªï¼ˆForwarder ã§ã¯ãªã Animator ç›´ã«ç½®ãï¼‰ ===
 
-    /// <summary>AttackMotion U‚èn‚Ü‚è‚ÌAnimEvent‚©‚çŒÄ‚Î‚ê‚éB˜rHitbox‚ğON‚ÉB</summary>
+    /// <summary>AttackMotion æŒ¯ã‚Šå§‹ã¾ã‚Šã®AnimEventã‹ã‚‰å‘¼ã°ã‚Œã‚‹ã€‚è…•Hitboxã‚’ONã«ã€‚</summary>
     public void EnableArmHitboxEvent()
     {
         if (m_armHitbox != null) m_armHitbox.EnableHitbox();
     }
 
-    /// <summary>AttackMotion U‚èI‚í‚è‚ÌAnimEvent‚©‚çŒÄ‚Î‚ê‚éB˜rHitbox‚ğOFF‚ÉB</summary>
+    /// <summary>AttackMotion æŒ¯ã‚Šçµ‚ã‚ã‚Šã®AnimEventã‹ã‚‰å‘¼ã°ã‚Œã‚‹ã€‚è…•Hitboxã‚’OFFã«ã€‚</summary>
     public void DisableArmHitboxEvent()
     {
         if (m_armHitbox != null) m_armHitbox.DisableHitbox();
     }
 
-    /// <summary>AttackMotion clip ––”ö‚ÌAnimEvent‚©‚çŒÄ‚Î‚ê‚éBAI‚ÉStagger‚Ö‚Ì‘JˆÚ‚ğ’Ê’mB</summary>
+    /// <summary>AttackMotion clip æœ«å°¾ã®AnimEventã‹ã‚‰å‘¼ã°ã‚Œã‚‹ã€‚AIã«Staggerã¸ã®é·ç§»ã‚’é€šçŸ¥ã€‚</summary>
     public void OnAttackFinishedEvent()
     {
         if (m_ai != null) m_ai.OnAttackFinished();
     }
 
-    /// <summary>AttackStun clip ––”ö‚ÌAnimEvent‚©‚çŒÄ‚Î‚ê‚éBAI‚ÉStagger‚Ö‚Ì‘JˆÚ‚ğ’Ê’mB</summary>
+    /// <summary>AttackStun clip æœ«å°¾ã®AnimEventã‹ã‚‰å‘¼ã°ã‚Œã‚‹ã€‚AIã«Staggerã¸ã®é·ç§»ã‚’é€šçŸ¥ã€‚</summary>
     public void OnStunEndEvent()
     {
         if (m_ai != null) m_ai.OnStunEnd();
     }
 
     /// <summary>
-    /// Hitbox ‚©‚ç‚ÌƒqƒbƒgƒCƒxƒ“ƒg‚ğˆ—‚·‚éB”í’e‚µ‚½‚ç‘¦’†’fƒgƒŠƒK[‚ğ‘—‚éB
+    /// Hitbox ã‹ã‚‰ã®ãƒ’ãƒƒãƒˆã‚¤ãƒ™ãƒ³ãƒˆã‚’å‡¦ç†ã™ã‚‹ã€‚è¢«å¼¾ã—ãŸã‚‰å³ä¸­æ–­ãƒˆãƒªã‚¬ãƒ¼ã‚’é€ã‚‹ã€‚
     /// </summary>
     private void HandleHit(HitData hit)
     {
@@ -209,7 +209,7 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
     }
 
     /// <summary>
-    /// Animator Controller ‚É•K—v‚Èƒpƒ‰ƒ[ƒ^‚ª’è‹`‚³‚ê‚Ä‚¢‚é‚©‚ğƒ`ƒFƒbƒN‚µA‘«‚è‚È‚¢‚à‚Ì‚ª‚ ‚ê‚ÎƒGƒ‰[‚ğo‚·B
+    /// Animator Controller ã«å¿…è¦ãªãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ãŒå®šç¾©ã•ã‚Œã¦ã„ã‚‹ã‹ã‚’ãƒã‚§ãƒƒã‚¯ã—ã€è¶³ã‚Šãªã„ã‚‚ã®ãŒã‚ã‚Œã°ã‚¨ãƒ©ãƒ¼ã‚’å‡ºã™ã€‚
     /// </summary>
     private void ValidateAnimatorParameters()
     {
@@ -233,7 +233,7 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
         {
             if (!existing.Contains(name))
                 Debug.LogError(
-                    $"[EnemyBossBaseA_Animator] Animator ƒpƒ‰ƒ[ƒ^ '{name}' ({purpose}) ‚ª Controller ‚É’è‹`‚³‚ê‚Ä‚¢‚Ü‚¹‚ñB",
+                    $"[EnemyBossBaseA_Animator] Animator ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ '{name}' ({purpose}) ãŒ Controller ã«å®šç¾©ã•ã‚Œã¦ã„ã¾ã›ã‚“ã€‚",
                     this);
         }
     }
