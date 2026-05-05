@@ -1,7 +1,7 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 /// <summary>
-/// EnemyBossBaseA_Animator ‚ÌƒAƒjƒ[ƒVƒ‡ƒ“ƒCƒxƒ“ƒg‚ğó‚¯æ‚Á‚Ä“]‘—‚·‚éƒRƒ“ƒ|[ƒlƒ“ƒgB
+/// EnemyBossBaseA_Animator ã®ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã‚¤ãƒ™ãƒ³ãƒˆã‚’å—ã‘å–ã£ã¦è»¢é€ã™ã‚‹ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã€‚
 /// </summary>
 public class EnemyBossBaseA_AnimationEventForwarder : MonoBehaviour
 {
@@ -13,7 +13,7 @@ public class EnemyBossBaseA_AnimationEventForwarder : MonoBehaviour
             m_target = GetComponentInParent<EnemyBossBaseA_Animator>();
 
         if (m_target == null)
-            ChannelLogger.LogGuardReturn("Enemy", "EnemyBossBaseA_AnimationEventForwarder.m_target ‚ª–¢ƒAƒTƒCƒ“‚Å‚·");
+            ChannelLogger.LogGuardReturn("Enemy", "EnemyBossBaseA_AnimationEventForwarder.m_target ãŒæœªã‚¢ã‚µã‚¤ãƒ³ã§ã™");
     }
 
     public void TriggerAttack()
@@ -54,5 +54,25 @@ public class EnemyBossBaseA_AnimationEventForwarder : MonoBehaviour
     public void SetIsStunnedFalse()
     {
         if (m_target != null) m_target.SetIsStunnedFalse();
+    }
+
+    public void EnableArmHitboxEvent()
+    {
+        if (m_target != null) m_target.EnableArmHitboxEvent();
+    }
+
+    public void DisableArmHitboxEvent()
+    {
+        if (m_target != null) m_target.DisableArmHitboxEvent();
+    }
+
+    public void OnAttackFinishedEvent()
+    {
+        if (m_target != null) m_target.OnAttackFinishedEvent();
+    }
+
+    public void OnStunEndEvent()
+    {
+        if (m_target != null) m_target.OnStunEndEvent();
     }
 }
