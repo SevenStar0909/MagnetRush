@@ -4,7 +4,7 @@ using UnityEngine.Serialization;
 
 /// <summary>
 /// プレイヤーエンティティ。入力・ステート・磁力の統合制御を行うハブ。
-/// 能力系のうち射撃/エイムは Controller 分離、磁極は Player.cs 直保持（Pattern 2 移行第一段）。
+/// 能力系のうち射撃/エイムは Controller 分離、磁極は Player.cs 直保持。
 /// Movement は Entity base の protected メソッド依存のため本クラスに保持。
 /// </summary>
 [RequireComponent(typeof(Rigidbody))]
