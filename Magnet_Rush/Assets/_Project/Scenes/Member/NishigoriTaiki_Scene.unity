@@ -119,7 +119,7 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &152921288
+--- !u!1 &70871723
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -127,64 +127,43 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 152921290}
-  - component: {fileID: 152921289}
+  - component: {fileID: 70871725}
+  - component: {fileID: 70871724}
   m_Layer: 0
-  m_Name: test(CriAtomSource)
+  m_Name: SoundManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &152921289
+--- !u!114 &70871724
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 152921288}
+  m_GameObject: {fileID: 70871723}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d1e631c3b9947b54c823c6853a05529c, type: 3}
+  m_Script: {fileID: 11500000, guid: 27f96d21a8264ba4db606a88163499d4, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: CriMw.CriWare.Runtime::CriWare.CriAtomSource
-  _playOnStart: 1
-  _regionOnStart: {fileID: 0}
-  _listenerOnStart: {fileID: 0}
-  _use3dPositioning: 1
-  _freezeOrientation: 0
-  _loop: 0
-  _volume: 1
-  _pitch: 0
-  _androidUseLowLatencyVoicePool: 0
-  need_to_player_update_all: 1
-  _use3dRandomization: 0
-  _randomPositionListMaxLength: 0
-  randomize3dConfig:
-    followsOriginalSource: 0
-    calculationType: 0
-    calculationParameters:
-    - 0
-    - 0
-    - 0
-  _cueName: test
-  _cueSheet: BGM
---- !u!4 &152921290
+  m_EditorClassIdentifier: MagnetRush.Game::SoundManager
+--- !u!4 &70871725
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 152921288}
+  m_GameObject: {fileID: 70871723}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 5.41243, y: 0, z: -1.30723}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &654362077
+--- !u!1 &555954832
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -192,55 +171,46 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 654362078}
-  - component: {fileID: 654362079}
+  - component: {fileID: 555954834}
+  - component: {fileID: 555954835}
   m_Layer: 0
-  m_Name: SoundTest
+  m_Name: AtomAssets
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &654362078
+--- !u!4 &555954834
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 654362077}
+  m_GameObject: {fileID: 555954832}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: -0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &654362079
+--- !u!114 &555954835
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 654362077}
+  m_GameObject: {fileID: 555954832}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 91f529aa944b914449d62b8c40f188fe, type: 3}
+  m_Script: {fileID: 11500000, guid: 6fe880b4dd4ce42fa9f0b72c2fb15765, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: CriMw.CriWare.Runtime::CriWare.CriAtom
-  acfFile: SoundData/MagnetRush.acf
-  cueSheets:
-  - name: SoundData/BGM
-    acbFile: SoundData/test.acb
-    awbFile: 
-    loaderStatus: 0
-  - name: BGM
-    acbFile: SoundData/BGM.acb
-    awbFile: 
-    loaderStatus: 0
+  m_EditorClassIdentifier: CriMw.CriWare.Assets.Runtime::CriWare.Assets.CriAtomAssets
+  acfAsset: {fileID: -6750239444755058063, guid: 7201bf96ed209b948887860c038af1e4, type: 3}
   dspBusSetting: 
-  dontDestroyOnLoad: 0
-  dontRemoveExistsCueSheet: 0
+  acbAssets:
+  - {fileID: -6750239444755058063, guid: 07d3e2b4f130a4844a4ca90354d0eff9, type: 3}
 --- !u!1001 &1423838604
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -351,6 +321,6 @@ SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 1423838604}
-  - {fileID: 654362078}
+  - {fileID: 555954834}
+  - {fileID: 70871725}
   - {fileID: 1558124889}
-  - {fileID: 152921290}
