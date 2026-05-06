@@ -144,7 +144,7 @@ public class Player : Entity
         // （aim.StopAim() → MovePlayerState 遷移など）、入力処理直後の最新Stateで移動処理が走る
         if (!isDying)
         {
-            pole.Switch();
+            SwitchPole();
             aim.UpdateInput();
             shooting.Fire();
             shooting.SelfFire();

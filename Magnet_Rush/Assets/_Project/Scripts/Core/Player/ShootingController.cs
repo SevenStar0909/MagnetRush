@@ -79,7 +79,7 @@ public class ShootingController : MonoBehaviour
         var bullet = bulletObj.GetComponent<MagnetBullet>();
         if (bullet != null)
         {
-            bullet.Initialize(m_pole.CurrentPole, direction);
+            bullet.Initialize(m_player.CurrentPole, direction);
             BulletManager.Instance.Register(bullet);
             // 着弾時にエイム解除、自己 unsubscribe で累積・ダングリング参照を防ぐ
             void HandleImpact()
@@ -104,7 +104,7 @@ public class ShootingController : MonoBehaviour
 
         m_input.ConsumeSelfFire();
 
-        m_magnetizable.SetPole(m_pole.CurrentPole);
+        m_magnetizable.SetPole(m_player.CurrentPole);
 
         var fieldSettings = m_bulletSettings.bulletFieldSettings;
         if (fieldSettings != null)
@@ -113,15 +113,15 @@ public class ShootingController : MonoBehaviour
             if (existing == null)
             {
                 var field = gameObject.AddComponent<MagnetField>();
-                field.Initialize(m_pole.CurrentPole, fieldSettings);
+                field.Initialize(m_player.CurrentPole, fieldSettings);
 
                 if (MagnetManager.Instance != null)
                     MagnetManager.Instance.RegisterField(field);
 
                 var visualizer = gameObject.AddComponent<MagnetFieldVisualizer>();
-                visualizer.Show(m_pole.CurrentPole, fieldSettings);
+                visualizer.Show(m_player.CurrentPole, fieldSettings);
 
-                GameObject effectPrefab = m_pole.CurrentPole == MagneticPole.S
+                GameObject effectPrefab = m_player.CurrentPole == MagneticPole.S
                     ? m_bulletSettings.impactEffect_S
                     : m_bulletSettings.impactEffect_N;
                 GameObject effectInstance = null;

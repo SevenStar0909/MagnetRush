@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 /// <summary>
 /// レティクルUI。エイム状態でグループ切替、極性でスプライト切替、発射時に各ラインへキック配信。
-/// 依存: AimController, PoleController, PlayerEvents（Player Tag のオブジェクトから取得）
+/// 依存: AimController, Player（CurrentPole/OnPoleChanged）, PlayerEvents（Player Tag のオブジェクトから取得）
 /// </summary>
 public class ReticleUI : MonoBehaviour
 {
@@ -24,7 +24,7 @@ public class ReticleUI : MonoBehaviour
     [SerializeField] private Sprite m_hipfireLineN;
 
     private AimController m_aimController;
-    private PoleController m_poleController;
+    private Player m_player;
     private PlayerEvents m_playerEvents;
     private MagneticPole m_currentPole = MagneticPole.S;
 
@@ -41,13 +41,13 @@ public class ReticleUI : MonoBehaviour
         if (player != null)
         {
             m_aimController = player.GetComponent<AimController>();
-            m_poleController = player.GetComponent<PoleController>();
+            m_player = player.GetComponent<Player>();
             m_playerEvents = player.GetComponent<PlayerEvents>();
 
-            if (m_poleController != null)
+            if (m_player != null)
             {
-                m_poleController.OnPoleChanged += OnPoleChanged;
-                m_currentPole = m_poleController.CurrentPole;
+                m_player.OnPoleChanged += OnPoleChanged;
+                m_currentPole = m_player.CurrentPole;
             }
             if (m_playerEvents != null && m_playerEvents.onShoot != null)
             {
@@ -61,8 +61,8 @@ public class ReticleUI : MonoBehaviour
 
     void OnDestroy()
     {
-        if (m_poleController != null)
-            m_poleController.OnPoleChanged -= OnPoleChanged;
+        if (m_player != null)
+            m_player.OnPoleChanged -= OnPoleChanged;
         if (m_playerEvents != null && m_playerEvents.onShoot != null)
             m_playerEvents.onShoot.RemoveListener(OnShoot);
     }
