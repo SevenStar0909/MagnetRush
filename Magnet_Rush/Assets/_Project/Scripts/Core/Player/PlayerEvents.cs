@@ -5,7 +5,7 @@ using UnityEngine.Serialization;
 /// <summary>
 /// プレイヤーアクションのイベントハブ。
 /// VFX/SE/アニメ等がInspectorから繋げるようUnityEvent化。
-/// 極性情報は OnPoleSwitch 発火後に Player.CurrentPole から読む。
+/// 極性情報は OnPoleSwitch 発火後に PoleController.CurrentPole から読む。
 /// </summary>
 public class PlayerEvents : MonoBehaviour
 {
@@ -17,7 +17,7 @@ public class PlayerEvents : MonoBehaviour
     [FormerlySerializedAs("OnSelfShoot")]
     public UnityEvent onSelfShoot;
 
-    [Tooltip("磁極切替時に発火。極は Player.CurrentPole から取得")]
+    [Tooltip("磁極切替時に発火。極は PoleController.CurrentPole から取得")]
     [FormerlySerializedAs("OnPolaritySwitch")]
     [FormerlySerializedAs("OnPoleSwitch")]
     public UnityEvent onPoleSwitch;

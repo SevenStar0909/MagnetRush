@@ -4,12 +4,13 @@ using UnityEngine.Serialization;
 
 /// <summary>
 /// プレイヤーエンティティ。入力・ステート・磁力の統合制御を行うハブ。
-/// 能力系のうち射撃/エイムは Controller 分離、磁極は Player.cs 直保持。
+/// 能力系（射撃/エイム/磁極）は同 GameObject 上の Controller に分離。
 /// Movement は Entity base の protected メソッド依存のため本クラスに保持。
 /// </summary>
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(PlayerInputHandler))]
 [RequireComponent(typeof(PlayerEvents))]
+[RequireComponent(typeof(PoleController))]
 [RequireComponent(typeof(AimController))]
 [RequireComponent(typeof(ShootingController))]
 public class Player : Entity
@@ -59,26 +60,8 @@ public class Player : Entity
     /// <summary>エイム Controller。</summary>
     public AimController aim { get; private set; }
 
-    /// <summary>現在の磁極（S または N）。デフォルトは S。</summary>
-    public MagneticPole CurrentPole { get; private set; } = MagneticPole.S;
-
-    /// <summary>磁極切替時に発火。UI 等が購読する。</summary>
-    public event Action<MagneticPole> OnPoleChanged;
-
-    /// <summary>Y 入力があれば磁極を切り替える。現在は Player.Update から毎フレーム呼ぶ。PR2/PR3 で各 PlayerState.UpdateState に移管予定。それ以外の場所からは呼ばない（入力バッファ二重消費の原因になる）。</summary>
-    public void SwitchPole()
-    {
-        if (input == null || events == null)
-        {
-            ChannelLogger.LogGuardReturn("Player", "SwitchPole: input または events が null");
-            return;
-        }
-        if (!input.IsSwitchPolePressed) return;
-        input.ConsumeSwitchPole();
-        CurrentPole = CurrentPole == MagneticPole.S ? MagneticPole.N : MagneticPole.S;
-        OnPoleChanged?.Invoke(CurrentPole);
-        events.FirePoleSwitch();
-    }
+    /// <summary>磁極 Controller。</summary>
+    public PoleController pole { get; private set; }
 
     protected override void Awake()
     {
@@ -89,6 +72,7 @@ public class Player : Entity
         magnetizable = GetComponent<Magnetizable>();
         shooting = GetComponent<ShootingController>();
         aim = GetComponent<AimController>();
+        pole = GetComponent<PoleController>();
 
         if (m_settings.groundLayer == 0)
             Debug.LogWarning("[Player] PlayerSettings.groundLayerが未設定。PhysicsLayers.MaskGroundCheckを使用。");
@@ -139,8 +123,7 @@ public class Player : Entity
         // （aim.StopAim() → MovePlayerState 遷移など）、入力処理直後の最新Stateで移動処理が走る
         if (!isDying)
         {
-            // TODO: PR2/PR3 で各 PlayerState.UpdateState に移管予定。現在は Player.Update から呼ぶ。
-            SwitchPole();
+            pole.Switch();
             aim.UpdateInput();
             shooting.Fire();
             shooting.SelfFire();
