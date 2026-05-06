@@ -4,13 +4,12 @@ using UnityEngine.Serialization;
 
 /// <summary>
 /// プレイヤーエンティティ。入力・ステート・磁力の統合制御を行うハブ。
-/// 能力系（射撃/エイム/磁極）は同 GameObject 上の Controller に分離。
+/// 能力系のうち射撃/エイムは Controller 分離、磁極は Player.cs 直保持（Pattern 2 移行第一段）。
 /// Movement は Entity base の protected メソッド依存のため本クラスに保持。
 /// </summary>
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(PlayerInputHandler))]
 [RequireComponent(typeof(PlayerEvents))]
-[RequireComponent(typeof(PoleController))]
 [RequireComponent(typeof(AimController))]
 [RequireComponent(typeof(ShootingController))]
 public class Player : Entity
@@ -60,9 +59,6 @@ public class Player : Entity
     /// <summary>エイム Controller。</summary>
     public AimController aim { get; private set; }
 
-    /// <summary>磁極 Controller。</summary>
-    public PoleController pole { get; private set; }
-
     /// <summary>現在の磁極（S または N）。デフォルトは S。</summary>
     public MagneticPole CurrentPole { get; private set; } = MagneticPole.S;
 
@@ -93,7 +89,6 @@ public class Player : Entity
         magnetizable = GetComponent<Magnetizable>();
         shooting = GetComponent<ShootingController>();
         aim = GetComponent<AimController>();
-        pole = GetComponent<PoleController>();
 
         if (m_settings.groundLayer == 0)
             Debug.LogWarning("[Player] PlayerSettings.groundLayerが未設定。PhysicsLayers.MaskGroundCheckを使用。");

@@ -2,12 +2,11 @@ using UnityEngine;
 
 /// <summary>
 /// 射撃コンポーネント。RT で通常射撃、A/F でセルフファイア、X でリロード。
-/// 依存: PlayerInputHandler, PlayerEvents, Magnetizable, PoleController, AimController, Player（PlayerSettings 参照用）
+/// 依存: PlayerInputHandler, PlayerEvents, Magnetizable, AimController, Player（PlayerSettings + CurrentPole 参照）
 /// </summary>
 [RequireComponent(typeof(PlayerInputHandler))]
 [RequireComponent(typeof(PlayerEvents))]
 [RequireComponent(typeof(Magnetizable))]
-[RequireComponent(typeof(PoleController))]
 [RequireComponent(typeof(AimController))]
 [RequireComponent(typeof(Player))]
 public class ShootingController : MonoBehaviour
@@ -20,7 +19,6 @@ public class ShootingController : MonoBehaviour
     private PlayerInputHandler m_input;
     private PlayerEvents m_events;
     private Magnetizable m_magnetizable;
-    private PoleController m_pole;
     private AimController m_aim;
     private Player m_player;
 
@@ -31,7 +29,6 @@ public class ShootingController : MonoBehaviour
         m_input = GetComponent<PlayerInputHandler>();
         m_events = GetComponent<PlayerEvents>();
         m_magnetizable = GetComponent<Magnetizable>();
-        m_pole = GetComponent<PoleController>();
         m_aim = GetComponent<AimController>();
         m_player = GetComponent<Player>();
     }
