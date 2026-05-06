@@ -72,7 +72,11 @@ public class Player : Entity
     /// <summary>Y 入力があれば磁極を切り替える。Player.Update から、または各 PlayerState.UpdateState から毎フレーム呼ぶ前提。</summary>
     public void SwitchPole()
     {
-        if (input == null || events == null) return;
+        if (input == null || events == null)
+        {
+            ChannelLogger.LogGuardReturn("Player", "SwitchPole: input または events が null");
+            return;
+        }
         if (!input.IsSwitchPolePressed) return;
         input.ConsumeSwitchPole();
         CurrentPole = CurrentPole == MagneticPole.S ? MagneticPole.N : MagneticPole.S;
