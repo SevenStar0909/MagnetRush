@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Serialization;
-
 /// <summary>
 /// 磁力場コンポーネント。形状ベースの方向計算、減衰、ダメージ蓄積、ライフタイムを管理する。
 /// 弾のGOにAddComponentされ、弾と一体のライフサイクルで動作する。
@@ -10,7 +8,6 @@ using UnityEngine.Serialization;
 /// </summary>
 public class MagnetField : MonoBehaviour, IMagnetField
 {
-    [FormerlySerializedAs("settings")]
     [SerializeField] private MagnetFieldSettings m_settings;
 
     private MagneticPole m_pole;

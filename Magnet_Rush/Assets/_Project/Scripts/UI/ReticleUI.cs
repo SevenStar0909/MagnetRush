@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 /// <summary>
 /// レティクルUI。エイム状態でグループ切替、極性でスプライト切替、発射時に各ラインへキック配信。
-/// 依存: AimController, PoleController, PlayerEvents（Player Tag のオブジェクトから取得）
+/// 依存: AimAbility, PoleAbility, PlayerEvents（Player Tag のオブジェクトから取得）
 /// </summary>
 public class ReticleUI : MonoBehaviour
 {
@@ -23,8 +23,8 @@ public class ReticleUI : MonoBehaviour
     [SerializeField] private Sprite m_hipfireLineS;
     [SerializeField] private Sprite m_hipfireLineN;
 
-    private AimController m_aimController;
-    private PoleController m_poleController;
+    private AimAbility m_aimController;
+    private PoleAbility m_poleController;
     private PlayerEvents m_playerEvents;
     private MagneticPole m_currentPole = MagneticPole.S;
 
@@ -40,8 +40,8 @@ public class ReticleUI : MonoBehaviour
         var player = GameObject.FindWithTag(GameTags.Player);
         if (player != null)
         {
-            m_aimController = player.GetComponent<AimController>();
-            m_poleController = player.GetComponent<PoleController>();
+            m_aimController = player.GetComponent<AimAbility>();
+            m_poleController = player.GetComponent<PoleAbility>();
             m_playerEvents = player.GetComponent<PlayerEvents>();
 
             if (m_poleController != null)

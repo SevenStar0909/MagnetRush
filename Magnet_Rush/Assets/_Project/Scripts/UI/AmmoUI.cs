@@ -1,25 +1,21 @@
 using UnityEngine;
-using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 /// <summary>
 /// 残弾数UIの表示・更新。スプライト切替方式（極性＋残弾数統合画像）。
-/// BulletManagerとPoleControllerのイベントを購読する。
+/// BulletManagerとPoleAbilityのイベントを購読する。
 /// </summary>
 public class AmmoUI : MonoBehaviour
 {
-    [FormerlySerializedAs("ammoImage")]
     [SerializeField] private Image m_ammoImage;
 
     [Header("S極 残弾スプライト (0〜4)")]
-    [FormerlySerializedAs("spritesS")]
     [SerializeField] private Sprite[] m_spritesS;
 
     [Header("N極 残弾スプライト (0〜4)")]
-    [FormerlySerializedAs("spritesN")]
     [SerializeField] private Sprite[] m_spritesN;
 
-    private PoleController m_pole;
+    private PoleAbility m_pole;
     private MagneticPole m_currentPole = MagneticPole.S;
     private int m_currentRemaining = 4;
 
@@ -28,7 +24,7 @@ public class AmmoUI : MonoBehaviour
         var playerObj = GameObject.FindWithTag(GameTags.Player);
         if (playerObj != null)
         {
-            m_pole = playerObj.GetComponent<PoleController>();
+            m_pole = playerObj.GetComponent<PoleAbility>();
             if (m_pole != null)
             {
                 m_pole.OnPoleChanged += OnPoleChanged;

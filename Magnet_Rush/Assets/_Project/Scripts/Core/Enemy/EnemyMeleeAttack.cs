@@ -1,15 +1,11 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Serialization;
-
 [RequireComponent(typeof(EnemyBase))]
 public class EnemyMeleeAttack : MonoBehaviour
 {
     [Header("Attack Hitbox")]
-    [FormerlySerializedAs("attackHitbox")]
     [SerializeField] private CapsuleCollider m_attackHitbox;
-    [FormerlySerializedAs("attackHitboxMeshRenderer")]
     [SerializeField] private MeshRenderer m_attackHitboxMeshRenderer;
 
     [Header("Weapon Swing")]
