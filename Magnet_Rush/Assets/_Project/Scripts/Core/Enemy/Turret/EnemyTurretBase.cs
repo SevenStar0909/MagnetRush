@@ -1,6 +1,4 @@
-﻿using UnityEngine;
-using UnityEngine.Serialization;
-
+using UnityEngine;
 /// <summary>
 /// 砲台敵人的基底クラス。移動せず、共通参照と生存管理のみを担当する。
 /// </summary>
@@ -8,11 +6,9 @@ using UnityEngine.Serialization;
 public class EnemyTurretBase : Entity
 {
     [Header("Data")]
-    [FormerlySerializedAs("statusData")]
     [SerializeField] private EnemyTurretSettings m_statusData;
 
     [Header("References")]
-    [FormerlySerializedAs("player")]
     [SerializeField] private Transform m_player;
     [SerializeField] private Transform m_firePoint;
 

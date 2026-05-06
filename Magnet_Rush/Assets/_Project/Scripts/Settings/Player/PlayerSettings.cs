@@ -1,11 +1,8 @@
 using UnityEngine;
-using UnityEngine.Serialization;
-
 [CreateAssetMenu(fileName = "PlayerSettings", menuName = "MagnetRush/PlayerSettings")]
 public class PlayerSettings : ScriptableObject
 {
     [Header("[移動]")]
-    [FormerlySerializedAs("moveSpeed")]
     [Label("最高移動速度（m/s）")]
     [Tooltip("最高移動速度（m/s）")]
     public float topSpeed = 6f;

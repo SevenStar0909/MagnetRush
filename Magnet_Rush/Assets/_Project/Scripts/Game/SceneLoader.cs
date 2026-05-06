@@ -1,7 +1,5 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.Serialization;
-
 /// <summary>
 /// シーンローダー。シングルトンでシーン遷移を管理する。
 /// アディティブシーン（マップ等）はInspectorで設定。

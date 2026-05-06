@@ -2,13 +2,10 @@ using System;
 using UnityEngine;
 
 /// <summary>
-/// エイム制御コンポーネント。LT 入力でエイムモードに入りスロー + カメラ固定ストレイフに遷移する。
-/// 依存: PlayerInputHandler, PlayerStateManager, Player（PlayerSettings 参照用、同 GameObject）
+/// エイム能力。LT 入力でエイムモードに入りスロー + カメラ固定ストレイフに遷移する。
+/// 基底: Ability（共通の依存 m_input / m_player / m_events / m_states は基底で取得済み）
 /// </summary>
-[RequireComponent(typeof(PlayerInputHandler))]
-[RequireComponent(typeof(PlayerStateManager))]
-[RequireComponent(typeof(Player))]
-public class AimController : MonoBehaviour
+public class AimAbility : Ability
 {
     /// <summary>エイム中かどうか。</summary>
     public bool IsAiming { get; private set; }
@@ -16,9 +13,6 @@ public class AimController : MonoBehaviour
     /// <summary>エイム状態変化時に発火。CameraSettingsApplier 等が購読。静的なのは Player.Current 未生成時点で購読可能にするため。</summary>
     public static event Action<bool> OnAimChanged;
 
-    private PlayerInputHandler m_input;
-    private PlayerStateManager m_states;
-    private Player m_player;
     private float m_aimReleaseGrace;
 
     private float m_baselineFixedDeltaTime;
@@ -35,11 +29,9 @@ public class AimController : MonoBehaviour
         OnAimChanged = null;
     }
 
-    void Awake()
+    protected override void Awake()
     {
-        m_input = GetComponent<PlayerInputHandler>();
-        m_states = GetComponent<PlayerStateManager>();
-        m_player = GetComponent<Player>();
+        base.Awake();
         // 元の物理タイムステップを退避。Time.timeScale 変動に追従させて実時間で物理を一定にする
         m_baselineFixedDeltaTime = Time.fixedDeltaTime;
     }

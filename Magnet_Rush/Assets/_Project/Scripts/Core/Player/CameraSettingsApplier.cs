@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.Serialization;
 using Unity.Cinemachine;
 
 /// <summary>
@@ -10,7 +9,6 @@ using Unity.Cinemachine;
 [DefaultExecutionOrder(-200)]
 public class CameraSettingsApplier : MonoBehaviour
 {
-    [FormerlySerializedAs("cinemachineCamera")]
     [SerializeField] private CinemachineCamera m_cinemachineCamera;
 
     private PlayerSettings m_settings;
@@ -25,14 +23,14 @@ public class CameraSettingsApplier : MonoBehaviour
 
     void OnEnable()
     {
-        AimController.OnAimChanged += SetAimMode;
+        AimAbility.OnAimChanged += SetAimMode;
         Player.OnPlayerReady += InitializeWithPlayer;
         if (Player.Current != null) InitializeWithPlayer(Player.Current);
     }
 
     void OnDisable()
     {
-        AimController.OnAimChanged -= SetAimMode;
+        AimAbility.OnAimChanged -= SetAimMode;
         Player.OnPlayerReady -= InitializeWithPlayer;
     }
 

@@ -1,8 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Serialization;
-
 [DefaultExecutionOrder(-30)]
 public class WeaponManager : Singleton<WeaponManager>
 {

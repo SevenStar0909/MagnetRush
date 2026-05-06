@@ -29,8 +29,8 @@ public class PlayerAnimator : MonoBehaviour
     [Tooltip("Player 本体。未設定なら親の GetComponentInParent<Player>()")]
     [SerializeField] private Player m_player;
 
-    [Tooltip("エイム Controller。未設定なら親の GetComponentInParent<AimController>()")]
-    [SerializeField] private AimController m_aim;
+    [Tooltip("エイム Ability。未設定なら親の GetComponentInParent<AimAbility>()")]
+    [SerializeField] private AimAbility m_aim;
 
     [Header("Animator Parameter Names (Inspector 単一箇所管理)")]
     [SerializeField] private string m_stateName = "State";
@@ -82,7 +82,7 @@ public class PlayerAnimator : MonoBehaviour
         if (m_states   == null) m_states   = GetComponentInParent<PlayerStateManager>();
         if (m_entity   == null) m_entity   = GetComponentInParent<Entity>();
         if (m_player   == null) m_player   = GetComponentInParent<Player>();
-        if (m_aim      == null) m_aim      = GetComponentInParent<AimController>();
+        if (m_aim      == null) m_aim      = GetComponentInParent<AimAbility>();
 
         if (m_animator == null)
         {

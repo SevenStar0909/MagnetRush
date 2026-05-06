@@ -1,7 +1,5 @@
 using System;
 using UnityEngine;
-using UnityEngine.Serialization;
-
 /// <summary>
 /// プレイヤーエンティティ。入力・ステート・磁力の統合制御を行うハブ。
 /// 能力系（射撃/エイム/磁極）は同 GameObject 上の Controller に分離。
@@ -10,12 +8,11 @@ using UnityEngine.Serialization;
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(PlayerInputHandler))]
 [RequireComponent(typeof(PlayerEvents))]
-[RequireComponent(typeof(PoleController))]
-[RequireComponent(typeof(AimController))]
-[RequireComponent(typeof(ShootingController))]
+[RequireComponent(typeof(PoleAbility))]
+[RequireComponent(typeof(AimAbility))]
+[RequireComponent(typeof(ShootingAbility))]
 public class Player : Entity
 {
-    [FormerlySerializedAs("settings")]
     [SerializeField] private PlayerSettings m_settings;
 
     /// <summary>プレイヤー設定SO。Controller から参照される唯一の保持者。</summary>
@@ -54,14 +51,14 @@ public class Player : Entity
     /// <summary>磁力影響を受けるコンポーネント。</summary>
     public Magnetizable magnetizable { get; private set; }
 
-    /// <summary>射撃 Controller。</summary>
-    public ShootingController shooting { get; private set; }
+    /// <summary>射撃 Ability。</summary>
+    public ShootingAbility shooting { get; private set; }
 
-    /// <summary>エイム Controller。</summary>
-    public AimController aim { get; private set; }
+    /// <summary>エイム Ability。</summary>
+    public AimAbility aim { get; private set; }
 
-    /// <summary>磁極 Controller。</summary>
-    public PoleController pole { get; private set; }
+    /// <summary>磁極 Ability。</summary>
+    public PoleAbility pole { get; private set; }
 
     protected override void Awake()
     {
@@ -70,9 +67,9 @@ public class Player : Entity
         events = GetComponent<PlayerEvents>();
         states = GetComponent<PlayerStateManager>();
         magnetizable = GetComponent<Magnetizable>();
-        shooting = GetComponent<ShootingController>();
-        aim = GetComponent<AimController>();
-        pole = GetComponent<PoleController>();
+        shooting = GetComponent<ShootingAbility>();
+        aim = GetComponent<AimAbility>();
+        pole = GetComponent<PoleAbility>();
 
         if (m_settings.groundLayer == 0)
             Debug.LogWarning("[Player] PlayerSettings.groundLayerが未設定。PhysicsLayers.MaskGroundCheckを使用。");

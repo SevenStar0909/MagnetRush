@@ -1,7 +1,5 @@
-﻿using System;
+using System;
 using UnityEngine;
-using UnityEngine.Serialization;
-
 /// <summary>
 /// 磁力弾。着弾時にパターン1（壁にくっつく）またはパターン2（弾消去＋磁化）を実行する。
 /// 飛行中はMagnetFieldの影響で弾道が曲がる。
@@ -10,7 +8,6 @@ using UnityEngine.Serialization;
 [RequireComponent(typeof(SphereCollider))]
 public class MagnetBullet : MonoBehaviour, IBulletProximity
 {
-    [FormerlySerializedAs("settings")]
     [SerializeField] private BulletSettings m_settings;
 
     public MagneticPole Pole { get; private set; }
