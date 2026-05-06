@@ -65,7 +65,7 @@ public class Player : Entity
     /// <summary>磁極切替時に発火。UI 等が購読する。</summary>
     public event Action<MagneticPole> OnPoleChanged;
 
-    /// <summary>Y 入力があれば磁極を切り替える。Player.Update から、または各 PlayerState.UpdateState から毎フレーム呼ぶ前提。</summary>
+    /// <summary>Y 入力があれば磁極を切り替える。現在は Player.Update から毎フレーム呼ぶ。PR2/PR3 で各 PlayerState.UpdateState に移管予定。それ以外の場所からは呼ばない（入力バッファ二重消費の原因になる）。</summary>
     public void SwitchPole()
     {
         if (input == null || events == null)
@@ -139,6 +139,7 @@ public class Player : Entity
         // （aim.StopAim() → MovePlayerState 遷移など）、入力処理直後の最新Stateで移動処理が走る
         if (!isDying)
         {
+            // TODO: PR2/PR3 で各 PlayerState.UpdateState に移管予定。現在は Player.Update から呼ぶ。
             SwitchPole();
             aim.UpdateInput();
             shooting.Fire();
