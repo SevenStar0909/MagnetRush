@@ -108,16 +108,21 @@ public class Player : Entity
         }
     }
 
+    /// <summary>
+    /// スロー時のみ FixedUpdate + TransformInterpolator 経路に切り替える閾値。
+    /// 通常時は Update ベース 60Hz 直書きで補間を介在させずフルレートの滑らかさを確保する。
+    /// </summary>
+    private const float k_SlowMotionThreshold = 0.99f;
+
+    /// <summary>スロー時かどうか。TransformInterpolator も同条件で補間 ON/OFF を切り替える。</summary>
+    public static bool IsSlowMotion => Time.timeScale < k_SlowMotionThreshold;
+
     void Update()
     {
-        float dt = Mathf.Min(Time.deltaTime, Time.fixedDeltaTime * 3f);
         UpdateMagneticInfluence();
 
         bool isDying = states.IsCurrentOfType<DiePlayerState>();
 
-        // 入力消費系を State 横断で1箇所に集約。死亡中は処理しない
-        // pole/aim/shooting の入力処理で State 遷移が発生する場合があり
-        // （aim.StopAim() → MovePlayerState 遷移など）、入力処理直後の最新Stateで移動処理が走る
         if (!isDying)
         {
             pole.Switch();
@@ -127,11 +132,24 @@ public class Player : Entity
             shooting.Reload();
         }
 
-        states.UpdateState(dt);   // State は移動・遷移判定のみ
+        // 通常時は従来どおり Update ベースで動かす（60Hz 直書きで滑らか）
+        if (!IsSlowMotion)
+        {
+            float dt = Mathf.Min(Time.deltaTime, Time.fixedDeltaTime * 3f);
+            states.UpdateState(dt);
+            if (!isDying) UpdateEntity(dt);
+        }
+    }
 
-        // 死亡中は重力・移動処理をスキップ（UpdateEntityがvelocityを上書きして落下するのを防ぐ）
-        if (!isDying)
-            UpdateEntity(dt);
+    void FixedUpdate()
+    {
+        // スロー時のみ FixedUpdate で動かし、TransformInterpolator にサブフレーム補間させる
+        if (!IsSlowMotion) return;
+
+        bool isDying = states.IsCurrentOfType<DiePlayerState>();
+        float dt = Time.fixedDeltaTime;
+        states.UpdateState(dt);
+        if (!isDying) UpdateEntity(dt);
     }
 
     /// <summary>

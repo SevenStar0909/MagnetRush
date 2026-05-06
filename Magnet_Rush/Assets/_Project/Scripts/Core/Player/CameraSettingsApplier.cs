@@ -43,9 +43,14 @@ public class CameraSettingsApplier : MonoBehaviour
         m_settings = playerComponent.Settings;
         var player = playerComponent.gameObject;
 
-        // カメラ回転ピボットをプレイヤーの子に生成
+        // カメラ回転ピボットを TransformInterpolator 配下に生成する。
+        // 直接 Player ルート配下にすると、ルートが FixedUpdate でスナップする位置に追従し、
+        // 60Hz 描画で 50Hz スナップが見えてカメラがガクつく。Model 直下なら補間後の滑らかな
+        // 位置に追従できる。Model が見つからない場合は従来通り Player ルート直下にフォールバック。
+        var pivotParent = player.transform.Find("Model");
+        if (pivotParent == null) pivotParent = player.transform;
         var pivotGO = new GameObject("CameraPivot");
-        pivotGO.transform.SetParent(player.transform, false);
+        pivotGO.transform.SetParent(pivotParent, false);
         // 肩の高さ付近にピボットを配置（キャラの頭上ではなく肩越し視点になるように）
         pivotGO.transform.localPosition = Vector3.up * 1.2f;
         m_cameraPivot = pivotGO.transform;
