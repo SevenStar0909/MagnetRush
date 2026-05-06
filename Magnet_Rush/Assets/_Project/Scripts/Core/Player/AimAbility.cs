@@ -18,10 +18,10 @@ public class AimAbility : Ability
     private float m_baselineFixedDeltaTime;
     private float m_targetTimeScale = 1f;
 
-    // エイム継続時間の上限管理
+    // スロー継続時間の上限管理
     private float m_aimElapsed;
-    // 上限到達後、LTを離すまで再エイムをロックするフラグ。連打による即座再エイムを防止
-    private bool m_aimLockoutWhileHeld;
+    // 上限到達後、LTを離すまでスロー再発動をロックするフラグ。エイム自体は継続する
+    private bool m_slowLockoutWhileHeld;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void ResetStatics()
@@ -44,7 +44,7 @@ public class AimAbility : Ability
         Time.fixedDeltaTime = m_baselineFixedDeltaTime;
         m_targetTimeScale = 1f;
         m_aimElapsed = 0f;
-        m_aimLockoutWhileHeld = false;
+        m_slowLockoutWhileHeld = false;
     }
 
     void Update()
@@ -63,25 +63,26 @@ public class AimAbility : Ability
     {
         if (m_input.AimHeld)
         {
-            // 上限到達でロック中は LT を離すまで再エイムさせない
-            if (m_aimLockoutWhileHeld) return;
-
             m_aimReleaseGrace = m_player.Settings.aimReleaseGraceTime;
             if (!IsAiming) StartAim();
 
-            // 実時間で経過を加算。Time.timeScale の影響を受けないため期待通りに上限が機能する
-            m_aimElapsed += Time.unscaledDeltaTime;
-            float max = m_player.Settings.aimMaxDuration;
-            if (max > 0f && m_aimElapsed >= max)
+            // ロック中は経過加算しない（既に max なのでスローのみ解除済み、エイムは継続）
+            if (!m_slowLockoutWhileHeld)
             {
-                m_aimLockoutWhileHeld = true;
-                StopAim();
+                // 実時間で経過を加算。Time.timeScale の影響を受けないため期待通りに上限が機能する
+                m_aimElapsed += Time.unscaledDeltaTime;
+                float max = m_player.Settings.aimMaxDuration;
+                if (max > 0f && m_aimElapsed >= max)
+                {
+                    m_slowLockoutWhileHeld = true;
+                    m_targetTimeScale = 1f;
+                }
             }
         }
         else
         {
-            // LT を離した瞬間にロック解除（次回押下で再エイム可能になる）
-            m_aimLockoutWhileHeld = false;
+            // LT を離した瞬間にロック解除（次回押下で再スロー可能になる）
+            m_slowLockoutWhileHeld = false;
             if (IsAiming)
             {
                 m_aimReleaseGrace -= Time.unscaledDeltaTime;
