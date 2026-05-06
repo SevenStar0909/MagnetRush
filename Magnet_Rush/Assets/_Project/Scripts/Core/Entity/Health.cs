@@ -1,15 +1,11 @@
 using System;
 using UnityEngine;
-using UnityEngine.Serialization;
-
 /// <summary>
 /// ダメージクールダウン付きのHP管理。
 /// </summary>
 public class Health : MonoBehaviour
 {
-    [FormerlySerializedAs("maxHealth")]
     [SerializeField] private int m_maxHealth = 3;
-    [FormerlySerializedAs("damageCooldown")]
     [SerializeField] private float m_damageCooldown = 1f;
 
     public int MaxHealth => m_maxHealth;

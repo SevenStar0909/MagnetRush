@@ -1,39 +1,32 @@
 using UnityEngine;
 
 /// <summary>
-/// 射撃コンポーネント。RT で通常射撃、A/F でセルフファイア、X でリロード。
-/// 依存: PlayerInputHandler, PlayerEvents, Magnetizable, PoleController, AimController, Player（PlayerSettings 参照用）
+/// 射撃能力。RT で通常射撃、A/F でセルフファイア、X でリロード。
+/// 基底: Ability（共通の依存 m_input / m_player / m_events / m_states は基底で取得済み）
+/// 派生固有の追加依存: Magnetizable / PoleAbility / AimAbility（極性参照・着弾時エイム解除）
 /// </summary>
-[RequireComponent(typeof(PlayerInputHandler))]
-[RequireComponent(typeof(PlayerEvents))]
 [RequireComponent(typeof(Magnetizable))]
-[RequireComponent(typeof(PoleController))]
-[RequireComponent(typeof(AimController))]
-[RequireComponent(typeof(Player))]
-public class ShootingController : MonoBehaviour
+[RequireComponent(typeof(PoleAbility))]
+[RequireComponent(typeof(AimAbility))]
+public class ShootingAbility : Ability
 {
     [Header("Shooting")]
     [SerializeField] private BulletSettings m_bulletSettings;
     [SerializeField] private Transform m_firePoint;
 
     private Camera m_mainCamera;
-    private PlayerInputHandler m_input;
-    private PlayerEvents m_events;
     private Magnetizable m_magnetizable;
-    private PoleController m_pole;
-    private AimController m_aim;
-    private Player m_player;
+    private PoleAbility m_pole;
+    private AimAbility m_aim;
 
     private const float k_ForwardDotThreshold = 0.1f;
 
-    void Awake()
+    protected override void Awake()
     {
-        m_input = GetComponent<PlayerInputHandler>();
-        m_events = GetComponent<PlayerEvents>();
+        base.Awake();
         m_magnetizable = GetComponent<Magnetizable>();
-        m_pole = GetComponent<PoleController>();
-        m_aim = GetComponent<AimController>();
-        m_player = GetComponent<Player>();
+        m_pole = GetComponent<PoleAbility>();
+        m_aim = GetComponent<AimAbility>();
     }
 
     void Start()

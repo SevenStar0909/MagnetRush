@@ -1,10 +1,8 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.Rendering.RenderGraphModule;
-using UnityEngine.Serialization;
-
 /// <summary>
 /// 磁化オブジェクトに Edge Detection アウトラインを描画する Renderer Feature。
 /// Unity 6 RenderGraph 対応。
@@ -13,21 +11,14 @@ public class OutlineRendererFeature : ScriptableRendererFeature
 {
     [Header("設定")]
     [SerializeField] private uint m_outlineRenderingLayerMask = 256;  // 1u << 8 = Magnetized
-    [FormerlySerializedAs("normalsMaterial")]
     [SerializeField] private Material m_normalsMaterial;
-    [FormerlySerializedAs("edgeDetectionMaterial")]
     [SerializeField] private Material m_edgeDetectionMaterial;
 
     [Header("パラメータ")]
-    [FormerlySerializedAs("outlineThickness")]
     [SerializeField] private float m_outlineThickness = 1.0f;
-    [FormerlySerializedAs("depthThreshold")]
     [SerializeField] private float m_depthThreshold = 0.5f;
-    [FormerlySerializedAs("normalThreshold")]
     [SerializeField] private float m_normalThreshold = 0.4f;
-    [FormerlySerializedAs("outlineColorS")]
     [SerializeField] private Color m_outlineColorS = new Color(0.2f, 0.4f, 1f, 1f);
-    [FormerlySerializedAs("outlineColorN")]
     [SerializeField] private Color m_outlineColorN = new Color(1f, 0.2f, 0.2f, 1f);
 
     private NormalsPrePass m_normalsPass;

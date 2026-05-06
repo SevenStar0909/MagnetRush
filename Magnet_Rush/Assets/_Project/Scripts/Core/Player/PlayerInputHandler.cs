@@ -1,7 +1,5 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.Serialization;
-
 /// <summary>
 /// Input System入力をポーリングで読み取る。
 /// 各 Consume* は入力先行バッファ(k_inputBufferTime)を持ち、ボタン押下から
@@ -11,7 +9,6 @@ using UnityEngine.Serialization;
 [DefaultExecutionOrder(-100)]
 public class PlayerInputHandler : MonoBehaviour
 {
-    [FormerlySerializedAs("actions")]
     [SerializeField] private InputActionAsset m_actions;
 
     private InputAction m_move;

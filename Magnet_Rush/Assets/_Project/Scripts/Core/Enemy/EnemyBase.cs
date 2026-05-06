@@ -1,6 +1,4 @@
 using UnityEngine;
-using UnityEngine.Serialization;
-
 /// <summary>
 /// 敵の基底クラス。Entityを継承しHealth・IMagnetTargetを共有する。
 /// 移動はUpdateEntity() → EntityController経由。AIサブクラスがAccelerateToward等で速度を駆動する。
@@ -8,16 +6,13 @@ using UnityEngine.Serialization;
 public class EnemyBase : Entity
 {
     [Header("Data")]
-    [FormerlySerializedAs("statusData")]
     [SerializeField] private EnemySettings m_statusData;
 
     [Header("References")]
-    [FormerlySerializedAs("player")]
     [SerializeField] private Transform m_player;
     [SerializeField] private Transform m_weaponHandSocket;
 
     [Header("Magnetic")]
-    [FormerlySerializedAs("MagneticMover")]
     [SerializeField] private MagneticMover m_mover;
 
     private WeaponStateController m_equippedWeapon;
