@@ -63,6 +63,23 @@ public class Player : Entity
     /// <summary>磁極 Controller。</summary>
     public PoleController pole { get; private set; }
 
+    /// <summary>現在の磁極（S または N）。デフォルトは S。</summary>
+    public MagneticPole CurrentPole { get; private set; } = MagneticPole.S;
+
+    /// <summary>磁極切替時に発火。UI 等が購読する。</summary>
+    public event Action<MagneticPole> OnPoleChanged;
+
+    /// <summary>Y 入力があれば磁極を切り替える。Player.Update から、または各 PlayerState.UpdateState から毎フレーム呼ぶ前提。</summary>
+    public void SwitchPole()
+    {
+        if (input == null || events == null) return;
+        if (!input.IsSwitchPolePressed) return;
+        input.ConsumeSwitchPole();
+        CurrentPole = CurrentPole == MagneticPole.S ? MagneticPole.N : MagneticPole.S;
+        OnPoleChanged?.Invoke(CurrentPole);
+        events.FirePoleSwitch();
+    }
+
     protected override void Awake()
     {
         base.Awake();
