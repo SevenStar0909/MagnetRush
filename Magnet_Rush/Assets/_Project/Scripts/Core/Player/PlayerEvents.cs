@@ -19,8 +19,12 @@ public class PlayerEvents : MonoBehaviour
     [Tooltip("リロード時に発火")]
     public UnityEvent onReload;
 
+    [Tooltip("スタブ攻撃ヒット時に発火")]
+    public UnityEvent onStab;
+
     public void FireShoot() => onShoot?.Invoke();
     public void FireSelfShoot() => onSelfShoot?.Invoke();
     public void FirePoleSwitch() => onPoleSwitch?.Invoke();
     public void FireReload() => onReload?.Invoke();
+    public void FireStab() => onStab?.Invoke();
 }
