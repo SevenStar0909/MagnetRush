@@ -23,6 +23,7 @@ GameObject:
   - component: {fileID: 460711517580896566}
   - component: {fileID: 4121543987773168685}
   - component: {fileID: 1562637922551065350}
+  - component: {fileID: 7352363120186605023}
   m_Layer: 8
   m_Name: _Player
   m_TagString: Player
@@ -299,6 +300,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e7e5dd341c2d7e9419d51a53834baa66, type: 3}
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Player::StabAbility
+--- !u!114 &7352363120186605023
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1725508640444081474}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ac50e8793994532448de734eafa9aa2f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Player::PlayerRespawner
+  m_respawnDelay: 0.5
 --- !u!1 &1986303900024006054
 GameObject:
   m_ObjectHideFlags: 0

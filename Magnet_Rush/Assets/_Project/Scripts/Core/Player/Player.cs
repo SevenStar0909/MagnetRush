@@ -104,6 +104,32 @@ public class Player : Entity
         states.Change<DiePlayerState>();
     }
 
+    /// <summary>
+    /// プレイヤーをリスポーン地点にテレポートし、HP/速度/状態を復帰させる。
+    /// 死亡 → 待機 → このメソッド呼び出し、というオーケストレーションは GameManager が担当する。
+    /// </summary>
+    public void Respawn()
+    {
+        if (GameManager.Instance != null)
+        {
+            transform.position = GameManager.Instance.GetSpawnPosition();
+        }
+        else
+        {
+            ChannelLogger.LogGuardReturn("Game", "GameManager未取得 — スポーン地点テレポートをスキップ");
+        }
+
+        velocity = Vector3.zero;
+        externalVelocity = Vector3.zero;
+
+        if (m_health != null)
+        {
+            m_health.ResetHealth();
+        }
+
+        states.Change<IdlePlayerState>();
+    }
+
     void OnDisable()
     {
         // シーン遷移・オブジェクト破棄時にスロー状態を強制解除
