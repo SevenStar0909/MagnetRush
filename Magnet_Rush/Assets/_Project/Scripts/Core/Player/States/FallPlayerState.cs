@@ -5,5 +5,10 @@
 /// </summary>
 public class FallPlayerState : EntityState<Player>
 {
-    // 実装は feature/jump で UpdateState を追加する
+    protected override void OnEnter(Player player) { /* feature/jump PR で実装する */ }
+    protected override void OnExit(Player player)  { /* feature/jump PR で実装する */ }
+    protected override void OnStep(Player player, float dt)
+    {
+        // 実装は feature/jump で追加する。
+    }
 }

@@ -5,5 +5,10 @@
 /// </summary>
 public class StabPlayerState : EntityState<Player>
 {
-    // 実装は feature/stab で UpdateState を追加する
+    protected override void OnEnter(Player player) { /* feature/stab PR で実装する */ }
+    protected override void OnExit(Player player)  { /* feature/stab PR で実装する */ }
+    protected override void OnStep(Player player, float dt)
+    {
+        // 実装は feature/stab で追加する。
+    }
 }
