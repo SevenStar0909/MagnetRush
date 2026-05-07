@@ -43,6 +43,8 @@ public class PlayerAnimator : MonoBehaviour
     [SerializeField] private string m_isGroundedName = "IsGrounded";
     [SerializeField] private string m_shootName = "Shoot";
     [SerializeField] private string m_reloadName = "Reload";
+    [SerializeField] private string m_verticalSpeedName = "VerticalSpeed";
+    [SerializeField] private string m_stabName = "Stab";
 
     /// <summary>
     /// State 型 → Animator の State Int 値への固定マッピング。
@@ -52,10 +54,12 @@ public class PlayerAnimator : MonoBehaviour
     private static readonly System.Collections.Generic.Dictionary<System.Type, int> s_stateTypeToIndex
         = new System.Collections.Generic.Dictionary<System.Type, int>
     {
-        { typeof(IdlePlayerState), (int)PlayerStateIndex.Idle },
-        { typeof(MovePlayerState), (int)PlayerStateIndex.Move },
-        { typeof(DiePlayerState),  (int)PlayerStateIndex.Die  },
-        { typeof(AimPlayerState),  (int)PlayerStateIndex.Aim  },
+        { typeof(IdlePlayerState), (int)PlayerStateIndex.Idle       },
+        { typeof(MovePlayerState), (int)PlayerStateIndex.Move       },
+        { typeof(DiePlayerState),  (int)PlayerStateIndex.Die        },
+        { typeof(AimPlayerState),  (int)PlayerStateIndex.Aim        },
+        { typeof(FallPlayerState), (int)PlayerStateIndex.Fall       },
+        { typeof(StabPlayerState), (int)PlayerStateIndex.StabAttack },
     };
 
     private static int GetStateIndex(System.Type type)
@@ -74,6 +78,8 @@ public class PlayerAnimator : MonoBehaviour
     private int m_hIsGrounded;
     private int m_hShoot;
     private int m_hReload;
+    private int m_hVerticalSpeed;
+    private int m_hStab;
 
     void Awake()
     {
@@ -103,6 +109,8 @@ public class PlayerAnimator : MonoBehaviour
         m_hIsGrounded      = Animator.StringToHash(m_isGroundedName);
         m_hShoot           = Animator.StringToHash(m_shootName);
         m_hReload          = Animator.StringToHash(m_reloadName);
+        m_hVerticalSpeed   = Animator.StringToHash(m_verticalSpeedName);
+        m_hStab            = Animator.StringToHash(m_stabName);
 
         ValidateAnimatorParameters();
         StartCoroutine(ValidateStateOrderDelayed());
@@ -135,6 +143,8 @@ public class PlayerAnimator : MonoBehaviour
             (m_isGroundedName,      "IsGrounded (Bool)"),
             (m_shootName,           "Shoot (Trigger)"),
             (m_reloadName,          "Reload (Trigger)"),
+            (m_verticalSpeedName,   "VerticalSpeed (Float)"),
+            (m_stabName,            "Stab (Trigger)"),
         };
 
         var existing = new System.Collections.Generic.HashSet<string>();

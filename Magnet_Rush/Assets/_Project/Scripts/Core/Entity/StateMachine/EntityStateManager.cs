@@ -110,26 +110,25 @@ public abstract class EntityStateManager<T> : EntityStateManagerBase where T : E
 
         if (current != null)
         {
-            current.Exit();
+            current.Exit(m_entity);
             InvokeStateExit(current.GetType());
             last = current;
         }
 
         current = next;
-        current.Enter(m_entity, this);
+        current.Enter(m_entity);
         InvokeStateEnter(current.GetType());
         InvokeStateChanged();
     }
 
     /// <summary>
-    /// 現在ステートのUpdateStateを実行し、timeSinceEnteredを更新する。
+    /// 現在ステートのUpdateStateを実行する。timeSinceEntered の加算は基底 EntityState&lt;T&gt;.UpdateState 側で行う。
     /// </summary>
     public void UpdateState(float dt)
     {
         if (current != null)
         {
-            current.UpdateState(dt);
-            current.timeSinceEntered += dt;
+            current.UpdateState(m_entity, dt);
         }
     }
 
@@ -138,7 +137,7 @@ public abstract class EntityStateManager<T> : EntityStateManagerBase where T : E
     /// </summary>
     public void OnContact(Collider other)
     {
-        if (current != null) current.OnContact(other);
+        if (current != null) current.OnContact(m_entity, other);
     }
 
     /// <summary>
