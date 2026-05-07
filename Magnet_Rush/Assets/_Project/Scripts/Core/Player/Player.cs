@@ -60,6 +60,12 @@ public class Player : Entity
     /// <summary>磁極 Ability。</summary>
     public PoleAbility pole { get; private set; }
 
+    /// <summary>ジャンプ Ability。PR0 (jump-stab-prep) ではプロパティ宣言のみ、[RequireComponent]/GetComponent は実装PR (feature/jump) で追加する。</summary>
+    public JumpAbility jump { get; private set; }
+
+    /// <summary>スタブ攻撃 Ability。PR0 (jump-stab-prep) ではプロパティ宣言のみ、[RequireComponent]/GetComponent は実装PR (feature/stab) で追加する。</summary>
+    public StabAbility stab { get; private set; }
+
     protected override void Awake()
     {
         base.Awake();
@@ -96,6 +102,32 @@ public class Player : Entity
     private void OnDie()
     {
         states.Change<DiePlayerState>();
+    }
+
+    /// <summary>
+    /// プレイヤーをリスポーン地点にテレポートし、HP/速度/状態を復帰させる。
+    /// 死亡 → 待機 → このメソッド呼び出し、というオーケストレーションは GameManager が担当する。
+    /// </summary>
+    public void Respawn()
+    {
+        if (GameManager.Instance != null)
+        {
+            transform.position = GameManager.Instance.GetSpawnPosition();
+        }
+        else
+        {
+            ChannelLogger.LogGuardReturn("Game", "GameManager未取得 — スポーン地点テレポートをスキップ");
+        }
+
+        velocity = Vector3.zero;
+        externalVelocity = Vector3.zero;
+
+        if (m_health != null)
+        {
+            m_health.ResetHealth();
+        }
+
+        states.Change<IdlePlayerState>();
     }
 
     void OnDisable()

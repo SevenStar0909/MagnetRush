@@ -17,6 +17,8 @@ public class PlayerInputHandler : MonoBehaviour
     private InputAction m_switchPole;
     private InputAction m_reload;
     private InputAction m_selfFire;
+    private InputAction m_jump;
+    private InputAction m_stab;
 
     // 入力先行受付の時間窓（秒）。100ms はゲーム業界の経験的な標準値
     private const float k_inputBufferTime = 0.1f;
@@ -25,6 +27,8 @@ public class PlayerInputHandler : MonoBehaviour
     private float? m_reloadPressTime;
     private float? m_switchPolePressTime;
     private float? m_selfFirePressTime;
+    private float? m_jumpPressTime;
+    private float? m_stabPressTime;
 
     /// <summary>移動入力のベクトル（左スティック）</summary>
     public Vector2 MoveInput => m_move.ReadValue<Vector2>();
@@ -59,6 +63,12 @@ public class PlayerInputHandler : MonoBehaviour
     /// <summary>セルフファイアボタン（A / F）押下を消費</summary>
     public bool ConsumeSelfFire() => ConsumeBuffered(ref m_selfFirePressTime);
 
+    /// <summary>ジャンプボタン（A / Space）押下を消費</summary>
+    public bool ConsumeJump() => ConsumeBuffered(ref m_jumpPressTime);
+
+    /// <summary>スタブ攻撃ボタン（RB）押下を消費</summary>
+    public bool ConsumeStab() => ConsumeBuffered(ref m_stabPressTime);
+
     /// <summary>攻撃ボタン押下がバッファ内か（消費しない）</summary>
     public bool IsFirePressed => HasBuffered(m_firePressTime);
 
@@ -71,6 +81,12 @@ public class PlayerInputHandler : MonoBehaviour
     /// <summary>セルフファイアボタン押下がバッファ内か（消費しない）</summary>
     public bool IsSelfFirePressed => HasBuffered(m_selfFirePressTime);
 
+    /// <summary>ジャンプボタン押下がバッファ内か（消費しない）</summary>
+    public bool IsJumpPressed => HasBuffered(m_jumpPressTime);
+
+    /// <summary>スタブ攻撃ボタン押下がバッファ内か（消費しない）</summary>
+    public bool IsStabPressed => HasBuffered(m_stabPressTime);
+
     /// <summary>全 Consumable の入力バッファをクリア。死亡・シーン遷移時等に呼ぶ</summary>
     public void ClearBuffers()
     {
@@ -78,6 +94,8 @@ public class PlayerInputHandler : MonoBehaviour
         m_reloadPressTime = null;
         m_switchPolePressTime = null;
         m_selfFirePressTime = null;
+        m_jumpPressTime = null;
+        m_stabPressTime = null;
     }
 
     private static bool HasBuffered(float? pressTime) =>
@@ -107,6 +125,8 @@ public class PlayerInputHandler : MonoBehaviour
         m_switchPole = m_actions["SwitchPole"];
         m_reload = m_actions["Reload"];
         m_selfFire = m_actions["SelfFire"];
+        m_jump = m_actions["Jump"];
+        m_stab = m_actions["Stab"];
     }
 
     void Update()
@@ -116,6 +136,8 @@ public class PlayerInputHandler : MonoBehaviour
         if (m_reload != null && m_reload.WasPressedThisFrame()) m_reloadPressTime = Time.time;
         if (m_switchPole != null && m_switchPole.WasPressedThisFrame()) m_switchPolePressTime = Time.time;
         if (m_selfFire != null && m_selfFire.WasPressedThisFrame()) m_selfFirePressTime = Time.time;
+        if (m_jump != null && m_jump.WasPressedThisFrame()) m_jumpPressTime = Time.time;
+        if (m_stab != null && m_stab.WasPressedThisFrame()) m_stabPressTime = Time.time;
     }
 
     void OnEnable() => m_actions?.Enable();

@@ -5,8 +5,10 @@
 /// </summary>
 public enum PlayerStateIndex
 {
-    Idle = 0,
-    Move = 1,
-    Die  = 2,
-    Aim  = 3,
+    Idle       = 0,
+    Move       = 1,
+    Die        = 2,
+    Aim        = 3,
+    Fall       = 4,
+    StabAttack = 5,
 }
