@@ -132,7 +132,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f7eb2ea83aeed54c8fa7e632b84756a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MagnetRush.Entity.Health
-  m_maxHealth: 3
+  m_maxHealth: 50
   m_damageCooldown: 1
 --- !u!114 &7473496859954039961
 MonoBehaviour:
@@ -261,7 +261,6 @@ MonoBehaviour:
   m_events: {fileID: 0}
   m_input: {fileID: 0}
   m_states: {fileID: 0}
-  m_entity: {fileID: 0}
   m_player: {fileID: 0}
   m_aim: {fileID: 0}
   m_stateName: State
