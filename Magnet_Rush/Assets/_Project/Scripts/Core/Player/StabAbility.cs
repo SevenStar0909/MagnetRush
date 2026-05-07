@@ -7,5 +7,5 @@ using UnityEngine;
 /// </summary>
 public class StabAbility : Ability
 {
-    // 実装は feature/stab で TryStab() / OnStabHitEvent() を追加する
+    // 実装は feature/stab で Stab() / OnStabHitEvent() を追加する
 }

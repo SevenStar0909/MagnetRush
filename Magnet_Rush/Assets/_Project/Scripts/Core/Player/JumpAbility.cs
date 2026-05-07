@@ -7,5 +7,5 @@ using UnityEngine;
 /// </summary>
 public class JumpAbility : Ability
 {
-    // 実装は feature/jump で TryJump() を追加する
+    // 実装は feature/jump で Jump() を追加する
 }
