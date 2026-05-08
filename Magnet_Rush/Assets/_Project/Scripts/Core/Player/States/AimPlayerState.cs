@@ -8,6 +8,8 @@ public class AimPlayerState : EntityState<Player>
 
     protected override void OnStep(Player player, float dt)
     {
+        player.TickAllAbilities();
+
         // ストレイフ移動：カメラ方向を向き、速度半減
         player.MoveWithInputStrafe(dt);
 
