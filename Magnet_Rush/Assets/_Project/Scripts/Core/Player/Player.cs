@@ -11,6 +11,8 @@ using UnityEngine;
 [RequireComponent(typeof(PoleAbility))]
 [RequireComponent(typeof(AimAbility))]
 [RequireComponent(typeof(ShootingAbility))]
+[RequireComponent(typeof(JumpAbility))]
+[RequireComponent(typeof(StabAbility))]
 public class Player : Entity
 {
     [SerializeField] private PlayerSettings m_settings;
@@ -76,6 +78,8 @@ public class Player : Entity
         shooting = GetComponent<ShootingAbility>();
         aim = GetComponent<AimAbility>();
         pole = GetComponent<PoleAbility>();
+        jump = GetComponent<JumpAbility>();
+        stab = GetComponent<StabAbility>();
 
         if (m_settings.groundLayer == 0)
             Debug.LogWarning("[Player] PlayerSettings.groundLayerが未設定。PhysicsLayers.MaskGroundCheckを使用。");
@@ -174,6 +178,8 @@ public class Player : Entity
 
     /// <summary>
     /// 通常 State 用の全許可ヘルパ。Idle / Move / Aim 等が呼ぶ。
+    /// Stab は本ヘルパに含めない。スタブはボススタン中＋接近時のみ発動する条件付き能力で、
+    /// 通常 State から毎フレーム呼ぶ性質ではないため。発動主体は別途設計する。
     /// </summary>
     public void TickAllAbilities()
     {
