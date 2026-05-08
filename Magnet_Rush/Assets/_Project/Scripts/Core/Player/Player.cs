@@ -178,8 +178,8 @@ public class Player : Entity
 
     /// <summary>
     /// 通常 State 用の全許可ヘルパ。Idle / Move / Aim 等が呼ぶ。
-    /// Stab は本ヘルパに含めない。スタブはボススタン中＋接近時のみ発動する条件付き能力で、
-    /// 通常 State から毎フレーム呼ぶ性質ではないため。発動主体は別途設計する。
+    /// 各 Ability は内部で入力 peek + 発動条件をチェックして no-op 判定するため、
+    /// 毎フレーム呼んでも安全(`shooting.Fire()` が `IsFirePressed` で early return するのと同じパターン)。
     /// </summary>
     public void TickAllAbilities()
     {
@@ -189,6 +189,7 @@ public class Player : Entity
         SelfFire();
         Reload();
         Jump();
+        Stab();
     }
 
     void Update()
