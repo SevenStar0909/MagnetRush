@@ -149,6 +149,42 @@ public class Player : Entity
     /// <summary>スロー時かどうか。TransformInterpolator も同条件で補間 ON/OFF を切り替える。</summary>
     public static bool IsSlowMotion => Time.timeScale < k_SlowMotionThreshold;
 
+    // === Ability ラッパー(State.OnStep から呼ばれる Facade API) ===
+
+    /// <summary>磁極切替(PoleAbility ラッパー)。</summary>
+    public void SwitchPole() => pole.Switch();
+
+    /// <summary>エイム入力処理(AimAbility ラッパー)。</summary>
+    public void UpdateAim() => aim.UpdateInput();
+
+    /// <summary>通常射撃(ShootingAbility ラッパー)。</summary>
+    public void Fire() => shooting.Fire();
+
+    /// <summary>セルフファイア(ShootingAbility ラッパー)。</summary>
+    public void SelfFire() => shooting.SelfFire();
+
+    /// <summary>リロード(ShootingAbility ラッパー)。</summary>
+    public void Reload() => shooting.Reload();
+
+    /// <summary>ジャンプ(JumpAbility ラッパー)。jump プロパティは feature/jump 実装で接続される。</summary>
+    public void Jump() => jump.Jump();
+
+    /// <summary>スタブ攻撃(StabAbility ラッパー)。stab プロパティは feature/stab 実装で接続される。</summary>
+    public void Stab() => stab.Stab();
+
+    /// <summary>
+    /// 通常 State 用の全許可ヘルパ。Idle / Move / Aim 等が呼ぶ。
+    /// </summary>
+    public void TickAllAbilities()
+    {
+        SwitchPole();
+        UpdateAim();
+        Fire();
+        SelfFire();
+        Reload();
+        Jump();
+    }
+
     void Update()
     {
         UpdateMagneticInfluence();
