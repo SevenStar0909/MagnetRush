@@ -197,14 +197,8 @@ public class Player : Entity
 
         bool isDying = states.IsCurrentOfType<DiePlayerState>();
 
-        if (!isDying)
-        {
-            pole.Switch();
-            aim.UpdateInput();
-            shooting.Fire();
-            shooting.SelfFire();
-            shooting.Reload();
-        }
+        // 能力呼び出しは各 State の OnStep が Player.TickAllAbilities() 経由で行う。
+        // Stab/Die は OnStep を空にすることで自動的に全入力ロックされる。
 
         // 通常時は従来どおり Update ベースで動かす（60Hz 直書きで滑らか）
         if (!IsSlowMotion)
