@@ -5,7 +5,7 @@ using UnityEngine;
 /// PlayerEvents を購読して射撃系 Trigger を、LateUpdate で連続値を、
 /// ステート変化で State(Int)+OnStateChanged(Trigger) を更新する。
 /// Animator の直接操作はこのクラスのみに集約し、他からは触らない。
-/// 依存: PlayerEvents, PlayerInputHandler, PlayerStateManager, Entity, Player
+/// 依存: PlayerEvents, PlayerInputHandler, PlayerStateManager, Player
 /// 設計: 駆動対象の Animator は FBX 子オブジェクトに付くため、m_animator は Inspector で明示アサイン必須。
 /// </summary>
 public class PlayerAnimator : MonoBehaviour
@@ -22,9 +22,6 @@ public class PlayerAnimator : MonoBehaviour
 
     [Tooltip("ステートマネージャ。未設定なら親の GetComponentInParent<PlayerStateManager>()")]
     [SerializeField] private PlayerStateManager m_states;
-
-    [Tooltip("Entity。未設定なら親の GetComponentInParent<Entity>()")]
-    [SerializeField] private Entity m_entity;
 
     [Tooltip("Player 本体。未設定なら親の GetComponentInParent<Player>()")]
     [SerializeField] private Player m_player;
@@ -86,7 +83,6 @@ public class PlayerAnimator : MonoBehaviour
         if (m_events   == null) m_events   = GetComponentInParent<PlayerEvents>();
         if (m_input    == null) m_input    = GetComponentInParent<PlayerInputHandler>();
         if (m_states   == null) m_states   = GetComponentInParent<PlayerStateManager>();
-        if (m_entity   == null) m_entity   = GetComponentInParent<Entity>();
         if (m_player   == null) m_player   = GetComponentInParent<Player>();
         if (m_aim      == null) m_aim      = GetComponentInParent<AimAbility>();
 
@@ -211,10 +207,10 @@ public class PlayerAnimator : MonoBehaviour
     {
         if (m_animator == null) return;
 
-        if (m_entity != null)
+        if (m_player != null)
         {
-            m_animator.SetFloat(m_hMoveSpeed, m_entity.lateralVelocity.magnitude);
-            m_animator.SetBool(m_hIsGrounded, m_entity.IsGrounded);
+            m_animator.SetFloat(m_hMoveSpeed, m_player.lateralVelocity.magnitude);
+            m_animator.SetBool(m_hIsGrounded, m_player.IsGrounded);
         }
 
         if (m_input != null)
