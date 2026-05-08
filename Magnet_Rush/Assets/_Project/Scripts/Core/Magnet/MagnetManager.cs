@@ -1,7 +1,5 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Serialization;
-
 /// <summary>
 /// 磁力システムの中枢。全Magnetizableを管理し、ペア間の引力/反発を計算・適用する。
 /// 接触距離に入った異極ペアにはOnMagnetContactを通知する。
@@ -9,7 +7,6 @@ using UnityEngine.Serialization;
 [DefaultExecutionOrder(-50)]
 public class MagnetManager : Singleton<MagnetManager>
 {
-    [FormerlySerializedAs("settings")]
     [SerializeField] private MagnetSettings m_settings;
 
     private readonly HashSet<Magnetizable> m_registry = new();

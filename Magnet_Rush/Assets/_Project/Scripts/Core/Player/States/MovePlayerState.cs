@@ -3,13 +3,17 @@
 /// </summary>
 public class MovePlayerState : EntityState<Player>
 {
-    public override void UpdateState(float dt)
-    {
-        m_entity.AccelerateToInputDirection(dt);
+    protected override void OnEnter(Player player) { }
+    protected override void OnExit(Player player) { }
 
-        if (m_entity.input.MoveInput.sqrMagnitude < 0.01f)
+    protected override void OnStep(Player player, float dt)
+    {
+        player.TickAllAbilities();
+        player.AccelerateToInputDirection(dt);
+
+        if (player.input.MoveInput.sqrMagnitude < 0.01f)
         {
-            m_manager.Change<IdlePlayerState>();
+            player.states.Change<IdlePlayerState>();
         }
     }
 }

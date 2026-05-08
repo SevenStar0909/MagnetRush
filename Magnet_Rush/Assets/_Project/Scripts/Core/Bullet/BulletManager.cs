@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Serialization;
-
 /// <summary>
 /// 弾の生存管理。4発上限、登録/解除、全消去を行う。
 /// 残弾はリロード（X）でのみ回復する。弾が着弾で消えても残弾は回復しない。
@@ -10,7 +8,6 @@ using UnityEngine.Serialization;
 [DefaultExecutionOrder(-30)]
 public class BulletManager : Singleton<BulletManager>
 {
-    [FormerlySerializedAs("settings")]
     [SerializeField] private BulletSettings m_settings;
 
     private readonly List<MagnetBullet> m_activeBullets = new();

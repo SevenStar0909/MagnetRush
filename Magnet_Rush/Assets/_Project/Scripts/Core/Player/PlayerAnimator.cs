@@ -5,7 +5,7 @@ using UnityEngine;
 /// PlayerEvents を購読して射撃系 Trigger を、LateUpdate で連続値を、
 /// ステート変化で State(Int)+OnStateChanged(Trigger) を更新する。
 /// Animator の直接操作はこのクラスのみに集約し、他からは触らない。
-/// 依存: PlayerEvents, PlayerInputHandler, PlayerStateManager, Entity, Player
+/// 依存: PlayerEvents, PlayerInputHandler, PlayerStateManager, Player
 /// 設計: 駆動対象の Animator は FBX 子オブジェクトに付くため、m_animator は Inspector で明示アサイン必須。
 /// </summary>
 public class PlayerAnimator : MonoBehaviour
@@ -23,14 +23,11 @@ public class PlayerAnimator : MonoBehaviour
     [Tooltip("ステートマネージャ。未設定なら親の GetComponentInParent<PlayerStateManager>()")]
     [SerializeField] private PlayerStateManager m_states;
 
-    [Tooltip("Entity。未設定なら親の GetComponentInParent<Entity>()")]
-    [SerializeField] private Entity m_entity;
-
     [Tooltip("Player 本体。未設定なら親の GetComponentInParent<Player>()")]
     [SerializeField] private Player m_player;
 
-    [Tooltip("エイム Controller。未設定なら親の GetComponentInParent<AimController>()")]
-    [SerializeField] private AimController m_aim;
+    [Tooltip("エイム Ability。未設定なら親の GetComponentInParent<AimAbility>()")]
+    [SerializeField] private AimAbility m_aim;
 
     [Header("Animator Parameter Names (Inspector 単一箇所管理)")]
     [SerializeField] private string m_stateName = "State";
@@ -43,6 +40,8 @@ public class PlayerAnimator : MonoBehaviour
     [SerializeField] private string m_isGroundedName = "IsGrounded";
     [SerializeField] private string m_shootName = "Shoot";
     [SerializeField] private string m_reloadName = "Reload";
+    [SerializeField] private string m_verticalSpeedName = "VerticalSpeed";
+    [SerializeField] private string m_stabName = "Stab";
 
     /// <summary>
     /// State 型 → Animator の State Int 値への固定マッピング。
@@ -52,10 +51,12 @@ public class PlayerAnimator : MonoBehaviour
     private static readonly System.Collections.Generic.Dictionary<System.Type, int> s_stateTypeToIndex
         = new System.Collections.Generic.Dictionary<System.Type, int>
     {
-        { typeof(IdlePlayerState), (int)PlayerStateIndex.Idle },
-        { typeof(MovePlayerState), (int)PlayerStateIndex.Move },
-        { typeof(DiePlayerState),  (int)PlayerStateIndex.Die  },
-        { typeof(AimPlayerState),  (int)PlayerStateIndex.Aim  },
+        { typeof(IdlePlayerState), (int)PlayerStateIndex.Idle       },
+        { typeof(MovePlayerState), (int)PlayerStateIndex.Move       },
+        { typeof(DiePlayerState),  (int)PlayerStateIndex.Die        },
+        { typeof(AimPlayerState),  (int)PlayerStateIndex.Aim        },
+        { typeof(FallPlayerState), (int)PlayerStateIndex.Fall       },
+        { typeof(StabPlayerState), (int)PlayerStateIndex.StabAttack },
     };
 
     private static int GetStateIndex(System.Type type)
@@ -74,15 +75,16 @@ public class PlayerAnimator : MonoBehaviour
     private int m_hIsGrounded;
     private int m_hShoot;
     private int m_hReload;
+    private int m_hVerticalSpeed;
+    private int m_hStab;
 
     void Awake()
     {
         if (m_events   == null) m_events   = GetComponentInParent<PlayerEvents>();
         if (m_input    == null) m_input    = GetComponentInParent<PlayerInputHandler>();
         if (m_states   == null) m_states   = GetComponentInParent<PlayerStateManager>();
-        if (m_entity   == null) m_entity   = GetComponentInParent<Entity>();
         if (m_player   == null) m_player   = GetComponentInParent<Player>();
-        if (m_aim      == null) m_aim      = GetComponentInParent<AimController>();
+        if (m_aim      == null) m_aim      = GetComponentInParent<AimAbility>();
 
         if (m_animator == null)
         {
@@ -103,6 +105,8 @@ public class PlayerAnimator : MonoBehaviour
         m_hIsGrounded      = Animator.StringToHash(m_isGroundedName);
         m_hShoot           = Animator.StringToHash(m_shootName);
         m_hReload          = Animator.StringToHash(m_reloadName);
+        m_hVerticalSpeed   = Animator.StringToHash(m_verticalSpeedName);
+        m_hStab            = Animator.StringToHash(m_stabName);
 
         ValidateAnimatorParameters();
         StartCoroutine(ValidateStateOrderDelayed());
@@ -135,6 +139,8 @@ public class PlayerAnimator : MonoBehaviour
             (m_isGroundedName,      "IsGrounded (Bool)"),
             (m_shootName,           "Shoot (Trigger)"),
             (m_reloadName,          "Reload (Trigger)"),
+            (m_verticalSpeedName,   "VerticalSpeed (Float)"),
+            (m_stabName,            "Stab (Trigger)"),
         };
 
         var existing = new System.Collections.Generic.HashSet<string>();
@@ -201,10 +207,10 @@ public class PlayerAnimator : MonoBehaviour
     {
         if (m_animator == null) return;
 
-        if (m_entity != null)
+        if (m_player != null)
         {
-            m_animator.SetFloat(m_hMoveSpeed, m_entity.lateralVelocity.magnitude);
-            m_animator.SetBool(m_hIsGrounded, m_entity.IsGrounded);
+            m_animator.SetFloat(m_hMoveSpeed, m_player.lateralVelocity.magnitude);
+            m_animator.SetBool(m_hIsGrounded, m_player.IsGrounded);
         }
 
         if (m_input != null)

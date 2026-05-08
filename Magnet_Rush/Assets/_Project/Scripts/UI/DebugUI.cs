@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.Serialization;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
 using TMPro;
@@ -14,19 +13,12 @@ public class DebugUI : MonoBehaviour
     void Awake() { gameObject.SetActive(false); }
 #endif
 
-    [FormerlySerializedAs("panel")]
     [SerializeField] private GameObject m_panel;
-    [FormerlySerializedAs("forceSlider")]
     [SerializeField] private Slider m_forceSlider;
-    [FormerlySerializedAs("rangeSlider")]
     [SerializeField] private Slider m_rangeSlider;
-    [FormerlySerializedAs("forceLabel")]
     [SerializeField] private TextMeshProUGUI m_forceLabel;
-    [FormerlySerializedAs("rangeLabel")]
     [SerializeField] private TextMeshProUGUI m_rangeLabel;
-    [FormerlySerializedAs("bulletListText")]
     [SerializeField] private TextMeshProUGUI m_bulletListText;
-    [FormerlySerializedAs("magnetSettings")]
     [SerializeField] private MagnetSettings m_magnetSettings;
 
     void Start()

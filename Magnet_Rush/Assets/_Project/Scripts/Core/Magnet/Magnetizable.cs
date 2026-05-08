@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.Serialization;
 using System;
 
 /// <summary>
@@ -10,11 +9,8 @@ using System;
 [RequireComponent(typeof(Rigidbody))]
 public class Magnetizable : MonoBehaviour, IMagnetPoleProvider
 {
-    [FormerlySerializedAs("pole")]
     [SerializeField] private MagneticPole m_pole = MagneticPole.None;
-    [FormerlySerializedAs("isActive")]
     [SerializeField] private bool m_isActive;
-    [FormerlySerializedAs("initialMass")]
     [SerializeField] private float m_initialMass = 1f;
 
     public MagneticPole Pole => m_pole;

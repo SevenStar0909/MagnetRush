@@ -1,7 +1,5 @@
 using System;
 using UnityEngine;
-using UnityEngine.Serialization;
-
 /// <summary>
 /// プレイヤーエンティティ。入力・ステート・磁力の統合制御を行うハブ。
 /// 能力系（射撃/エイム/磁極）は同 GameObject 上の Controller に分離。
@@ -10,12 +8,13 @@ using UnityEngine.Serialization;
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(PlayerInputHandler))]
 [RequireComponent(typeof(PlayerEvents))]
-[RequireComponent(typeof(PoleController))]
-[RequireComponent(typeof(AimController))]
-[RequireComponent(typeof(ShootingController))]
+[RequireComponent(typeof(PoleAbility))]
+[RequireComponent(typeof(AimAbility))]
+[RequireComponent(typeof(ShootingAbility))]
+[RequireComponent(typeof(JumpAbility))]
+[RequireComponent(typeof(StabAbility))]
 public class Player : Entity
 {
-    [FormerlySerializedAs("settings")]
     [SerializeField] private PlayerSettings m_settings;
 
     /// <summary>プレイヤー設定SO。Controller から参照される唯一の保持者。</summary>
@@ -54,14 +53,20 @@ public class Player : Entity
     /// <summary>磁力影響を受けるコンポーネント。</summary>
     public Magnetizable magnetizable { get; private set; }
 
-    /// <summary>射撃 Controller。</summary>
-    public ShootingController shooting { get; private set; }
+    /// <summary>射撃 Ability。</summary>
+    public ShootingAbility shooting { get; private set; }
 
-    /// <summary>エイム Controller。</summary>
-    public AimController aim { get; private set; }
+    /// <summary>エイム Ability。</summary>
+    public AimAbility aim { get; private set; }
 
-    /// <summary>磁極 Controller。</summary>
-    public PoleController pole { get; private set; }
+    /// <summary>磁極 Ability。</summary>
+    public PoleAbility pole { get; private set; }
+
+    /// <summary>ジャンプ Ability。Jump() メソッド本体は feature/jump で実装する。</summary>
+    public JumpAbility jump { get; private set; }
+
+    /// <summary>スタブ攻撃 Ability。Stab() / OnStabHitEvent() メソッド本体は feature/stab で実装する。</summary>
+    public StabAbility stab { get; private set; }
 
     protected override void Awake()
     {
@@ -70,9 +75,11 @@ public class Player : Entity
         events = GetComponent<PlayerEvents>();
         states = GetComponent<PlayerStateManager>();
         magnetizable = GetComponent<Magnetizable>();
-        shooting = GetComponent<ShootingController>();
-        aim = GetComponent<AimController>();
-        pole = GetComponent<PoleController>();
+        shooting = GetComponent<ShootingAbility>();
+        aim = GetComponent<AimAbility>();
+        pole = GetComponent<PoleAbility>();
+        jump = GetComponent<JumpAbility>();
+        stab = GetComponent<StabAbility>();
 
         if (m_settings.groundLayer == 0)
             Debug.LogWarning("[Player] PlayerSettings.groundLayerが未設定。PhysicsLayers.MaskGroundCheckを使用。");
@@ -101,6 +108,32 @@ public class Player : Entity
         states.Change<DiePlayerState>();
     }
 
+    /// <summary>
+    /// プレイヤーをリスポーン地点にテレポートし、HP/速度/状態を復帰させる。
+    /// 死亡 → 待機 → このメソッド呼び出し、というオーケストレーションは GameManager が担当する。
+    /// </summary>
+    public void Respawn()
+    {
+        if (GameManager.Instance != null)
+        {
+            transform.position = GameManager.Instance.GetSpawnPosition();
+        }
+        else
+        {
+            ChannelLogger.LogGuardReturn("Game", "GameManager未取得 — スポーン地点テレポートをスキップ");
+        }
+
+        velocity = Vector3.zero;
+        externalVelocity = Vector3.zero;
+
+        if (m_health != null)
+        {
+            m_health.ResetHealth();
+        }
+
+        states.Change<IdlePlayerState>();
+    }
+
     void OnDisable()
     {
         // シーン遷移・オブジェクト破棄時にスロー状態を強制解除
@@ -111,30 +144,81 @@ public class Player : Entity
         }
     }
 
+    /// <summary>
+    /// スロー時のみ FixedUpdate + TransformInterpolator 経路に切り替える閾値。
+    /// 通常時は Update ベース 60Hz 直書きで補間を介在させずフルレートの滑らかさを確保する。
+    /// </summary>
+    private const float k_SlowMotionThreshold = 0.99f;
+
+    /// <summary>スロー時かどうか。TransformInterpolator も同条件で補間 ON/OFF を切り替える。</summary>
+    public static bool IsSlowMotion => Time.timeScale < k_SlowMotionThreshold;
+
+    // === Ability ラッパー(State.OnStep から呼ばれる Facade API) ===
+
+    /// <summary>磁極切替(PoleAbility ラッパー)。</summary>
+    public void SwitchPole() => pole.Switch();
+
+    /// <summary>エイム入力処理(AimAbility ラッパー)。</summary>
+    public void UpdateAim() => aim.UpdateInput();
+
+    /// <summary>通常射撃(ShootingAbility ラッパー)。</summary>
+    public void Fire() => shooting.Fire();
+
+    /// <summary>セルフファイア(ShootingAbility ラッパー)。</summary>
+    public void SelfFire() => shooting.SelfFire();
+
+    /// <summary>リロード(ShootingAbility ラッパー)。</summary>
+    public void Reload() => shooting.Reload();
+
+    /// <summary>ジャンプ(JumpAbility ラッパー)。jump プロパティは feature/jump 実装で接続される。</summary>
+    public void Jump() => jump.Jump();
+
+    /// <summary>スタブ攻撃(StabAbility ラッパー)。stab プロパティは feature/stab 実装で接続される。</summary>
+    public void Stab() => stab.Stab();
+
+    /// <summary>
+    /// 通常 State 用の全許可ヘルパ。Idle / Move / Aim 等が呼ぶ。
+    /// 各 Ability は内部で入力 peek + 発動条件をチェックして no-op 判定するため、
+    /// 毎フレーム呼んでも安全(`shooting.Fire()` が `IsFirePressed` で early return するのと同じパターン)。
+    /// </summary>
+    public void TickAllAbilities()
+    {
+        SwitchPole();
+        UpdateAim();
+        Fire();
+        SelfFire();
+        Reload();
+        Jump();
+        Stab();
+    }
+
     void Update()
     {
-        float dt = Mathf.Min(Time.deltaTime, Time.fixedDeltaTime * 3f);
         UpdateMagneticInfluence();
 
         bool isDying = states.IsCurrentOfType<DiePlayerState>();
 
-        // 入力消費系を State 横断で1箇所に集約。死亡中は処理しない
-        // pole/aim/shooting の入力処理で State 遷移が発生する場合があり
-        // （aim.StopAim() → MovePlayerState 遷移など）、入力処理直後の最新Stateで移動処理が走る
-        if (!isDying)
+        // 能力呼び出しは各 State の OnStep が Player.TickAllAbilities() 経由で行う。
+        // Stab/Die は OnStep を空にすることで自動的に全入力ロックされる。
+
+        // 通常時は従来どおり Update ベースで動かす（60Hz 直書きで滑らか）
+        if (!IsSlowMotion)
         {
-            pole.Switch();
-            aim.UpdateInput();
-            shooting.Fire();
-            shooting.SelfFire();
-            shooting.Reload();
+            float dt = Mathf.Min(Time.deltaTime, Time.fixedDeltaTime * 3f);
+            states.UpdateState(dt);
+            if (!isDying) UpdateEntity(dt);
         }
+    }
 
-        states.UpdateState(dt);   // State は移動・遷移判定のみ
+    void FixedUpdate()
+    {
+        // スロー時のみ FixedUpdate で動かし、TransformInterpolator にサブフレーム補間させる
+        if (!IsSlowMotion) return;
 
-        // 死亡中は重力・移動処理をスキップ（UpdateEntityがvelocityを上書きして落下するのを防ぐ）
-        if (!isDying)
-            UpdateEntity(dt);
+        bool isDying = states.IsCurrentOfType<DiePlayerState>();
+        float dt = Time.fixedDeltaTime;
+        states.UpdateState(dt);
+        if (!isDying) UpdateEntity(dt);
     }
 
     /// <summary>

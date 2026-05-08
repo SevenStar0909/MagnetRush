@@ -136,7 +136,7 @@ public class MagnetRushGuide : EditorWindow
     void DrawBullet()
     {
         Section("弾の仕組み");
-        Bullet("ShootingController が画面中央方向に弾を生成");
+        Bullet("ShootingAbility が画面中央方向に弾を生成");
         Bullet("平面交差法で正確なターゲット座標を算出（TPS補正）");
         Bullet("弾はMagnetBulletコンポーネントで管理");
 

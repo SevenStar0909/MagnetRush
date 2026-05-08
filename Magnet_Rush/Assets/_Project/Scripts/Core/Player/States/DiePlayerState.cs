@@ -1,59 +1,39 @@
-﻿using System.Collections;
 using UnityEngine;
 
 /// <summary>
-/// プレイヤーの死亡ステート。一定時間後にリスポーンする。
+/// プレイヤーの死亡ステート。
+/// 入力・コライダー・速度を抑止するだけで、リスポーンの timing と実処理は持たない。
+/// 死亡 → 待機 → リスポーン演出のオーケストレーションは GameManager が担当する。
+/// 実際のリセットは Player.Respawn() に集約されている。
 /// </summary>
 public class DiePlayerState : EntityState<Player>
 {
-    public override void Enter(Player entity, EntityStateManager<Player> manager)
+    protected override void OnEnter(Player player)
     {
-        base.Enter(entity, manager);
+        player.velocity = Vector3.zero;
+        player.externalVelocity = Vector3.zero;
+        player.input.ClearBuffers();
+        player.input.enabled = false;
 
-        entity.velocity = UnityEngine.Vector3.zero;
-        entity.externalVelocity = UnityEngine.Vector3.zero;
-        entity.input.ClearBuffers();
-        entity.input.enabled = false;
-
-        var controller = entity.GetComponent<EntityController>();
-        if (controller != null && controller.GetComponent<Collider>() != null)
-            controller.GetComponent<Collider>().enabled = false;
-
-        // Enter() のコールスタック上で Change<IdlePlayerState>() すると
-        // EntityStateManager.Change の last/current 代入と OnStateChanged 発火が再入し
-        // Die ステートをスキップして購読者に伝わってしまう。1 フレーム遅延で回避。
-        entity.StartCoroutine(RespawnNextFrame());
-    }
-
-    public override void UpdateState(float dt) { }
-
-    public override void Exit()
-    {
-        m_entity.input.enabled = true;
-
-        var controller = m_entity.GetComponent<EntityController>();
-        if (controller != null && controller.GetComponent<Collider>() != null)
-            controller.GetComponent<Collider>().enabled = true;
-    }
-
-    private IEnumerator RespawnNextFrame()
-    {
-        yield return null;
-        Respawn();
-    }
-
-    private void Respawn()
-    {
-        // スポーン地点にテレポート
-        if (GameManager.Instance != null)
+        var controller = player.GetComponent<EntityController>();
+        if (controller != null)
         {
-            m_entity.transform.position = GameManager.Instance.GetSpawnPosition();
+            var controllerCollider = controller.GetComponent<Collider>();
+            if (controllerCollider != null) controllerCollider.enabled = false;
         }
-
-        // velocityを直接リセット（lateralVelocity/verticalVelocityはtransform.up経由の変換なので不完全になりうる）
-        m_entity.velocity = UnityEngine.Vector3.zero;
-        m_entity.externalVelocity = UnityEngine.Vector3.zero;
-        m_entity.m_health.ResetHealth();
-        m_manager.Change<IdlePlayerState>();
     }
+
+    protected override void OnExit(Player player)
+    {
+        player.input.enabled = true;
+
+        var controller = player.GetComponent<EntityController>();
+        if (controller != null)
+        {
+            var controllerCollider = controller.GetComponent<Collider>();
+            if (controllerCollider != null) controllerCollider.enabled = true;
+        }
+    }
+
+    protected override void OnStep(Player player, float dt) { }
 }

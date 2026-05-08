@@ -3,14 +3,19 @@
 /// </summary>
 public class AimPlayerState : EntityState<Player>
 {
-    public override void UpdateState(float dt)
-    {
-        // ストレイフ移動：カメラ方向を向き、速度半減
-        m_entity.MoveWithInputStrafe(dt);
+    protected override void OnEnter(Player player) { }
+    protected override void OnExit(Player player) { }
 
-        if (m_entity.input.MoveInput.sqrMagnitude < 0.01f)
+    protected override void OnStep(Player player, float dt)
+    {
+        player.TickAllAbilities();
+
+        // ストレイフ移動：カメラ方向を向き、速度半減
+        player.MoveWithInputStrafe(dt);
+
+        if (player.input.MoveInput.sqrMagnitude < 0.01f)
         {
-            m_entity.SlowDown(dt);
+            player.SlowDown(dt);
         }
     }
 }

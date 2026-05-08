@@ -1,11 +1,8 @@
 using UnityEngine;
-using UnityEngine.Serialization;
-
 [CreateAssetMenu(fileName = "PlayerSettings", menuName = "MagnetRush/PlayerSettings")]
 public class PlayerSettings : ScriptableObject
 {
     [Header("[移動]")]
-    [FormerlySerializedAs("moveSpeed")]
     [Label("最高移動速度（m/s）")]
     [Tooltip("最高移動速度（m/s）")]
     public float topSpeed = 6f;
@@ -36,6 +33,11 @@ public class PlayerSettings : ScriptableObject
     [Tooltip("接地判定の対象レイヤー。未設定(0)の場合はDefault+Ground+Wallにフォールバック")]
     public LayerMask groundLayer;
 
+    [Header("[ジャンプ]")]
+    [Label("ジャンプ初速（m/s）")]
+    [Tooltip("ジャンプ発動時に Entity.verticalVelocity に与える上方向初速（m/s）。重力で減速して頂点・落下に移行する")]
+    public float jumpInitialVelocity = 8f;
+
     [Header("[カメラ]")]
     [Label("水平感度")]
     [Tooltip("カメラの水平感度")]
@@ -60,6 +62,14 @@ public class PlayerSettings : ScriptableObject
     [Label("発射位置の高さ（m）")]
     [Tooltip("弾の発射位置の高さ（プレイヤー足元からの距離）")]
     public float firePointHeight = 1.2f;
+
+    [Header("[スタブ攻撃]")]
+    [Label("接近判定距離（m）")]
+    [Tooltip("ボスがスタン中かつこの距離以内ならスタブ攻撃を発動できる")]
+    public float stabRange = 2f;
+    [Label("モーションタイムアウト（秒）")]
+    [Tooltip("スタブモーションの強制復帰時間（秒）。AnimEvent OnStabMotionFinishedEvent の配線漏れ保険")]
+    public float stabMotionMaxDuration = 1.5f;
 
     [Header("[エイム]")]
     [Label("解除猶予時間（秒）")]
@@ -89,8 +99,7 @@ public class PlayerSettings : ScriptableObject
 
     [Header("[死亡・リスポーン]")]
     [Label("リスポーン待機時間（秒）")]
-    [Tooltip("死亡からリスポーンまでの待機時間（秒）")]
-    // TODO: リスポーン機構実装時に Player の死亡→復帰フローで配線
+    [Tooltip("死亡からリスポーンまでの待機時間（秒）。PlayerRespawner が WaitForSeconds に渡す")]
     public float respawnDelay = 3f;
 
     [Header("[斜面]")]
