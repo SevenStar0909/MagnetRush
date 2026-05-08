@@ -99,8 +99,7 @@ public class PlayerSettings : ScriptableObject
 
     [Header("[死亡・リスポーン]")]
     [Label("リスポーン待機時間（秒）")]
-    [Tooltip("死亡からリスポーンまでの待機時間（秒）")]
-    // TODO: リスポーン機構実装時に Player の死亡→復帰フローで配線
+    [Tooltip("死亡からリスポーンまでの待機時間（秒）。PlayerRespawner が WaitForSeconds に渡す")]
     public float respawnDelay = 3f;
 
     [Header("[斜面]")]
