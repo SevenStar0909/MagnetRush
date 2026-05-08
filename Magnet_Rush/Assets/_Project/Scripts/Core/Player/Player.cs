@@ -62,10 +62,10 @@ public class Player : Entity
     /// <summary>磁極 Ability。</summary>
     public PoleAbility pole { get; private set; }
 
-    /// <summary>ジャンプ Ability。PR0 (jump-stab-prep) ではプロパティ宣言のみ、[RequireComponent]/GetComponent は実装PR (feature/jump) で追加する。</summary>
+    /// <summary>ジャンプ Ability。Jump() メソッド本体は feature/jump で実装する。</summary>
     public JumpAbility jump { get; private set; }
 
-    /// <summary>スタブ攻撃 Ability。PR0 (jump-stab-prep) ではプロパティ宣言のみ、[RequireComponent]/GetComponent は実装PR (feature/stab) で追加する。</summary>
+    /// <summary>スタブ攻撃 Ability。Stab() / OnStabHitEvent() メソッド本体は feature/stab で実装する。</summary>
     public StabAbility stab { get; private set; }
 
     protected override void Awake()
