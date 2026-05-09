@@ -17,5 +17,10 @@ public class AimPlayerState : EntityState<Player>
         {
             player.SlowDown(dt);
         }
+
+        if (!player.IsGrounded)
+        {
+            player.states.Change<FallPlayerState>();
+        }
     }
 }
