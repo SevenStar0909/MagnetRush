@@ -30,6 +30,11 @@ public class EnemyBossAI : MonoBehaviour
     private float m_staggerTimer;
     private Vector3 m_lastDirection;
 
+    private Vector3 m_rushTargetPosition;
+
+    [Header("Rush or missile")]
+    [SerializeField] private bool m_nextLongRangeAttackIsRush = true; // rushとmissileを交互に行うためのフラグ
+
     public BossState State => m_state;
 
     void Awake()
@@ -67,7 +72,7 @@ public class EnemyBossAI : MonoBehaviour
     {
         if (m_player == null || m_settings == null || m_agent == null || m_animator == null)
         { ChannelLogger.LogGuardReturn("Enemy", "プレイヤー/Settings/Agent/Animator未取得"); return; }
-
+        
         float dt = Time.deltaTime;
         m_cooldownTimer = Mathf.Max(0f, m_cooldownTimer - dt);
         m_staggerTimer = Mathf.Max(0f, m_staggerTimer - dt);
@@ -78,7 +83,7 @@ public class EnemyBossAI : MonoBehaviour
         switch (m_state)
         {
             case BossState.Idle: TickIdle(dt); break;
-            case BossState.Chase: TickChase(dt); break;
+            case BossState.Chase: TickChase(dt); break; 
             case BossState.AttackStance: TickAttackStance(dt); break;
             case BossState.AttackMotion: TickAttackMotion(dt); break;
             case BossState.Rush: TickRush(dt); break;
@@ -94,14 +99,22 @@ public class EnemyBossAI : MonoBehaviour
     {
         if (next == m_state) return;
         if (m_logStateChange)
-            ChannelLogger.Log("Enemy", $"[EnemyBossAI] {m_state} → {next}");
+            ChannelLogger.Log("EnemyBossA", $"[EnemyBossAI] {m_state} → {next}");
 
         var prev = m_state;
         m_state = next;
 
-        if (prev == BossState.AttackMotion) m_cooldownTimer = m_settings.attackInterval;
-        if (prev == BossState.Stunned) m_staggerTimer = m_settings.staggerDuration;
-        if (prev == BossState.AttackMotion && next == BossState.Stagger)
+        if (next == BossState.Rush)
+        {
+            m_rushTargetPosition = m_player.position;
+            m_boss.lateralVelocity = Vector3.zero;
+        }
+
+
+        if (prev == BossState.AttackMotion || prev == BossState.Rush || prev == BossState.Missile)
+            m_cooldownTimer = m_settings.attackInterval;
+
+        if (prev == BossState.Stunned)
             m_staggerTimer = m_settings.staggerDuration;
     }
 
@@ -109,11 +122,49 @@ public class EnemyBossAI : MonoBehaviour
 
     private void TickIdle(float dt)
     {
+        if (m_animator.IsStunned)
+        {
+            ChangeState(BossState.Stunned);
+            return;
+        }
+
         m_boss.SlowDown(dt);
-        if (PlayerInChaseRange())
-            ChangeState(BossState.Chase);
+        FacePlayer(dt);
+
+        if (m_cooldownTimer > 0f)
+            return;
+
+        float distance = DistanceToPlayer();
+        ChannelLogger.Log("EnemyBossA", $"distanceToPlayer = {distance}");
+
+
+        if (distance <= m_settings.attackRange)
+        {
+            m_animator.TriggerAttack();
+            ChangeState(BossState.AttackStance);
+            return;
+        }
+
+        if (m_settings.rushAttackRange < distance && distance <= m_settings.missileAttackRange)
+        {
+            m_animator.TriggerAttackRush();
+            ChangeState(BossState.Rush);
+            return;
+        }
+
+        if (m_settings.missileAttackRange < distance)
+        {
+            if (m_nextLongRangeAttackIsRush)
+                m_animator.TriggerAttackRush();
+            else
+                m_animator.TriggerMissile(); 
+            ChangeState(m_nextLongRangeAttackIsRush ? BossState.Rush : BossState.Missile);
+        }
+
+        m_nextLongRangeAttackIsRush = !m_nextLongRangeAttackIsRush;
     }
 
+    // 使わない20260511
     private void TickChase(float dt)
     {
         if (m_animator.IsStunned) { ChangeState(BossState.Stunned); return; }
@@ -132,6 +183,7 @@ public class EnemyBossAI : MonoBehaviour
         }
     }
 
+
     private void TickAttackStance(float dt)
     {
         FacePlayer(dt);
@@ -140,6 +192,7 @@ public class EnemyBossAI : MonoBehaviour
         if (m_animator.IsStunned) { ChangeState(BossState.Stunned); return; }
         if (m_animator.IsInAttackMotion) { ChangeState(BossState.AttackMotion); return; }
     }
+
 
     private void TickAttackMotion(float dt)
     {
@@ -150,13 +203,19 @@ public class EnemyBossAI : MonoBehaviour
 
     private void TickRush(float dt)
     {
-        // Rushだけ移動
-        MoveTowardPlayer(dt, 1f);
+        if (!m_animator.IsInRush)
+        {
+            m_boss.lateralVelocity = Vector3.zero;
+            FacePlayer(dt);
+            return;
+        }
+        MoveTowardPlayerLastLocation(dt, 1f);
     }
+
     private void TickMissile(float dt)
     {
-        // Missile
-        // FireMissile() の呼び出しは EnemyBossBaseA_Animator のアニメーションイベントから行う想定
+        m_boss.SlowDown(dt);
+        FacePlayer(dt);
     }
 
 
@@ -171,7 +230,7 @@ public class EnemyBossAI : MonoBehaviour
         FacePlayer(dt);
 
         if (m_staggerTimer <= 0f)
-            ChangeState(BossState.Chase);
+            ChangeState(BossState.Idle);
     }
 
     // === 公開コールバック (Animator → AI) ===
@@ -181,28 +240,29 @@ public class EnemyBossAI : MonoBehaviour
     {
         Debug.Log("[EnemyBossAI] OnAttackFinished called");
         if (m_state == BossState.AttackMotion)
-            ChangeState(BossState.Stagger);
+            ChangeState(BossState.Idle);
     }
 
     /// <summary>AttackStun clip 末尾の AnimEvent から呼ばれる。Stagger に遷移。</summary>
     public void OnStunEnd()
     {
         if (m_state == BossState.Stunned)
-            ChangeState(BossState.Stagger);
+            ChangeState(BossState.Idle);
     }
 
     /// <summary>AttackStun clip 末尾の AnimEvent から呼ばれる。Stagger に遷移。</summary>
     public void OnRushFinished()
     {
+        Debug.Log("[EnemyBossAI] OnRushFinished called");
         if (m_state == BossState.Rush)
-            ChangeState(BossState.Stagger);
+            ChangeState(BossState.Idle);
     }
 
     /// <summary>AttackStun clip 末尾の AnimEvent から呼ばれる。Stagger に遷移。</summary>
     public void OnMissileFinished()
     {
         if (m_state == BossState.Missile)
-            ChangeState(BossState.Stagger);
+            ChangeState(BossState.Idle);
     }
 
     // === ヘルパ ===
@@ -214,6 +274,8 @@ public class EnemyBossAI : MonoBehaviour
 
     private bool PlayerInChaseRange()
     {
+        // 今使わないけど、将来の拡張で Idle → Chase 遷移条件にするかもなので残しておく
+        // 廃棄したいですけど。蘇
         return DistanceToPlayer() <= m_settings.chaseRange;
     }
 
@@ -242,6 +304,22 @@ public class EnemyBossAI : MonoBehaviour
             m_boss.AccelerateToward(navDir * speedMultiplier, dt);
     }
 
+    private void MoveTowardPlayerLastLocation(float dt, float speedMultiplier)
+    {
+        if (!m_agent.enabled || !m_agent.isOnNavMesh)
+        {
+            Vector3 dir = GetDirectionToPosition(m_rushTargetPosition);
+            if (dir.sqrMagnitude > 0.0001f)
+                m_boss.AccelerateToward(dir * speedMultiplier, dt);
+            return;
+        }
+
+        m_agent.SetDestination(m_rushTargetPosition);
+        Vector3 navDir = GetNavMeshDirection(m_rushTargetPosition);
+        if (navDir.sqrMagnitude > 0.0001f)
+            m_boss.AccelerateToward(navDir * speedMultiplier, dt);
+    }
+
     private Vector3 GetNavMeshDirection()
     {
         if (!m_agent.hasPath && !m_agent.pathPending)
@@ -262,9 +340,36 @@ public class EnemyBossAI : MonoBehaviour
         return m_lastDirection;
     }
 
+    private Vector3 GetNavMeshDirection(Vector3 targetPosition)
+    {
+        if (!m_agent.hasPath && !m_agent.pathPending)
+            return GetDirectionToPosition(targetPosition);
+
+        if (m_agent.pathPending)
+            return m_lastDirection;
+
+        Vector3 dir = targetPosition - transform.position;
+        dir.y = 0f;
+
+        if (dir.sqrMagnitude > 0.0001f)
+        {
+            m_lastDirection = dir.normalized;
+            return m_lastDirection;
+        }
+
+        return m_lastDirection;
+    }
+
     private Vector3 GetDirectionToPlayer()
     {
         Vector3 dir = m_player.position - transform.position;
+        dir.y = 0f;
+        return dir.sqrMagnitude > 0.0001f ? dir.normalized : Vector3.zero;
+    }
+
+    private Vector3 GetDirectionToPosition(Vector3 targetPosition)
+    {
+        Vector3 dir = targetPosition - transform.position;
         dir.y = 0f;
         return dir.sqrMagnitude > 0.0001f ? dir.normalized : Vector3.zero;
     }
@@ -279,11 +384,31 @@ public class EnemyBossAI : MonoBehaviour
 
     private void TryRecoverAgent()
     {
-        if (m_agent == null) { ChannelLogger.LogGuardReturn("Enemy", "NavMeshAgentなし"); return; }
-        if (m_agent.enabled && m_agent.isOnNavMesh) { ChannelLogger.LogGuardReturn("Enemy", "Agent既に有効"); return; }
+        if (m_agent == null) { ChannelLogger.LogGuardReturn("EnemyBossA", "NavMeshAgentなし"); return; }
+        if (m_agent.enabled && m_agent.isOnNavMesh) { ChannelLogger.LogGuardReturn("EnemyBossA", "Agent既に有効"); return; }
 
-        if (!NavMesh.SamplePosition(transform.position, out var hit, 5f, NavMesh.AllAreas))
-        { ChannelLogger.LogGuardReturn("Enemy", "NavMeshサンプル失敗"); return; }
+        const float sampleRadius = 20;
+
+        Vector3 sourcePosition = transform.position;
+        if (!NavMesh.SamplePosition(sourcePosition, out var hit, sampleRadius, NavMesh.AllAreas))
+        {
+            if (m_player != null)
+            {
+                sourcePosition = m_player.position;
+                if (!NavMesh.SamplePosition(sourcePosition, out hit, sampleRadius, NavMesh.AllAreas))
+                {
+                    ChannelLogger.LogGuardReturn("EnemyBossA",
+                        $"NavMeshサンプル失敗 pos={transform.position} player={m_player.position} radius={sampleRadius}");
+                    return;
+                }
+            }
+            else
+            {
+                ChannelLogger.LogGuardReturn("EnemyBossA",
+                    $"NavMeshサンプル失敗 pos={transform.position} radius={sampleRadius}");
+                return;
+            }
+        }
 
         if (m_agent.enabled)
             m_agent.enabled = false;
@@ -296,6 +421,12 @@ public class EnemyBossAI : MonoBehaviour
             m_agent.updatePosition = false;
             m_agent.updateRotation = false;
             m_agent.velocity = Vector3.zero;
+
+            ChannelLogger.Log("EnemyBossA", $"Agent復帰成功 pos={transform.position} hit={hit.position}");
+        }
+        else
+        {
+            ChannelLogger.LogWarning("EnemyBossA", $"Agent復帰失敗 pos={transform.position}");
         }
     }
 }
