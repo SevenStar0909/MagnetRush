@@ -8,11 +8,17 @@ public class MovePlayerState : EntityState<Player>
 
     protected override void OnStep(Player player, float dt)
     {
+        player.TickAllAbilities();
         player.AccelerateToInputDirection(dt);
 
         if (player.input.MoveInput.sqrMagnitude < 0.01f)
         {
             player.states.Change<IdlePlayerState>();
+        }
+
+        if (!player.IsGrounded)
+        {
+            player.states.Change<FallPlayerState>();
         }
     }
 }
