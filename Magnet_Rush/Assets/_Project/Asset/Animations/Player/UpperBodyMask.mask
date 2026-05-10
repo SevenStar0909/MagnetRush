@@ -8,4 +8,78 @@ AvatarMask:
   m_PrefabAsset: {fileID: 0}
   m_Name: UpperBodyMask
   m_Mask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
-  m_Elements: []
+  m_Elements:
+  - m_Path: Mesh
+    m_Weight: 1
+  - m_Path: Root
+    m_Weight: 1
+  - m_Path: Root/Pelvis
+    m_Weight: 1
+  - m_Path: Root/Pelvis/L_UpLeg
+    m_Weight: 0
+  - m_Path: Root/Pelvis/L_UpLeg/L_LowLeg
+    m_Weight: 0
+  - m_Path: Root/Pelvis/L_UpLeg/L_LowLeg/L_Ankle
+    m_Weight: 0
+  - m_Path: Root/Pelvis/L_UpLeg/L_LowLeg/L_Ankle/L_Toe
+    m_Weight: 0
+  - m_Path: Root/Pelvis/R_UpLeg
+    m_Weight: 0
+  - m_Path: Root/Pelvis/R_UpLeg/R_LowLeg
+    m_Weight: 0
+  - m_Path: Root/Pelvis/R_UpLeg/R_LowLeg/R_Ankle
+    m_Weight: 0
+  - m_Path: Root/Pelvis/R_UpLeg/R_LowLeg/R_Ankle/R_Toe
+    m_Weight: 0
+  - m_Path: Root/Pelvis/Stomach
+    m_Weight: 1
+  - m_Path: Root/Pelvis/Stomach/Body
+    m_Weight: 1
+  - m_Path: Root/Pelvis/Stomach/Body/L_Shoulder
+    m_Weight: 1
+  - m_Path: Root/Pelvis/Stomach/Body/L_Shoulder/L_Arm
+    m_Weight: 1
+  - m_Path: Root/Pelvis/Stomach/Body/L_Shoulder/L_Arm/L_Hand
+    m_Weight: 1
+  - m_Path: Root/Pelvis/Stomach/Body/Neck
+    m_Weight: 1
+  - m_Path: Root/Pelvis/Stomach/Body/Neck/Head
+    m_Weight: 1
+  - m_Path: Root/Pelvis/Stomach/Body/R_Shoulder
+    m_Weight: 1
+  - m_Path: Root/Pelvis/Stomach/Body/R_Shoulder/R_Arm
+    m_Weight: 1
+  - m_Path: Root/Pelvis/Stomach/Body/R_Shoulder/R_Arm/R_Hand
+    m_Weight: 1
+  - m_Path: Root_rig
+    m_Weight: 1
+  - m_Path: Root_rig/Pelvis
+    m_Weight: 1
+  - m_Path: Root_rig/Pelvis/Body_Rig
+    m_Weight: 1
+  - m_Path: Root_rig/Pelvis/Body_Rig/L_Shoulder_Rig
+    m_Weight: 1
+  - m_Path: Root_rig/Pelvis/Body_Rig/L_Shoulder_Rig/L_Arm_Rig
+    m_Weight: 1
+  - m_Path: Root_rig/Pelvis/Body_Rig/Neck_Rig
+    m_Weight: 1
+  - m_Path: Root_rig/Pelvis/Body_Rig/R_Shoulder_Rig
+    m_Weight: 1
+  - m_Path: Root_rig/Pelvis/Body_Rig/R_Shoulder_Rig/R_Arm_Rig
+    m_Weight: 1
+  - m_Path: Root_rig/Pelvis/L_UpLeg_Rig
+    m_Weight: 0
+  - m_Path: Root_rig/Pelvis/L_UpLeg_Rig/L_LowLeg_Rig
+    m_Weight: 0
+  - m_Path: Root_rig/Pelvis/L_UpLeg_Rig/L_LowLeg_Rig/L_Ankle_Rig
+    m_Weight: 0
+  - m_Path: Root_rig/Pelvis/L_UpLeg_Rig/L_LowLeg_Rig/L_Ankle_Rig/L_Toe_Rig
+    m_Weight: 0
+  - m_Path: Root_rig/Pelvis/R_UpLeg_Rig
+    m_Weight: 0
+  - m_Path: Root_rig/Pelvis/R_UpLeg_Rig/R_LowLeg_Rig
+    m_Weight: 0
+  - m_Path: Root_rig/Pelvis/R_UpLeg_Rig/R_LowLeg_Rig/R_Ankle_Rig
+    m_Weight: 0
+  - m_Path: Root_rig/Pelvis/R_UpLeg_Rig/R_LowLeg_Rig/R_Ankle_Rig/R_Toe_Rig
+    m_Weight: 0
