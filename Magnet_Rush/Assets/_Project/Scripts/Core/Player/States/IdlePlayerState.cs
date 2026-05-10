@@ -15,5 +15,10 @@ public class IdlePlayerState : EntityState<Player>
         {
             player.states.Change<MovePlayerState>();
         }
+
+        if(!player.IsGrounded)
+        {
+            player.states.Change<FallPlayerState>();
+        }
     }
 }
