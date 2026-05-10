@@ -10,7 +10,7 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
     [Tooltip("Hitbox。未設定ならルートの子から取得")]
     [SerializeField] private Hitbox m_hitbox;
 
-    [Tooltip("AI(EnemyBossAI)。AnimationEvent で OnAttackFinished/OnStunEnd を転送する")]
+    [Tooltip("AI(EnemyBossAI)。AnimationEvent で OnAttackFinished/OnStunEnd/OnRushFinished/OnMissileFinished を転送する")]
     [SerializeField] private EnemyBossAI m_ai;
 
     [Tooltip("腕の近接Hitbox。AnimationEvent で Enable/Disable を転送する")]
@@ -20,12 +20,14 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
     [SerializeField] private bool m_enableDebugInput = true;
 
     [Header("Animator Parameter Names (Inspector 単一箇所管理)")]
-    [SerializeField] private string m_attackName = "Attack";
-    [SerializeField] private string m_attackFinishedName = "AttackFinished";
-    [SerializeField] private string m_beInterruptedName = "BeInterrupted";
-    [SerializeField] private string m_stunEndName = "StunEnd";
-    [SerializeField] private string m_canInterruptName = "CanInterrupt";
-    [SerializeField] private string m_isStunnedName = "IsStunned";
+    [SerializeField] private string m_attackName          = "Attack";            //近接攻撃開始トリガー
+    [SerializeField] private string m_attackFinishedName  = "AttackFinished";    //近接攻撃終了トリガー（Staggerへの遷移タイミング）
+    [SerializeField] private string m_beInterruptedName   = "BeInterrupted";     //被弾中断トリガー
+    [SerializeField] private string m_stunEndName         = "StunEnd";           //スタン終了トリガー（Staggerへの遷移タイミング）
+    [SerializeField] private string m_canInterruptName    = "CanInterrupt";      //中断可能フラグ
+    [SerializeField] private string m_isStunnedName       = "IsStunned";         //スタン中フラグ
+    [SerializeField] private string m_fireMissileName     = "FireMissile";       //ミサイル発射トリガー
+    [SerializeField] private string m_attackRushName      = "AttackRush";       //ラッシュ攻撃トリガー
 
     private int m_hAttack;
     private int m_hAttackFinished;
@@ -33,6 +35,8 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
     private int m_hStunEnd;
     private int m_hCanInterrupt;
     private int m_hIsStunned;
+    private int m_hFireMissile;
+    private int m_hAttackRush;
 
     void Awake()
     {
@@ -48,12 +52,14 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
         if (m_armHitbox == null)
             m_armHitbox = transform.root.GetComponentInChildren<BossArmHitbox>(true);
 
-        m_hAttack = Animator.StringToHash(m_attackName);
+        m_hAttack         = Animator.StringToHash(m_attackName);
         m_hAttackFinished = Animator.StringToHash(m_attackFinishedName);
-        m_hBeInterrupted = Animator.StringToHash(m_beInterruptedName);
-        m_hStunEnd = Animator.StringToHash(m_stunEndName);
-        m_hCanInterrupt = Animator.StringToHash(m_canInterruptName);
-        m_hIsStunned = Animator.StringToHash(m_isStunnedName);
+        m_hBeInterrupted  = Animator.StringToHash(m_beInterruptedName);
+        m_hStunEnd        = Animator.StringToHash(m_stunEndName);
+        m_hCanInterrupt   = Animator.StringToHash(m_canInterruptName);
+        m_hIsStunned      = Animator.StringToHash(m_isStunnedName);
+        m_hFireMissile    = Animator.StringToHash(m_fireMissileName);
+        m_hAttackRush     = Animator.StringToHash(m_attackRushName);
 
         if (m_animator == null)
         {
@@ -108,6 +114,26 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
         if (m_animator != null) m_animator.SetTrigger(m_hStunEnd);
     }
 
+    public void TriggerRush()
+    {
+        if (m_animator != null) m_animator.SetTrigger(m_hAttackRush);
+    }
+
+    public void TriggerAttackRush()
+    {
+        TriggerRush();
+    }
+
+    public void TriggerMissile()
+    {
+        if (m_animator != null) m_animator.SetTrigger(m_hFireMissile);
+    }
+
+    public void TriggerFireMissile()
+    {
+        TriggerMissile();
+    }
+
     public void SetCanInterrupt(bool value)
     {
         if (m_animator != null) m_animator.SetBool(m_hCanInterrupt, value);
@@ -159,6 +185,26 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
         }
     }
 
+    /// <summary>Rush 中なら true。</summary>
+    public bool IsInRush
+    {
+        get
+        {
+            if (m_animator == null) return false;
+            return m_animator.GetCurrentAnimatorStateInfo(0).shortNameHash == s_hRushState;
+        }
+    }
+
+    /// <summary>Missile 中なら true。</summary>
+    public bool IsInMissile
+    {
+        get
+        {
+            if (m_animator == null) return false;
+            return m_animator.GetCurrentAnimatorStateInfo(0).shortNameHash == s_hMissileState;
+        }
+    }
+
     /// <summary>AttackStun 中なら true。Bool ではなく現在 State を見ることで AnimEvent 配線漏れに対しても堅牢。</summary>
     public bool IsStunned
     {
@@ -172,7 +218,10 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
     // Animator State 名のハッシュ（State 名は EnemyBossA_Animator.controller の Layer0 上の State 名と一致する必要がある）
     private static readonly int s_hAttackStanceState = Animator.StringToHash("AttackStanceAnim");
     private static readonly int s_hAttackMotionState = Animator.StringToHash("AttackMotionAnim");
-    private static readonly int s_hAttackStunState   = Animator.StringToHash("AttackStunAnim");
+    private static readonly int s_hAttackStunState = Animator.StringToHash("AttackStunAnim");
+    private static readonly int s_hAttackStaggerState = Animator.StringToHash("StaggerAnim");
+    private static readonly int s_hRushState = Animator.StringToHash("RushAnim");
+    private static readonly int s_hMissileState = Animator.StringToHash("MissileAnim");
 
     // === AnimationEvent から直接呼ばれるエントリ（Forwarder ではなく Animator 直に置く） ===
 
@@ -223,6 +272,8 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
             (m_stunEndName, "StunEnd (Trigger)"),
             (m_canInterruptName, "CanInterrupt (Bool)"),
             (m_isStunnedName, "IsStunned (Bool)"),
+            (m_fireMissileName, "FireMissile (Trigger)"),
+            (m_attackRushName, "AttackRush (Trigger)"),
         };
 
         var existing = new System.Collections.Generic.HashSet<string>();

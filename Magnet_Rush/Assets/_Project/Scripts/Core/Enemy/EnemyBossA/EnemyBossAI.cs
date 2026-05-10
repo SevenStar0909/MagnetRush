@@ -12,7 +12,7 @@ using UnityEngine.AI;
 [RequireComponent(typeof(NavMeshAgent))]
 public class EnemyBossAI : MonoBehaviour
 {
-    public enum BossState { Idle, Chase, AttackStance, AttackMotion, Stunned, Stagger }
+    public enum BossState { Idle, Chase, AttackStance, AttackMotion, Rush, Missile, Stunned, Stagger }
 
     [Header("References")]
     [SerializeField] private EnemyBossBaseA_Animator m_animator;
@@ -70,19 +70,21 @@ public class EnemyBossAI : MonoBehaviour
 
         float dt = Time.deltaTime;
         m_cooldownTimer = Mathf.Max(0f, m_cooldownTimer - dt);
-        m_staggerTimer  = Mathf.Max(0f, m_staggerTimer  - dt);
+        m_staggerTimer = Mathf.Max(0f, m_staggerTimer - dt);
 
         TryRecoverAgent();
         SyncAgentToBody();
 
         switch (m_state)
         {
-            case BossState.Idle:         TickIdle(dt);         break;
-            case BossState.Chase:        TickChase(dt);        break;
+            case BossState.Idle: TickIdle(dt); break;
+            case BossState.Chase: TickChase(dt); break;
             case BossState.AttackStance: TickAttackStance(dt); break;
             case BossState.AttackMotion: TickAttackMotion(dt); break;
-            case BossState.Stunned:      TickStunned(dt);      break;
-            case BossState.Stagger:      TickStagger(dt);      break;
+            case BossState.Rush: TickRush(dt); break;
+            case BossState.Missile: TickMissile(dt); break;
+            case BossState.Stunned: TickStunned(dt); break;
+            case BossState.Stagger: TickStagger(dt); break;
         }
     }
 
@@ -98,7 +100,7 @@ public class EnemyBossAI : MonoBehaviour
         m_state = next;
 
         if (prev == BossState.AttackMotion) m_cooldownTimer = m_settings.attackInterval;
-        if (prev == BossState.Stunned)      m_staggerTimer  = m_settings.staggerDuration;
+        if (prev == BossState.Stunned) m_staggerTimer = m_settings.staggerDuration;
         if (prev == BossState.AttackMotion && next == BossState.Stagger)
             m_staggerTimer = m_settings.staggerDuration;
     }
@@ -107,89 +109,69 @@ public class EnemyBossAI : MonoBehaviour
 
     private void TickIdle(float dt)
     {
+        m_boss.SlowDown(dt);
         if (PlayerInChaseRange())
             ChangeState(BossState.Chase);
-        else
-            m_boss.SlowDown(dt);
     }
 
     private void TickChase(float dt)
     {
-        // Animator 起点の被弾 → Stunned 化を検知
         if (m_animator.IsStunned) { ChangeState(BossState.Stunned); return; }
 
+        if (m_agent.enabled && m_agent.isOnNavMesh)
+            m_agent.ResetPath();
+
+        m_boss.SlowDown(dt);
+        FacePlayer(dt);
+
         float distance = DistanceToPlayer();
-
-        if (distance > m_settings.chaseRange)
-        {
-            if (m_agent.enabled && m_agent.isOnNavMesh) m_agent.ResetPath();
-            m_boss.SlowDown(dt);
-            return;
-        }
-
         if (distance <= m_settings.attackRange && m_cooldownTimer <= 0f)
         {
-            if (m_agent.enabled && m_agent.isOnNavMesh) m_agent.ResetPath();
-            m_boss.SlowDown(dt);
-            FacePlayer(dt);
-            // Animator にトリガを送り、State が AttackStance に遷移するのを次フレームで検出して状態を切り替える
             m_animator.TriggerAttack();
             ChangeState(BossState.AttackStance);
-            return;
         }
-
-        // 接近停止
-        if (distance <= m_settings.stopDistance)
-        {
-            if (m_agent.enabled && m_agent.isOnNavMesh) m_agent.ResetPath();
-            m_boss.SlowDown(dt);
-            FacePlayer(dt);
-            return;
-        }
-
-        MoveTowardPlayer(dt, 1f);
     }
 
     private void TickAttackStance(float dt)
     {
-        // 構え中も向きは追従させる
         FacePlayer(dt);
         m_boss.SlowDown(dt);
 
-        // Animator が BeInterrupted トリガを既に処理して Stun に飛んだ場合
         if (m_animator.IsStunned) { ChangeState(BossState.Stunned); return; }
-
-        // Animator が AttackMotion State に遷移した
         if (m_animator.IsInAttackMotion) { ChangeState(BossState.AttackMotion); return; }
     }
 
     private void TickAttackMotion(float dt)
     {
-        // 振り中は静止 + 向きを保つ
+        // 普通攻擊移動なし
         m_boss.SlowDown(dt);
         FacePlayer(dt);
-        // 終了は AnimEvent 経由 OnAttackFinished() でハンドル
     }
+
+    private void TickRush(float dt)
+    {
+        // Rushだけ移動
+        MoveTowardPlayer(dt, 1f);
+    }
+    private void TickMissile(float dt)
+    {
+        // Missile
+        // FireMissile() の呼び出しは EnemyBossBaseA_Animator のアニメーションイベントから行う想定
+    }
+
 
     private void TickStunned(float dt)
     {
         m_boss.SlowDown(dt);
-        // 復帰は AnimEvent 経由 OnStunEnd() でハンドル
     }
 
     private void TickStagger(float dt)
     {
-        if (m_staggerTimer <= 0f)
-        {
-            ChangeState(BossState.Chase);
-            return;
-        }
+        m_boss.SlowDown(dt);
+        FacePlayer(dt);
 
-        // 50% 速度で追跡継続（攻撃判定はしない）
-        if (PlayerInChaseRange())
-            MoveTowardPlayer(dt, m_settings.staggerMoveMultiplier);
-        else
-            m_boss.SlowDown(dt);
+        if (m_staggerTimer <= 0f)
+            ChangeState(BossState.Chase);
     }
 
     // === 公開コールバック (Animator → AI) ===
@@ -197,6 +179,7 @@ public class EnemyBossAI : MonoBehaviour
     /// <summary>AttackMotion clip 末尾の AnimEvent から呼ばれる。Stagger に遷移。</summary>
     public void OnAttackFinished()
     {
+        Debug.Log("[EnemyBossAI] OnAttackFinished called");
         if (m_state == BossState.AttackMotion)
             ChangeState(BossState.Stagger);
     }
@@ -205,6 +188,20 @@ public class EnemyBossAI : MonoBehaviour
     public void OnStunEnd()
     {
         if (m_state == BossState.Stunned)
+            ChangeState(BossState.Stagger);
+    }
+
+    /// <summary>AttackStun clip 末尾の AnimEvent から呼ばれる。Stagger に遷移。</summary>
+    public void OnRushFinished()
+    {
+        if (m_state == BossState.Rush)
+            ChangeState(BossState.Stagger);
+    }
+
+    /// <summary>AttackStun clip 末尾の AnimEvent から呼ばれる。Stagger に遷移。</summary>
+    public void OnMissileFinished()
+    {
+        if (m_state == BossState.Missile)
             ChangeState(BossState.Stagger);
     }
 
