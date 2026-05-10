@@ -23,6 +23,7 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 193
+  jumpInitialVelocity: 8
   cameraSensitivityX: 35
   cameraSensitivityY: 25
   cameraDistance: 5
@@ -30,6 +31,8 @@ MonoBehaviour:
   cameraPitchMin: -90
   cameraPitchMax: 90
   firePointHeight: 1.2
+  stabRange: 2
+  stabMotionMaxDuration: 1.5
   aimReleaseGraceTime: 0.15
   aimTimeScale: 0.3
   aimMaxDuration: 3
@@ -38,7 +41,7 @@ MonoBehaviour:
   aimFOV: 40
   aimCameraDistance: 3
   aimMoveSpeedMultiplier: 0.5
-  respawnDelay: 3
+  respawnDelay: 0.5
   slopeUpwardForce: 15
   slopeDownwardForce: 25
   magnetResistance: 0.5

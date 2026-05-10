@@ -8,6 +8,7 @@ public class MovePlayerState : EntityState<Player>
 
     protected override void OnStep(Player player, float dt)
     {
+        player.TickAllAbilities();
         player.AccelerateToInputDirection(dt);
 
         if (player.input.MoveInput.sqrMagnitude < 0.01f)
