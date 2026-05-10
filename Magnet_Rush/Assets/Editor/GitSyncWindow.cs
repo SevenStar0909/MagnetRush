@@ -14,8 +14,10 @@ using Debug = UnityEngine.Debug;
 ///   - 現在ブランチを fast-forward pull
 ///   - 現在ブランチを origin/<current> で上書き
 ///   - 現在ブランチを別ブランチ (origin/...) で上書き
+///   - リモート origin/<current> をローカルで上書き（force-with-lease push）
 /// 安全策: 操作前にシーン保存 + AssetDatabase.SaveAssets()、操作後に AssetDatabase.Refresh()。
 ///         破壊的操作は確認ダイアログを表示し、未コミット変更がある場合は abort する。
+///         main/master/develop など共有ブランチへの force push はガードする。
 /// メニュー: Tools/Git/同期
 /// </summary>
 public class GitSyncWindow : EditorWindow
@@ -97,6 +99,35 @@ public class GitSyncWindow : EditorWindow
             EditorGUILayout.HelpBox("リモートブランチ一覧が取得できていません。ウィンドウを開き直してください。", MessageType.Info);
         }
 
+        EditorGUILayout.Space(8);
+        EditorGUILayout.LabelField("▼ リモートを上書き（破壊的・他メンバー注意）", EditorStyles.boldLabel);
+
+        bool isProtectedBranch = IsProtectedBranch(m_currentBranch);
+        EditorGUI.BeginDisabledGroup(isProtectedBranch);
+        if (GUILayout.Button($"origin/{m_currentBranch} をローカルで上書き（force-with-lease push）"))
+        {
+            if (ConfirmDanger(
+                $"リモート origin/{m_currentBranch} をローカル {m_currentBranch} の状態で強制上書きします。\n\n" +
+                $"他メンバーが既に pull していると、向こうで履歴の不整合や push 拒否が起きます。\n\n" +
+                $"他メンバーに事前確認しましたか？"))
+            {
+                ExecuteWithSafety(() =>
+                {
+                    var f = RunGit("fetch origin");
+                    var p = RunGit($"push --force-with-lease origin {m_currentBranch}");
+                    return f + "\n" + p;
+                }, $"push --force-with-lease origin {m_currentBranch}");
+            }
+        }
+        EditorGUI.EndDisabledGroup();
+        if (isProtectedBranch)
+        {
+            EditorGUILayout.HelpBox(
+                $"{m_currentBranch} は共有ブランチのため force push を禁止しています。\n" +
+                $"feature/* 等の作業ブランチに切り替えてから実行してください。",
+                MessageType.Warning);
+        }
+
         EditorGUILayout.Space(20);
         EditorGUILayout.BeginHorizontal();
         GUILayout.Label("ログ", EditorStyles.boldLabel);
@@ -163,6 +194,15 @@ public class GitSyncWindow : EditorWindow
     bool ConfirmDanger(string msg)
     {
         return EditorUtility.DisplayDialog("確認: 破壊的な git 操作", msg, "実行", "キャンセル");
+    }
+
+    /// <summary>共有ブランチ判定。force push 禁止対象。</summary>
+    static bool IsProtectedBranch(string branchName)
+    {
+        if (string.IsNullOrEmpty(branchName)) return true;
+        return branchName == "main"
+            || branchName == "master"
+            || branchName == "develop";
     }
 
     /// <summary>シーン退避 → AutoRefresh/AssemblyReload 一時停止 → 任意の git 操作 → 状態復元 を順番に実行する。
