@@ -218,6 +218,7 @@ public class PlayerAnimator : MonoBehaviour
             var mv = m_input.MoveInput;
             m_animator.SetFloat(m_hMoveInputX, mv.x);
             m_animator.SetFloat(m_hMoveInputZ, mv.y);
+            m_animator.SetFloat(m_hVerticalSpeed, m_player.velocity.y);
         }
 
         if (m_aim != null)
