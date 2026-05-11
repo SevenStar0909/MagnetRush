@@ -29,10 +29,18 @@ public class StabAbility : Ability
         if (!m_input.IsStabPressed) return;
 
         // ボスがスタンしていない場合は発動しない
-        // if(!bossPublicApi.IsStunned) return;
+        // if(!bossPublicApi.IsStunned)
+        // {
+        //     ChannelLogger.LogGuardReturn("Stab", "ボスがスタンしていない");
+        //     return;
+        // }
 
         // プレイヤーとボスの距離がスタブ攻撃の有効範囲を超えている場合は発動しない
-        if (Vector3.Distance(m_player.transform.position, m_bossTarget.position) > m_player.Settings.stabRange) return; 
+        if (Vector3.Distance(m_player.transform.position, m_bossTarget.position) > m_player.Settings.stabRange)
+        {
+            ChannelLogger.LogGuardReturn("Stab", "ボスの距離がスタブ攻撃の範囲外");
+            return;
+        }
 
         m_input.ConsumeStab();
         m_states.Change<StabPlayerState>();

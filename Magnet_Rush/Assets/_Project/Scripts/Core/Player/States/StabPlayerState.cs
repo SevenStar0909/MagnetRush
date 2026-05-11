@@ -16,6 +16,8 @@ public class StabPlayerState : EntityState<Player>
         }
     }
 
+    public void OnStabMotionFinished(Player p) => ReturnToNormal(p);
+
     private void ReturnToNormal(Player p)
     {
         // スタブ終了後に移動入力があれば移動状態へ。なければ待機状態へ。

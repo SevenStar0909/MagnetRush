@@ -29,6 +29,9 @@ public class PlayerAnimator : MonoBehaviour
     [Tooltip("エイム Ability。未設定なら親の GetComponentInParent<AimAbility>()")]
     [SerializeField] private AimAbility m_aim;
 
+    [Tooltip("スタブ Ability。未設定なら親の GetComponentInParent<StabAbility>()")]
+    [SerializeField] private StabAbility m_stab;
+
     [Header("Animator Parameter Names (Inspector 単一箇所管理)")]
     [SerializeField] private string m_stateName = "State";
     [SerializeField] private string m_lastStateName = "LastState";
@@ -85,6 +88,7 @@ public class PlayerAnimator : MonoBehaviour
         if (m_states   == null) m_states   = GetComponentInParent<PlayerStateManager>();
         if (m_player   == null) m_player   = GetComponentInParent<Player>();
         if (m_aim      == null) m_aim      = GetComponentInParent<AimAbility>();
+        if (m_stab     == null) m_stab     = GetComponentInParent<StabAbility>();
 
         if (m_animator == null)
         {
@@ -183,6 +187,7 @@ public class PlayerAnimator : MonoBehaviour
         {
             m_events.onShoot.AddListener(HandleShoot);
             m_events.onReload.AddListener(HandleReload);
+            m_events.onStab.AddListener(HandleStab);
         }
         if (m_states != null)
         {
@@ -196,6 +201,7 @@ public class PlayerAnimator : MonoBehaviour
         {
             m_events.onShoot.RemoveListener(HandleShoot);
             m_events.onReload.RemoveListener(HandleReload);
+            m_events.onStab.RemoveListener(HandleStab);
         }
         if (m_states != null)
         {
@@ -241,11 +247,31 @@ public class PlayerAnimator : MonoBehaviour
 
     private void HandleShoot()  { if (m_animator != null) m_animator.SetTrigger(m_hShoot); }
     private void HandleReload() { if (m_animator != null) m_animator.SetTrigger(m_hReload); }
+    private void HandleStab()   { if (m_animator != null) m_animator.SetTrigger(m_hStab); }
 
     private void ResetTriggersExceptStateChange()
     {
         if (m_animator == null) return;
         m_animator.ResetTrigger(m_hShoot);
         m_animator.ResetTrigger(m_hReload);
+        m_animator.ResetTrigger(m_hStab);
+    }
+
+    /// <summary>
+    /// 突き刺し瞬間の AnimEvent → StabAbility へ転送。
+    /// </summary>
+    public void OnStabHitEvent()
+    {
+        m_stab?.OnStabHitEvent();
+    }
+
+    /// <summary>
+    /// スタブモーション終了の AnimEvent → StabPlayerState へ転送。
+    /// State が StabPlayerState でなければ無視。
+    /// </summary>
+    public void OnStabMotionFinishedEvent()
+    {
+        if (m_states?.current is StabPlayerState stabState)
+            stabState.OnStabMotionFinished(m_player);
     }
 }
