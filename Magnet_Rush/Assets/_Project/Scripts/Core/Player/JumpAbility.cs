@@ -7,9 +7,24 @@ using UnityEngine;
 /// </summary>
 public class JumpAbility : Ability
 {
+
+    protected override void Awake()
+    {
+        // Awake() は base.Awake() のみ
+        base.Awake();
+    }
+
     /// <summary>A 入力で接地中ならジャンプ初速を Entity.verticalVelocity に与える。本実装は feature/jump で。</summary>
     public void Jump()
     {
         // 実装は feature/jump で追加する
+        // A入力確認 ＆ 接地判定
+        if (m_input.IsJumpPressed && m_player.IsGrounded)
+        {
+            m_input.ConsumeJump();
+            m_player.verticalVelocity = m_player.Settings.jumpInitialVelocity;
+            // FallPlayerStateはジャンプ上昇中も含めた「空中状態」として扱う
+            m_states.Change<FallPlayerState>();
+        }
     }
 }
