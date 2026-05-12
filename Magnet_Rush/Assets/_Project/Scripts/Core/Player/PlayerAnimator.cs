@@ -43,6 +43,13 @@ public class PlayerAnimator : MonoBehaviour
     [SerializeField] private string m_verticalSpeedName = "VerticalSpeed";
     [SerializeField] private string m_stabName = "Stab";
 
+    [Header("Layer Names (Inspector 単一箇所管理)")]
+    [Tooltip("エイム時に有効化する上半身 Layer 名。Animator Controller のレイヤー名と一致させる。")]
+    [SerializeField] private string m_aimLayerName = "Upper Body";
+    [Tooltip("Aim 切替の補間時間 (秒)。短いほどパッと、長いほど滑らかに切り替わる。")]
+    [SerializeField] private float m_aimLayerFadeTime = 0.15f;
+    private int m_aimLayerIndex = -1;
+
     /// <summary>
     /// State 型 → Animator の State Int 値への固定マッピング。
     /// 新 State を Animator と連動させたい場合はここに追加し、PlayerStateIndex enum にも対応値を定義。
@@ -110,6 +117,11 @@ public class PlayerAnimator : MonoBehaviour
 
         ValidateAnimatorParameters();
         StartCoroutine(ValidateStateOrderDelayed());
+
+        if (m_animator != null && !string.IsNullOrEmpty(m_aimLayerName))
+        {
+            m_aimLayerIndex = m_animator.GetLayerIndex(m_aimLayerName);
+        }
     }
 
     private System.Collections.IEnumerator ValidateStateOrderDelayed()
@@ -218,11 +230,21 @@ public class PlayerAnimator : MonoBehaviour
             var mv = m_input.MoveInput;
             m_animator.SetFloat(m_hMoveInputX, mv.x);
             m_animator.SetFloat(m_hMoveInputZ, mv.y);
+            m_animator.SetFloat(m_hVerticalSpeed, m_player.velocity.y);
         }
 
         if (m_aim != null)
         {
             m_animator.SetBool(m_hIsAiming, m_aim.IsAiming);
+
+            // 上半身 Aim Layer の重みを補間切替（Idle 等を Aim ポーズとして上半身だけ重ねる）
+            if (m_aimLayerIndex >= 0)
+            {
+                float current = m_animator.GetLayerWeight(m_aimLayerIndex);
+                float target = m_aim.IsAiming ? 1f : 0f;
+                float maxDelta = (m_aimLayerFadeTime > 0f) ? (Time.deltaTime / m_aimLayerFadeTime) : 1f;
+                m_animator.SetLayerWeight(m_aimLayerIndex, Mathf.MoveTowards(current, target, maxDelta));
+            }
         }
     }
 

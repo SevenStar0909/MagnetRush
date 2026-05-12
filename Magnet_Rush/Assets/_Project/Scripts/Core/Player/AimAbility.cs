@@ -101,14 +101,16 @@ public class AimAbility : Ability
         m_states.Change<AimPlayerState>();
     }
 
-    /// <summary>エイムモード終了。入力があれば Move、なければ Idle に戻る。timeScale は Update で 1.0 に戻る。</summary>
+    /// <summary>エイムモード終了。空中なら Fall、地上では入力があれば Move、なければ Idle に戻る。timeScale は Update で 1.0 に戻る。</summary>
     public void StopAim()
     {
         IsAiming = false;
         m_targetTimeScale = 1f;
         OnAimChanged?.Invoke(false);
 
-        if (m_input.MoveInput.sqrMagnitude > 0.01f)
+        if (!m_player.IsGrounded)
+            m_states.Change<FallPlayerState>();
+        else if (m_input.MoveInput.sqrMagnitude > 0.01f)
             m_states.Change<MovePlayerState>();
         else
             m_states.Change<IdlePlayerState>();
