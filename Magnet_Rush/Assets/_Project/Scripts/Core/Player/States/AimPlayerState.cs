@@ -17,5 +17,7 @@ public class AimPlayerState : EntityState<Player>
         {
             player.SlowDown(dt);
         }
+        // 空中でも Aim 維持する。重力は Player.UpdateEntity 経由で適用される。
+        // Aim 解除時 (LT release) の遷移は AimAbility.StopAim() が IsGrounded で分岐する。
     }
 }

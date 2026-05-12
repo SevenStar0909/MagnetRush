@@ -945,6 +945,15 @@ PrefabInstance:
       propertyPath: m_Enabled
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3248401797439555635, guid: dc8c794c5d3006b4f82c6b43ea9b63f7, type: 3}
+      propertyPath: states.Array.size
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3248401797439555635, guid: dc8c794c5d3006b4f82c6b43ea9b63f7, type: 3}
+      propertyPath: 'states.Array.data[4]'
+      value: FallPlayerState, MagnetRush.Player, Version=0.0.0.0, Culture=neutral,
+        PublicKeyToken=null
+      objectReference: {fileID: 0}
     - target: {fileID: 5226289233227837273, guid: dc8c794c5d3006b4f82c6b43ea9b63f7, type: 3}
       propertyPath: m_cameraSettings
       value: 
@@ -964,6 +973,10 @@ PrefabInstance:
     - target: {fileID: 6521214187702972074, guid: dc8c794c5d3006b4f82c6b43ea9b63f7, type: 3}
       propertyPath: m_LocalPosition.x
       value: -11.27
+      objectReference: {fileID: 0}
+    - target: {fileID: 8148627248615965511, guid: dc8c794c5d3006b4f82c6b43ea9b63f7, type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

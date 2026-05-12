@@ -120,6 +120,8 @@ MonoBehaviour:
   - MovePlayerState, MagnetRush.Player, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - DiePlayerState, MagnetRush.Player, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - AimPlayerState, MagnetRush.Player, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  - FallPlayerState, MagnetRush.Player, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  - StabPlayerState, MagnetRush.Player, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - StabPlayerState, MagnetRush.Player, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
 --- !u!114 &8415192833665430904
 MonoBehaviour:
@@ -722,7 +724,7 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -1750197354950549132, guid: aa94ade5d4762bc4aac4add1dcc628be, type: 3}
-      propertyPath: 'm_Materials.Array.data[0]'
+      propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 1931110302239519103, guid: d3691ddd34703714080c1233f654a554, type: 3}
     - target: {fileID: 919132149155446097, guid: aa94ade5d4762bc4aac4add1dcc628be, type: 3}

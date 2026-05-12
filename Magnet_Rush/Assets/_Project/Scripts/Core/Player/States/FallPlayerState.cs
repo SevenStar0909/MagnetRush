@@ -12,5 +12,20 @@ public class FallPlayerState : EntityState<Player>
         // feature/jump で player.TickAllAbilities() 等を追加する。
         // 空中ジャンプは JumpAbility 内部の IsGrounded ガードで自動的に no-op になるため、
         // TickAllAbilities() で全許可しても二重ジャンプは発動しない。
+
+        player.AccelerateToInputDirection(dt);
+        player.TickAllAbilities();
+
+        if(player.IsGrounded)
+        {
+            if (player.input.MoveInput.sqrMagnitude > 0.01f)
+            {
+                player.states.Change<MovePlayerState>();
+            }
+            else
+            {
+                player.states.Change<IdlePlayerState>();
+            }
+        }
     }
 }
