@@ -6,7 +6,7 @@
 public class EnemyBossBaseA_AnimationEventForwarder : MonoBehaviour
 {
     [SerializeField] private EnemyBossBaseA_Animator m_target;
-
+    //test comment
     void Awake()
     {
         if (m_target == null)

@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.AI;
 
 /// <summary>
@@ -16,6 +16,9 @@ public class EnemyBossAI : MonoBehaviour
 
     [Header("References")]
     [SerializeField] private EnemyBossBaseA_Animator m_animator;
+
+    [Tooltip("被弾判定。未設定ならルートの子から取得")]
+    [SerializeField] private Hitbox m_hitbox;
 
     [Header("Debug")]
     [SerializeField] private bool m_logStateChange = true;
@@ -35,6 +38,10 @@ public class EnemyBossAI : MonoBehaviour
     [Header("Rush or missile")]
     [SerializeField] private bool m_nextLongRangeAttackIsRush = true; // rushとmissileを交互に行うためのフラグ
 
+    private bool m_wasInStaminaBreakAnim;
+    private float m_staminaBreakTimer;
+    private bool m_stunEndRequested;
+
     public BossState State => m_state;
 
     void Awake()
@@ -45,11 +52,26 @@ public class EnemyBossAI : MonoBehaviour
         if (m_animator == null)
             m_animator = GetComponentInChildren<EnemyBossBaseA_Animator>();
 
+        if (m_hitbox == null)
+            m_hitbox = transform.root.GetComponentInChildren<Hitbox>();
+
         if (m_agent != null)
         {
             m_agent.updatePosition = false;
             m_agent.updateRotation = false;
         }
+    }
+
+    void OnEnable()
+    {
+        if (m_hitbox != null)
+            m_hitbox.OnHitEvent += HandleHit;
+    }
+
+    void OnDisable()
+    {
+        if (m_hitbox != null)
+            m_hitbox.OnHitEvent -= HandleHit;
     }
 
     void Start()
@@ -72,10 +94,12 @@ public class EnemyBossAI : MonoBehaviour
     {
         if (m_player == null || m_settings == null || m_agent == null || m_animator == null)
         { ChannelLogger.LogGuardReturn("Enemy", "プレイヤー/Settings/Agent/Animator未取得"); return; }
-        
+
         float dt = Time.deltaTime;
         m_cooldownTimer = Mathf.Max(0f, m_cooldownTimer - dt);
         m_staggerTimer = Mathf.Max(0f, m_staggerTimer - dt);
+
+        TickStaminaBreakTimer(dt);
 
         TryRecoverAgent();
         SyncAgentToBody();
@@ -83,7 +107,7 @@ public class EnemyBossAI : MonoBehaviour
         switch (m_state)
         {
             case BossState.Idle: TickIdle(dt); break;
-            case BossState.Chase: TickChase(dt); break; 
+            case BossState.Chase: TickChase(dt); break;
             case BossState.AttackStance: TickAttackStance(dt); break;
             case BossState.AttackMotion: TickAttackMotion(dt); break;
             case BossState.Rush: TickRush(dt); break;
@@ -91,6 +115,41 @@ public class EnemyBossAI : MonoBehaviour
             case BossState.Stunned: TickStunned(dt); break;
             case BossState.Stagger: TickStagger(dt); break;
         }
+    }
+
+    private void HandleHit(HitData hit)
+    {
+        if (m_animator == null) return;
+
+        // AnimationEvent で付けた「可中断フレーム」を尊重する
+        if (!m_animator.CanInterrupt) return;
+
+        // 「被弾でStunに入るか」はAIが判断して、Animatorへは指示(Trigger)だけ出す
+        m_animator.TriggerBeInterrupted();
+    }
+
+    private void TickStaminaBreakTimer(float dt)
+    {
+        bool inStaminaBreakAnim = m_animator.IsStunned || m_animator.IsInStagger;
+
+        if (inStaminaBreakAnim && !m_wasInStaminaBreakAnim)
+        {
+            m_staminaBreakTimer = Mathf.Max(0f, m_settings.staminaBreakDuration);
+            m_stunEndRequested = false;
+            ChangeState(BossState.Stunned);
+        }
+
+        m_wasInStaminaBreakAnim = inStaminaBreakAnim;
+
+        if (m_state != BossState.Stunned) return;
+        if (!inStaminaBreakAnim) return;
+        if (m_stunEndRequested) return;
+
+        m_staminaBreakTimer = Mathf.Max(0f, m_staminaBreakTimer - dt);
+        if (m_staminaBreakTimer > 0f) return;
+
+        m_stunEndRequested = true;
+        m_animator.OnStunEndEvent();
     }
 
     // === 状態遷移 ===
@@ -109,7 +168,6 @@ public class EnemyBossAI : MonoBehaviour
             m_rushTargetPosition = m_player.position;
             m_boss.lateralVelocity = Vector3.zero;
         }
-
 
         if (prev == BossState.AttackMotion || prev == BossState.Rush || prev == BossState.Missile)
             m_cooldownTimer = m_settings.attackInterval;
@@ -137,7 +195,6 @@ public class EnemyBossAI : MonoBehaviour
         float distance = DistanceToPlayer();
         ChannelLogger.Log("EnemyBossA", $"distanceToPlayer = {distance}");
 
-
         if (distance <= m_settings.attackRange)
         {
             m_animator.TriggerAttack();
@@ -157,7 +214,7 @@ public class EnemyBossAI : MonoBehaviour
             if (m_nextLongRangeAttackIsRush)
                 m_animator.TriggerAttackRush();
             else
-                m_animator.TriggerMissile(); 
+                m_animator.TriggerMissile();
             ChangeState(m_nextLongRangeAttackIsRush ? BossState.Rush : BossState.Missile);
         }
 
@@ -183,7 +240,6 @@ public class EnemyBossAI : MonoBehaviour
         }
     }
 
-
     private void TickAttackStance(float dt)
     {
         FacePlayer(dt);
@@ -192,7 +248,6 @@ public class EnemyBossAI : MonoBehaviour
         if (m_animator.IsStunned) { ChangeState(BossState.Stunned); return; }
         if (m_animator.IsInAttackMotion) { ChangeState(BossState.AttackMotion); return; }
     }
-
 
     private void TickAttackMotion(float dt)
     {
@@ -217,7 +272,6 @@ public class EnemyBossAI : MonoBehaviour
         m_boss.SlowDown(dt);
         FacePlayer(dt);
     }
-
 
     private void TickStunned(float dt)
     {

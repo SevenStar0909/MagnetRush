@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+
 /// <summary>
 /// ダメージクールダウン付きのHP管理。
 /// </summary>
@@ -22,7 +23,26 @@ public class Health : MonoBehaviour
 
     void Awake()
     {
+        if (m_maxHealth <= 0)
+            m_maxHealth = 1;
+
         CurrentHealth = m_maxHealth;
+    }
+
+    public void SetMaxHealth(int maxHealth, bool resetCurrent = true)
+    {
+        if (maxHealth <= 0)
+        {
+            ChannelLogger.LogGuardReturn("Entity", "maxHealth が 0 以下です");
+            return;
+        }
+
+        m_maxHealth = maxHealth;
+
+        if (resetCurrent)
+            CurrentHealth = m_maxHealth;
+        else
+            CurrentHealth = Mathf.Min(CurrentHealth, m_maxHealth);
     }
 
     /// <summary>
