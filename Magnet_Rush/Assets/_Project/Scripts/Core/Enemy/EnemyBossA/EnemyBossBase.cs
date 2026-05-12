@@ -4,6 +4,7 @@ using UnityEngine;
 /// 敵の基底クラス。Entityを継承しHealth・IMagnetTargetを共有する。
 /// 移動はUpdateEntity() → EntityController経由。AIサブクラスがAccelerateToward等で速度を駆動する。
 /// </summary>
+[RequireComponent(typeof(Stamina))]
 public class EnemyBossBase : Entity
 {
     [Header("Data")]
@@ -31,6 +32,12 @@ public class EnemyBossBase : Entity
 
         if (m_health != null && m_statusData != null)
             m_health.SetMaxHealth(m_statusData.maxHp);
+
+        if (m_stamina != null && m_statusData != null)
+        {
+            m_stamina.SetMaxStamina(m_statusData.maxStamina);
+            m_stamina.SetRecovery(m_statusData.staminaRecovery, m_statusData.staminaRecoveryCooldown);
+        }
 
         var magnetizable = GetComponent<Magnetizable>();
         if (magnetizable != null)

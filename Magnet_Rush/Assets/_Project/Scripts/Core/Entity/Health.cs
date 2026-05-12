@@ -65,6 +65,24 @@ public class Health : MonoBehaviour
     }
 
     /// <summary>
+    /// ダメージを与える。クールダウン判定を無視する（死亡中は無視）。
+    /// </summary>
+    public void DamageIgnoreCooldown(int amount)
+    {
+        if (IsDead) { ChannelLogger.LogGuardReturn("Entity", "既に死亡"); return; }
+        if (amount <= 0) { ChannelLogger.LogGuardReturn("Entity", "ダメージ量0以下"); return; }
+
+        CurrentHealth = Mathf.Max(CurrentHealth - amount, 0);
+        m_lastDamageTime = Time.time;
+        OnDamage?.Invoke(amount);
+
+        if (IsDead)
+        {
+            OnDie?.Invoke();
+        }
+    }
+
+    /// <summary>
     /// HPを回復する。最大HPを超えない。
     /// </summary>
     public void Heal(int amount)

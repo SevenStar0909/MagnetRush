@@ -290,6 +290,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: dc8c794c5d3006b4f82c6b43ea9b63f7, type: 3}
+--- !u!114 &675211655 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5546392387088309262, guid: 595708abaf7beee438dc7b5e80cbc9d0, type: 3}
+  m_PrefabInstance: {fileID: 5567607591048211451}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8ba53e48f2d11d0499e50831063da717, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::Stamina
 --- !u!1 &892855583 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 177638, guid: 0abab5bb77339e4428787a870eb31bd3, type: 3}
@@ -305,7 +316,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2387208754698167448, guid: 37032c1edd1675b47b516a8b3d917f76, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -29
+      value: -28.999939
       objectReference: {fileID: 0}
     - target: {fileID: 5836681742755971000, guid: 37032c1edd1675b47b516a8b3d917f76, type: 3}
       propertyPath: m_LocalPosition.x
@@ -368,6 +379,7 @@ GameObject:
   - component: {fileID: 1248705265}
   - component: {fileID: 1248705266}
   - component: {fileID: 1248705267}
+  - component: {fileID: 1248705268}
   m_Layer: 0
   m_Name: _DebugHpBars
   m_TagString: Untagged
@@ -436,6 +448,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DebugCollisionGizmos
   m_labelOffsetY: 0.3
   m_labelLineHeight: 0.3
+--- !u!114 &1248705268
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1248705261}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0f9c20bbe97a5a848baa7cfef177f8a4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DebugStaminaBar
+  m_extraHeight: 0.45
+  m_barWidth: 60
+  m_barHeight: 6
+  m_scanInterval: 2
+  m_screenYOffset: 10
 --- !u!1 &1323587764
 GameObject:
   m_ObjectHideFlags: 0
@@ -880,6 +909,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6963472914516098255, guid: 595708abaf7beee438dc7b5e80cbc9d0, type: 3}
+      propertyPath: m_stamina
+      value: 
+      objectReference: {fileID: 675211655}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

@@ -27,10 +27,11 @@ public class EnemyBossAI : MonoBehaviour
     private NavMeshAgent m_agent;
     private Transform m_player;
     private EnemyBossSettings m_settings;
+    private Stamina m_stamina;
 
     private BossState m_state = BossState.Idle;
     private float m_cooldownTimer;
-    private float m_staggerTimer;
+    private float m_staminaBreakTimer;
     private Vector3 m_lastDirection;
 
     private Vector3 m_rushTargetPosition;
@@ -38,9 +39,12 @@ public class EnemyBossAI : MonoBehaviour
     [Header("Rush or missile")]
     [SerializeField] private bool m_nextLongRangeAttackIsRush = true; // rushとmissileを交互に行うためのフラグ
 
-    private bool m_wasInStaminaBreakAnim;
-    private float m_staminaBreakTimer;
-    private bool m_stunEndRequested;
+    private bool m_wasInStunAnim;
+    private bool m_wasInStaggerAnim;
+    private bool m_staminaBreakEndRequested;
+
+    private bool m_resetStunEndTrigger;
+    private bool m_resetStaggerEndTrigger;
 
     public BossState State => m_state;
 
@@ -48,6 +52,7 @@ public class EnemyBossAI : MonoBehaviour
     {
         m_boss = GetComponent<EnemyBossBase>();
         m_agent = GetComponent<NavMeshAgent>();
+        m_stamina = GetComponent<Stamina>();
 
         if (m_animator == null)
             m_animator = GetComponentInChildren<EnemyBossBaseA_Animator>();
@@ -66,12 +71,18 @@ public class EnemyBossAI : MonoBehaviour
     {
         if (m_hitbox != null)
             m_hitbox.OnHitEvent += HandleHit;
+
+        if (m_stamina != null)
+            m_stamina.OnBreak += HandleStaminaBreak;
     }
 
     void OnDisable()
     {
         if (m_hitbox != null)
             m_hitbox.OnHitEvent -= HandleHit;
+
+        if (m_stamina != null)
+            m_stamina.OnBreak -= HandleStaminaBreak;
     }
 
     void Start()
@@ -97,9 +108,10 @@ public class EnemyBossAI : MonoBehaviour
 
         float dt = Time.deltaTime;
         m_cooldownTimer = Mathf.Max(0f, m_cooldownTimer - dt);
-        m_staggerTimer = Mathf.Max(0f, m_staggerTimer - dt);
 
-        TickStaminaBreakTimer(dt);
+        TickStunEntry(); // Stunアニメーションの開始を検知してStunned状態に入り、回復タイマーを開始する
+        TickStaggerEntry(); // Staggerアニメーションの開始を検知してStagger状態に入り、回復タイマーを開始する
+        TickStaminaBreakTimer(dt); // Stunned/Staggered 共通の回復タイマー
 
         TryRecoverAgent();
         SyncAgentToBody();
@@ -121,35 +133,85 @@ public class EnemyBossAI : MonoBehaviour
     {
         if (m_animator == null) return;
 
-        // AnimationEvent で付けた「可中断フレーム」を尊重する
-        if (!m_animator.CanInterrupt) return;
+        if (m_animator.CanInterrupt)
+        {
+            if (m_state == BossState.Stunned) return;
+            if (m_stamina == null || m_stamina.IsBroken) return;
 
-        // 「被弾でStunに入るか」はAIが判断して、Animatorへは指示(Trigger)だけ出す
+            m_stamina.Consume(100);
+            return;
+        }
+
+        // 中立状態のみ Stagger を許可
+        if (m_animator.CanNotInterrupt) return;
+
+        if (m_state == BossState.Stunned) return;
+        if (m_stamina != null && m_stamina.IsBroken) return;
+
+        m_animator.SetIsStaggerTrue();
         m_animator.TriggerBeInterrupted();
+    }
+
+    private void HandleStaminaBreak()
+    {
+        if (m_animator == null) return;
+
+        m_animator.SetIsStunnedTrue();
+        m_animator.SetIsStaggerFalse();
+    }
+
+    private void TickStunEntry()
+    {
+        bool inStunAnim = m_animator.IsStunned;
+
+        if (inStunAnim && !m_wasInStunAnim)
+        {
+            m_staminaBreakTimer = Mathf.Max(0f, m_settings.staminaBreakDuration);
+            m_staminaBreakEndRequested = false;
+            ChangeState(BossState.Stunned);
+        }
+
+        m_wasInStunAnim = inStunAnim;
+    }
+
+    private void TickStaggerEntry()
+    {
+        bool inStaggerAnim = m_animator.IsInStagger;
+
+        if (inStaggerAnim && !m_wasInStaggerAnim && !m_animator.IsStunned)
+        {
+            m_staminaBreakTimer = Mathf.Max(0f, m_settings.staminaBreakDuration);
+            m_staminaBreakEndRequested = false;
+            ChangeState(BossState.Stagger);
+        }
+
+        m_wasInStaggerAnim = inStaggerAnim;
     }
 
     private void TickStaminaBreakTimer(float dt)
     {
-        bool inStaminaBreakAnim = m_animator.IsStunned || m_animator.IsInStagger;
-
-        if (inStaminaBreakAnim && !m_wasInStaminaBreakAnim)
-        {
-            m_staminaBreakTimer = Mathf.Max(0f, m_settings.staminaBreakDuration);
-            m_stunEndRequested = false;
-            ChangeState(BossState.Stunned);
-        }
-
-        m_wasInStaminaBreakAnim = inStaminaBreakAnim;
-
-        if (m_state != BossState.Stunned) return;
-        if (!inStaminaBreakAnim) return;
-        if (m_stunEndRequested) return;
+        if (m_state != BossState.Stunned && m_state != BossState.Stagger) return;
+        if (m_staminaBreakEndRequested) return;
 
         m_staminaBreakTimer = Mathf.Max(0f, m_staminaBreakTimer - dt);
         if (m_staminaBreakTimer > 0f) return;
 
-        m_stunEndRequested = true;
-        m_animator.OnStunEndEvent();
+        m_staminaBreakEndRequested = true;
+
+        if (m_state == BossState.Stunned)
+        {
+            m_animator.TriggerStunEnd();
+            m_animator.SetIsStunnedFalse();
+            m_resetStunEndTrigger = true;
+        }
+        else
+        {
+            m_animator.TriggerStaggerEnd();
+            m_animator.SetIsStaggerFalse();
+            m_resetStaggerEndTrigger = true;
+        }
+
+        ChangeState(BossState.Idle);
     }
 
     // === 状態遷移 ===
@@ -169,11 +231,22 @@ public class EnemyBossAI : MonoBehaviour
             m_boss.lateralVelocity = Vector3.zero;
         }
 
+        if (next == BossState.Idle)
+            ClearStaminaFlags();
+
         if (prev == BossState.AttackMotion || prev == BossState.Rush || prev == BossState.Missile)
             m_cooldownTimer = m_settings.attackInterval;
+    }
 
-        if (prev == BossState.Stunned)
-            m_staggerTimer = m_settings.staggerDuration;
+    private void ClearStaminaFlags()
+    {
+        if (m_animator == null) return;
+
+        m_animator.SetIsStaggerFalse();
+        m_animator.SetIsStunnedFalse();
+        m_wasInStunAnim = false;
+        m_wasInStaggerAnim = false;
+        m_staminaBreakEndRequested = false;
     }
 
     // === 各状態の Tick ===
@@ -183,6 +256,11 @@ public class EnemyBossAI : MonoBehaviour
         if (m_animator.IsStunned)
         {
             ChangeState(BossState.Stunned);
+            return;
+        }
+        if (m_animator.IsInStagger)
+        {
+            ChangeState(BossState.Stagger);
             return;
         }
 
@@ -282,14 +360,11 @@ public class EnemyBossAI : MonoBehaviour
     {
         m_boss.SlowDown(dt);
         FacePlayer(dt);
-
-        if (m_staggerTimer <= 0f)
-            ChangeState(BossState.Idle);
     }
 
     // === 公開コールバック (Animator → AI) ===
 
-    /// <summary>AttackMotion clip 末尾の AnimEvent から呼ばれる。Stagger に遷移。</summary>
+    /// <summary>AttackMotion clip 末尾の AnimEvent から呼ばれる。</summary>
     public void OnAttackFinished()
     {
         Debug.Log("[EnemyBossAI] OnAttackFinished called");
@@ -297,14 +372,14 @@ public class EnemyBossAI : MonoBehaviour
             ChangeState(BossState.Idle);
     }
 
-    /// <summary>AttackStun clip 末尾の AnimEvent から呼ばれる。Stagger に遷移。</summary>
+    /// <summary>AttackStun clip 末尾の AnimEvent から呼ばれる。</summary>
     public void OnStunEnd()
     {
         if (m_state == BossState.Stunned)
             ChangeState(BossState.Idle);
     }
 
-    /// <summary>AttackStun clip 末尾の AnimEvent から呼ばれる。Stagger に遷移。</summary>
+    /// <summary>AttackStun clip 末尾の AnimEvent から呼ばれる。</summary>
     public void OnRushFinished()
     {
         Debug.Log("[EnemyBossAI] OnRushFinished called");
@@ -312,7 +387,7 @@ public class EnemyBossAI : MonoBehaviour
             ChangeState(BossState.Idle);
     }
 
-    /// <summary>AttackStun clip 末尾の AnimEvent から呼ばれる。Stagger に遷移。</summary>
+    /// <summary>AttackStun clip 末尾の AnimEvent から呼ばれる。</summary>
     public void OnMissileFinished()
     {
         if (m_state == BossState.Missile)
@@ -481,6 +556,23 @@ public class EnemyBossAI : MonoBehaviour
         else
         {
             ChannelLogger.LogWarning("EnemyBossA", $"Agent復帰失敗 pos={transform.position}");
+        }
+    }
+
+    void LateUpdate()
+    {
+        if (m_animator == null) return;
+
+        if (m_resetStunEndTrigger)
+        {
+            m_animator.ResetStunEnd();
+            m_resetStunEndTrigger = false;
+        }
+
+        if (m_resetStaggerEndTrigger)
+        {
+            m_animator.ResetStaggerEnd();
+            m_resetStaggerEndTrigger = false;
         }
     }
 }
