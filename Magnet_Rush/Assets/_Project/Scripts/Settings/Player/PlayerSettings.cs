@@ -70,6 +70,18 @@ public class PlayerSettings : ScriptableObject
     [Label("スタブダメージ")]
     [Tooltip("スタブ1回で与える固定ダメージ量。Health.DamageIgnoreCooldown 経由でクールダウン無視で適用される")]
     public int stabDamage = 5;
+    [Label("スタブヒットVFX")]
+    [Tooltip("スタブが当たった瞬間に発生させるプレハブ。null可")]
+    public GameObject stabHitVfx;
+    [Label("スタブヒットVFX寿命（秒）")]
+    [Tooltip("InstantiateしたVFXを自動削除するまでの秒数")]
+    public float stabHitVfxLifetime = 2f;
+    [Label("スタブヒットVFX前方オフセット（m）")]
+    [Tooltip("プレイヤーの前方何メートルにVFXを出すか")]
+    public float stabHitVfxForwardOffset = 1.5f;
+    [Label("スタブヒットVFXスケール倍率")]
+    [Tooltip("VFXプレハブのスケールに乗算する倍率")]
+    public float stabHitVfxScale = 3f;
     [Label("モーションタイムアウト（秒）")]
     [Tooltip("スタブモーションの強制復帰時間（秒）。AnimEvent OnStabMotionFinishedEvent の配線漏れ保険")]
     public float stabMotionMaxDuration = 1.5f;
