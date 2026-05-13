@@ -29,6 +29,8 @@ public class PlayerAnimator : MonoBehaviour
     [Tooltip("エイム Ability。未設定なら親の GetComponentInParent<AimAbility>()")]
     [SerializeField] private AimAbility m_aim;
 
+    [SerializeField] private Health m_health;
+
     [Header("Animator Parameter Names (Inspector 単一箇所管理)")]
     [SerializeField] private string m_stateName = "State";
     [SerializeField] private string m_lastStateName = "LastState";
@@ -42,6 +44,7 @@ public class PlayerAnimator : MonoBehaviour
     [SerializeField] private string m_reloadName = "Reload";
     [SerializeField] private string m_verticalSpeedName = "VerticalSpeed";
     [SerializeField] private string m_stabName = "Stab";
+    [SerializeField] private string m_hitName = "Hit";
 
     /// <summary>
     /// State 型 → Animator の State Int 値への固定マッピング。
@@ -77,6 +80,7 @@ public class PlayerAnimator : MonoBehaviour
     private int m_hReload;
     private int m_hVerticalSpeed;
     private int m_hStab;
+    private int m_hHit;
 
     void Awake()
     {
@@ -85,6 +89,7 @@ public class PlayerAnimator : MonoBehaviour
         if (m_states   == null) m_states   = GetComponentInParent<PlayerStateManager>();
         if (m_player   == null) m_player   = GetComponentInParent<Player>();
         if (m_aim      == null) m_aim      = GetComponentInParent<AimAbility>();
+        if (m_health   == null) m_health   = GetComponentInParent<Health>();
 
         if (m_animator == null)
         {
@@ -107,6 +112,7 @@ public class PlayerAnimator : MonoBehaviour
         m_hReload          = Animator.StringToHash(m_reloadName);
         m_hVerticalSpeed   = Animator.StringToHash(m_verticalSpeedName);
         m_hStab            = Animator.StringToHash(m_stabName);
+        m_hHit             = Animator.StringToHash(m_hitName);
 
         ValidateAnimatorParameters();
         StartCoroutine(ValidateStateOrderDelayed());
@@ -141,6 +147,7 @@ public class PlayerAnimator : MonoBehaviour
             (m_reloadName,          "Reload (Trigger)"),
             (m_verticalSpeedName,   "VerticalSpeed (Float)"),
             (m_stabName,            "Stab (Trigger)"),
+            (m_hitName,             "Hit (Trigger)"),
         };
 
         var existing = new System.Collections.Generic.HashSet<string>();
@@ -188,6 +195,9 @@ public class PlayerAnimator : MonoBehaviour
         {
             m_states.OnStateChanged += HandleStateChange;
         }
+
+        m_health.OnDamage += HandleDamage;
+
     }
 
     void OnDisable()
@@ -201,6 +211,8 @@ public class PlayerAnimator : MonoBehaviour
         {
             m_states.OnStateChanged -= HandleStateChange;
         }
+
+        m_health.OnDamage -= HandleDamage;
     }
 
     void LateUpdate()
@@ -248,5 +260,10 @@ public class PlayerAnimator : MonoBehaviour
         if (m_animator == null) return;
         m_animator.ResetTrigger(m_hShoot);
         m_animator.ResetTrigger(m_hReload);
+    }
+
+    private void HandleDamage(int amount)
+    {
+        m_animator.SetTrigger(m_hHit);
     }
 }
