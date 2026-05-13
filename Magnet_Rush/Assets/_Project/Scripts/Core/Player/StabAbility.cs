@@ -22,9 +22,8 @@ public class StabAbility : Ability
         if (!TryResolveBoss())
         { ChannelLogger.LogGuardReturn("Stab", "Boss未配置"); return; }
 
-        // TODO(ボスチーム): IStabReceiver にスタン状態 API を追加してもらってから有効化
-        // if (m_bossReceiver != null && !m_bossReceiver.CanReceiveStab)
-        // { ChannelLogger.LogGuardReturn("Stab", "ボスがスタンしていない"); return; }
+        if (m_bossReceiver != null && !m_bossReceiver.CanReceiveStab)
+        { ChannelLogger.LogGuardReturn("Stab", "ボスがスタンしていない"); return; }
 
         if (Vector3.Distance(m_player.transform.position, m_bossTarget.position) > m_player.Settings.stabRange)
         { ChannelLogger.LogGuardReturn("Stab", "ボスの距離がスタブ攻撃の範囲外"); return; }
@@ -36,12 +35,15 @@ public class StabAbility : Ability
     /// <summary>AnimEvent から呼ばれるヒット通知。突き刺しの瞬間に発火。</summary>
     public void OnStabHitEvent()
     {
-        // TODO(ボスチーム): IStabReceiver.OnStabHit のシグネチャ合意後に配線
-        // m_bossReceiver?.OnStabHit(new StabHitData {
-        //     damage = 1,
-        //     hitPoint = m_player.transform.position,
-        //     source = m_player.gameObject,
-        // });
+        if (m_bossReceiver != null && m_player.Settings != null)
+        {
+            m_bossReceiver.OnStabHit(new StabHitData
+            {
+                damage = m_player.Settings.stabDamage,
+                hitPoint = m_player.transform.position,
+                source = m_player.gameObject,
+            });
+        }
         m_events.FireStab();
     }
 
