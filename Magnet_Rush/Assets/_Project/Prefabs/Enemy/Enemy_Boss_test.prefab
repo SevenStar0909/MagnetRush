@@ -9,7 +9,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 9210436210800018816}
-  - component: {fileID: 9157449992449385350}
   m_Layer: 9
   m_Name: Hurtbox
   m_TagString: Untagged
@@ -32,29 +31,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1777483905486493458}
   m_LocalEulerAnglesHint: {x: 14.497, y: 0.428, z: 0.054}
---- !u!136 &9157449992449385350
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 164056874517724064}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 1.5
-  m_Height: 8
-  m_Direction: 1
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &194914172962661062
 GameObject:
   m_ObjectHideFlags: 0
@@ -106,6 +82,7 @@ GameObject:
   - component: {fileID: 2295991578477081772}
   - component: {fileID: 1337750729755968398}
   - component: {fileID: 5546392387088309262}
+  - component: {fileID: 7991911151280088202}
   m_Layer: 9
   m_Name: Enemy_Boss_test
   m_TagString: Boss
@@ -325,6 +302,21 @@ MonoBehaviour:
   m_maxStamina: 10
   m_recoveryPerSecond: 0
   m_recoveryCooldown: 0
+--- !u!114 &7991911151280088202
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 569016687892123619}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7551b5694652a3745929c4946e21a1f1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Enemy::BossPerBoneOutline
+  m_sourceSMR: {fileID: 6458468636953418578}
+  m_outlineMaterial: {fileID: 2100000, guid: 6bd78f8b7e61c9a41b83f3982790c7fe, type: 2}
+  m_debugInitialPoles: []
 --- !u!1 &772536555069620706
 GameObject:
   m_ObjectHideFlags: 0
@@ -356,6 +348,70 @@ Transform:
   m_Children:
   - {fileID: 9210436210800018816}
   m_Father: {fileID: 8629704370090026720}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1215865342241300190
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5621623009640752051}
+  m_Layer: 0
+  m_Name: Hitbox
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5621623009640752051
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1215865342241300190}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 936881700552737753}
+  - {fileID: 2809212590102462513}
+  m_Father: {fileID: 1008672249202936063}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1431650970072808209
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2809212590102462513}
+  m_Layer: 15
+  m_Name: EntityBody
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2809212590102462513
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1431650970072808209}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5621623009640752051}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1456206722401648816
 GameObject:
@@ -461,6 +517,101 @@ MonoBehaviour:
   m_EditorClassIdentifier: MagnetRush.Core::Hitbox
   m_health: {fileID: 2249649121702153851}
   m_stamina: {fileID: 0}
+--- !u!1 &3526876920166974200
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1844080920291196183}
+  m_Layer: 9
+  m_Name: Hurtbox
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1844080920291196183
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3526876920166974200}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5982044811833391788}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &3970300277436053859
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4934832610976125958}
+  m_Layer: 15
+  m_Name: EntityBody
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4934832610976125958
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3970300277436053859}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 285464305908432380}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &4592053017909591405
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 285464305908432380}
+  m_Layer: 0
+  m_Name: Hitbox
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &285464305908432380
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4592053017909591405}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 310872075199736746}
+  - {fileID: 4934832610976125958}
+  m_Father: {fileID: 2845713943557790792}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4751441633575745570
 GameObject:
   m_ObjectHideFlags: 0
@@ -516,6 +667,39 @@ CapsuleCollider:
   m_Height: 10
   m_Direction: 1
   m_Center: {x: 0, y: 5, z: 0}
+--- !u!1 &5589916278511385709
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5982044811833391788}
+  m_Layer: 0
+  m_Name: Hitbox
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5982044811833391788
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5589916278511385709}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1844080920291196183}
+  - {fileID: 5288883155633655618}
+  m_Father: {fileID: 1021504778838823417}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &5758079029539732796
 GameObject:
   m_ObjectHideFlags: 0
@@ -569,6 +753,137 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 5, y: 5, z: 5}
   m_Center: {x: 0, y: 2.5, z: 2}
+--- !u!1 &6523390753262599795
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 936881700552737753}
+  - component: {fileID: 4145775040464882251}
+  - component: {fileID: 4993392821361837955}
+  m_Layer: 9
+  m_Name: Hurtbox
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &936881700552737753
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6523390753262599795}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5621623009640752051}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &4145775040464882251
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6523390753262599795}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 4.5, y: 4.5, z: 2.2}
+  m_Center: {x: 0, y: -0.5, z: 0}
+--- !u!114 &4993392821361837955
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6523390753262599795}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fd4e840fa89359c419e69ae42f04d9a2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Enemy::BoneHurtboxFlash
+  m_flashPole: 1
+  m_flashDuration: 0.3
+  m_boneNameOverride: 
+--- !u!1 &8589145246419172716
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5288883155633655618}
+  m_Layer: 15
+  m_Name: EntityBody
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5288883155633655618
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8589145246419172716}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5982044811833391788}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &8904423022584589829
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 310872075199736746}
+  m_Layer: 9
+  m_Name: Hurtbox
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &310872075199736746
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8904423022584589829}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 285464305908432380}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8968499788119612492
 GameObject:
   m_ObjectHideFlags: 0
@@ -1434,22 +1749,47 @@ PrefabInstance:
       value: -90
       objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 6440824974522327981, guid: d3e489ef0e05c934ea55c7f96c2d0889, type: 3}
     m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: -5009818582642263366, guid: d3e489ef0e05c934ea55c7f96c2d0889, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5621623009640752051}
     - targetCorrespondingSourceObject: {fileID: -4592311537671613275, guid: d3e489ef0e05c934ea55c7f96c2d0889, type: 3}
       insertIndex: 1
       addedObject: {fileID: 1777483905486493458}
+    - targetCorrespondingSourceObject: {fileID: -8000632252706935283, guid: d3e489ef0e05c934ea55c7f96c2d0889, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 285464305908432380}
     - targetCorrespondingSourceObject: {fileID: 1303023567276017412, guid: d3e489ef0e05c934ea55c7f96c2d0889, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8134253107533724769}
+    - targetCorrespondingSourceObject: {fileID: -5067930889721175108, guid: d3e489ef0e05c934ea55c7f96c2d0889, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5982044811833391788}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: d3e489ef0e05c934ea55c7f96c2d0889, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1030670396058247425}
   m_SourcePrefab: {fileID: 100100000, guid: d3e489ef0e05c934ea55c7f96c2d0889, type: 3}
+--- !u!4 &1008672249202936063 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -5009818582642263366, guid: d3e489ef0e05c934ea55c7f96c2d0889, type: 3}
+  m_PrefabInstance: {fileID: 4000896983374885445}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &1021504778838823417 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -5067930889721175108, guid: d3e489ef0e05c934ea55c7f96c2d0889, type: 3}
+  m_PrefabInstance: {fileID: 4000896983374885445}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &2707595332573656385 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1303023567276017412, guid: d3e489ef0e05c934ea55c7f96c2d0889, type: 3}
+  m_PrefabInstance: {fileID: 4000896983374885445}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &2845713943557790792 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -8000632252706935283, guid: d3e489ef0e05c934ea55c7f96c2d0889, type: 3}
   m_PrefabInstance: {fileID: 4000896983374885445}
   m_PrefabAsset: {fileID: 0}
 --- !u!4 &3462340016821278126 stripped
@@ -1475,6 +1815,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Enemy::EnemyBossBaseA_AnimationEventForwarder
   m_target: {fileID: 573067799464740083}
+--- !u!137 &6458468636953418578 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -1286026620953302761, guid: d3e489ef0e05c934ea55c7f96c2d0889, type: 3}
+  m_PrefabInstance: {fileID: 4000896983374885445}
+  m_PrefabAsset: {fileID: 0}
 --- !u!95 &7416477724262092756 stripped
 Animator:
   m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: d3e489ef0e05c934ea55c7f96c2d0889, type: 3}
