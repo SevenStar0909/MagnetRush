@@ -1,6 +1,7 @@
 /// <summary>
 /// スタブ攻撃モーション中の状態。AnimEvent or タイムアウトで通常状態へ復帰する。
-/// OnStep が空 = TickAllAbilities() 呼ばない = スタブモーション中の他入力ロックが自動実現される。
+/// OnStep で TickAllAbilities() を呼ばない = スタブモーション中の他入力ロックが自動実現される。
+/// さらに lateralVelocity を毎フレーム 0 にして、慣性・外力による移動も止める。
 /// 基底: EntityState&lt;Player&gt;
 /// </summary>
 public class StabPlayerState : EntityState<Player>
@@ -10,12 +11,17 @@ public class StabPlayerState : EntityState<Player>
         // State 遷移時に Animator Trigger を確実に撃つ。
         // AnimEvent 駆動の発火に依存すると chicken-and-egg (アニメ未再生→イベント未発火→Trigger未発火) に陥るため。
         player.events.FireStab();
+        // スタブ中はその場固定。慣性キャンセル。
+        player.lateralVelocity = UnityEngine.Vector3.zero;
     }
 
     protected override void OnExit(Player player) { }
 
     protected override void OnStep(Player player, float dt)
     {
+        // 磁力等の外力で押されてもスタブ中は動かさない。
+        player.lateralVelocity = UnityEngine.Vector3.zero;
+
         if (timeSinceEntered >= player.Settings.stabMotionMaxDuration)
         {
             ChannelLogger.LogWarning("Stab", "モーションタイムアウト復帰 (AnimEvent OnStabMotionFinishedEvent 配線漏れの可能性)");
