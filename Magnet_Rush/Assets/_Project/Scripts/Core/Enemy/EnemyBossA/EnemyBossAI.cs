@@ -10,7 +10,7 @@ using UnityEngine.AI;
 /// </summary>
 [RequireComponent(typeof(EnemyBossBase))]
 [RequireComponent(typeof(NavMeshAgent))]
-public class EnemyBossAI : MonoBehaviour
+public class EnemyBossAI : MonoBehaviour, IStabReceiver
 {
     public enum BossState { Idle, Chase, AttackStance, AttackMotion, Rush, Missile, Stunned, Stagger }
 
@@ -392,6 +392,28 @@ public class EnemyBossAI : MonoBehaviour
     {
         if (m_state == BossState.Missile)
             ChangeState(BossState.Idle);
+    }
+
+    // === IStabReceiver 実装 (Player → Boss スタブ受信) ===
+
+    /// <summary>体幹ブレイク (Stunned) 中のみ true。</summary>
+    public bool CanReceiveStab => m_state == BossState.Stunned;
+
+    /// <summary>
+    /// プレイヤーのスタブAnimEventから呼ばれる。クールダウン無視でHPを削る。
+    /// 死亡判定は Health 側で発火する OnDie に任せる。
+    /// </summary>
+    public void OnStabHit(StabHitData data)
+    {
+        if (!CanReceiveStab)
+        { ChannelLogger.LogGuardReturn("EnemyBossA", "Stunned 以外のため Stab 無効"); return; }
+
+        var health = m_boss != null ? m_boss.m_health : null;
+        if (health == null)
+        { ChannelLogger.LogGuardReturn("EnemyBossA", "Health 未取得"); return; }
+
+        health.DamageIgnoreCooldown(data.damage);
+        ChannelLogger.Log("EnemyBossA", $"[Stab] dmg={data.damage} src={(data.source != null ? data.source.name : "null")} hp={health.CurrentHealth}");
     }
 
     // === ヘルパ ===
