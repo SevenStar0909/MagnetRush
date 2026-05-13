@@ -102,8 +102,8 @@ public class CameraSettingsApplier : MonoBehaviour
         if (Mouse.current != null)
         {
             Vector2 mouseLook = Mouse.current.delta.ReadValue();
-            m_yaw += mouseLook.x * m_settings.cameraSensitivityX * k_MousePixelToDegree;
-            m_pitch -= mouseLook.y * m_settings.cameraSensitivityY * k_MousePixelToDegree;
+            m_yaw += mouseLook.x * m_settings.cameraMouseSensitivityX * k_MousePixelToDegree;
+            m_pitch -= mouseLook.y * m_settings.cameraMouseSensitivityY * k_MousePixelToDegree;
         }
 
         // パッド: アナログ軸 (連続値)。deltaTime を掛けて時間積分する。

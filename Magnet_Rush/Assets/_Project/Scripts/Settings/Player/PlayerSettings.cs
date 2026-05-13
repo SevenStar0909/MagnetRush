@@ -40,12 +40,18 @@ public class PlayerSettings : ScriptableObject
     public float jumpInitialVelocity = 8f;
 
     [Header("[カメラ]")]
-    [Label("水平感度")]
-    [Tooltip("カメラの水平感度")]
+    [Label("水平感度 (パッド)")]
+    [Tooltip("ゲームパッドの水平感度。秒積分されるので度/秒の係数")]
     public float cameraSensitivityX = 200f;
-    [Label("垂直感度")]
-    [Tooltip("カメラの垂直感度")]
+    [Label("垂直感度 (パッド)")]
+    [Tooltip("ゲームパッドの垂直感度。秒積分されるので度/秒の係数")]
     public float cameraSensitivityY = 200f;
+    [Label("水平感度 (マウス)")]
+    [Tooltip("マウスの水平感度。1pxあたりの度に掛かる係数")]
+    public float cameraMouseSensitivityX = 3f;
+    [Label("垂直感度 (マウス)")]
+    [Tooltip("マウスの垂直感度。1pxあたりの度に掛かる係数")]
+    public float cameraMouseSensitivityY = 3f;
     [Label("カメラ距離")]
     [Tooltip("カメラとプレイヤーの距離")]
     public float cameraDistance = 5f;
