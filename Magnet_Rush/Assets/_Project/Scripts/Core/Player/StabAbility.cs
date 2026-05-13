@@ -40,7 +40,7 @@ public class StabAbility : Ability
             m_bossReceiver.OnStabHit(new StabHitData
             {
                 damage = m_player.Settings.stabDamage,
-                hitPoint = m_player.transform.position,
+                hitPoint = m_bossTarget != null ? m_bossTarget.position : m_player.transform.position,
                 source = m_player.gameObject,
             });
         }

@@ -28,6 +28,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     private Transform m_player;
     private EnemyBossSettings m_settings;
     private Stamina m_stamina;
+    private Health m_health;
 
     private BossState m_state = BossState.Idle;
     private float m_cooldownTimer;
@@ -53,6 +54,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         m_boss = GetComponent<EnemyBossBase>();
         m_agent = GetComponent<NavMeshAgent>();
         m_stamina = GetComponent<Stamina>();
+        m_health = GetComponent<Health>();
 
         if (m_animator == null)
             m_animator = GetComponentInChildren<EnemyBossBaseA_Animator>();
@@ -408,12 +410,11 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         if (!CanReceiveStab)
         { ChannelLogger.LogGuardReturn("EnemyBossA", "Stunned 以外のため Stab 無効"); return; }
 
-        var health = m_boss != null ? m_boss.m_health : null;
-        if (health == null)
+        if (m_health == null)
         { ChannelLogger.LogGuardReturn("EnemyBossA", "Health 未取得"); return; }
 
-        health.DamageIgnoreCooldown(data.damage);
-        ChannelLogger.Log("EnemyBossA", $"[Stab] dmg={data.damage} src={(data.source != null ? data.source.name : "null")} hp={health.CurrentHealth}");
+        m_health.DamageIgnoreCooldown(data.damage);
+        ChannelLogger.Log("EnemyBossA", $"[Stab] dmg={data.damage} src={(data.source != null ? data.source.name : "null")} hp={m_health.CurrentHealth}");
     }
 
     // === ヘルパ ===
