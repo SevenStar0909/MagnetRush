@@ -96,6 +96,7 @@ MonoBehaviour:
       m_PersistentCalls:
         m_Calls: []
   m_health: {fileID: 0}
+  m_stamina: {fileID: 0}
   velocity: {x: 0, y: 0, z: 0}
   externalVelocity: {x: 0, y: 0, z: 0}
   holdVelocity: {x: 0, y: 0, z: 0}
@@ -266,6 +267,7 @@ MonoBehaviour:
   m_states: {fileID: 0}
   m_player: {fileID: 0}
   m_aim: {fileID: 0}
+  m_stab: {fileID: 0}
   m_stateName: State
   m_lastStateName: LastState
   m_onStateChangedName: OnStateChanged
@@ -278,6 +280,8 @@ MonoBehaviour:
   m_reloadName: Reload
   m_verticalSpeedName: VerticalSpeed
   m_stabName: Stab
+  m_aimLayerName: Upper Body
+  m_aimLayerFadeTime: 0.15
 --- !u!114 &4121543987773168685
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -663,6 +667,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Entity::Hitbox
   m_health: {fileID: 8415192833665430904}
+  m_stamina: {fileID: 0}
 --- !u!1001 &2341635302970523350
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -724,7 +729,7 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -1750197354950549132, guid: aa94ade5d4762bc4aac4add1dcc628be, type: 3}
-      propertyPath: m_Materials.Array.data[0]
+      propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 1931110302239519103, guid: d3691ddd34703714080c1233f654a554, type: 3}
     - target: {fileID: 919132149155446097, guid: aa94ade5d4762bc4aac4add1dcc628be, type: 3}
@@ -738,13 +743,34 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: aa94ade5d4762bc4aac4add1dcc628be, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5295211583105044948}
   m_SourcePrefab: {fileID: 100100000, guid: aa94ade5d4762bc4aac4add1dcc628be, type: 3}
 --- !u!4 &2879367634727409981 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: aa94ade5d4762bc4aac4add1dcc628be, type: 3}
   m_PrefabInstance: {fileID: 2341635302970523350}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &3224086088513438599 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: aa94ade5d4762bc4aac4add1dcc628be, type: 3}
+  m_PrefabInstance: {fileID: 2341635302970523350}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &5295211583105044948
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3224086088513438599}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d00ecd326f4ed27489727075d97d2b37, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Player::PlayerAnimEventRelay
+  m_playerAnimator: {fileID: 0}
 --- !u!95 &8148627248615965511 stripped
 Animator:
   m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: aa94ade5d4762bc4aac4add1dcc628be, type: 3}

@@ -271,12 +271,14 @@ public class PlayerAnimator : MonoBehaviour
     private void HandleReload() { if (m_animator != null) m_animator.SetTrigger(m_hReload); }
     private void HandleStab()   { if (m_animator != null) m_animator.SetTrigger(m_hStab); }
 
+    // Stab はステート遷移と同時に FireStab → SetTrigger(Stab) するため、ここでリセットすると直後に消える。
+    // 1フレーム内で State 変化 → ResetTriggers → Enter → SetTrigger(Stab) の順なら問題ないが、
+    // 現状 EntityStateManager は Enter → OnStateChanged の順で発火するため Stab を除外する。
     private void ResetTriggersExceptStateChange()
     {
         if (m_animator == null) return;
         m_animator.ResetTrigger(m_hShoot);
         m_animator.ResetTrigger(m_hReload);
-        m_animator.ResetTrigger(m_hStab);
     }
 
     /// <summary>
