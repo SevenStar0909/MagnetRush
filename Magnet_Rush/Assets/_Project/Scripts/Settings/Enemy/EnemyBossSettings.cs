@@ -9,6 +9,20 @@ public class EnemyBossSettings : ScriptableObject
     // TODO: Health.cs の m_maxHealth を廃止し、本フィールドを参照するよう配線
     public int maxHp = 10;
 
+    [Label("最大体幹ゲージ")]
+    [Tooltip("最大体幹ゲージ")]
+    public int maxStamina = 10; 
+    [Label("体幹ゲージ回復（/s）")]
+    [Tooltip("体幹ゲージ回復量")]
+    public int staminaRecovery = 5;
+    [Label("体幹ゲージ回復クールダウン（秒）")]
+    [Tooltip("攻撃を受けた後の体幹ゲージ回復クールダウン（秒）")]
+    public int staminaRecoveryCooldown = 5;
+    [Label("体幹崩れ(スタン)時間（秒）")]
+    [Tooltip("体幹ゲージが0になりる行動不能時間")]
+    public float staminaBreakDuration = 3.0f;
+
+
     [Header("[移動]")]
     [Label("移動速度（m/s）")]
     [Tooltip("NavMeshAgentの移動速度（m/s）")]
@@ -53,8 +67,17 @@ public class EnemyBossSettings : ScriptableObject
     [Tooltip("1回の攻撃ダメージ")]
     public int attackDamage = 1;
     [Label("攻撃可能距離（m）")]
-    [Tooltip("攻撃可能距離（m）")]
+    [Tooltip("近接攻撃可能距離（m）")]
     public float attackRange = 20.0f;
+
+    [Label("rush攻撃可能距離（m）")]
+    [Tooltip(" プレイヤーがこの距離（m）以外にいる場合、rush攻撃を行う")]
+    public float rushAttackRange = 20.0f;
+
+    [Label("missile攻撃可能距離（m）")]
+    [Tooltip(" プレイヤーがこの距離（m）以外にいる場合、missile攻撃を行う")]
+    public float missileAttackRange = 50.0f;
+
     [Label("攻撃間隔（秒）")]
     [Tooltip("攻撃間隔（秒）")]
     public float attackInterval = 1.2f;

@@ -23,6 +23,9 @@ public class EnemyTurretBase : Entity
     {
         base.Awake();
 
+        if (m_health != null && m_statusData != null)
+            m_health.SetMaxHealth(m_statusData.maxHp);
+
         m_magnetizable = GetComponent<Magnetizable>();
 
         if (m_player == null)

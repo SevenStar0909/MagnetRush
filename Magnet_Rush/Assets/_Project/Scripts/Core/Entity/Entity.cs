@@ -14,6 +14,7 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
     protected CapsuleCollider m_capsuleCollider;
     protected EntityController m_controller;
     [HideInInspector] public Health m_health;
+    [HideInInspector] public Stamina m_stamina;
     protected Transform m_cachedCameraTransform;
 
     /// <summary>ワールド空間の速度ベクトル。</summary>
@@ -188,6 +189,7 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
         m_capsuleCollider = GetComponent<CapsuleCollider>();
         m_controller = GetComponent<EntityController>();
         m_health = GetComponent<Health>();
+        m_stamina = GetComponent<Stamina>();
 
         // EntityControllerがない場合のみフォールバック（敵のNavMesh等）
         if (m_controller == null && m_rb != null)
