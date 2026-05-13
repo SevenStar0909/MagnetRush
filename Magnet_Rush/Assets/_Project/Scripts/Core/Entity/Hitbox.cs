@@ -39,8 +39,8 @@ public class Hitbox : MonoBehaviour, IHittable
             m_stamina.Consume(staminaDamage);
 
             // Stamina が「今」0になった瞬間だけ Health -1
-            if (!wasBroken && m_stamina.IsBroken && m_health != null)
-                m_health.DamageIgnoreCooldown(1);
+            //if (!wasBroken && m_stamina.IsBroken && m_health != null)
+            //    m_health.DamageIgnoreCooldown(1);
 
             ChannelLogger.Log(
                 "EnemyBossA", $"[Hitbox] StaminaDamage: src={(hit.source != null ? hit.source.name : "null")} " +

@@ -133,23 +133,23 @@ public class EnemyBossAI : MonoBehaviour
     {
         if (m_animator == null) return;
 
-        if (m_animator.CanInterrupt)
-        {
-            if (m_state == BossState.Stunned) return;
-            if (m_stamina == null || m_stamina.IsBroken) return;
-
-            m_stamina.Consume(100);
-            return;
-        }
-
-        // 中立状態のみ Stagger を許可
-        if (m_animator.CanNotInterrupt) return;
+       // if (m_animator.CanInterrupt)
+       // {
+       //     if (m_state == BossState.Stunned) return;
+       //     if (m_stamina == null || m_stamina.IsBroken) return;
+       //
+       //     m_stamina.Consume(100);
+       //     return;
+       // }
+       //
+       // // 中立状態のみ Stagger を許可
+       // if (m_animator.CanNotInterrupt) return;
 
         if (m_state == BossState.Stunned) return;
         if (m_stamina != null && m_stamina.IsBroken) return;
 
-        m_animator.SetIsStaggerTrue();
-        m_animator.TriggerBeInterrupted();
+       // m_animator.SetIsStaggerTrue();
+       // m_animator.TriggerBeInterrupted();
     }
 
     private void HandleStaminaBreak()
