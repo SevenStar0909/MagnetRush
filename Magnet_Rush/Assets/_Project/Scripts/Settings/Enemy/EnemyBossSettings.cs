@@ -1,6 +1,7 @@
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "EnemyBossSettings", menuName = "MagnetRush/EnemyBossSettings")]
+[ClassLabelSO("ボス敵設定")]
 public class EnemyBossSettings : ScriptableObject
 {
     [Header("[ステータス]")]

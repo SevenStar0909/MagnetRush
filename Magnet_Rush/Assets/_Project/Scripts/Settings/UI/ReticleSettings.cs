@@ -4,6 +4,7 @@ using UnityEngine;
 /// レティクル演出のパラメータ。発射時のキック量・上限・リターン挙動を保持する。
 /// </summary>
 [CreateAssetMenu(fileName = "ReticleSettings", menuName = "MagnetRush/ReticleSettings")]
+[ClassLabelSO("レティクル設定")]
 public class ReticleSettings : ScriptableObject
 {
     [Header("[キック]")]

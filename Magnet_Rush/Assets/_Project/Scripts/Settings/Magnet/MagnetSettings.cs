@@ -1,6 +1,7 @@
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "MagnetSettings", menuName = "MagnetRush/MagnetSettings")]
+[ClassLabelSO("磁石設定")]
 public class MagnetSettings : ScriptableObject
 {
     [Header("[磁力]")]

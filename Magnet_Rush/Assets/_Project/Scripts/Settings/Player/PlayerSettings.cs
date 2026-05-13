@@ -1,5 +1,6 @@
 using UnityEngine;
 [CreateAssetMenu(fileName = "PlayerSettings", menuName = "MagnetRush/PlayerSettings")]
+[ClassLabelSO("プレイヤー設定")]
 public class PlayerSettings : ScriptableObject
 {
     [Header("[移動]")]

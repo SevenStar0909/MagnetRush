@@ -3,6 +3,7 @@
 public enum FieldShape { Sphere, Box, Cylinder }
 
 [CreateAssetMenu(fileName = "MagnetFieldSettings", menuName = "MagnetRush/MagnetFieldSettings")]
+[ClassLabelSO("磁場設定")]
 public class MagnetFieldSettings : ScriptableObject
 {
     [Header("[形状]")]

@@ -1,6 +1,7 @@
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "MagneticRotatorSettings", menuName = "MagnetRush/MagneticRotatorSettings")]
+[ClassLabelSO("磁力回転体設定")]
 public class MagneticRotatorSettings : ScriptableObject
 {
     [Header("[回転]")]
