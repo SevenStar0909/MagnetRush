@@ -105,9 +105,10 @@ GameObject:
   - component: {fileID: 573067799464740083}
   - component: {fileID: 2295991578477081772}
   - component: {fileID: 1337750729755968398}
+  - component: {fileID: 5546392387088309262}
   m_Layer: 9
   m_Name: Enemy_Boss_test
-  m_TagString: Untagged
+  m_TagString: Boss
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -149,6 +150,7 @@ MonoBehaviour:
       m_PersistentCalls:
         m_Calls: []
   m_health: {fileID: 0}
+  m_stamina: {fileID: 0}
   velocity: {x: 0, y: 0, z: 0}
   externalVelocity: {x: 0, y: 0, z: 0}
   holdVelocity: {x: 0, y: 0, z: 0}
@@ -254,7 +256,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Enemy::EnemyBossBaseA_Animator
   m_animator: {fileID: 7416477724262092756}
-  m_hitbox: {fileID: 6963472914516098255}
   m_ai: {fileID: 1337750729755968398}
   m_armHitbox: {fileID: 689046789256155139}
   m_enableDebugInput: 1
@@ -264,10 +265,13 @@ MonoBehaviour:
   m_fireMissileFinishedName: FireMissileFinished
   m_attackRushName: AttackRush
   m_attackRushFinishedName: AttackRushFinished
-  m_isStunnedName: IsStunned
   m_canInterruptName: CanInterrupt
-  m_stunEndName: StunEnd
+  m_canNotInterruptName: CanNotInterrupt
   m_beInterruptedName: BeInterrupted
+  m_isStunnedName: IsStunned
+  m_stunEndName: StunEnd
+  m_isStaggerName: IsStagger
+  m_staggerEndName: StaggerEnd
 --- !u!195 &2295991578477081772
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -303,8 +307,24 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Enemy::EnemyBossAI
   m_animator: {fileID: 573067799464740083}
+  m_hitbox: {fileID: 0}
   m_logStateChange: 1
   m_nextLongRangeAttackIsRush: 1
+--- !u!114 &5546392387088309262
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 569016687892123619}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8ba53e48f2d11d0499e50831063da717, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::Stamina
+  m_maxStamina: 10
+  m_recoveryPerSecond: 0
+  m_recoveryCooldown: 0
 --- !u!1 &772536555069620706
 GameObject:
   m_ObjectHideFlags: 0
@@ -440,6 +460,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Core::Hitbox
   m_health: {fileID: 2249649121702153851}
+  m_stamina: {fileID: 0}
 --- !u!1 &4751441633575745570
 GameObject:
   m_ObjectHideFlags: 0
