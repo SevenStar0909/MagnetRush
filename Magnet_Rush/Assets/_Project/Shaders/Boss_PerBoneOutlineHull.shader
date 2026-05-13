@@ -68,38 +68,44 @@ Shader "MagnetRush/Boss_PerBoneOutlineHull"
                 float3 expanded = IN.positionOS + normalize(IN.normalOS) * _OutlineWidth;
                 OUT.positionCS = TransformObjectToHClip(expanded);
 
-                // 各骨の N/S 強度を BLENDWEIGHT で重み付け blend する
-                float4 nv = float4(
-                    _IsNPerBone[IN.boneIdx.x],
-                    _IsNPerBone[IN.boneIdx.y],
-                    _IsNPerBone[IN.boneIdx.z],
-                    _IsNPerBone[IN.boneIdx.w]);
-                float4 sv = float4(
-                    _IsSPerBone[IN.boneIdx.x],
-                    _IsSPerBone[IN.boneIdx.y],
-                    _IsSPerBone[IN.boneIdx.z],
-                    _IsSPerBone[IN.boneIdx.w]);
-                float nStr = dot(nv, IN.boneWt);
-                float sStr = dot(sv, IN.boneWt);
+                // dominant bone takes all: weight 最大の bone のみで色を決定する。
+                // weight=0 のスロット(影響数<4 の vertex で空きスロットの boneIdx=0 が残っている)を
+                // 拾わないように epsilon で初期化し、`>` 厳格比較で同点回避する。
+                float bestW = 1e-5;
+                uint dominantIdx = 0;
+                bool anyValid = false;
+                [unroll]
+                for (int i = 0; i < 4; ++i)
+                {
+                    float wi = IN.boneWt[i];
+                    if (wi > bestW)
+                    {
+                        bestW = wi;
+                        dominantIdx = IN.boneIdx[i];
+                        anyValid = true;
+                    }
+                }
 
-                float total = nStr + sStr;
+                float isN = anyValid ? _IsNPerBone[dominantIdx] : 0.0;
+                float isS = anyValid ? _IsSPerBone[dominantIdx] : 0.0;
+                float total = isN + isS;
+
                 if (total < 0.001)
                 {
-                    // 非磁化部分は描画しない
+                    // 非磁化 bone が dominant の vertex は描画しない
                     OUT.color = float4(0, 0, 0, 0);
                 }
                 else
                 {
-                    float3 mixed = (_NColor.rgb * nStr + _SColor.rgb * sStr) / max(total, 0.001);
-                    OUT.color = float4(mixed, saturate(total));
+                    float3 mixed = (_NColor.rgb * isN + _SColor.rgb * isS) / max(total, 0.001);
+                    OUT.color = float4(mixed, 1.0);
                 }
                 return OUT;
             }
 
             half4 frag(Varyings IN) : SV_Target
             {
-                // 非磁化部分は完全カリング（深度バッファも書き込まない）
-                clip(IN.color.a - 0.01);
+                clip(IN.color.a - 0.5);
                 return half4(IN.color.rgb, 1.0);
             }
             ENDHLSL
