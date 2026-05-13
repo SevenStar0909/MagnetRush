@@ -67,6 +67,9 @@ public class PlayerSettings : ScriptableObject
     [Label("接近判定距離（m）")]
     [Tooltip("ボスがスタン中かつこの距離以内ならスタブ攻撃を発動できる")]
     public float stabRange = 2f;
+    [Label("スタブダメージ")]
+    [Tooltip("スタブ1回で与える固定ダメージ量。Health.DamageIgnoreCooldown 経由でクールダウン無視で適用される")]
+    public int stabDamage = 5;
     [Label("モーションタイムアウト（秒）")]
     [Tooltip("スタブモーションの強制復帰時間（秒）。AnimEvent OnStabMotionFinishedEvent の配線漏れ保険")]
     public float stabMotionMaxDuration = 1.5f;
