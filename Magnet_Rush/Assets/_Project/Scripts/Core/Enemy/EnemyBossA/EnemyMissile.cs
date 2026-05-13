@@ -2,26 +2,26 @@ using UnityEngine;
 
 [DisallowMultipleComponent]
 [RequireComponent(typeof(Rigidbody))]
-[RequireComponent(typeof(SphereCollider))]
+[RequireComponent(typeof(CapsuleCollider))]
 [RequireComponent(typeof(Magnetizable))]
 public class EnemyMissile : MonoBehaviour
 {
     [Header("Movement")]
-    [SerializeField] private float m_maxSpeed = 18f;
-    [SerializeField] private float m_acceleration = 40f;
-    [SerializeField] private float m_turnRate = 10f;
-    [SerializeField] private float m_seekDelay = 0.2f;
-    [SerializeField] private float m_arrivalDistance = 0.6f; // �^�[�Q�b�g�ɋ߂Â������Ȃ��悤�ɂ��鋗��
+    [SerializeField] private float m_maxSpeed = 18f;    // 最高速度
+    [SerializeField] private float m_acceleration = 40f; // 加速度(m/s²)
+    [SerializeField] private float m_turnRate = 10f;    // 旋回速度
+    [SerializeField] private float m_seekDelay = 0.2f;  // 発射後すぐは誘導しない時間
+    [SerializeField] private float m_arrivalDistance = 0.6f; // ターゲットに近づきすぎないようにする距離
 
     [Header("Targeting")]
-    [SerializeField] private Vector3 m_targetOffset;
-    [SerializeField] private float m_targetRefreshInterval = 0.1f;
+    [SerializeField] private Vector3 m_targetOffset;    // ターゲットのどこを狙うかのオフセット
+    [SerializeField] private float m_targetRefreshInterval = 0.1f; // ターゲットの再検索間隔
 
     [Header("References")]
-    [SerializeField] private Transform m_player;
+    [SerializeField] private Transform m_player;    // プレイヤーへの参照（Inspectorで設定、もしくは起動時に自動検索）
 
     [Header("Combat")]
-    [SerializeField] private int m_damage = 1;
+    [SerializeField] private int m_damage = 1;  
     [SerializeField] private float m_lifetime = 6f;
 
     private Rigidbody m_rb;
@@ -38,12 +38,31 @@ public class EnemyMissile : MonoBehaviour
         m_rb.useGravity = false;
         m_selfMagnetizable = GetComponent<Magnetizable>();
 
+        // カプセルコライダーをトリガーに設定し、サイズを調整    
+        var capsule = GetComponent<CapsuleCollider>();
+        if (capsule != null)
+        {
+            capsule.isTrigger = true;
+            capsule.center = Vector3.zero;
+            capsule.radius = 1f;
+            capsule.height = 6f;
+            capsule.direction = 2;
+        }
+
         if (m_player == null)
         {
             GameObject playerObj = GameObject.FindWithTag(GameTags.Player);
             if (playerObj != null)
                 m_player = playerObj.transform;
         }
+    }
+
+    private void Start()
+    {
+        // 外部からInitializeされない限り、起動時に自動初期化
+        // テスト用
+        if (!m_initialized)
+            Initialize(m_player, transform.forward);
     }
 
     public void Initialize(Transform target, Vector3 initialDirection)
@@ -75,7 +94,7 @@ public class EnemyMissile : MonoBehaviour
 
     private void Update()
     {
-        if (!m_initialized) { ChannelLogger.LogGuardReturn("Enemy", "Missile��������"); return; }
+        if (!m_initialized) { ChannelLogger.LogGuardReturn("Enemy", "Missile未初期化"); return; }
 
         m_timer -= Time.deltaTime;
         if (m_timer <= 0f)
@@ -84,7 +103,7 @@ public class EnemyMissile : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (!m_initialized || m_rb == null) { ChannelLogger.LogGuardReturn("Enemy", "Missile���������܂���Rigidbody�Ȃ�"); return; }
+        if (!m_initialized || m_rb == null) { ChannelLogger.LogGuardReturn("Enemy", "Missile未初期化またはRigidbodyなし"); return; }
 
         if (m_seekTimer > 0f)
         {
@@ -194,16 +213,15 @@ public class EnemyMissile : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         var hittable = other.GetComponentInParent<IHittable>();
-        if (hittable != null)
+        if (hittable == null) return;
+
+        hittable.OnHit(new HitData
         {
-            hittable.OnHit(new HitData
-            {
-                damage = m_damage,
-                hitPoint = other.ClosestPoint(transform.position),
-                knockbackDir = m_rb != null ? m_rb.linearVelocity.normalized : transform.forward,
-                source = gameObject
-            });
-        }
+            damage = m_damage,
+            hitPoint = other.ClosestPoint(transform.position),
+            knockbackDir = m_rb != null ? m_rb.linearVelocity.normalized : transform.forward,
+            source = gameObject
+        });
 
         Destroy(gameObject);
     }
