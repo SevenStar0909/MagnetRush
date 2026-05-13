@@ -13,6 +13,9 @@ public class Magnetizable : MonoBehaviour, IMagnetPoleProvider
     [SerializeField] private bool m_isActive;
     [SerializeField] private float m_initialMass = 1f;
 
+    [Tooltip("OutlineRendererFeature の Edge Detection アウトラインを使うか。\nボスのように bone 単位の Hull アウトラインを別経路で描画する場合は false にする。")]
+    [SerializeField] private bool m_useEdgeDetectionOutline = true;
+
     public MagneticPole Pole => m_pole;
     public bool IsActive => m_isActive;
 
@@ -131,8 +134,9 @@ public class Magnetizable : MonoBehaviour, IMagnetPoleProvider
         if (m_renderers == null || m_renderers.Length == 0)
             m_renderers = GetComponentsInChildren<Renderer>(true);
 
-        // 全Rendererにアウトラインを適用
-        if (m_isActive && m_renderers.Length > 0)
+        // 全Rendererに Edge Detection アウトライン (post-process) を適用。
+        // m_useEdgeDetectionOutline=false の場合はスキップし、別経路 (Inverted Hull 等) で描画する想定。
+        if (m_isActive && m_useEdgeDetectionOutline && m_renderers.Length > 0)
         {
             m_mpb.SetFloat(s_poleIDProperty, newPole == MagneticPole.S ? 1f : 0f);
             for (int i = 0; i < m_renderers.Length; i++)
@@ -142,7 +146,7 @@ public class Magnetizable : MonoBehaviour, IMagnetPoleProvider
                 m_renderers[i].SetPropertyBlock(m_mpb);
             }
         }
-        else if (m_isActive)
+        else if (m_isActive && m_useEdgeDetectionOutline)
         {
             Debug.LogWarning($"[Magnetizable] {gameObject.name} にRendererがありません。アウトライン表示できません。");
         }
