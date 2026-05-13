@@ -89,25 +89,32 @@ public class CameraSettingsApplier : MonoBehaviour
         m_initialized = true;
     }
 
+    // マウスのピクセル差分を度に換算する係数。
+    // Mouse.delta は「このフレームの累積ピクセル」なので deltaTime を掛けてはいけない。
+    // 掛けると FPS スパイク時に感度が一気に跳ねてカクつく原因になる。
+    private const float k_MousePixelToDegree = 0.05f;
+
     void LateUpdate()
     {
         if (m_cameraPivot == null || m_settings == null) { ChannelLogger.LogGuardReturn("Player", "カメラピボットまたは設定なし"); return; }
 
-        // 右スティック / マウスでカメラ回転
-        Vector2 look = Vector2.zero;
+        // マウス: ピクセル差分 (フレーム独立)。deltaTime を掛けない。
         if (Mouse.current != null)
-            look = Mouse.current.delta.ReadValue();
+        {
+            Vector2 mouseLook = Mouse.current.delta.ReadValue();
+            m_yaw += mouseLook.x * m_settings.cameraSensitivityX * k_MousePixelToDegree;
+            m_pitch -= mouseLook.y * m_settings.cameraSensitivityY * k_MousePixelToDegree;
+        }
+
+        // パッド: アナログ軸 (連続値)。deltaTime を掛けて時間積分する。
         if (Gamepad.current != null)
         {
             Vector2 stick = Gamepad.current.rightStick.ReadValue();
-            // スティック入力はフレーム非依存で大きめに
-            look += stick * 5f;
+            m_yaw += stick.x * m_settings.cameraSensitivityX * Time.unscaledDeltaTime;
+            m_pitch -= stick.y * m_settings.cameraSensitivityY * Time.unscaledDeltaTime;
         }
 
-        m_yaw += look.x * m_settings.cameraSensitivityX * Time.unscaledDeltaTime;
-        m_pitch -= look.y * m_settings.cameraSensitivityY * Time.unscaledDeltaTime;
         m_pitch = Mathf.Clamp(m_pitch, m_settings.cameraPitchMin, m_settings.cameraPitchMax);
-
         m_cameraPivot.rotation = Quaternion.Euler(m_pitch, m_yaw, 0f);
     }
 

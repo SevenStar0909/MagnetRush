@@ -6,7 +6,7 @@
 public class EnemyBossBaseA_AnimationEventForwarder : MonoBehaviour
 {
     [SerializeField] private EnemyBossBaseA_Animator m_target;
-
+    //test comment
     void Awake()
     {
         if (m_target == null)
@@ -34,6 +34,16 @@ public class EnemyBossBaseA_AnimationEventForwarder : MonoBehaviour
     public void TriggerStunEnd()
     {
         if (m_target != null) m_target.TriggerStunEnd();
+    }
+
+    public void TriggerAttackRush()
+    {
+        if (m_target != null) m_target.TriggerAttackRush();
+    }
+
+    public void TriggerMissile()
+    {
+        if (m_target != null) m_target.TriggerMissile();
     }
 
     public void SetCanInterruptTrue()
@@ -74,5 +84,15 @@ public class EnemyBossBaseA_AnimationEventForwarder : MonoBehaviour
     public void OnStunEndEvent()
     {
         if (m_target != null) m_target.OnStunEndEvent();
+    }
+
+    public void OnRushFinishedEvent()
+    {
+        if (m_target != null) m_target.OnRushFinishedEvent();
+    }
+
+    public void OnMissileFinishedEvent()
+    {
+        if (m_target != null) m_target.OnMissileFinishedEvent();
     }
 }

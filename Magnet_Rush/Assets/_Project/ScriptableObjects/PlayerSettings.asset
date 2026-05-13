@@ -31,11 +31,16 @@ MonoBehaviour:
   cameraPitchMin: -90
   cameraPitchMax: 90
   firePointHeight: 1.2
-  stabRange: 2
+  stabRange: 7
+  stabDamage: 5
+  stabHitVfx: {fileID: 7608947279581240675, guid: 5cf22e19cf37f644f89272000f420869, type: 3}
+  stabHitVfxLifetime: 2
+  stabHitVfxForwardOffset: 3.5
+  stabHitVfxScale: 6
   stabMotionMaxDuration: 1.5
   aimReleaseGraceTime: 0.15
   aimTimeScale: 0.3
-  aimMaxDuration: 3
+  aimMaxDuration: 6
   aimEnterDuration: 0.12
   aimExitDuration: 0.18
   aimFOV: 40

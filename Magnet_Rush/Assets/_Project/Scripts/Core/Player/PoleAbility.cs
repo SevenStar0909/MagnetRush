@@ -22,7 +22,7 @@ public class PoleAbility : Ability
         m_dbgCallCount++;
         if (Time.time - m_dbgLastReport > 2f)
         {
-            Debug.Log($"[PoleAbility-DEBUG] Switch() 呼び出し回数（直近2秒）={m_dbgCallCount}, m_input={(m_input != null ? "OK" : "null")}, IsPressed={m_input?.IsSwitchPolePressed}", this);
+            //Debug.Log($"[PoleAbility-DEBUG] Switch() 呼び出し回数（直近2秒）={m_dbgCallCount}, m_input={(m_input != null ? "OK" : "null")}, IsPressed={m_input?.IsSwitchPolePressed}", this);
             m_dbgCallCount = 0;
             m_dbgLastReport = Time.time;
         }

@@ -50,6 +50,9 @@ public class EnemyBase : Entity
         base.Awake();
         m_mover = GetComponentInChildren<MagneticMover>();
 
+        if (m_health != null && m_statusData != null)
+            m_health.SetMaxHealth(m_statusData.maxHp);
+
         // Playerタグ付きオブジェクトを常に取得
         GameObject playerObj = GameObject.FindWithTag(GameTags.Player);
         if (playerObj != null)
