@@ -458,6 +458,9 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 1972686226}
     m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7979327020922395008, guid: 4209ff3e04242d249831366d7807a31b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1441978620}
     - targetCorrespondingSourceObject: {fileID: 2314021898761952882, guid: 4209ff3e04242d249831366d7807a31b, type: 3}
       insertIndex: -1
       addedObject: {fileID: 972822839}
@@ -1144,6 +1147,27 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2572763362010034409, guid: 595708abaf7beee438dc7b5e80cbc9d0, type: 3}
   m_PrefabInstance: {fileID: 5567607591048211451}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1441978619 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7979327020922395008, guid: 4209ff3e04242d249831366d7807a31b, type: 3}
+  m_PrefabInstance: {fileID: 972822827}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1441978620
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1441978619}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8cc0ae125561a224c9d40aa876b40c7e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Enemy::ArmStunHitbox
+  m_health: {fileID: 5567607591048211454}
+  m_stamina: {fileID: 5567607591048211452}
+  m_animator: {fileID: 5567607591048211453}
+  m_settings: {fileID: 11400000, guid: c18fd890e7dc6ab42854abb4e3c2e1f1, type: 2}
 --- !u!4 &1445588667 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5350280619192388422, guid: 595708abaf7beee438dc7b5e80cbc9d0, type: 3}
@@ -1778,6 +1802,39 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 1090912560}
   m_SourcePrefab: {fileID: 100100000, guid: 595708abaf7beee438dc7b5e80cbc9d0, type: 3}
+--- !u!114 &5567607591048211452 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5546392387088309262, guid: 595708abaf7beee438dc7b5e80cbc9d0, type: 3}
+  m_PrefabInstance: {fileID: 5567607591048211451}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1151976385}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8ba53e48f2d11d0499e50831063da717, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::Stamina
+--- !u!114 &5567607591048211453 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 573067799464740083, guid: 595708abaf7beee438dc7b5e80cbc9d0, type: 3}
+  m_PrefabInstance: {fileID: 5567607591048211451}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1151976385}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4bf1aee70ca880542883c753d2d36039, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Enemy::EnemyBossBaseA_Animator
+--- !u!114 &5567607591048211454 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2249649121702153851, guid: 595708abaf7beee438dc7b5e80cbc9d0, type: 3}
+  m_PrefabInstance: {fileID: 5567607591048211451}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1151976385}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f7eb2ea83aeed54c8fa7e632b84756a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::Health
 --- !u!65 &5567607591048211456
 BoxCollider:
   m_ObjectHideFlags: 0
