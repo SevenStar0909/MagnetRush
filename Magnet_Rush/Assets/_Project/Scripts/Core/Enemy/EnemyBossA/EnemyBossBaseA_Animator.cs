@@ -215,6 +215,15 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
         }
     }
 
+    public bool IsInAttackStance
+    {
+        get
+        {
+            if (m_animator == null) return false;
+            return m_animator.GetCurrentAnimatorStateInfo(0).shortNameHash == s_hAttackStanceState;
+        }
+    }
+
     public bool IsInRush
     {
         get
