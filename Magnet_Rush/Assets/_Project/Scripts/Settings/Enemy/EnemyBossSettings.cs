@@ -22,7 +22,9 @@ public class EnemyBossSettings : ScriptableObject
     [Label("体幹崩れ(スタン)時間（秒）")]
     [Tooltip("体幹ゲージが0になりる行動不能時間")]
     public float staminaBreakDuration = 3.0f;
-
+    [Label("右手スタンStamina消費量")]
+    [Tooltip("AttackStance中に右手×PhysicsObjectが当たった時のStamina消費量。0でブレイク→スタン")]
+    public int armStunStaminaDamage = 5;
 
     [Header("[移動]")]
     [Label("移動速度（m/s）")]
