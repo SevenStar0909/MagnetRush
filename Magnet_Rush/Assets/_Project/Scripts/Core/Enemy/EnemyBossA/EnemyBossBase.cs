@@ -84,9 +84,17 @@ public class EnemyBossBase : Entity
         Decelerate(m_statusData.deceleration, dt);
     }
 
-    /// <summary>指定方向を向く。</summary>
-    public void FaceToward(Vector3 direction, float dt)
+    /// <summary>指定方向を向く。deadZoneDegを指定すると現在向きとの角度がそれ以下なら回転しない（追尾ねじれ防止）。</summary>
+    public void FaceToward(Vector3 direction, float dt, float deadZoneDeg = 0f)
     {
+        if (deadZoneDeg > 0f)
+        {
+            Vector3 currentFlat = transform.forward; currentFlat.y = 0f;
+            Vector3 targetFlat = direction; targetFlat.y = 0f;
+            if (currentFlat.sqrMagnitude > 0.0001f && targetFlat.sqrMagnitude > 0.0001f
+                && Vector3.Angle(currentFlat, targetFlat) <= deadZoneDeg)
+                return;
+        }
         FaceDirection(direction, m_statusData.rotationSpeed, dt);
     }
 

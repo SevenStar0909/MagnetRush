@@ -91,6 +91,16 @@ public class EnemyBossSettings : ScriptableObject
     [Tooltip("攻撃ヒットボックスの持続時間（秒）")]
     public float attackHitboxDuration = 0.2f;
 
+    [Header("[向き調整]")]
+    [Label("通常時の向きデッドゾーン（度）")]
+    [Tooltip("プレイヤーとの角度がこの値以下なら向き直さない（追尾ねじれ防止）。Idle/Stance/Missile/Stagger等で使用")]
+    [Range(0f, 90f)]
+    public float faceDeadZoneDeg = 3f;
+    [Label("AttackMotion中の向きデッドゾーン（度）")]
+    [Tooltip("AttackMotion中はこの角度未満では向き直さない。180で実質ロック（攻撃発生中の追尾を止める）")]
+    [Range(0f, 180f)]
+    public float attackMotionFaceDeadZoneDeg = 180f;
+
     [Header("スタッガー")]
     [Tooltip("スタンorAttack終了後の隙時間（秒）")]
     public float staggerDuration = 1.5f;

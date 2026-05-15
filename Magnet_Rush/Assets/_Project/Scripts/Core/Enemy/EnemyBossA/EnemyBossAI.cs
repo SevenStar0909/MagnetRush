@@ -267,7 +267,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         }
 
         m_boss.SlowDown(dt);
-        FacePlayer(dt);
+        FacePlayer(dt, m_settings.faceDeadZoneDeg);
 
         if (m_cooldownTimer > 0f)
             return;
@@ -310,7 +310,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
             m_agent.ResetPath();
 
         m_boss.SlowDown(dt);
-        FacePlayer(dt);
+        FacePlayer(dt, m_settings.faceDeadZoneDeg);
 
         float distance = DistanceToPlayer();
         if (distance <= m_settings.attackRange && m_cooldownTimer <= 0f)
@@ -322,7 +322,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
 
     private void TickAttackStance(float dt)
     {
-        FacePlayer(dt);
+        FacePlayer(dt, m_settings.faceDeadZoneDeg);
         m_boss.SlowDown(dt);
 
         if (m_animator.IsStunned) { ChangeState(BossState.Stunned); return; }
@@ -333,7 +333,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     {
         // 普通攻擊移動なし
         m_boss.SlowDown(dt);
-        FacePlayer(dt);
+        FacePlayer(dt, m_settings.attackMotionFaceDeadZoneDeg);
     }
 
     private void TickRush(float dt)
@@ -341,7 +341,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         if (!m_animator.IsInRush)
         {
             m_boss.lateralVelocity = Vector3.zero;
-            FacePlayer(dt);
+            FacePlayer(dt, m_settings.faceDeadZoneDeg);
             return;
         }
         MoveTowardPlayerLastLocation(dt, 1f);
@@ -350,7 +350,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     private void TickMissile(float dt)
     {
         m_boss.SlowDown(dt);
-        FacePlayer(dt);
+        FacePlayer(dt, m_settings.faceDeadZoneDeg);
     }
 
     private void TickStunned(float dt)
@@ -361,7 +361,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     private void TickStagger(float dt)
     {
         m_boss.SlowDown(dt);
-        FacePlayer(dt);
+        FacePlayer(dt, m_settings.faceDeadZoneDeg);
     }
 
     // === 公開コールバック (Animator → AI) ===
@@ -431,12 +431,12 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         return DistanceToPlayer() <= m_settings.chaseRange;
     }
 
-    private void FacePlayer(float dt)
+    private void FacePlayer(float dt, float deadZoneDeg = 0f)
     {
         Vector3 look = m_player.position - transform.position;
         look.y = 0f;
         if (look.sqrMagnitude > 0.0001f)
-            m_boss.FaceToward(look.normalized, dt);
+            m_boss.FaceToward(look.normalized, dt, deadZoneDeg);
     }
 
     private void MoveTowardPlayer(float dt, float speedMultiplier)
