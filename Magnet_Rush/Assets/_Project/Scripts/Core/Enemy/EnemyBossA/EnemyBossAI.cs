@@ -20,6 +20,9 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     [Tooltip("被弾判定。未設定ならルートの子から取得")]
     [SerializeField] private Hitbox m_hitbox;
 
+    [Tooltip("手の追加被弾判定。未設定ならルートの子から自動取得。各要素の OnHitEvent も HandleHit に転送される")]
+    [SerializeField] private ArmStunHitbox[] m_armHitboxes;
+
     [Header("Debug")]
     [SerializeField] private bool m_logStateChange = true;
 
