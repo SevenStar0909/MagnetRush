@@ -80,6 +80,15 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         if (m_hitbox != null)
             m_hitbox.OnHitEvent += HandleHit;
 
+        if (m_armHitboxes != null)
+        {
+            for (int i = 0; i < m_armHitboxes.Length; i++)
+            {
+                if (m_armHitboxes[i] != null)
+                    m_armHitboxes[i].OnHitEvent += HandleHit;
+            }
+        }
+
         if (m_stamina != null)
             m_stamina.OnBreak += HandleStaminaBreak;
     }
@@ -88,6 +97,15 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     {
         if (m_hitbox != null)
             m_hitbox.OnHitEvent -= HandleHit;
+
+        if (m_armHitboxes != null)
+        {
+            for (int i = 0; i < m_armHitboxes.Length; i++)
+            {
+                if (m_armHitboxes[i] != null)
+                    m_armHitboxes[i].OnHitEvent -= HandleHit;
+            }
+        }
 
         if (m_stamina != null)
             m_stamina.OnBreak -= HandleStaminaBreak;
