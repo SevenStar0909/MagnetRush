@@ -234,7 +234,7 @@ public class MagnetManager : Singleton<MagnetManager>
 
     private void ProcessPair(Magnetizable a, Magnetizable b, HashSet<long> contactsThisFrame)
     {
-        Vector3 delta = b.transform.position - a.transform.position;
+        Vector3 delta = b.Position - a.Position;
         float distance = delta.magnitude;
 
         // ハードカットオフ（パフォーマンス用）
@@ -310,13 +310,13 @@ public class MagnetManager : Singleton<MagnetManager>
 
         if (isOpposite)
         {
-            a.ApplyForce(dirAtoB * forceMagnitude * ratioA, b.transform.position);
-            b.ApplyForce(-dirAtoB * forceMagnitude * ratioB, a.transform.position);
+            a.ApplyForce(dirAtoB * forceMagnitude * ratioA, b.Position);
+            b.ApplyForce(-dirAtoB * forceMagnitude * ratioB, a.Position);
         }
         else if (isSame)
         {
-            a.ApplyForce(-dirAtoB * forceMagnitude * ratioA, b.transform.position);
-            b.ApplyForce(dirAtoB * forceMagnitude * ratioB, a.transform.position);
+            a.ApplyForce(-dirAtoB * forceMagnitude * ratioA, b.Position);
+            b.ApplyForce(dirAtoB * forceMagnitude * ratioB, a.Position);
         }
 
         // 接触判定 / FixedJoint スナップ（Object×Object 専用。Entity絡みは上の PD 分岐で処理済み）
@@ -367,7 +367,7 @@ public class MagnetManager : Singleton<MagnetManager>
         if (!m_heldPairs.TryGetValue(key, out var pair))
         {
             // 接触方向を維持しつつ、両者の contactRadius 合計で密着距離を算出
-            Vector3 dir = (second.transform.position - first.transform.position).normalized;
+            Vector3 dir = (second.Position - first.Position).normalized;
             pair = new HeldPair
             {
                 a = first,
@@ -387,8 +387,8 @@ public class MagnetManager : Singleton<MagnetManager>
         Vector3 relVel = velB - velA;
 
         // target position は pair.a 基準 + 初回固定の worldOffset
-        Vector3 target = pair.a.transform.position + pair.worldOffset;
-        Vector3 error = target - pair.b.transform.position;
+        Vector3 target = pair.a.Position + pair.worldOffset;
+        Vector3 error = target - pair.b.Position;
 
         // PD 力（質量比配分なし、ApplyHoldForce 内で /mass 変換）
         // mass 源はペア種別依存: Entity=Magnetizable.mass, Object=Rigidbody.mass（設計決定参照）
@@ -461,7 +461,7 @@ public class MagnetManager : Singleton<MagnetManager>
                 continue;
             }
 
-            float sqr = (pair.b.transform.position - pair.a.transform.position).sqrMagnitude;
+            float sqr = (pair.b.Position - pair.a.Position).sqrMagnitude;
             if (sqr > maxDistSqr)
             {
                 (toRemove ??= new List<long>()).Add(kvp.Key);
