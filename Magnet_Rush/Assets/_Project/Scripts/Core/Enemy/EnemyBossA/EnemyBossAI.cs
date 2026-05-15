@@ -65,6 +65,9 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         if (m_hitbox == null)
             m_hitbox = transform.root.GetComponentInChildren<Hitbox>();
 
+        if (m_armHitboxes == null || m_armHitboxes.Length == 0)
+            m_armHitboxes = transform.root.GetComponentsInChildren<ArmStunHitbox>(true);
+
         if (m_agent != null)
         {
             m_agent.updatePosition = false;
