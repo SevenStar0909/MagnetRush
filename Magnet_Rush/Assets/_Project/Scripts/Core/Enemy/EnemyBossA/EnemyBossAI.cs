@@ -17,12 +17,6 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     [Header("References")]
     [SerializeField] private EnemyBossBaseA_Animator m_animator;
 
-    [Tooltip("被弾判定。未設定ならルートの子から取得")]
-    [SerializeField] private Hitbox m_hitbox;
-
-    [Tooltip("手の追加被弾判定。未設定ならルートの子から自動取得。各要素の OnHitEvent も HandleHit に転送される")]
-    [SerializeField] private ArmStunHitbox[] m_armHitboxes;
-
     [Header("Debug")]
     [SerializeField] private bool m_logStateChange = true;
 
@@ -62,12 +56,6 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         if (m_animator == null)
             m_animator = GetComponentInChildren<EnemyBossBaseA_Animator>();
 
-        if (m_hitbox == null)
-            m_hitbox = transform.root.GetComponentInChildren<Hitbox>();
-
-        if (m_armHitboxes == null || m_armHitboxes.Length == 0)
-            m_armHitboxes = transform.root.GetComponentsInChildren<ArmStunHitbox>(true);
-
         if (m_agent != null)
         {
             m_agent.updatePosition = false;
@@ -77,36 +65,12 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
 
     void OnEnable()
     {
-        if (m_hitbox != null)
-            m_hitbox.OnHitEvent += HandleHit;
-
-        if (m_armHitboxes != null)
-        {
-            for (int i = 0; i < m_armHitboxes.Length; i++)
-            {
-                if (m_armHitboxes[i] != null)
-                    m_armHitboxes[i].OnHitEvent += HandleHit;
-            }
-        }
-
         if (m_stamina != null)
             m_stamina.OnBreak += HandleStaminaBreak;
     }
 
     void OnDisable()
     {
-        if (m_hitbox != null)
-            m_hitbox.OnHitEvent -= HandleHit;
-
-        if (m_armHitboxes != null)
-        {
-            for (int i = 0; i < m_armHitboxes.Length; i++)
-            {
-                if (m_armHitboxes[i] != null)
-                    m_armHitboxes[i].OnHitEvent -= HandleHit;
-            }
-        }
-
         if (m_stamina != null)
             m_stamina.OnBreak -= HandleStaminaBreak;
     }
@@ -153,29 +117,6 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
             case BossState.Stunned: TickStunned(dt); break;
             case BossState.Stagger: TickStagger(dt); break;
         }
-    }
-
-    private void HandleHit(HitData hit)
-    {
-        if (m_animator == null) return;
-
-        if (m_animator.CanInterrupt)
-        {
-            if (m_state == BossState.Stunned) return;
-            if (m_stamina == null || m_stamina.IsBroken) return;
-
-            m_stamina.Consume(100);
-            return;
-        }
-
-        // 中立状態のみ Stagger を許可
-        if (m_animator.CanNotInterrupt) return;
-
-        if (m_state == BossState.Stunned) return;
-        if (m_stamina != null && m_stamina.IsBroken) return;
-
-        m_animator.SetIsStaggerTrue();
-        m_animator.TriggerBeInterrupted();
     }
 
     private void HandleStaminaBreak()

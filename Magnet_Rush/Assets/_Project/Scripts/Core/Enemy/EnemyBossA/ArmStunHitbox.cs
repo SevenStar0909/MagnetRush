@@ -55,7 +55,19 @@ public sealed class ArmStunHitbox : MonoBehaviour, IHittable
 
         m_health.Damage(hit.damage);
 
-        bool inAttackStance = m_animator != null && m_animator.IsInAttackStance;
+        // Stamina/Staggerは中断可状態 (CanInterrupt) でしか効かない、AttackMotion等は完全無視
+        if (m_animator == null || m_animator.CanNotInterrupt)
+        {
+            OnHitEvent?.Invoke(hit);
+            return;
+        }
+        if (m_stamina != null && m_stamina.IsBroken)
+        {
+            OnHitEvent?.Invoke(hit);
+            return;
+        }
+
+        bool inAttackStance = m_animator.IsInAttackStance;
         if (inAttackStance && m_stamina != null && m_settings != null)
         {
             int dmg = m_settings.armStunStaminaDamage;
@@ -66,6 +78,12 @@ public sealed class ArmStunHitbox : MonoBehaviour, IHittable
                     $"[ArmStunHitbox] AttackStance hit src={(hit.source != null ? hit.source.name : "null")} " +
                     $"staminaDmg={dmg} remain={m_stamina.CurrentStamina}/{m_stamina.MaxStamina}");
             }
+        }
+        else if (m_animator.CanInterrupt)
+        {
+            // 中立中断可ステートでの手被弾はStaggerを発火
+            m_animator.SetIsStaggerTrue();
+            m_animator.TriggerBeInterrupted();
         }
 
         OnHitEvent?.Invoke(hit);
