@@ -37,6 +37,9 @@ public class EntityController : MonoBehaviour
     // Entity asmdef は Magnet asmdef を参照できないため Common の IMagnetPoleProvider を経由する
     private IMagnetPoleProvider m_ownerMagnetPole;
 
+    // 接地判定にアクセスするための同一GO Entity 参照（HandlePenetrationでEntityBody衝突時にY成分削除する判定に使う）
+    private Entity m_entity;
+
     // 押し中のオブジェクト管理
     private readonly List<PushInfo> m_pushActive = new();
 
@@ -70,6 +73,9 @@ public class EntityController : MonoBehaviour
 
         // 磁気例外チェック用キャッシュ（親階層探索を毎フレーム避ける）
         m_ownerMagnetPole = GetComponent<IMagnetPoleProvider>();
+
+        // 接地判定参照
+        m_entity = GetComponent<Entity>();
     }
 
     /// <summary>
@@ -338,7 +344,17 @@ public class EntityController : MonoBehaviour
                 m_overlaps[i], m_overlaps[i].transform.position, m_overlaps[i].transform.rotation,
                 out var direction, out var dist))
             {
-                position += direction * dist;
+                Vector3 displacement = direction * dist;
+
+                // 接地中の他Entity(EntityBody Pushbox)との衝突は水平のみで解決。
+                // ボス上半身(腕/胸)のPushboxが下向き押し成分を生み、プレイヤーが地中に沈む現象の根本対策。
+                if (m_entity != null && m_entity.IsGrounded
+                    && m_overlaps[i].gameObject.layer == PhysicsLayers.EntityBody)
+                {
+                    displacement.y = 0f;
+                }
+
+                position += displacement;
             }
         }
 
