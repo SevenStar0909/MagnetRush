@@ -39,10 +39,8 @@ public class EnemyBossBase : Entity
             m_stamina.SetRecovery(m_statusData.staminaRecovery, m_statusData.staminaRecoveryCooldown);
         }
 
-        var magnetizable = GetComponent<Magnetizable>();
-        if (magnetizable != null)
-            magnetizable.mass = float.PositiveInfinity;
-
+        // 質量は Magnetizable.m_initialMass=Infinity をプレハブで直接指定。
+        // 旧 override は Awake 順序競合で1に上書きされるバグの温床だったので撤去。
         GameObject playerObj = GameObject.FindWithTag(GameTags.Player);
         if (playerObj != null)
             m_player = playerObj.transform;
