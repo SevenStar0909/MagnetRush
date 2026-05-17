@@ -44,6 +44,10 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     private bool m_resetStunEndTrigger;
     private bool m_resetStaggerEndTrigger;
 
+    // Rush 中に Animator が一度でも IsInRush=true になったか。
+    // 入り transition と exit transition を区別し、exit 時の player 追尾回転を抑制する。
+    private bool m_rushHasStarted;
+
     public BossState State => m_state;
 
     void Awake()
@@ -196,6 +200,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         {
             m_rushTargetPosition = m_player.position;
             m_boss.lateralVelocity = Vector3.zero;
+            m_rushHasStarted = false; // 入り transition フェーズへ。Animator が IsInRush=true に入った時点で true 化
         }
 
         if (next == BossState.Idle)
@@ -306,9 +311,13 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         if (!m_animator.IsInRush)
         {
             m_boss.lateralVelocity = Vector3.zero;
-            FacePlayer(dt, m_settings.faceDeadZoneDeg);
+            // 入り transition フェーズだけ player 追尾。
+            // exit transition フェーズ（rush 後）は回転固定 → rush 方向のまま Idle へ抜ける。
+            if (!m_rushHasStarted)
+                FacePlayer(dt, m_settings.faceDeadZoneDeg);
             return;
         }
+        m_rushHasStarted = true;
         MoveTowardPlayerLastLocation(dt, 1f);
     }
 
