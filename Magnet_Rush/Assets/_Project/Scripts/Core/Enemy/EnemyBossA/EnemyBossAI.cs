@@ -20,6 +20,17 @@ public class EnemyBossAI : MonoBehaviour
     [Tooltip("被弾判定。未設定ならルートの子から取得")]
     [SerializeField] private Hitbox m_hitbox;
 
+    [Header("Missile")]
+    [Tooltip("生成するミサイルPrefab")]
+    [SerializeField] private EnemyMissile m_missilePrefab;
+
+    [Tooltip("ミサイル生成位置。未設定ならこのオブジェクト位置を使用")]
+    [SerializeField] private Transform[] m_missileSpawnPoints;
+
+    [Tooltip("各生成位置のローカルオフセット。m_missileSpawnPoints と同じ順番で指定")]
+    [SerializeField] private Vector3[] m_missileSpawnOffsets;
+
+
     [Header("Debug")]
     [SerializeField] private bool m_logStateChange = true;
 
@@ -392,6 +403,53 @@ public class EnemyBossAI : MonoBehaviour
     {
         if (m_state == BossState.Missile)
             ChangeState(BossState.Idle);
+    }
+
+    /// <summary>Missile 発射イベント専用。</summary>
+    public void OnMissileFireEvent()
+    {
+        if (m_missilePrefab == null)
+        {
+            ChannelLogger.LogGuardReturn("EnemyBossA", "EnemyBossAI.m_missilePrefab が未アサインです");
+            return;
+        }
+
+        if (m_missileSpawnPoints == null || m_missileSpawnPoints.Length == 0)
+        {
+            SpawnMissileAt(this.transform);
+            return;
+        }
+
+        for (int i = 0; i < m_missileSpawnPoints.Length; i++)
+        {
+            Transform spawnPoint = m_missileSpawnPoints[i];
+            if (spawnPoint == null) continue;
+
+            Vector3 offset = Vector3.zero;
+            if (m_missileSpawnOffsets != null && i < m_missileSpawnOffsets.Length)
+                offset = m_missileSpawnOffsets[i];
+
+            SpawnMissileAt(spawnPoint, offset);
+        }
+    }
+
+    private void SpawnMissileAt(Transform spawnPoint, Vector3 localOffset)
+    {
+        Vector3 spawnPos = spawnPoint.position + spawnPoint.TransformDirection(localOffset);
+
+        Vector3 direction = transform.forward;
+        if (direction.sqrMagnitude <= 0.0001f)
+            direction = spawnPoint.forward;
+
+        direction = direction.normalized;
+        Quaternion rotation = Quaternion.LookRotation(direction, Vector3.up);
+
+        EnemyMissile missile = Instantiate(m_missilePrefab, spawnPos, rotation);
+        missile.Initialize(m_player, direction);
+    }
+    private void SpawnMissileAt(Transform spawnPoint)
+    {
+        SpawnMissileAt(spawnPoint, Vector3.zero);
     }
 
     // === ヘルパ ===

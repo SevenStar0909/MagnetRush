@@ -133,6 +133,8 @@ MonoBehaviour:
   m_pole: 0
   m_isActive: 0
   m_initialMass: 1
+  m_centerOffset: {x: 0, y: 0, z: 0}
+  m_useEdgeDetectionOutline: 1
 --- !u!114 &5509490972982333118
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -145,7 +147,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7b8ce691af6aeca409cf98a1c21c1e21, type: 3}
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Enemy::EnemyMissile
-  m_maxSpeed: 3
+  m_maxSpeed: 6
   m_acceleration: 3
   m_turnRate: 10
   m_seekDelay: 0.2
@@ -154,7 +156,7 @@ MonoBehaviour:
   m_targetRefreshInterval: 0.1
   m_player: {fileID: 0}
   m_damage: 1
-  m_lifetime: 6
+  m_lifetime: 20
 --- !u!1001 &8863032643483510738
 PrefabInstance:
   m_ObjectHideFlags: 0

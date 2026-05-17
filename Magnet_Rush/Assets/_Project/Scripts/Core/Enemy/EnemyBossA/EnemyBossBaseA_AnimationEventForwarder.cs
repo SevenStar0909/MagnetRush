@@ -96,6 +96,11 @@ public class EnemyBossBaseA_AnimationEventForwarder : MonoBehaviour
         if (m_target != null) m_target.OnMissileFinishedEvent();
     }
 
+    public void OnMissileFireEvent()
+    {
+        if (m_target != null) m_target.OnMissileFireEvent();
+    }
+
     /// <summary>
     /// AnimationEvent からの転送。腕上げピーク・地面激突等の特定フレームで Animator を seconds 秒フリーズ。
     /// </summary>
