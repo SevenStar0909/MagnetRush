@@ -76,6 +76,16 @@ public class EnemyBossBaseA_AnimationEventForwarder : MonoBehaviour
         if (m_target != null) m_target.DisableArmHitboxEvent();
     }
 
+    public void EnableWindEffectEvent()
+    {
+        if (m_target != null) m_target.EnableWindEffectEvent();
+    }
+
+    public void DisableWindEffectEvent()
+    {
+        if (m_target != null) m_target.DisableWindEffectEvent();
+    }
+
     public void OnAttackFinishedEvent()
     {
         if (m_target != null) m_target.OnAttackFinishedEvent();

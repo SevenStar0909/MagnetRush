@@ -21,10 +21,10 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
     /// </summary>
     [Tooltip("ボス基底。ミサイルのターゲット取得に使用")]
     [SerializeField] private EnemyBossBase m_boss;
-    // EnemyBossAiに移行しました
-    //[Tooltip("生成するミサイルPrefab")]
-    //[SerializeField] private EnemyMissile m_missilePrefab;
-    //
+    // RUSH エフェクト on off 
+    //[Tooltip("RUSH エフェクト")]
+    [SerializeField] private ParticleSystem m_rushEffect;
+
     //[Tooltip("ミサイル生成位置。未設定ならこのオブジェクト位置を使用")]
     //[SerializeField] private Transform[] m_missileSpawnPoints;
 
@@ -32,19 +32,19 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
     [SerializeField] private bool m_enableDebugInput = true;
 
     [Header("Animator Parameter Names (Inspector 単一箇所管理)")]
-    [SerializeField] private string m_attackName              = "Attack";               //近接攻撃開始トリガー
-    [SerializeField] private string m_attackFinishedName      = "AttackFinished";       //近接攻撃終了トリガー（idleへの遷移タイミング）
-    [SerializeField] private string m_fireMissileName         = "FireMissile";          //ミサイル発射トリガー
+    [SerializeField] private string m_attackName = "Attack";               //近接攻撃開始トリガー
+    [SerializeField] private string m_attackFinishedName = "AttackFinished";       //近接攻撃終了トリガー（idleへの遷移タイミング）
+    [SerializeField] private string m_fireMissileName = "FireMissile";          //ミサイル発射トリガー
     [SerializeField] private string m_fireMissileFinishedName = "FireMissileFinished";  //ミサイル発射終了トリガー（idleへの遷移タイミング）
-    [SerializeField] private string m_attackRushName          = "AttackRush";           //ラッシュ攻撃トリガー
-    [SerializeField] private string m_attackRushFinishedName  = "AttackRushFinished";   //ラッシュ攻撃終了トリガー（idleへの遷移タイミング）
-    [SerializeField] private string m_canInterruptName        = "CanInterrupt";         //中断可能フラグ
-    [SerializeField] private string m_canNotInterruptName     = "CanNotInterrupt";   //中断不可フラグ
-    [SerializeField] private string m_beInterruptedName       = "BeInterrupted";        //被弾中断トリガー
+    [SerializeField] private string m_attackRushName = "AttackRush";           //ラッシュ攻撃トリガー
+    [SerializeField] private string m_attackRushFinishedName = "AttackRushFinished";   //ラッシュ攻撃終了トリガー（idleへの遷移タイミング）
+    [SerializeField] private string m_canInterruptName = "CanInterrupt";         //中断可能フラグ
+    [SerializeField] private string m_canNotInterruptName = "CanNotInterrupt";   //中断不可フラグ
+    [SerializeField] private string m_beInterruptedName = "BeInterrupted";        //被弾中断トリガー
 
-    [SerializeField] private string m_isStunnedName  = "IsStunned";            //スタン中フラグ
-    [SerializeField] private string m_stunEndName    = "StunEnd";              //スタン終了トリガー（idleへの遷移タイミング）
-    [SerializeField] private string m_isStaggerName  = "IsStagger";            //スタガー中フラグ
+    [SerializeField] private string m_isStunnedName = "IsStunned";            //スタン中フラグ
+    [SerializeField] private string m_stunEndName = "StunEnd";              //スタン終了トリガー（idleへの遷移タイミング）
+    [SerializeField] private string m_isStaggerName = "IsStagger";            //スタガー中フラグ
     [SerializeField] private string m_staggerEndName = "StaggerEnd";              //スタガー終了トリガー（idleへの遷移タイミング）
 
     private int m_hAttack;
@@ -76,21 +76,21 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
         if (m_boss == null)
             m_boss = transform.root.GetComponentInChildren<EnemyBossBase>();
 
-        m_hAttack              = Animator.StringToHash(m_attackName);
-        m_hAttackFinished      = Animator.StringToHash(m_attackFinishedName);
-        m_hFireMissile         = Animator.StringToHash(m_fireMissileName);
-        m_hFireMissileFinished = Animator.StringToHash(m_fireMissileFinishedName); 
-        m_hAttackRush          = Animator.StringToHash(m_attackRushName);
-        m_hAttackRushFinished  = Animator.StringToHash(m_attackRushFinishedName); 
+        m_hAttack = Animator.StringToHash(m_attackName);
+        m_hAttackFinished = Animator.StringToHash(m_attackFinishedName);
+        m_hFireMissile = Animator.StringToHash(m_fireMissileName);
+        m_hFireMissileFinished = Animator.StringToHash(m_fireMissileFinishedName);
+        m_hAttackRush = Animator.StringToHash(m_attackRushName);
+        m_hAttackRushFinished = Animator.StringToHash(m_attackRushFinishedName);
 
-        m_hBeInterrupted   = Animator.StringToHash(m_beInterruptedName);
-        m_hCanInterrupt    = Animator.StringToHash(m_canInterruptName);
+        m_hBeInterrupted = Animator.StringToHash(m_beInterruptedName);
+        m_hCanInterrupt = Animator.StringToHash(m_canInterruptName);
         m_hCanNotInterrupt = Animator.StringToHash(m_canNotInterruptName);
 
-        m_hStunEnd    = Animator.StringToHash(m_stunEndName);
-        m_hIsStunned  = Animator.StringToHash(m_isStunnedName);
+        m_hStunEnd = Animator.StringToHash(m_stunEndName);
+        m_hIsStunned = Animator.StringToHash(m_isStunnedName);
         m_hStaggerEnd = Animator.StringToHash(m_staggerEndName);
-        m_hIsStagger  = Animator.StringToHash(m_isStaggerName);
+        m_hIsStagger = Animator.StringToHash(m_isStaggerName);
 
         if (m_animator == null)
         {
@@ -185,14 +185,14 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
         if (m_animator != null) m_animator.SetBool(m_hIsStagger, value);
     }
 
-    public void SetCanInterruptTrue()     => SetCanInterrupt(true);
-    public void SetCanInterruptFalse()    => SetCanInterrupt(false);
-    public void SetCanNotInterruptTrue()  => SetCanNotInterrupt(true);
+    public void SetCanInterruptTrue() => SetCanInterrupt(true);
+    public void SetCanInterruptFalse() => SetCanInterrupt(false);
+    public void SetCanNotInterruptTrue() => SetCanNotInterrupt(true);
     public void SetCanNotInterruptFalse() => SetCanNotInterrupt(false);
-    public void SetIsStunnedTrue()        => SetIsStunned(true);
-    public void SetIsStunnedFalse()       => SetIsStunned(false);
-    public void SetIsStaggerTrue()        => SetIsStagger(true);
-    public void SetIsStaggerFalse()       => SetIsStagger(false);
+    public void SetIsStunnedTrue() => SetIsStunned(true);
+    public void SetIsStunnedFalse() => SetIsStunned(false);
+    public void SetIsStaggerTrue() => SetIsStagger(true);
+    public void SetIsStaggerFalse() => SetIsStagger(false);
 
     public bool CanInterrupt
     {
@@ -281,14 +281,14 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
     }
 
     // ステート名をハッシュ化してキャッシュ。Animator内のステートと完全一致させる必要がある。
-    private static readonly int s_hAttackStanceState      = Animator.StringToHash("AttackStanceAnim");
-    private static readonly int s_hAttackMotionState      = Animator.StringToHash("AttackMotionAnim");
-    private static readonly int s_hAttackStunState        = Animator.StringToHash("StunAnim");
-    private static readonly int s_hAttackStunkeepState    = Animator.StringToHash("StunkeepAnim");
-    private static readonly int s_hAttackStaggerState     = Animator.StringToHash("StaggerAnim");
+    private static readonly int s_hAttackStanceState = Animator.StringToHash("AttackStanceAnim");
+    private static readonly int s_hAttackMotionState = Animator.StringToHash("AttackMotionAnim");
+    private static readonly int s_hAttackStunState = Animator.StringToHash("StunAnim");
+    private static readonly int s_hAttackStunkeepState = Animator.StringToHash("StunkeepAnim");
+    private static readonly int s_hAttackStaggerState = Animator.StringToHash("StaggerAnim");
     private static readonly int s_hAttackStaggerkeepState = Animator.StringToHash("StaggerkeepAnim");
-    private static readonly int s_hRushState              = Animator.StringToHash("RushAnim");
-    private static readonly int s_hMissileState           = Animator.StringToHash("MissileAnim");
+    private static readonly int s_hRushState = Animator.StringToHash("RushAnim");
+    private static readonly int s_hMissileState = Animator.StringToHash("MissileAnim");
 
     // AnimationEvent で呼び出す関数群。攻撃の当たり判定の有効化/無効化や、AIへの通知を行う。
     public void EnableArmHitboxEvent()
@@ -299,6 +299,23 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
     public void DisableArmHitboxEvent()
     {
         if (m_armHitbox != null) m_armHitbox.DisableHitbox();
+    }
+
+    public void EnableWindEffectEvent()
+    {
+        if (m_rushEffect != null)
+        {
+            m_rushEffect.Play();
+        }
+    }
+
+    public void DisableWindEffectEvent()
+    {
+        if (m_rushEffect != null)
+        {
+            m_rushEffect.Stop(true,ParticleSystemStopBehavior.StopEmittingAndClear );
+        }
+
     }
 
     public void OnAttackFinishedEvent()
