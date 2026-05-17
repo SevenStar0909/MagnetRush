@@ -1,0 +1,11 @@
+diff --git a/Magnet_Rush/Assets/_Project/Scripts/Settings/Player/PlayerSettings.cs b/Magnet_Rush/Assets/_Project/Scripts/Settings/Player/PlayerSettings.cs
+index 2146713..0000000 100644
+--- a/Magnet_Rush/Assets/_Project/Scripts/Settings/Player/PlayerSettings.cs
++++ b/Magnet_Rush/Assets/_Project/Scripts/Settings/Player/PlayerSettings.cs
+@@ -1,5 +1,6 @@
+ using UnityEngine;
+ [CreateAssetMenu(fileName = "PlayerSettings", menuName = "MagnetRush/PlayerSettings")]
++[ClassLabelSO("プレイヤー設定")]
+ public class PlayerSettings : ScriptableObject
+ {
+     [Header("[移動]")]
