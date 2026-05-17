@@ -22,8 +22,10 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
     [Tooltip("ボス基底。ミサイルのターゲット取得に使用")]
     [SerializeField] private EnemyBossBase m_boss;
     // RUSH エフェクト on off 
-    //[Tooltip("RUSH エフェクト")]
+    [Tooltip("RUSH エフェクト")]
     [SerializeField] private ParticleSystem m_rushEffect;
+    [Tooltip("Dust エフェクト")]
+    [SerializeField] private ParticleSystem m_dustEffect;
 
     //[Tooltip("ミサイル生成位置。未設定ならこのオブジェクト位置を使用")]
     //[SerializeField] private Transform[] m_missileSpawnPoints;
@@ -314,6 +316,22 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
         if (m_rushEffect != null)
         {
             m_rushEffect.Stop(true,ParticleSystemStopBehavior.StopEmittingAndClear );
+        }
+
+    }
+    public void EnableDustEffectEvent()
+    {
+        if (m_dustEffect != null)
+        {
+            m_dustEffect.Play();
+        }
+    }
+
+    public void DisableDustEffectEvent()
+    {
+        if (m_dustEffect != null)
+        {
+            m_dustEffect.Stop(true,ParticleSystemStopBehavior.StopEmittingAndClear );
         }
 
     }

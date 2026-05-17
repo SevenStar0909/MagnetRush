@@ -86,6 +86,16 @@ public class EnemyBossBaseA_AnimationEventForwarder : MonoBehaviour
         if (m_target != null) m_target.DisableWindEffectEvent();
     }
 
+    public void EnableDustEffectEvent()
+    {
+        if (m_target != null) m_target.EnableDustEffectEvent();
+    }
+
+    public void DisableDustEffectEvent()
+    {
+        if (m_target != null) m_target.DisableDustEffectEvent();
+    }
+
     public void OnAttackFinishedEvent()
     {
         if (m_target != null) m_target.OnAttackFinishedEvent();
