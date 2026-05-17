@@ -1,6 +1,7 @@
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "BulletSettings", menuName = "MagnetRush/BulletSettings")]
+[ClassLabelSO("弾設定")]
 public class BulletSettings : ScriptableObject
 {
     [Header("[弾]")]

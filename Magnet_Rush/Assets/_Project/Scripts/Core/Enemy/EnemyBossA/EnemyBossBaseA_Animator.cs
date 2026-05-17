@@ -1,8 +1,11 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class EnemyBossBaseA_Animator : MonoBehaviour
 {
+    private Coroutine m_freezeRoutine;
+
     [Header("References")]
     [Tooltip("駆動対象の Animator（未設定なら子オブジェクトから取得）")]
     [SerializeField] private Animator m_animator;
@@ -215,6 +218,15 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
         }
     }
 
+    public bool IsInAttackStance
+    {
+        get
+        {
+            if (m_animator == null) return false;
+            return m_animator.GetCurrentAnimatorStateInfo(0).shortNameHash == s_hAttackStanceState;
+        }
+    }
+
     public bool IsInRush
     {
         get
@@ -302,6 +314,28 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
     {
         TriggerMissileFinished(); // ★追加
         if (m_ai != null) m_ai.OnMissileFinished();
+    }
+
+    /// <summary>
+    /// AnimationEvent から呼ぶ。指定秒だけ Animator.speed=0 でフリーズしてから 1 に戻す。
+    /// クリップ内で「腕上げきった瞬間」「地面激突した瞬間」など特定フレームに打って溜め/硬直を作る。
+    /// 多重呼び出し時は前のコルーチンをキャンセルして新しいタイマーで上書きする。
+    /// </summary>
+    public void FreezeAnim(float seconds)
+    {
+        if (m_animator == null) { ChannelLogger.LogGuardReturn("EnemyBossA", "Animator未設定"); return; }
+        if (seconds <= 0f) { ChannelLogger.LogGuardReturn("EnemyBossA", $"FreezeAnim 秒数が0以下: {seconds}"); return; }
+
+        if (m_freezeRoutine != null) StopCoroutine(m_freezeRoutine);
+        m_freezeRoutine = StartCoroutine(FreezeRoutine(seconds));
+    }
+
+    private IEnumerator FreezeRoutine(float seconds)
+    {
+        m_animator.speed = 0f;
+        yield return new WaitForSeconds(seconds);
+        m_animator.speed = 1f;
+        m_freezeRoutine = null;
     }
 
     private void ValidateAnimatorParameters()
