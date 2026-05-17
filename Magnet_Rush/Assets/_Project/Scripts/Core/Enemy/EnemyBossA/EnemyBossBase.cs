@@ -65,13 +65,21 @@ public class EnemyBossBase : Entity
 
     public void AccelerateToward(Vector3 worldDirection, float dt)
     {
+        AccelerateToward(worldDirection, dt, 1f);
+    }
+
+    /// <summary>
+    /// topSpeedMul で moveSpeed の上限を倍率調整して加速する（rush 攻撃等で一時的に高速化する用途）。
+    /// </summary>
+    public void AccelerateToward(Vector3 worldDirection, float dt, float topSpeedMul)
+    {
         if (worldDirection.sqrMagnitude > 0.01f)
         {
             Vector3 localDir = Quaternion.FromToRotation(transform.up, Vector3.up) * worldDirection;
             localDir = localDir.normalized;
 
             Accelerate(localDir, m_statusData.turningDrag,
-                       m_statusData.acceleration, m_statusData.moveSpeed, dt);
+                       m_statusData.acceleration, m_statusData.moveSpeed * topSpeedMul, dt);
             FaceDirection(worldDirection, m_statusData.rotationSpeed, dt);
         }
     }

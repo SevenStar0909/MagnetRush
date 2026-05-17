@@ -17,6 +17,16 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     [Header("References")]
     [SerializeField] private EnemyBossBaseA_Animator m_animator;
 
+    [Header("Missile")]
+    [Tooltip("生成するミサイルPrefab")]
+    [SerializeField] private EnemyMissile m_missilePrefab;
+
+    [Tooltip("ミサイル生成位置。未設定ならこのオブジェクト位置を使用")]
+    [SerializeField] private Transform[] m_missileSpawnPoints;
+
+    [Tooltip("各生成位置のローカルオフセット。m_missileSpawnPoints と同じ順番で指定")]
+    [SerializeField] private Vector3[] m_missileSpawnOffsets;
+
     [Header("Debug")]
     [SerializeField] private bool m_logStateChange = true;
 
@@ -134,8 +144,11 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     private void TickStunEntry()
     {
         bool inStunAnim = m_animator.IsStunned;
+        // 既に Stunned/Stagger 中は再入場禁止。Animator のトランジション遅延中に IsStunned が true のまま残ると、
+        // ChangeState(Idle) 後の次フレームで再検出されてループする
+        bool alreadyInBreak = m_state == BossState.Stunned || m_state == BossState.Stagger;
 
-        if (inStunAnim && !m_wasInStunAnim)
+        if (!alreadyInBreak && inStunAnim && !m_wasInStunAnim)
         {
             m_staminaBreakTimer = Mathf.Max(0f, m_settings.staminaBreakDuration);
             m_staminaBreakEndRequested = false;
@@ -148,8 +161,10 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     private void TickStaggerEntry()
     {
         bool inStaggerAnim = m_animator.IsInStagger;
+        // Stun と同じ理由でループ防止
+        bool alreadyInBreak = m_state == BossState.Stagger || m_state == BossState.Stunned;
 
-        if (inStaggerAnim && !m_wasInStaggerAnim && !m_animator.IsStunned)
+        if (!alreadyInBreak && inStaggerAnim && !m_wasInStaggerAnim && !m_animator.IsStunned)
         {
             m_staminaBreakTimer = Mathf.Max(0f, m_settings.staminaBreakDuration);
             m_staminaBreakEndRequested = false;
@@ -225,16 +240,8 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
 
     private void TickIdle(float dt)
     {
-        if (m_animator.IsStunned)
-        {
-            ChangeState(BossState.Stunned);
-            return;
-        }
-        if (m_animator.IsInStagger)
-        {
-            ChangeState(BossState.Stagger);
-            return;
-        }
+        // Stunned/Stagger の入場検知は TickStunEntry/TickStaggerEntry が一元担当する。
+        // ここで再検出すると Animator のトランジション遅延中に二重発火してループする
 
         m_boss.SlowDown(dt);
         FacePlayer(dt, m_settings.faceDeadZoneDeg);
@@ -318,7 +325,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
             return;
         }
         m_rushHasStarted = true;
-        MoveTowardPlayerLastLocation(dt, 1f);
+        MoveTowardPlayerLastLocation(dt, m_settings.rushSpeedMultiplier);
     }
 
     private void TickMissile(float dt)
@@ -368,6 +375,54 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     {
         if (m_state == BossState.Missile)
             ChangeState(BossState.Idle);
+    }
+
+    /// <summary>Missile 発射イベント専用。AnimationEvent から呼ばれ、各 SpawnPoint からミサイルを生成する。</summary>
+    public void OnMissileFireEvent()
+    {
+        if (m_missilePrefab == null)
+        {
+            ChannelLogger.LogGuardReturn("EnemyBossA", "EnemyBossAI.m_missilePrefab が未アサインです");
+            return;
+        }
+
+        if (m_missileSpawnPoints == null || m_missileSpawnPoints.Length == 0)
+        {
+            SpawnMissileAt(this.transform);
+            return;
+        }
+
+        for (int i = 0; i < m_missileSpawnPoints.Length; i++)
+        {
+            Transform spawnPoint = m_missileSpawnPoints[i];
+            if (spawnPoint == null) continue;
+
+            Vector3 offset = Vector3.zero;
+            if (m_missileSpawnOffsets != null && i < m_missileSpawnOffsets.Length)
+                offset = m_missileSpawnOffsets[i];
+
+            SpawnMissileAt(spawnPoint, offset);
+        }
+    }
+
+    private void SpawnMissileAt(Transform spawnPoint, Vector3 localOffset)
+    {
+        Vector3 spawnPos = spawnPoint.position + spawnPoint.TransformDirection(localOffset);
+
+        Vector3 direction = transform.forward;
+        if (direction.sqrMagnitude <= 0.0001f)
+            direction = spawnPoint.forward;
+
+        direction = direction.normalized;
+        Quaternion rotation = Quaternion.LookRotation(direction, Vector3.up);
+
+        EnemyMissile missile = Instantiate(m_missilePrefab, spawnPos, rotation);
+        missile.Initialize(m_player, direction);
+    }
+
+    private void SpawnMissileAt(Transform spawnPoint)
+    {
+        SpawnMissileAt(spawnPoint, Vector3.zero);
     }
 
     // === IStabReceiver 実装 (Player → Boss スタブ受信) ===
@@ -432,18 +487,19 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
 
     private void MoveTowardPlayerLastLocation(float dt, float speedMultiplier)
     {
+        // Accelerate 内で direction が normalize されるため、倍率は topSpeed 側に乗せる必要がある
         if (!m_agent.enabled || !m_agent.isOnNavMesh)
         {
             Vector3 dir = GetDirectionToPosition(m_rushTargetPosition);
             if (dir.sqrMagnitude > 0.0001f)
-                m_boss.AccelerateToward(dir * speedMultiplier, dt);
+                m_boss.AccelerateToward(dir, dt, speedMultiplier);
             return;
         }
 
         m_agent.SetDestination(m_rushTargetPosition);
         Vector3 navDir = GetNavMeshDirection(m_rushTargetPosition);
         if (navDir.sqrMagnitude > 0.0001f)
-            m_boss.AccelerateToward(navDir * speedMultiplier, dt);
+            m_boss.AccelerateToward(navDir, dt, speedMultiplier);
     }
 
     private Vector3 GetNavMeshDirection()

@@ -16,6 +16,20 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
     [Tooltip("腕の近接Hitbox。AnimationEvent で Enable/Disable を転送する")]
     [SerializeField] private BossArmHitbox m_armHitbox;
 
+    /// <summary>
+    /// ミサイル生成用
+    /// </summary>
+    [Tooltip("ボス基底。ミサイルのターゲット取得に使用")]
+    [SerializeField] private EnemyBossBase m_boss;
+    // RUSH エフェクト on off 
+    [Tooltip("RUSH エフェクト")]
+    [SerializeField] private ParticleSystem m_rushEffect;
+    [Tooltip("Dust エフェクト")]
+    [SerializeField] private ParticleSystem m_dustEffect;
+
+    //[Tooltip("ミサイル生成位置。未設定ならこのオブジェクト位置を使用")]
+    //[SerializeField] private Transform[] m_missileSpawnPoints;
+
     [Header("Debug")]
     [SerializeField] private bool m_enableDebugInput = true;
 
@@ -61,12 +75,15 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
         if (m_armHitbox == null)
             m_armHitbox = transform.root.GetComponentInChildren<BossArmHitbox>(true);
 
+        if (m_boss == null)
+            m_boss = transform.root.GetComponentInChildren<EnemyBossBase>();
+
         m_hAttack = Animator.StringToHash(m_attackName);
         m_hAttackFinished = Animator.StringToHash(m_attackFinishedName);
         m_hFireMissile = Animator.StringToHash(m_fireMissileName);
-        m_hFireMissileFinished = Animator.StringToHash(m_fireMissileFinishedName); // ★追加
+        m_hFireMissileFinished = Animator.StringToHash(m_fireMissileFinishedName);
         m_hAttackRush = Animator.StringToHash(m_attackRushName);
-        m_hAttackRushFinished = Animator.StringToHash(m_attackRushFinishedName);   // ★追加
+        m_hAttackRushFinished = Animator.StringToHash(m_attackRushFinishedName);
 
         m_hBeInterrupted = Animator.StringToHash(m_beInterruptedName);
         m_hCanInterrupt = Animator.StringToHash(m_canInterruptName);
@@ -286,6 +303,39 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
         if (m_armHitbox != null) m_armHitbox.DisableHitbox();
     }
 
+    public void EnableWindEffectEvent()
+    {
+        if (m_rushEffect != null)
+        {
+            m_rushEffect.Play();
+        }
+    }
+
+    public void DisableWindEffectEvent()
+    {
+        if (m_rushEffect != null)
+        {
+            m_rushEffect.Stop(true,ParticleSystemStopBehavior.StopEmittingAndClear );
+        }
+
+    }
+    public void EnableDustEffectEvent()
+    {
+        if (m_dustEffect != null)
+        {
+            m_dustEffect.Play();
+        }
+    }
+
+    public void DisableDustEffectEvent()
+    {
+        if (m_dustEffect != null)
+        {
+            m_dustEffect.Stop(true,ParticleSystemStopBehavior.StopEmittingAndClear );
+        }
+
+    }
+
     public void OnAttackFinishedEvent()
     {
         TriggerAttackFinished(); // ★追加：Animator側の遷移条件を満たす
@@ -314,6 +364,12 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
     {
         TriggerMissileFinished(); // ★追加
         if (m_ai != null) m_ai.OnMissileFinished();
+    }
+
+    // ミサイル生成イベント。AnimationEvent で呼び出す。ミサイルPrefabからインスタンスを生成し、プレイヤーの方向に向けて発射する。
+    public void OnMissileFireEvent()
+    {
+        if (m_ai != null) m_ai.OnMissileFireEvent();
     }
 
     /// <summary>
