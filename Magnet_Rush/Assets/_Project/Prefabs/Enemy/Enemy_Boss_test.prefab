@@ -283,7 +283,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f7eb2ea83aeed54c8fa7e632b84756a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Core::Health
-  m_maxHealth: 5
+  m_maxHealth: 20
   m_damageCooldown: 1
 --- !u!114 &6420921092659608959
 MonoBehaviour:
@@ -430,7 +430,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9f3c41d16bdd0614385e9dfda20f2372, type: 3}
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Core::Magnetizable
-  m_pole: 2
+  m_pole: 0
   m_isActive: 1
   m_initialMass: 9999
   m_centerOffset: {x: 0, y: 0, z: 0}
@@ -3929,6 +3929,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 6652155985440203101}
     m_Modifications:
+    - target: {fileID: 4353200194662405500, guid: e066a806db08a85418d1bcf240a657b4, type: 3}
+      propertyPath: ShapeModule.type
+      value: 14
+      objectReference: {fileID: 0}
+    - target: {fileID: 4353200194662405500, guid: e066a806db08a85418d1bcf240a657b4, type: 3}
+      propertyPath: ShapeModule.radiusThickness
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4353200194662405500, guid: e066a806db08a85418d1bcf240a657b4, type: 3}
+      propertyPath: ShapeModule.m_SkinnedMeshRenderer
+      value: 
+      objectReference: {fileID: 6458468636953418578}
     - target: {fileID: 5084856853744830301, guid: e066a806db08a85418d1bcf240a657b4, type: 3}
       propertyPath: m_Name
       value: P_FX_Electrication
@@ -3976,13 +3988,55 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 5084856853744830301, guid: e066a806db08a85418d1bcf240a657b4, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 305504606409984048}
+    - targetCorrespondingSourceObject: {fileID: 8949475762533121605, guid: e066a806db08a85418d1bcf240a657b4, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7232145041843227214}
   m_SourcePrefab: {fileID: 100100000, guid: e066a806db08a85418d1bcf240a657b4, type: 3}
+--- !u!1 &23474008313206879 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5084856853744830301, guid: e066a806db08a85418d1bcf240a657b4, type: 3}
+  m_PrefabInstance: {fileID: 5098759921363410690}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &305504606409984048
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 23474008313206879}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37814d2ea4068694198bf935bfb686a2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Enemy::ParticleStunStaggerGate
+  m_animator: {fileID: 0}
 --- !u!4 &1894459774321939561 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6667603450234440555, guid: e066a806db08a85418d1bcf240a657b4, type: 3}
   m_PrefabInstance: {fileID: 5098759921363410690}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &4247039483014046023 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8949475762533121605, guid: e066a806db08a85418d1bcf240a657b4, type: 3}
+  m_PrefabInstance: {fileID: 5098759921363410690}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &7232145041843227214
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4247039483014046023}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37814d2ea4068694198bf935bfb686a2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Enemy::ParticleStunStaggerGate
+  m_animator: {fileID: 0}
 --- !u!1001 &6292298318741014402
 PrefabInstance:
   m_ObjectHideFlags: 0

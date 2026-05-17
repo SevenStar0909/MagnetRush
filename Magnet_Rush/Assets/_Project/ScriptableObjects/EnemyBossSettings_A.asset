@@ -12,11 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 20f418b8a91078a4c8502133f347c9d4, type: 3}
   m_Name: EnemyBossSettings_A
   m_EditorClassIdentifier: MagnetRush.Data::EnemyBossSettings
-  maxHp: 3
+  maxHp: 20
+  healthBarSegments: 3
   maxStamina: 100
   staminaRecovery: 1
   staminaRecoveryCooldown: 15
-  staminaBreakDuration: 5
+  staminaBreakDuration: 30
   armStunStaminaDamage: 5
   moveSpeed: 3.5
   acceleration: 8
@@ -34,6 +35,7 @@ MonoBehaviour:
   attackDamage: 1
   attackRange: 13
   rushAttackRange: 13
+  rushSpeedMultiplier: 2
   missileAttackRange: 30
   attackInterval: 5
   rotationSpeed: 10

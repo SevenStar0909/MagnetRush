@@ -55,8 +55,8 @@ public class MagnetField : MonoBehaviour, IMagnetField
         SetupTriggerCollider();
         m_initialized = true;
 
-        // sibling の Magnetizable にフィールド参照を登録
-        var mag = GetComponent<Magnetizable>();
+        // 親階層の Magnetizable にフィールド参照を登録（本体子コライダーのように Magnetizable が祖先にある場合も対応）
+        var mag = GetComponentInParent<Magnetizable>();
         if (mag != null) mag.SetField(this);
     }
 

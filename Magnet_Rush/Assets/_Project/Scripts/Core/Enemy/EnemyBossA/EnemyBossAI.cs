@@ -43,6 +43,8 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     private Vector3 m_lastDirection;
 
     private Vector3 m_rushTargetPosition;
+    // Rush 突入時に確定する固定方向。direction を毎フレーム再計算するとターゲット通過時に 180°反転して回転が暴れるため
+    private Vector3 m_rushDirection;
 
     [Header("Rush or missile")]
     [SerializeField] private bool m_nextLongRangeAttackIsRush = true; // rushとmissileを交互に行うためのフラグ
@@ -273,9 +275,9 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
             else
                 m_animator.TriggerMissile();
             ChangeState(m_nextLongRangeAttackIsRush ? BossState.Rush : BossState.Missile);
+            // 遠距離攻撃が実際に発動したときだけ Rush ↔ Missile を反転させる
+            m_nextLongRangeAttackIsRush = !m_nextLongRangeAttackIsRush;
         }
-
-        m_nextLongRangeAttackIsRush = !m_nextLongRangeAttackIsRush;
     }
 
     // 使わない20260511
@@ -321,11 +323,27 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
             // 入り transition フェーズだけ player 追尾。
             // exit transition フェーズ（rush 後）は回転固定 → rush 方向のまま Idle へ抜ける。
             if (!m_rushHasStarted)
+            {
                 FacePlayer(dt, m_settings.faceDeadZoneDeg);
+                // 入り transition 中は live のプレイヤー位置でターゲットを更新する
+                m_rushTargetPosition = m_player.position;
+            }
             return;
         }
-        m_rushHasStarted = true;
-        MoveTowardPlayerLastLocation(dt, m_settings.rushSpeedMultiplier);
+
+        if (!m_rushHasStarted)
+        {
+            // Rush 突入の瞬間に方向を確定（以降このまま直進、毎フレーム再計算しない）
+            Vector3 toTarget = m_rushTargetPosition - transform.position;
+            toTarget.y = 0f;
+            m_rushDirection = toTarget.sqrMagnitude > 0.0001f
+                ? toTarget.normalized
+                : transform.forward;
+            m_rushHasStarted = true;
+        }
+
+        // 固定方向に直進。NavMesh path や targetPosition との距離は参照しない（オーバーシュート時の180°反転を防ぐ）
+        m_boss.AccelerateToward(m_rushDirection, dt, m_settings.rushSpeedMultiplier);
     }
 
     private void TickMissile(float dt)
@@ -431,7 +449,8 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     public bool CanReceiveStab => m_state == BossState.Stunned;
 
     /// <summary>
-    /// プレイヤーのスタブAnimEventから呼ばれる。クールダウン無視でHPを削る。
+    /// プレイヤーのスタブAnimEventから呼ばれる。HPバー1本分を一気に削る（クールダウン無視）。
+    /// data.damage は無視し、EnemyBossSettings.healthBarSegments と MaxHealth からバー境界HPを算出する。
     /// 死亡判定は Health 側で発火する OnDie に任せる。
     /// </summary>
     public void OnStabHit(StabHitData data)
@@ -442,8 +461,24 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         if (m_health == null)
         { ChannelLogger.LogGuardReturn("EnemyBossA", "Health 未取得"); return; }
 
-        m_health.DamageIgnoreCooldown(data.damage);
-        ChannelLogger.Log("EnemyBossA", $"[Stab] dmg={data.damage} src={(data.source != null ? data.source.name : "null")} hp={m_health.CurrentHealth}");
+        if (m_settings == null)
+        { ChannelLogger.LogGuardReturn("EnemyBossA", "EnemyBossSettings 未取得"); return; }
+
+        int segments = Mathf.Max(1, m_settings.healthBarSegments);
+        int maxHp = m_health.MaxHealth;
+        int curHp = m_health.CurrentHealth;
+
+        // 現在残っているバー本数 → 1本減らした残数まで HP を一気に落とす
+        int currentBarsRemaining = Mathf.CeilToInt((float)curHp * segments / maxHp);
+        int targetBarsRemaining = Mathf.Max(0, currentBarsRemaining - 1);
+        int targetHp = Mathf.FloorToInt((float)targetBarsRemaining * maxHp / segments);
+        int damage = Mathf.Max(0, curHp - targetHp);
+
+        if (damage <= 0)
+        { ChannelLogger.LogGuardReturn("EnemyBossA", "Stab 算出ダメージ0"); return; }
+
+        m_health.DamageIgnoreCooldown(damage);
+        ChannelLogger.Log("EnemyBossA", $"[Stab] bar {currentBarsRemaining}→{targetBarsRemaining} dmg={damage} src={(data.source != null ? data.source.name : "null")} hp={m_health.CurrentHealth}/{maxHp}");
     }
 
     // === ヘルパ ===
@@ -485,23 +520,6 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
             m_boss.AccelerateToward(navDir * speedMultiplier, dt);
     }
 
-    private void MoveTowardPlayerLastLocation(float dt, float speedMultiplier)
-    {
-        // Accelerate 内で direction が normalize されるため、倍率は topSpeed 側に乗せる必要がある
-        if (!m_agent.enabled || !m_agent.isOnNavMesh)
-        {
-            Vector3 dir = GetDirectionToPosition(m_rushTargetPosition);
-            if (dir.sqrMagnitude > 0.0001f)
-                m_boss.AccelerateToward(dir, dt, speedMultiplier);
-            return;
-        }
-
-        m_agent.SetDestination(m_rushTargetPosition);
-        Vector3 navDir = GetNavMeshDirection(m_rushTargetPosition);
-        if (navDir.sqrMagnitude > 0.0001f)
-            m_boss.AccelerateToward(navDir, dt, speedMultiplier);
-    }
-
     private Vector3 GetNavMeshDirection()
     {
         if (!m_agent.hasPath && !m_agent.pathPending)
@@ -522,36 +540,9 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         return m_lastDirection;
     }
 
-    private Vector3 GetNavMeshDirection(Vector3 targetPosition)
-    {
-        if (!m_agent.hasPath && !m_agent.pathPending)
-            return GetDirectionToPosition(targetPosition);
-
-        if (m_agent.pathPending)
-            return m_lastDirection;
-
-        Vector3 dir = targetPosition - transform.position;
-        dir.y = 0f;
-
-        if (dir.sqrMagnitude > 0.0001f)
-        {
-            m_lastDirection = dir.normalized;
-            return m_lastDirection;
-        }
-
-        return m_lastDirection;
-    }
-
     private Vector3 GetDirectionToPlayer()
     {
         Vector3 dir = m_player.position - transform.position;
-        dir.y = 0f;
-        return dir.sqrMagnitude > 0.0001f ? dir.normalized : Vector3.zero;
-    }
-
-    private Vector3 GetDirectionToPosition(Vector3 targetPosition)
-    {
-        Vector3 dir = targetPosition - transform.position;
         dir.y = 0f;
         return dir.sqrMagnitude > 0.0001f ? dir.normalized : Vector3.zero;
     }

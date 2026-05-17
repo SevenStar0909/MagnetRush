@@ -53,35 +53,32 @@ public sealed class ArmStunHitbox : MonoBehaviour, IHittable
             return;
         }
 
+        // HPダメージは全状態で適用
         m_health.Damage(hit.damage);
 
-        // Stamina/Staggerは中断可状態 (CanInterrupt) でしか効かない、AttackMotion等は完全無視
-        if (m_animator == null || m_animator.CanNotInterrupt)
-        {
-            OnHitEvent?.Invoke(hit);
-            return;
-        }
+        // 既にStamina切れの間は追加効果なし（HPダメージのみ）
         if (m_stamina != null && m_stamina.IsBroken)
         {
             OnHitEvent?.Invoke(hit);
             return;
         }
 
-        bool inAttackStance = m_animator.IsInAttackStance;
-        if (inAttackStance && m_stamina != null && m_settings != null)
+        // AttackStance / AttackMotion 中のみ: スタミナ消費 + Stagger 発火
+        // 中立・Rush・Missile・Stunned・Stagger 中は HPダメージのみ
+        if (m_animator != null && (m_animator.IsInAttackStance || m_animator.IsInAttackMotion))
         {
-            int dmg = m_settings.armStunStaminaDamage;
-            if (dmg > 0)
+            if (m_stamina != null && m_settings != null)
             {
-                m_stamina.Consume(dmg);
-                ChannelLogger.Log("EnemyBossA",
-                    $"[ArmStunHitbox] AttackStance hit src={(hit.source != null ? hit.source.name : "null")} " +
-                    $"staminaDmg={dmg} remain={m_stamina.CurrentStamina}/{m_stamina.MaxStamina}");
+                int dmg = m_settings.armStunStaminaDamage;
+                if (dmg > 0)
+                {
+                    m_stamina.Consume(dmg);
+                    ChannelLogger.Log("EnemyBossA",
+                        $"[ArmStunHitbox] AttackState hit src={(hit.source != null ? hit.source.name : "null")} " +
+                        $"staminaDmg={dmg} remain={m_stamina.CurrentStamina}/{m_stamina.MaxStamina}");
+                }
             }
-        }
-        else if (m_animator.CanInterrupt)
-        {
-            // 中立中断可ステートでの手被弾はStaggerを発火
+
             m_animator.SetIsStaggerTrue();
             m_animator.TriggerBeInterrupted();
         }

@@ -7,8 +7,12 @@ public class EnemyBossSettings : ScriptableObject
     [Header("[ステータス]")]
     [Label("最大HP")]
     [Tooltip("最大HP")]
-    // TODO: Health.cs の m_maxHealth を廃止し、本フィールドを参照するよう配線
     public int maxHp = 10;
+
+    [Label("HPバー本数")]
+    [Tooltip("HP表示のバー分割数。スタブ攻撃は1バー分のHPを一気に削る")]
+    [Min(1)]
+    public int healthBarSegments = 3;
 
     [Label("最大体幹ゲージ")]
     [Tooltip("最大体幹ゲージ")]

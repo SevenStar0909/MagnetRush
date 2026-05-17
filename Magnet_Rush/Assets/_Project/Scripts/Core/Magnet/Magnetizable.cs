@@ -22,8 +22,16 @@ public class Magnetizable : MonoBehaviour, IMagnetPoleProvider
     public MagneticPole Pole => m_pole;
     public bool IsActive => m_isActive;
 
-    /// <summary>磁力中心のワールド座標。装着GOからm_centerOffset分ローカル空間でずらした位置。</summary>
-    public Vector3 Position => transform.position + transform.rotation * m_centerOffset;
+    /// <summary>磁力中心のワールド座標。MagnetField がアタッチされている時はそのフィールドGO位置（着弾点）、無い時は装着GOからm_centerOffset分ローカル空間でずらした位置。</summary>
+    public Vector3 Position
+    {
+        get
+        {
+            if (m_cachedField != null)
+                return m_cachedField.transform.position;
+            return transform.position + transform.rotation * m_centerOffset;
+        }
+    }
 
     /// <summary>磁力中心のローカルオフセット。</summary>
     public Vector3 CenterOffset => m_centerOffset;
@@ -167,6 +175,7 @@ public class Magnetizable : MonoBehaviour, IMagnetPoleProvider
     {
         m_pole = MagneticPole.None;
         m_isActive = false;
+        m_cachedField = null; // フィールド参照を明示クリア（Position が確実にフォールバック経路に戻る）
 
         // 磁化解除時にbrokenペアをクリア（次回磁化で再スナップ可能にする）
         if (MagnetManager.Instance != null)
