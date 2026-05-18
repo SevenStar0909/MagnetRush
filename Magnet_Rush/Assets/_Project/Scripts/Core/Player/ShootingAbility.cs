@@ -12,6 +12,7 @@ public class ShootingAbility : Ability
 {
     [Header("Shooting")]
     [SerializeField] private BulletSettings m_bulletSettings;
+    //[SerializeField] private MagneticConnectionSettings m_connectionSettings;
     [SerializeField] private Transform m_firePoint;
 
     private Camera m_mainCamera;
@@ -37,13 +38,18 @@ public class ShootingAbility : Ability
     /// <summary>RT 入力があれば通常射撃。毎フレーム呼ぶ。</summary>
     public void Fire()
     {
-        if (!m_input.IsFirePressed) return;
+        if (!m_input.FireReleasedThisFrame) return;
+
+        //if (!m_input.IsFirePressed) return;
         if (m_bulletSettings == null || m_bulletSettings.bulletPrefab == null)
         { ChannelLogger.LogGuardReturn("Player", "BulletSettings未設定"); return; }
         if (BulletManager.Instance == null || !BulletManager.Instance.CanShoot())
         { ChannelLogger.LogGuardReturn("Player", "BulletManager未初期化 or 射撃不可"); return; }
         if (m_mainCamera == null)
         { ChannelLogger.LogGuardReturn("Player", "MainCameraなし"); return; }
+
+        float chargeThreshold = 0.5f;
+        bool isConnectionType = m_input.FireHoldDuration > chargeThreshold;
 
         m_input.ConsumeFire();
 
@@ -72,7 +78,7 @@ public class ShootingAbility : Ability
         var bullet = bulletObj.GetComponent<MagnetBullet>();
         if (bullet != null)
         {
-            bullet.Initialize(m_pole.CurrentPole, direction);
+            bullet.Initialize(m_pole.CurrentPole, direction, isConnectionType, m_magnetizable);
             BulletManager.Instance.Register(bullet);
             // 着弾時にエイム解除、自己 unsubscribe で累積・ダングリング参照を防ぐ
             void HandleImpact()

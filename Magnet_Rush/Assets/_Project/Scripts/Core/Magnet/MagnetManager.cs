@@ -551,4 +551,39 @@ public class MagnetManager : Singleton<MagnetManager>
 
     public MagnetSettings Settings => m_settings;
 
+    [SerializeField] private MagneticConnectionSettings m_connectionSettings;
+    [SerializeField] private GameObject m_connectionPrefab;                  // 生成するPrefab（必要に応じて）
+
+    private MagneticConnection m_activeConnection; // ゲーム内に同時に1本しか存在できない「線」のデータ
+    public MagneticConnection ActiveConnection => m_activeConnection;
+    /// <summary>
+    /// 弾が着弾したときなどに呼ばれる、新しい線を張るための窓口
+    /// </summary>
+    public void RequestConnection(Magnetizable target)
+    {
+        // 1. 同時1本制限：すでに古い線があるなら、先に消してリセットする
+        if (m_activeConnection != null)
+        {
+            m_activeConnection.Release();
+            m_activeConnection = null;
+        }
+
+        // 2. 新しい線を生成して初期化する（朝、生成場所のルールを確認して実装を完成させます）
+        // GameObject go = Instantiate(m_connectionPrefab);
+        // m_activeConnection = go.GetComponent<MagneticConnection>();
+        // m_activeConnection.Initialize(playerMagnetizable, target, m_connectionSettings);
+    }
+
+    /// <summary>
+    /// リロードされた時や、プレイヤー死亡時に、外から線を強制カットするための窓口
+    /// </summary>
+    public void ForceReleaseConnection()
+    {
+        if (m_activeConnection != null)
+        {
+            m_activeConnection.Release();
+            m_activeConnection = null;
+        }
+    }
+
 }

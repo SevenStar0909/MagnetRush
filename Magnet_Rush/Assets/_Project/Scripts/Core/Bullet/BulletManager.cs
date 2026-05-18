@@ -79,6 +79,12 @@ public class BulletManager : Singleton<BulletManager>
     /// </summary>
     public void ClearAll()
     {
+        // ★追記：リwロードされたら、張られている接続型の線も強制的にカットする
+        if (MagnetManager.Instance != null)
+        {
+            MagnetManager.Instance.ForceReleaseConnection();
+        }
+
         var fields = FindObjectsByType<MagnetField>(FindObjectsSortMode.None);
         foreach (var field in fields)
         {

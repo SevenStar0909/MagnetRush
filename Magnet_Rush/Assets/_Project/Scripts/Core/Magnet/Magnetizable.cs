@@ -12,7 +12,9 @@ public class Magnetizable : MonoBehaviour, IMagnetPoleProvider
     [SerializeField] private MagneticPole m_pole = MagneticPole.None;
     [SerializeField] private bool m_isActive;
     [SerializeField] private float m_initialMass = 1f;
+    [SerializeField] private MagneticVirtualMass m_virtualMass = MagneticVirtualMass.Medium;
 
+    public MagneticVirtualMass VirtualMass => m_virtualMass;
     public MagneticPole Pole => m_pole;
     public bool IsActive => m_isActive;
 
@@ -196,6 +198,19 @@ public class Magnetizable : MonoBehaviour, IMagnetPoleProvider
             m_magneticResponse.OnMagnetContact(this, other);
 
         OnMagnetContact?.Invoke(other);
+    }
+
+    private void OnValidate()
+    {
+        // 壁（Immovable）なのに、物理挙動（Rigidbody）が動く設定のままになっていたら警告を出す
+        if (m_virtualMass == MagneticVirtualMass.Immovable)
+        {
+            var rb = GetComponent<Rigidbody>();
+            if (rb != null && !rb.isKinematic)
+            {
+                Debug.LogWarning($"{gameObject.name}: 壁（Immovable）に設定されていますが、RigidbodyのisKinematicがオフのため動いてしまう可能性があります！");
+            }
+        }
     }
 
     /// <summary>

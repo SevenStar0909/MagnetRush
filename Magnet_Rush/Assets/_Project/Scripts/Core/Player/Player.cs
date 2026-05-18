@@ -13,6 +13,7 @@ using UnityEngine;
 [RequireComponent(typeof(ShootingAbility))]
 [RequireComponent(typeof(JumpAbility))]
 [RequireComponent(typeof(StabAbility))]
+[RequireComponent(typeof(ConnectionAbility))]
 public class Player : Entity
 {
     [SerializeField] private PlayerSettings m_settings;
@@ -68,6 +69,8 @@ public class Player : Entity
     /// <summary>スタブ攻撃 Ability。Stab() / OnStabHitEvent() メソッド本体は feature/stab で実装する。</summary>
     public StabAbility stab { get; private set; }
 
+    public ConnectionAbility connection { get; private set; }
+
     protected override void Awake()
     {
         base.Awake();
@@ -80,6 +83,7 @@ public class Player : Entity
         pole = GetComponent<PoleAbility>();
         jump = GetComponent<JumpAbility>();
         stab = GetComponent<StabAbility>();
+        connection = GetComponent<ConnectionAbility>();
 
         if (m_settings.groundLayer == 0)
             Debug.LogWarning("[Player] PlayerSettings.groundLayerが未設定。PhysicsLayers.MaskGroundCheckを使用。");

@@ -20,12 +20,15 @@ public class MagnetBullet : MonoBehaviour, IBulletProximity
     private float m_timer;
     private bool m_registered;
 
+    private bool m_isConnectionType; // 接続型モードかどうかのフラグ 
+    private Magnetizable m_playerSide; // プレイヤー側の磁化コンポーネント
+
     void Awake()
     {
         m_rb = GetComponent<Rigidbody>();
     }
 
-    public void Initialize(MagneticPole pole, Vector3 direction)
+    public void Initialize(MagneticPole pole, Vector3 direction, bool isConnectionType = false, Magnetizable playerSide = null)
     {
         Pole = pole;
         m_rb.isKinematic = false;
@@ -54,6 +57,9 @@ public class MagnetBullet : MonoBehaviour, IBulletProximity
         // MagnetManager弾近接検出に登録
         if (MagnetManager.Instance != null)
             MagnetManager.Instance.RegisterBullet(this);
+
+        m_isConnectionType = isConnectionType;
+        m_playerSide = playerSide;
     }
 
     private void InitializeEffects(MagneticPole pole)
@@ -115,6 +121,22 @@ public class MagnetBullet : MonoBehaviour, IBulletProximity
 
         if (targetMag != null)
         {
+            if (m_isConnectionType)
+            {
+                // マネージャーの窓口を叩いて、プレイヤーと当たった敵を線で繋ぐ
+
+                Debug.Log("接続型の弾が当たった");
+                if (MagnetManager.Instance != null && m_playerSide != null)
+                {
+                    MagnetManager.Instance.RequestConnection(targetMag);
+                }
+                // エリア型ドームは生成せず、役目を終えたので弾を即消滅させて終わる
+                Destroy(gameObject);
+                return;
+            }
+            // MagnetManagerの窓口を呼び出す（存在すれば）
+            MagnetManager.Instance?.RequestConnection(targetMag);
+
             MagnetizeTarget(other, targetMag);
         }
         else

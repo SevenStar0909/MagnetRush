@@ -142,4 +142,27 @@ public class PlayerInputHandler : MonoBehaviour
 
     void OnEnable() => m_actions?.Enable();
     void OnDisable() => m_actions?.Disable();
+
+   
+    /// <summary>
+    /// 攻撃ボタン（RT）が今「長押しされている最中」かどうかを取得
+    /// ReadValueでトリガーの押し込み量を読み取り、半分以上（0.5f）押されていればtrue
+    /// </summary>
+    public bool IsFireHeld => m_attack != null && m_attack.ReadValue<float>() > 0.5f;
+
+    /// <summary>
+    /// 攻撃ボタン（RT）が「現在押され始めてから経過した時間（秒）」を取得
+    /// 外のShootingAbilityなどでチャージ時間の計算（settings.ChargeTime超え判定）に使います
+    /// </summary>
+    public float FireHoldDuration
+    {
+        get
+        {
+            if (m_firePressTime.HasValue && IsFireHeld)
+            {
+                return Time.time - m_firePressTime.Value;
+            }
+            return 0f;
+        }
+    }
 }

@@ -24,6 +24,7 @@ GameObject:
   - component: {fileID: 4121543987773168685}
   - component: {fileID: 1562637922551065350}
   - component: {fileID: 7352363120186605023}
+  - component: {fileID: -71374679223325043}
   m_Layer: 8
   m_Name: _Player
   m_TagString: Player
@@ -152,6 +153,7 @@ MonoBehaviour:
   m_pole: 0
   m_isActive: 0
   m_initialMass: 1
+  m_virtualMass: 3
 --- !u!54 &4320032113719753399
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -247,6 +249,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Player::ShootingController
   m_bulletSettings: {fileID: 11400000, guid: 425ee2473071b7a4fa2afd4ccb6a162c, type: 2}
+  m_connectionSettings: {fileID: 0}
   m_firePoint: {fileID: 5721768207443567397}
 --- !u!114 &460711517580896566
 MonoBehaviour:
@@ -266,6 +269,7 @@ MonoBehaviour:
   m_states: {fileID: 0}
   m_player: {fileID: 0}
   m_aim: {fileID: 0}
+  m_stab: {fileID: 0}
   m_stateName: State
   m_lastStateName: LastState
   m_onStateChangedName: OnStateChanged
@@ -278,6 +282,8 @@ MonoBehaviour:
   m_reloadName: Reload
   m_verticalSpeedName: VerticalSpeed
   m_stabName: Stab
+  m_aimLayerName: Upper Body
+  m_aimLayerFadeTime: 0.15
 --- !u!114 &4121543987773168685
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -314,6 +320,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac50e8793994532448de734eafa9aa2f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Player::PlayerRespawner
+--- !u!114 &-71374679223325043
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1725508640444081474}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 07131aacd8c45c94f874605ea3c39de6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Player::ConnectionAbility
 --- !u!1 &1986303900024006054
 GameObject:
   m_ObjectHideFlags: 0
@@ -724,7 +742,7 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -1750197354950549132, guid: aa94ade5d4762bc4aac4add1dcc628be, type: 3}
-      propertyPath: m_Materials.Array.data[0]
+      propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 1931110302239519103, guid: d3691ddd34703714080c1233f654a554, type: 3}
     - target: {fileID: 919132149155446097, guid: aa94ade5d4762bc4aac4add1dcc628be, type: 3}
