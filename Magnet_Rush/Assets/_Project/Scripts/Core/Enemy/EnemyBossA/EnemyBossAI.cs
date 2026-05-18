@@ -223,6 +223,25 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         if (next == BossState.Idle)
             ClearStaminaFlags();
 
+        // Rush 中に Stun/Stagger で割り込まれると Rush 側の Disable AnimEvent が発火せず
+        // Wind/Dust が出続けるので、ブレイク入り口で明示停止する
+        if (next == BossState.Stunned || next == BossState.Stagger)
+        {
+            if (m_animator != null)
+            {
+                m_animator.DisableWindEffectEvent();
+                m_animator.DisableDustEffectEvent();
+            }
+        }
+
+        // Stun/Stagger から抜ける時に Dust を止める。
+        // BossStunAnim は EnableDustEffectEvent (t=1.833s) のみで Disable イベントが無いため、ここで停止
+        if ((prev == BossState.Stunned || prev == BossState.Stagger) && next == BossState.Idle)
+        {
+            if (m_animator != null)
+                m_animator.DisableDustEffectEvent();
+        }
+
         if (prev == BossState.AttackMotion || prev == BossState.Rush || prev == BossState.Missile)
             m_cooldownTimer = m_settings.attackInterval;
     }
@@ -360,7 +379,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     private void TickStagger(float dt)
     {
         m_boss.SlowDown(dt);
-        FacePlayer(dt, m_settings.faceDeadZoneDeg);
+        // Stagger 中はプレイヤーに向き直らない（Stunned と同じ挙動）
     }
 
     // === 公開コールバック (Animator → AI) ===

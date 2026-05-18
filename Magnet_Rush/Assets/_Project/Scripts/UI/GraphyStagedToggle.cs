@@ -18,11 +18,28 @@ public class GraphyStagedToggle : MonoBehaviour
 
     void Awake()
     {
+        // Release ビルドでは GraphyManager 自体を破棄して FPS/メモリ UI を完全無効化する
+        if (!Debug.isDebugBuild && !Application.isEditor)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
         m_graphy = GetComponent<GraphyManager>();
     }
 
     void Start()
     {
+        // 起動時は FPS/メモリ表示を全部隠す（Debug/Release ビルド共通）。F2 でステージ 0(FULL) に戻せる
+        if (m_graphy != null)
+        {
+            m_graphy.FpsModuleState = GraphyManager.ModuleState.OFF;
+            m_graphy.RamModuleState = GraphyManager.ModuleState.OFF;
+            m_graphy.AudioModuleState = GraphyManager.ModuleState.OFF;
+            m_graphy.AdvancedModuleState = GraphyManager.ModuleState.OFF;
+            m_stage = 2; // 次の F2 押下で stage 0 (FULL) に進む
+        }
+
         var ram = transform.Find("SafeArea/RAM - Module");
         if (ram == null) { ChannelLogger.LogGuardReturn("UI", "RAM - Moduleが見つからない"); return; }
 

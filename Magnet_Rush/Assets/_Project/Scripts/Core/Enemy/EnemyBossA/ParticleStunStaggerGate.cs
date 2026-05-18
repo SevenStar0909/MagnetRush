@@ -11,6 +11,9 @@ public class ParticleStunStaggerGate : MonoBehaviour
     [Tooltip("監視対象の Animator。未設定なら階層から自動取得")]
     [SerializeField] private EnemyBossBaseA_Animator m_animator;
 
+    [Tooltip("Stagger 中も再生対象に含める。false なら Stun 中のみ再生（例: Dust エフェクト）")]
+    [SerializeField] private bool m_includeStagger = true;
+
     private ParticleSystem m_ps;
     private bool m_wasActive;
 
@@ -35,7 +38,7 @@ public class ParticleStunStaggerGate : MonoBehaviour
     {
         if (m_animator == null || m_ps == null) return;
 
-        bool active = m_animator.IsStunned || m_animator.IsInStagger;
+        bool active = m_animator.IsStunned || (m_includeStagger && m_animator.IsInStagger);
         if (active == m_wasActive) return;
 
         if (active)

@@ -243,16 +243,20 @@ public class MagnetManager : Singleton<MagnetManager>
         // 距離解除されたペアは力もスナップも完全スキップ（ワープ防止）
         if (m_snapResolver != null && m_snapResolver.IsBroken(a, b)) { ChannelLogger.LogGuardReturn("Magnet", "brokenペアのためスキップ"); return; }
 
-        // フィールド個別範囲で有効距離を決定（大きい方を採用）
-        float effectiveOuter = Mathf.Max(a.FieldOuterRadius, b.FieldOuterRadius);
-        float effectiveInner = Mathf.Max(a.FieldInnerRadius, b.FieldInnerRadius);
+        // 球vs球判定/減衰: 中心点距離 vs (相手のinner球と自分のouter球が重なる距離)
+        //   フルパワー境界 = 両inner球が表面接触 = A.inner + B.inner
+        //   ゼロ境界       = 相手inner球が自分outer球の表面に触れる = max(A.outer+B.inner, B.outer+A.inner)
+        float effectiveOuter = Mathf.Max(
+            a.FieldOuterRadius + b.FieldInnerRadius,
+            b.FieldOuterRadius + a.FieldInnerRadius);
+        float effectiveInner = a.FieldInnerRadius + b.FieldInnerRadius;
 
         // フィールドがない場合はグローバル値にフォールバック
         if (effectiveOuter <= 0f) effectiveOuter = m_settings.magnetRange;
         if (effectiveInner <= 0f) effectiveInner = effectiveOuter * 0.8f;
 
         // フィールド範囲外なら力を適用しない
-        if (distance > effectiveOuter) { ChannelLogger.LogGuardReturn("Magnet", "有効フィールド範囲外"); return; }
+        if (distance > effectiveOuter) { ChannelLogger.LogGuardReturn("Magnet", "有効フィールド範囲外（球vs球）"); return; }
 
         Vector3 dirAtoB = delta / distance;
 

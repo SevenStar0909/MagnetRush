@@ -21,7 +21,7 @@ MonoBehaviour:
   armStunStaminaDamage: 5
   moveSpeed: 3.5
   acceleration: 8
-  chaseRange: 20
+  chaseRange: 40
   stopDistance: 1.5
   turningDrag: 15
   deceleration: 20
@@ -30,15 +30,15 @@ MonoBehaviour:
   groundCheckDistance: 0.3
   groundLayer:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 65
   externalDrag: 3
-  attackDamage: 1
-  attackRange: 13
-  rushAttackRange: 13
+  attackDamage: 5
+  attackRange: 20
+  rushAttackRange: 22
   rushSpeedMultiplier: 2
-  missileAttackRange: 30
+  missileAttackRange: 24
   attackInterval: 5
-  rotationSpeed: 10
+  rotationSpeed: 7
   attackHitboxDuration: 0.2
   faceDeadZoneDeg: 0
   attackMotionFaceDeadZoneDeg: 180
