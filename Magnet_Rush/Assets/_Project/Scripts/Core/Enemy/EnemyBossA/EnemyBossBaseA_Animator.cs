@@ -147,10 +147,11 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
     }
 
     // staggerにいく
+    // 仕様: AttackStance/AttackMotion 中は常に中断可能（手を叩けば Stagger 発火）。
+    // CanInterrupt フラグは廃止（commit phase なし）。CanNotInterrupt は強制中断不可の保険として残す。
     public void TriggerBeInterrupted()
     {
         if (m_animator == null) return;
-        if (m_animator.GetBool(m_hCanInterrupt)) return;
         if (m_animator.GetBool(m_hCanNotInterrupt)) return;
 
         m_animator.SetTrigger(m_hBeInterrupted);

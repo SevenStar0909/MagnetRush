@@ -30,15 +30,9 @@ public class GraphyStagedToggle : MonoBehaviour
 
     void Start()
     {
-        // 起動時は FPS/メモリ表示を全部隠す（Debug/Release ビルド共通）。F2 でステージ 0(FULL) に戻せる
-        if (m_graphy != null)
-        {
-            m_graphy.FpsModuleState = GraphyManager.ModuleState.OFF;
-            m_graphy.RamModuleState = GraphyManager.ModuleState.OFF;
-            m_graphy.AudioModuleState = GraphyManager.ModuleState.OFF;
-            m_graphy.AdvancedModuleState = GraphyManager.ModuleState.OFF;
-            m_stage = 2; // 次の F2 押下で stage 0 (FULL) に進む
-        }
+        // GraphyManager の内部モジュール初期化が Start 完了後に終わるため、
+        // ModuleState setter を直接呼ぶと NRE になる。1フレ遅延してから設定する
+        StartCoroutine(HideAllModulesNextFrame());
 
         var ram = transform.Find("SafeArea/RAM - Module");
         if (ram == null) { ChannelLogger.LogGuardReturn("UI", "RAM - Moduleが見つからない"); return; }
@@ -103,5 +97,16 @@ public class GraphyStagedToggle : MonoBehaviour
             m_graphy.AudioModuleState = GraphyManager.ModuleState.OFF;
             m_graphy.AdvancedModuleState = GraphyManager.ModuleState.OFF;
         }
+    }
+
+    private System.Collections.IEnumerator HideAllModulesNextFrame()
+    {
+        yield return null; // GraphyManager の Awake/Start で内部モジュール生成を待つ
+        if (m_graphy == null) yield break;
+        m_graphy.FpsModuleState = GraphyManager.ModuleState.OFF;
+        m_graphy.RamModuleState = GraphyManager.ModuleState.OFF;
+        m_graphy.AudioModuleState = GraphyManager.ModuleState.OFF;
+        m_graphy.AdvancedModuleState = GraphyManager.ModuleState.OFF;
+        m_stage = 2; // 次の F2 押下で stage 0 (FULL) に進む
     }
 }

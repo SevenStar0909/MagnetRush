@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5903504713387245004}
-  m_Layer: 16
+  m_Layer: 11
   m_Name: Model
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -43,7 +43,7 @@ GameObject:
   - component: {fileID: 3966190663546379589}
   - component: {fileID: 152940038229066694}
   - component: {fileID: 7536605082661327622}
-  m_Layer: 16
+  m_Layer: 11
   m_Name: burner_EF
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4879,7 +4879,7 @@ GameObject:
   - component: {fileID: 6741724048110203993}
   - component: {fileID: 1209920708603653833}
   - component: {fileID: 8957231744810056444}
-  m_Layer: 16
+  m_Layer: 11
   m_Name: Missile_Trail_EF
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -9726,7 +9726,7 @@ GameObject:
   - component: {fileID: 4128426385969949894}
   - component: {fileID: 4577923171924511738}
   - component: {fileID: 5509490972982333118}
-  m_Layer: 16
+  m_Layer: 11
   m_Name: Missle_Boss
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -9773,7 +9773,7 @@ Rigidbody:
     m_Bits: 0
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
-  m_UseGravity: 1
+  m_UseGravity: 0
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
@@ -9793,7 +9793,7 @@ CapsuleCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
@@ -9838,7 +9838,7 @@ MonoBehaviour:
   m_targetOffset: {x: 0, y: 0, z: 0}
   m_targetRefreshInterval: 0.1
   m_player: {fileID: 0}
-  m_damage: 1
+  m_damage: 3
   m_lifetime: 20
 --- !u!1001 &8863032643483510738
 PrefabInstance:
@@ -9894,7 +9894,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 4e614e8f5042f344597f663690db7227, type: 3}
       propertyPath: m_Layer
-      value: 16
+      value: 11
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

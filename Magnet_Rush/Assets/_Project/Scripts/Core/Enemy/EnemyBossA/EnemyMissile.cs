@@ -35,19 +35,7 @@ public class EnemyMissile : MonoBehaviour
     private void Awake()
     {
         m_rb = GetComponent<Rigidbody>();
-        m_rb.useGravity = false;
         m_selfMagnetizable = GetComponent<Magnetizable>();
-
-        // カプセルコライダーをトリガーに設定し、サイズを調整    
-        var capsule = GetComponent<CapsuleCollider>();
-        if (capsule != null)
-        {
-            capsule.isTrigger = true;
-            capsule.center = Vector3.zero;
-            capsule.radius = 1f;
-            capsule.height = 6f;
-            capsule.direction = 2;
-        }
 
         if (m_player == null)
         {
@@ -210,18 +198,21 @@ public class EnemyMissile : MonoBehaviour
         return 10f;
     }
 
+    // 何にあたっても消える。Layer Matrix で「当たる相手」を一元管理する設計
+    // （Wall/Ground/PhysicsObject/Player は ON、Enemy/EnemyBullet 等は OFF）
     private void OnTriggerEnter(Collider other)
     {
         var hittable = other.GetComponentInParent<IHittable>();
-        if (hittable == null) return;
-
-        hittable.OnHit(new HitData
+        if (hittable != null)
         {
-            damage = m_damage,
-            hitPoint = other.ClosestPoint(transform.position),
-            knockbackDir = m_rb != null ? m_rb.linearVelocity.normalized : transform.forward,
-            source = gameObject
-        });
+            hittable.OnHit(new HitData
+            {
+                damage = m_damage,
+                hitPoint = other.ClosestPoint(transform.position),
+                knockbackDir = m_rb != null ? m_rb.linearVelocity.normalized : transform.forward,
+                source = gameObject
+            });
+        }
 
         Destroy(gameObject);
     }
