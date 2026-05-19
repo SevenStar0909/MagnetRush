@@ -17,8 +17,15 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     [Header("References")]
     [SerializeField] private EnemyBossBaseA_Animator m_animator;
 
-    [Tooltip("被弾判定。未設定ならルートの子から取得")]
-    [SerializeField] private Hitbox m_hitbox;
+    [Header("Missile")]
+    [Tooltip("生成するミサイルPrefab")]
+    [SerializeField] private EnemyMissile m_missilePrefab;
+
+    [Tooltip("ミサイル生成位置。未設定ならこのオブジェクト位置を使用")]
+    [SerializeField] private Transform[] m_missileSpawnPoints;
+
+    [Tooltip("各生成位置のローカルオフセット。m_missileSpawnPoints と同じ順番で指定")]
+    [SerializeField] private Vector3[] m_missileSpawnOffsets;
 
     [Header("Debug")]
     [SerializeField] private bool m_logStateChange = true;
@@ -36,6 +43,8 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     private Vector3 m_lastDirection;
 
     private Vector3 m_rushTargetPosition;
+    // Rush 突入時に確定する固定方向。direction を毎フレーム再計算するとターゲット通過時に 180°反転して回転が暴れるため
+    private Vector3 m_rushDirection;
 
     [Header("Rush or missile")]
     [SerializeField] private bool m_nextLongRangeAttackIsRush = true; // rushとmissileを交互に行うためのフラグ
@@ -46,6 +55,10 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
 
     private bool m_resetStunEndTrigger;
     private bool m_resetStaggerEndTrigger;
+
+    // Rush 中に Animator が一度でも IsInRush=true になったか。
+    // 入り transition と exit transition を区別し、exit 時の player 追尾回転を抑制する。
+    private bool m_rushHasStarted;
 
     public BossState State => m_state;
 
@@ -59,9 +72,6 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         if (m_animator == null)
             m_animator = GetComponentInChildren<EnemyBossBaseA_Animator>();
 
-        if (m_hitbox == null)
-            m_hitbox = transform.root.GetComponentInChildren<Hitbox>();
-
         if (m_agent != null)
         {
             m_agent.updatePosition = false;
@@ -71,18 +81,12 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
 
     void OnEnable()
     {
-        if (m_hitbox != null)
-            m_hitbox.OnHitEvent += HandleHit;
-
         if (m_stamina != null)
             m_stamina.OnBreak += HandleStaminaBreak;
     }
 
     void OnDisable()
     {
-        if (m_hitbox != null)
-            m_hitbox.OnHitEvent -= HandleHit;
-
         if (m_stamina != null)
             m_stamina.OnBreak -= HandleStaminaBreak;
     }
@@ -131,29 +135,6 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         }
     }
 
-    private void HandleHit(HitData hit)
-    {
-        if (m_animator == null) return;
-
-        if (m_animator.CanInterrupt)
-        {
-            if (m_state == BossState.Stunned) return;
-            if (m_stamina == null || m_stamina.IsBroken) return;
-
-            m_stamina.Consume(100);
-            return;
-        }
-
-        // 中立状態のみ Stagger を許可
-        if (m_animator.CanNotInterrupt) return;
-
-        if (m_state == BossState.Stunned) return;
-        if (m_stamina != null && m_stamina.IsBroken) return;
-
-        m_animator.SetIsStaggerTrue();
-        m_animator.TriggerBeInterrupted();
-    }
-
     private void HandleStaminaBreak()
     {
         if (m_animator == null) return;
@@ -165,8 +146,11 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     private void TickStunEntry()
     {
         bool inStunAnim = m_animator.IsStunned;
+        // 既に Stunned/Stagger 中は再入場禁止。Animator のトランジション遅延中に IsStunned が true のまま残ると、
+        // ChangeState(Idle) 後の次フレームで再検出されてループする
+        bool alreadyInBreak = m_state == BossState.Stunned || m_state == BossState.Stagger;
 
-        if (inStunAnim && !m_wasInStunAnim)
+        if (!alreadyInBreak && inStunAnim && !m_wasInStunAnim)
         {
             m_staminaBreakTimer = Mathf.Max(0f, m_settings.staminaBreakDuration);
             m_staminaBreakEndRequested = false;
@@ -179,8 +163,10 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     private void TickStaggerEntry()
     {
         bool inStaggerAnim = m_animator.IsInStagger;
+        // Stun と同じ理由でループ防止
+        bool alreadyInBreak = m_state == BossState.Stagger || m_state == BossState.Stunned;
 
-        if (inStaggerAnim && !m_wasInStaggerAnim && !m_animator.IsStunned)
+        if (!alreadyInBreak && inStaggerAnim && !m_wasInStaggerAnim && !m_animator.IsStunned)
         {
             m_staminaBreakTimer = Mathf.Max(0f, m_settings.staminaBreakDuration);
             m_staminaBreakEndRequested = false;
@@ -231,10 +217,30 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         {
             m_rushTargetPosition = m_player.position;
             m_boss.lateralVelocity = Vector3.zero;
+            m_rushHasStarted = false; // 入り transition フェーズへ。Animator が IsInRush=true に入った時点で true 化
         }
 
         if (next == BossState.Idle)
             ClearStaminaFlags();
+
+        // Rush 中に Stun/Stagger で割り込まれると Rush 側の Disable AnimEvent が発火せず
+        // Wind/Dust が出続けるので、ブレイク入り口で明示停止する
+        if (next == BossState.Stunned || next == BossState.Stagger)
+        {
+            if (m_animator != null)
+            {
+                m_animator.DisableWindEffectEvent();
+                m_animator.DisableDustEffectEvent();
+            }
+        }
+
+        // Stun/Stagger から抜ける時に Dust を止める。
+        // BossStunAnim は EnableDustEffectEvent (t=1.833s) のみで Disable イベントが無いため、ここで停止
+        if ((prev == BossState.Stunned || prev == BossState.Stagger) && next == BossState.Idle)
+        {
+            if (m_animator != null)
+                m_animator.DisableDustEffectEvent();
+        }
 
         if (prev == BossState.AttackMotion || prev == BossState.Rush || prev == BossState.Missile)
             m_cooldownTimer = m_settings.attackInterval;
@@ -255,19 +261,11 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
 
     private void TickIdle(float dt)
     {
-        if (m_animator.IsStunned)
-        {
-            ChangeState(BossState.Stunned);
-            return;
-        }
-        if (m_animator.IsInStagger)
-        {
-            ChangeState(BossState.Stagger);
-            return;
-        }
+        // Stunned/Stagger の入場検知は TickStunEntry/TickStaggerEntry が一元担当する。
+        // ここで再検出すると Animator のトランジション遅延中に二重発火してループする
 
         m_boss.SlowDown(dt);
-        FacePlayer(dt);
+        FacePlayer(dt, m_settings.faceDeadZoneDeg);
 
         if (m_cooldownTimer > 0f)
             return;
@@ -296,9 +294,9 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
             else
                 m_animator.TriggerMissile();
             ChangeState(m_nextLongRangeAttackIsRush ? BossState.Rush : BossState.Missile);
+            // 遠距離攻撃が実際に発動したときだけ Rush ↔ Missile を反転させる
+            m_nextLongRangeAttackIsRush = !m_nextLongRangeAttackIsRush;
         }
-
-        m_nextLongRangeAttackIsRush = !m_nextLongRangeAttackIsRush;
     }
 
     // 使わない20260511
@@ -310,7 +308,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
             m_agent.ResetPath();
 
         m_boss.SlowDown(dt);
-        FacePlayer(dt);
+        FacePlayer(dt, m_settings.faceDeadZoneDeg);
 
         float distance = DistanceToPlayer();
         if (distance <= m_settings.attackRange && m_cooldownTimer <= 0f)
@@ -322,7 +320,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
 
     private void TickAttackStance(float dt)
     {
-        FacePlayer(dt);
+        FacePlayer(dt, m_settings.faceDeadZoneDeg);
         m_boss.SlowDown(dt);
 
         if (m_animator.IsStunned) { ChangeState(BossState.Stunned); return; }
@@ -333,7 +331,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     {
         // 普通攻擊移動なし
         m_boss.SlowDown(dt);
-        FacePlayer(dt);
+        FacePlayer(dt, m_settings.attackMotionFaceDeadZoneDeg);
     }
 
     private void TickRush(float dt)
@@ -341,16 +339,36 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         if (!m_animator.IsInRush)
         {
             m_boss.lateralVelocity = Vector3.zero;
-            FacePlayer(dt);
+            // 入り transition フェーズだけ player 追尾。
+            // exit transition フェーズ（rush 後）は回転固定 → rush 方向のまま Idle へ抜ける。
+            if (!m_rushHasStarted)
+            {
+                FacePlayer(dt, m_settings.faceDeadZoneDeg);
+                // 入り transition 中は live のプレイヤー位置でターゲットを更新する
+                m_rushTargetPosition = m_player.position;
+            }
             return;
         }
-        MoveTowardPlayerLastLocation(dt, 1f);
+
+        if (!m_rushHasStarted)
+        {
+            // Rush 突入の瞬間に方向を確定（以降このまま直進、毎フレーム再計算しない）
+            Vector3 toTarget = m_rushTargetPosition - transform.position;
+            toTarget.y = 0f;
+            m_rushDirection = toTarget.sqrMagnitude > 0.0001f
+                ? toTarget.normalized
+                : transform.forward;
+            m_rushHasStarted = true;
+        }
+
+        // 固定方向に直進。NavMesh path や targetPosition との距離は参照しない（オーバーシュート時の180°反転を防ぐ）
+        m_boss.AccelerateToward(m_rushDirection, dt, m_settings.rushSpeedMultiplier);
     }
 
     private void TickMissile(float dt)
     {
         m_boss.SlowDown(dt);
-        FacePlayer(dt);
+        FacePlayer(dt, m_settings.faceDeadZoneDeg);
     }
 
     private void TickStunned(float dt)
@@ -361,7 +379,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     private void TickStagger(float dt)
     {
         m_boss.SlowDown(dt);
-        FacePlayer(dt);
+        // Stagger 中はプレイヤーに向き直らない（Stunned と同じ挙動）
     }
 
     // === 公開コールバック (Animator → AI) ===
@@ -396,13 +414,62 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
             ChangeState(BossState.Idle);
     }
 
+    /// <summary>Missile 発射イベント専用。AnimationEvent から呼ばれ、各 SpawnPoint からミサイルを生成する。</summary>
+    public void OnMissileFireEvent()
+    {
+        if (m_missilePrefab == null)
+        {
+            ChannelLogger.LogGuardReturn("EnemyBossA", "EnemyBossAI.m_missilePrefab が未アサインです");
+            return;
+        }
+
+        if (m_missileSpawnPoints == null || m_missileSpawnPoints.Length == 0)
+        {
+            SpawnMissileAt(this.transform);
+            return;
+        }
+
+        for (int i = 0; i < m_missileSpawnPoints.Length; i++)
+        {
+            Transform spawnPoint = m_missileSpawnPoints[i];
+            if (spawnPoint == null) continue;
+
+            Vector3 offset = Vector3.zero;
+            if (m_missileSpawnOffsets != null && i < m_missileSpawnOffsets.Length)
+                offset = m_missileSpawnOffsets[i];
+
+            SpawnMissileAt(spawnPoint, offset);
+        }
+    }
+
+    private void SpawnMissileAt(Transform spawnPoint, Vector3 localOffset)
+    {
+        Vector3 spawnPos = spawnPoint.position + spawnPoint.TransformDirection(localOffset);
+
+        Vector3 direction = transform.forward;
+        if (direction.sqrMagnitude <= 0.0001f)
+            direction = spawnPoint.forward;
+
+        direction = direction.normalized;
+        Quaternion rotation = Quaternion.LookRotation(direction, Vector3.up);
+
+        EnemyMissile missile = Instantiate(m_missilePrefab, spawnPos, rotation);
+        missile.Initialize(m_player, direction);
+    }
+
+    private void SpawnMissileAt(Transform spawnPoint)
+    {
+        SpawnMissileAt(spawnPoint, Vector3.zero);
+    }
+
     // === IStabReceiver 実装 (Player → Boss スタブ受信) ===
 
     /// <summary>体幹ブレイク (Stunned) 中のみ true。</summary>
     public bool CanReceiveStab => m_state == BossState.Stunned;
 
     /// <summary>
-    /// プレイヤーのスタブAnimEventから呼ばれる。クールダウン無視でHPを削る。
+    /// プレイヤーのスタブAnimEventから呼ばれる。HPバー1本分を一気に削る（クールダウン無視）。
+    /// data.damage は無視し、EnemyBossSettings.healthBarSegments と MaxHealth からバー境界HPを算出する。
     /// 死亡判定は Health 側で発火する OnDie に任せる。
     /// </summary>
     public void OnStabHit(StabHitData data)
@@ -413,8 +480,24 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         if (m_health == null)
         { ChannelLogger.LogGuardReturn("EnemyBossA", "Health 未取得"); return; }
 
-        m_health.DamageIgnoreCooldown(data.damage);
-        ChannelLogger.Log("EnemyBossA", $"[Stab] dmg={data.damage} src={(data.source != null ? data.source.name : "null")} hp={m_health.CurrentHealth}");
+        if (m_settings == null)
+        { ChannelLogger.LogGuardReturn("EnemyBossA", "EnemyBossSettings 未取得"); return; }
+
+        int segments = Mathf.Max(1, m_settings.healthBarSegments);
+        int maxHp = m_health.MaxHealth;
+        int curHp = m_health.CurrentHealth;
+
+        // 現在残っているバー本数 → 1本減らした残数まで HP を一気に落とす
+        int currentBarsRemaining = Mathf.CeilToInt((float)curHp * segments / maxHp);
+        int targetBarsRemaining = Mathf.Max(0, currentBarsRemaining - 1);
+        int targetHp = Mathf.FloorToInt((float)targetBarsRemaining * maxHp / segments);
+        int damage = Mathf.Max(0, curHp - targetHp);
+
+        if (damage <= 0)
+        { ChannelLogger.LogGuardReturn("EnemyBossA", "Stab 算出ダメージ0"); return; }
+
+        m_health.DamageIgnoreCooldown(damage);
+        ChannelLogger.Log("EnemyBossA", $"[Stab] bar {currentBarsRemaining}→{targetBarsRemaining} dmg={damage} src={(data.source != null ? data.source.name : "null")} hp={m_health.CurrentHealth}/{maxHp}");
     }
 
     // === ヘルパ ===
@@ -431,12 +514,12 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         return DistanceToPlayer() <= m_settings.chaseRange;
     }
 
-    private void FacePlayer(float dt)
+    private void FacePlayer(float dt, float deadZoneDeg = 0f)
     {
         Vector3 look = m_player.position - transform.position;
         look.y = 0f;
         if (look.sqrMagnitude > 0.0001f)
-            m_boss.FaceToward(look.normalized, dt);
+            m_boss.FaceToward(look.normalized, dt, deadZoneDeg);
     }
 
     private void MoveTowardPlayer(float dt, float speedMultiplier)
@@ -452,22 +535,6 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
 
         m_agent.SetDestination(m_player.position);
         Vector3 navDir = GetNavMeshDirection();
-        if (navDir.sqrMagnitude > 0.0001f)
-            m_boss.AccelerateToward(navDir * speedMultiplier, dt);
-    }
-
-    private void MoveTowardPlayerLastLocation(float dt, float speedMultiplier)
-    {
-        if (!m_agent.enabled || !m_agent.isOnNavMesh)
-        {
-            Vector3 dir = GetDirectionToPosition(m_rushTargetPosition);
-            if (dir.sqrMagnitude > 0.0001f)
-                m_boss.AccelerateToward(dir * speedMultiplier, dt);
-            return;
-        }
-
-        m_agent.SetDestination(m_rushTargetPosition);
-        Vector3 navDir = GetNavMeshDirection(m_rushTargetPosition);
         if (navDir.sqrMagnitude > 0.0001f)
             m_boss.AccelerateToward(navDir * speedMultiplier, dt);
     }
@@ -492,36 +559,9 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         return m_lastDirection;
     }
 
-    private Vector3 GetNavMeshDirection(Vector3 targetPosition)
-    {
-        if (!m_agent.hasPath && !m_agent.pathPending)
-            return GetDirectionToPosition(targetPosition);
-
-        if (m_agent.pathPending)
-            return m_lastDirection;
-
-        Vector3 dir = targetPosition - transform.position;
-        dir.y = 0f;
-
-        if (dir.sqrMagnitude > 0.0001f)
-        {
-            m_lastDirection = dir.normalized;
-            return m_lastDirection;
-        }
-
-        return m_lastDirection;
-    }
-
     private Vector3 GetDirectionToPlayer()
     {
         Vector3 dir = m_player.position - transform.position;
-        dir.y = 0f;
-        return dir.sqrMagnitude > 0.0001f ? dir.normalized : Vector3.zero;
-    }
-
-    private Vector3 GetDirectionToPosition(Vector3 targetPosition)
-    {
-        Vector3 dir = targetPosition - transform.position;
         dir.y = 0f;
         return dir.sqrMagnitude > 0.0001f ? dir.normalized : Vector3.zero;
     }

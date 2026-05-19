@@ -13,8 +13,28 @@ public class Magnetizable : MonoBehaviour, IMagnetPoleProvider
     [SerializeField] private bool m_isActive;
     [SerializeField] private float m_initialMass = 1f;
 
+    [Tooltip("磁力中心をGOからローカル空間でずらす。Collider.centerと同じ感覚。回転は装着GOに追従。\n距離・力計算・PD保持などMagnetizable同士のやり取りはこの位置で行う。")]
+    [SerializeField] private Vector3 m_centerOffset = Vector3.zero;
+
+    [Tooltip("OutlineRendererFeature の Edge Detection アウトラインを使うか。\nボスのように bone 単位の Hull アウトラインを別経路で描画する場合は false にする。")]
+    [SerializeField] private bool m_useEdgeDetectionOutline = true;
+
     public MagneticPole Pole => m_pole;
     public bool IsActive => m_isActive;
+
+    /// <summary>磁力中心のワールド座標。MagnetField がアタッチされている時はそのフィールドGO位置（着弾点）、無い時は装着GOからm_centerOffset分ローカル空間でずらした位置。</summary>
+    public Vector3 Position
+    {
+        get
+        {
+            if (m_cachedField != null)
+                return m_cachedField.transform.position;
+            return transform.position + transform.rotation * m_centerOffset;
+        }
+    }
+
+    /// <summary>磁力中心のローカルオフセット。</summary>
+    public Vector3 CenterOffset => m_centerOffset;
 
     /// <summary>質量。壁に固定された弾はInfinity。力の分配に使用。</summary>
     public float mass { get; set; } = 1f;
@@ -131,8 +151,9 @@ public class Magnetizable : MonoBehaviour, IMagnetPoleProvider
         if (m_renderers == null || m_renderers.Length == 0)
             m_renderers = GetComponentsInChildren<Renderer>(true);
 
-        // 全Rendererにアウトラインを適用
-        if (m_isActive && m_renderers.Length > 0)
+        // 全Rendererに Edge Detection アウトライン (post-process) を適用。
+        // m_useEdgeDetectionOutline=false の場合はスキップし、別経路 (Inverted Hull 等) で描画する想定。
+        if (m_isActive && m_useEdgeDetectionOutline && m_renderers.Length > 0)
         {
             m_mpb.SetFloat(s_poleIDProperty, newPole == MagneticPole.S ? 1f : 0f);
             for (int i = 0; i < m_renderers.Length; i++)
@@ -142,7 +163,7 @@ public class Magnetizable : MonoBehaviour, IMagnetPoleProvider
                 m_renderers[i].SetPropertyBlock(m_mpb);
             }
         }
-        else if (m_isActive)
+        else if (m_isActive && m_useEdgeDetectionOutline)
         {
             Debug.LogWarning($"[Magnetizable] {gameObject.name} にRendererがありません。アウトライン表示できません。");
         }
@@ -154,6 +175,7 @@ public class Magnetizable : MonoBehaviour, IMagnetPoleProvider
     {
         m_pole = MagneticPole.None;
         m_isActive = false;
+        m_cachedField = null; // フィールド参照を明示クリア（Position が確実にフォールバック経路に戻る）
 
         // 磁化解除時にbrokenペアをクリア（次回磁化で再スナップ可能にする）
         if (MagnetManager.Instance != null)
@@ -228,7 +250,7 @@ public class Magnetizable : MonoBehaviour, IMagnetPoleProvider
             }
 
             // ソース方向の表面最近点に力を適用（トルクが発生し回転する）
-            Vector3 contactPoint = m_collider != null ? m_collider.ClosestPoint(sourcePosition) : transform.position;
+            Vector3 contactPoint = m_collider != null ? m_collider.ClosestPoint(sourcePosition) : Position;
             m_rb.AddForceAtPosition(force * m_rb.mass, contactPoint, ForceMode.Force);
             return;
         }
@@ -273,4 +295,15 @@ public class Magnetizable : MonoBehaviour, IMagnetPoleProvider
     {
         m_totalForceThisFrame = 0f;
     }
+
+#if UNITY_EDITOR
+    void OnDrawGizmosSelected()
+    {
+        if (m_centerOffset == Vector3.zero) return;
+        Vector3 world = transform.position + transform.rotation * m_centerOffset;
+        Gizmos.color = new Color(0.2f, 1f, 0.4f, 0.9f);
+        Gizmos.DrawWireSphere(world, 0.1f);
+        Gizmos.DrawLine(transform.position, world);
+    }
+#endif
 }

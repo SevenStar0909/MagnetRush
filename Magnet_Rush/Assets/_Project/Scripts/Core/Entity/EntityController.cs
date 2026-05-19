@@ -28,6 +28,7 @@ public class EntityController : MonoBehaviour
     private const int k_MaxCollisionSteps = 3;
 
     private Rigidbody m_rigidbody;
+    private Entity m_entity;
     private CapsuleCollider m_movementCapsule;
     private Transform m_hitboxContainer;
     private Collider[] m_overlaps = new Collider[128];
@@ -70,6 +71,9 @@ public class EntityController : MonoBehaviour
 
         // 磁気例外チェック用キャッシュ（親階層探索を毎フレーム避ける）
         m_ownerMagnetPole = GetComponent<IMagnetPoleProvider>();
+
+        // 接地中の他Entity Pushbox衝突時に y方向を抑えるため、自Entityを参照する
+        m_entity = GetComponent<Entity>();
     }
 
     /// <summary>
@@ -338,7 +342,18 @@ public class EntityController : MonoBehaviour
                 m_overlaps[i], m_overlaps[i].transform.position, m_overlaps[i].transform.rotation,
                 out var direction, out var dist))
             {
-                position += direction * dist;
+                Vector3 displacement = direction * dist;
+
+                // 接地中 Entity 同士の Pushbox 衝突は y を抑えて水平のみ解決する。
+                // 両方接地でないと垂直方向も生かす（ジャンプ着地時の押し上げ等を潰さないため）。
+                if (m_entity != null && m_entity.IsGrounded)
+                {
+                    var otherEntity = m_overlaps[i].GetComponentInParent<Entity>();
+                    if (otherEntity != null && otherEntity.IsGrounded)
+                        displacement.y = 0f;
+                }
+
+                position += displacement;
             }
         }
 

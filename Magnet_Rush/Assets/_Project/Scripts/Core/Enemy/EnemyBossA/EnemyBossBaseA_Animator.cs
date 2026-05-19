@@ -1,8 +1,11 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class EnemyBossBaseA_Animator : MonoBehaviour
 {
+    private Coroutine m_freezeRoutine;
+
     [Header("References")]
     [Tooltip("駆動対象の Animator（未設定なら子オブジェクトから取得）")]
     [SerializeField] private Animator m_animator;
@@ -12,6 +15,20 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
 
     [Tooltip("腕の近接Hitbox。AnimationEvent で Enable/Disable を転送する")]
     [SerializeField] private BossArmHitbox m_armHitbox;
+
+    /// <summary>
+    /// ミサイル生成用
+    /// </summary>
+    [Tooltip("ボス基底。ミサイルのターゲット取得に使用")]
+    [SerializeField] private EnemyBossBase m_boss;
+    // RUSH エフェクト on off 
+    [Tooltip("RUSH エフェクト")]
+    [SerializeField] private ParticleSystem m_rushEffect;
+    [Tooltip("Dust エフェクト")]
+    [SerializeField] private ParticleSystem m_dustEffect;
+
+    //[Tooltip("ミサイル生成位置。未設定ならこのオブジェクト位置を使用")]
+    //[SerializeField] private Transform[] m_missileSpawnPoints;
 
     [Header("Debug")]
     [SerializeField] private bool m_enableDebugInput = true;
@@ -58,12 +75,15 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
         if (m_armHitbox == null)
             m_armHitbox = transform.root.GetComponentInChildren<BossArmHitbox>(true);
 
+        if (m_boss == null)
+            m_boss = transform.root.GetComponentInChildren<EnemyBossBase>();
+
         m_hAttack = Animator.StringToHash(m_attackName);
         m_hAttackFinished = Animator.StringToHash(m_attackFinishedName);
         m_hFireMissile = Animator.StringToHash(m_fireMissileName);
-        m_hFireMissileFinished = Animator.StringToHash(m_fireMissileFinishedName); // ★追加
+        m_hFireMissileFinished = Animator.StringToHash(m_fireMissileFinishedName);
         m_hAttackRush = Animator.StringToHash(m_attackRushName);
-        m_hAttackRushFinished = Animator.StringToHash(m_attackRushFinishedName);   // ★追加
+        m_hAttackRushFinished = Animator.StringToHash(m_attackRushFinishedName);
 
         m_hBeInterrupted = Animator.StringToHash(m_beInterruptedName);
         m_hCanInterrupt = Animator.StringToHash(m_canInterruptName);
@@ -127,10 +147,11 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
     }
 
     // staggerにいく
+    // 仕様: AttackStance/AttackMotion 中は常に中断可能（手を叩けば Stagger 発火）。
+    // CanInterrupt フラグは廃止（commit phase なし）。CanNotInterrupt は強制中断不可の保険として残す。
     public void TriggerBeInterrupted()
     {
         if (m_animator == null) return;
-        if (m_animator.GetBool(m_hCanInterrupt)) return;
         if (m_animator.GetBool(m_hCanNotInterrupt)) return;
 
         m_animator.SetTrigger(m_hBeInterrupted);
@@ -215,6 +236,15 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
         }
     }
 
+    public bool IsInAttackStance
+    {
+        get
+        {
+            if (m_animator == null) return false;
+            return m_animator.GetCurrentAnimatorStateInfo(0).shortNameHash == s_hAttackStanceState;
+        }
+    }
+
     public bool IsInRush
     {
         get
@@ -274,6 +304,39 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
         if (m_armHitbox != null) m_armHitbox.DisableHitbox();
     }
 
+    public void EnableWindEffectEvent()
+    {
+        if (m_rushEffect != null)
+        {
+            m_rushEffect.Play();
+        }
+    }
+
+    public void DisableWindEffectEvent()
+    {
+        if (m_rushEffect != null)
+        {
+            m_rushEffect.Stop(true,ParticleSystemStopBehavior.StopEmittingAndClear );
+        }
+
+    }
+    public void EnableDustEffectEvent()
+    {
+        if (m_dustEffect != null)
+        {
+            m_dustEffect.Play();
+        }
+    }
+
+    public void DisableDustEffectEvent()
+    {
+        if (m_dustEffect != null)
+        {
+            m_dustEffect.Stop(true,ParticleSystemStopBehavior.StopEmittingAndClear );
+        }
+
+    }
+
     public void OnAttackFinishedEvent()
     {
         TriggerAttackFinished(); // ★追加：Animator側の遷移条件を満たす
@@ -302,6 +365,34 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
     {
         TriggerMissileFinished(); // ★追加
         if (m_ai != null) m_ai.OnMissileFinished();
+    }
+
+    // ミサイル生成イベント。AnimationEvent で呼び出す。ミサイルPrefabからインスタンスを生成し、プレイヤーの方向に向けて発射する。
+    public void OnMissileFireEvent()
+    {
+        if (m_ai != null) m_ai.OnMissileFireEvent();
+    }
+
+    /// <summary>
+    /// AnimationEvent から呼ぶ。指定秒だけ Animator.speed=0 でフリーズしてから 1 に戻す。
+    /// クリップ内で「腕上げきった瞬間」「地面激突した瞬間」など特定フレームに打って溜め/硬直を作る。
+    /// 多重呼び出し時は前のコルーチンをキャンセルして新しいタイマーで上書きする。
+    /// </summary>
+    public void FreezeAnim(float seconds)
+    {
+        if (m_animator == null) { ChannelLogger.LogGuardReturn("EnemyBossA", "Animator未設定"); return; }
+        if (seconds <= 0f) { ChannelLogger.LogGuardReturn("EnemyBossA", $"FreezeAnim 秒数が0以下: {seconds}"); return; }
+
+        if (m_freezeRoutine != null) StopCoroutine(m_freezeRoutine);
+        m_freezeRoutine = StartCoroutine(FreezeRoutine(seconds));
+    }
+
+    private IEnumerator FreezeRoutine(float seconds)
+    {
+        m_animator.speed = 0f;
+        yield return new WaitForSeconds(seconds);
+        m_animator.speed = 1f;
+        m_freezeRoutine = null;
     }
 
     private void ValidateAnimatorParameters()

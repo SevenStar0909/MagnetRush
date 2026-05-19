@@ -136,19 +136,20 @@ public class MagnetBullet : MonoBehaviour, IBulletProximity
     {
         targetMag.SetPole(Pole);
 
-        var targetGO = targetMag.gameObject;
-        if (targetGO.GetComponent<MagnetField>() == null && m_settings != null && m_settings.bulletFieldSettings != null)
+        // MagnetField/Visualizer/VFX はすべて着弾Collider（ボーン/Hurtbox子等）側に出す。
+        // フィールド中心がボーンに追従し、VFXと範囲が一致する。
+        var hostGO = target.gameObject;
+        if (hostGO.GetComponent<MagnetField>() == null && m_settings != null && m_settings.bulletFieldSettings != null)
         {
-            var field = targetGO.AddComponent<MagnetField>();
+            var field = hostGO.AddComponent<MagnetField>();
             field.Initialize(Pole, m_settings.bulletFieldSettings);
 
             if (MagnetManager.Instance != null)
                 MagnetManager.Instance.RegisterField(field);
 
-            var visualizer = targetGO.AddComponent<MagnetFieldVisualizer>();
+            var visualizer = hostGO.AddComponent<MagnetFieldVisualizer>();
             visualizer.Show(Pole, m_settings.bulletFieldSettings);
 
-            // 着弾エフェクトを対象に生成
             var effectInstance = SpawnImpactEffect(target.transform);
 
             // フィールド期限切れ → 対象の磁化解除 + Visualizer + エフェクト除去

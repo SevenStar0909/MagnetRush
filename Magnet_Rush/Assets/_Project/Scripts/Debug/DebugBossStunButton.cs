@@ -16,6 +16,7 @@ public class DebugBossStunButton : MonoBehaviour
     private EnemyBossBase m_bossBase;
     private Stamina m_bossStamina;
     private Health m_bossHealth;
+    private EnemyBossBaseA_Animator m_bossAnimator;
     private Transform m_playerTransform;
 
     private float m_nextScanTime;
@@ -47,6 +48,7 @@ public class DebugBossStunButton : MonoBehaviour
             m_bossBase = m_bossAI.GetComponent<EnemyBossBase>();
             m_bossStamina = m_bossAI.GetComponent<Stamina>();
             m_bossHealth = m_bossAI.GetComponent<Health>();
+            m_bossAnimator = m_bossAI.GetComponentInChildren<EnemyBossBaseA_Animator>(true);
         }
 
         var playerObj = GameObject.FindWithTag("Player");
@@ -78,7 +80,7 @@ public class DebugBossStunButton : MonoBehaviour
         if (m_bossAI == null) return;
 
         const float panelW = 240f;
-        const float panelH = 200f;
+        const float panelH = 230f;
         var rect = new Rect(10, 10, panelW, panelH);
 
         GUI.Box(rect, "[Debug] Stab Test");
@@ -108,6 +110,10 @@ public class DebugBossStunButton : MonoBehaviour
             ForceStun();
         y += 28f;
 
+        if (ClickButton(new Rect(15, y, panelW - 25, 24f), "Force Stagger Boss"))
+            ForceStagger();
+        y += 28f;
+
         if (ClickButton(new Rect(15, y, panelW - 25, 24f), "Restore HP"))
             RestoreHp();
         y += 28f;
@@ -131,6 +137,18 @@ public class DebugBossStunButton : MonoBehaviour
         if (m_bossStamina == null) return;
         m_bossStamina.ResetStamina();
         m_bossStamina.Consume(m_bossStamina.MaxStamina);
+    }
+
+    void ForceStagger()
+    {
+        if (m_bossBase != null && m_bossBase.StatusData != null)
+            m_bossBase.StatusData.staminaBreakDuration = m_stunDuration;
+
+        if (m_bossAnimator == null) return;
+
+        // ArmStunHitbox 経由の通常Stagger発火と同じ。AnyState→StaggerAnim transition がトリガーで発火する
+        m_bossAnimator.SetIsStaggerTrue();
+        m_bossAnimator.TriggerBeInterrupted();
     }
 
     void RestoreHp()
