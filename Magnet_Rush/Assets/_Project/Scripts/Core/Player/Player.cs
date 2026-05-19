@@ -87,6 +87,9 @@ public class Player : Entity
         // HP=0でDiePlayerStateに遷移
         if (m_health != null)
         {
+            if (m_settings != null)
+                m_health.SetMaxHealth(m_settings.maxHp);
+
             m_health.OnDie += OnDie;
         }
 
