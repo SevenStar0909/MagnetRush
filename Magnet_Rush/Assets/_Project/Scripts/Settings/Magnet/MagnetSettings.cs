@@ -14,8 +14,8 @@ public class MagnetSettings : ScriptableObject
     public float magnetRange = 10f;
 
     [Header("[制限]")]
-    [Label("ペア毎の力上限（0で無制限）")]
-    [Tooltip("MagnetManager.ProcessPair で1ペアあたりの力をクランプする上限。0=無制限。減衰式 magnetForce×strength の出力にだけ効く。")]
+    [Label("1組の磁石にかかる力の上限（0=制限なし）")]
+    [Tooltip("磁石どうしが引き合ったり反発したりするとき、1組あたりに発生する力の上限。強い磁石が暴れすぎないように頭打ちにできる。0で制限なし。")]
     [FormerlySerializedAs("maxForcePerObject")]
     public float maxForcePerPair = 0f;
 

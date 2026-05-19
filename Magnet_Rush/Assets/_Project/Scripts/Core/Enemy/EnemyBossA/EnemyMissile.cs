@@ -198,10 +198,24 @@ public class EnemyMissile : MonoBehaviour
         return 10f;
     }
 
-    // 何にあたっても消える。Layer Matrix で「当たる相手」を一元管理する設計
-    // （Wall/Ground/PhysicsObject/Player は ON、Enemy/EnemyBullet 等は OFF）
+    // Layer Matrix で「当たる相手」を一元管理する設計。Wall/Ground/PhysicsObject/Player/PlayerBullet/MagnetField が ON、
+    // Enemy/EnemyBullet 等は OFF。PlayerBullet (MagnetBullet) で被弾した時はミサイル側で磁化されるため自滅しない
+    // （MagnetBullet 側で SetPole / MagnetField 付与 / 自身の Destroy を行う）
     private void OnTriggerEnter(Collider other)
     {
+        // 磁化時に自身に AddComponent された MagnetField の子トリガー (MagnetFieldTrigger) との自己発火は無視
+        if (other.transform.IsChildOf(transform))
+        {
+            ChannelLogger.LogGuardReturn("Enemy", "自身の子コライダーとの衝突は無視");
+            return;
+        }
+
+        if (other.GetComponentInParent<MagnetBullet>() != null)
+        {
+            ChannelLogger.LogGuardReturn("Enemy", "MagnetBullet衝突は磁化委譲のため自滅スキップ");
+            return;
+        }
+
         var hittable = other.GetComponentInParent<IHittable>();
         if (hittable != null)
         {

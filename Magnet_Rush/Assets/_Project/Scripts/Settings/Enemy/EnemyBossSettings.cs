@@ -81,8 +81,8 @@ public class EnemyBossSettings : ScriptableObject
     [Tooltip(" プレイヤーがこの距離（m）以外にいる場合、rush攻撃を行う")]
     public float rushAttackRange = 20.0f;
 
-    [Label("rush速度倍率")]
-    [Tooltip("rush中の最大速度をmoveSpeedに対して何倍にするか（1.0=通常、2.0=2倍）")]
+    [Label("タックル時の速度倍率")]
+    [Tooltip("タックル中、通常移動速度の何倍の速さで突進するか。1.0で通常と同じ、2.0で2倍の速さ")]
     [Range(0.5f, 5.0f)]
     public float rushSpeedMultiplier = 2.0f;
 

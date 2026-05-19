@@ -108,6 +108,9 @@ public class MagnetBullet : MonoBehaviour, IBulletProximity
     {
         if (IsStuck) { ChannelLogger.LogGuardReturn("Bullet", "着弾済み(OnTriggerEnter)"); return; }
 
+        // 診断ログ: OnTriggerEnter が何に発火したか
+        ChannelLogger.Log("Bullet", $"[OnTriggerEnter] hit={other.name} layer={LayerMask.LayerToName(other.gameObject.layer)} isTrigger={other.isTrigger} pos={transform.position}");
+
         // Matrixが「当たるべき相手」だけを通す。コード内フィルタ不要。
         // 弾同士の検出はMagnetManagerで距離ベース処理（Trigger×Trigger非発火のため）
 
@@ -115,10 +118,12 @@ public class MagnetBullet : MonoBehaviour, IBulletProximity
 
         if (targetMag != null)
         {
+            ChannelLogger.Log("Bullet", $"[OnTriggerEnter] -> MagnetizeTarget targetMag={targetMag.name}");
             MagnetizeTarget(other, targetMag);
         }
         else
         {
+            ChannelLogger.Log("Bullet", $"[OnTriggerEnter] -> StickToSurface surface={other.name}");
             StickToSurface(other);
         }
     }
@@ -174,6 +179,17 @@ public class MagnetBullet : MonoBehaviour, IBulletProximity
         IsStuck = true;
         m_rb.linearVelocity = Vector3.zero;
         m_rb.isKinematic = true;
+
+        // CCD で薄い MeshCollider に高速ヒットすると、衝突検出時の transform.position が
+        // 既に surface を貫通した位置になっていることがある。bounds の最近点に補正して
+        // 「表側」に貼り付けないと、裏面のみ描画される平面の裏に潜って見えなくなる。
+        Vector3 corrected = surface.bounds.ClosestPoint(transform.position);
+        if (corrected != transform.position)
+        {
+            ChannelLogger.Log("Bullet", $"[StickToSurface] 貫通補正 {transform.position} -> {corrected}");
+            transform.position = corrected;
+        }
+
         transform.SetParent(surface.transform);
 
         var mag = GetComponent<Magnetizable>();
