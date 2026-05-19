@@ -7,11 +7,9 @@ using UnityEngine;
 /// </summary>
 public class Stamina : MonoBehaviour
 {
-    [SerializeField] private int m_maxStamina = 10;
-
-    [Header("Recovery")]
-    [SerializeField] private float m_recoveryPerSecond = 0f;
-    [SerializeField] private float m_recoveryCooldown = 0f;
+    private int m_maxStamina = 10;
+    private float m_recoveryPerSecond = 0f;
+    private float m_recoveryCooldown = 0f;
 
     public int MaxStamina => m_maxStamina;
     public int CurrentStamina { get; private set; }

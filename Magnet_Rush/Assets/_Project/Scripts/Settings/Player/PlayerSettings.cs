@@ -3,6 +3,11 @@ using UnityEngine;
 [ClassLabelSO("プレイヤー設定")]
 public class PlayerSettings : ScriptableObject
 {
+    [Header("[体力]")]
+    [Label("最大HP")]
+    [Tooltip("最大HP。Player.Awake で Health.SetMaxHealth に流し込まれる")]
+    public int maxHp = 50;
+
     [Header("[移動]")]
     [Label("最高移動速度（m/s）")]
     [Tooltip("最高移動速度（m/s）")]
