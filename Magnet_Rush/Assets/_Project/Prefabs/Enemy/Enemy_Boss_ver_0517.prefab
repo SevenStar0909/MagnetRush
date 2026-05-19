@@ -184,7 +184,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f7eb2ea83aeed54c8fa7e632b84756a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Core::Health
-  m_maxHealth: 5
   m_damageCooldown: 1
 --- !u!114 &8646488296031826630
 MonoBehaviour:
@@ -266,7 +265,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Enemy::EnemyBossAI
   m_animator: {fileID: 1537800206930250247}
-  m_hitbox: {fileID: 0}
   m_missilePrefab: {fileID: 5509490972982333118, guid: 747eac45c9df97d49b3ef2b43ae206d9, type: 3}
   m_missileSpawnPoints:
   - {fileID: 8662209342513077446}
@@ -288,9 +286,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8ba53e48f2d11d0499e50831063da717, type: 3}
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Core::Stamina
-  m_maxStamina: 10
-  m_recoveryPerSecond: 0
-  m_recoveryCooldown: 0
 --- !u!114 &6440718343754132563
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -365,6 +360,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 11862925501177534}
+  - component: {fileID: 1458422506426570559}
   m_Layer: 0
   m_Name: Hitbox
   m_TagString: Untagged
@@ -389,6 +385,19 @@ Transform:
   - {fileID: 4874342156676677225}
   m_Father: {fileID: 2621739881502880622}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1458422506426570559
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1087868980716705503}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca0d1d98b4bbc3e4eb461b8e76083f04, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::Hitbox
+  m_health: {fileID: 971369539054672765}
 --- !u!1 &1137529056746443111
 GameObject:
   m_ObjectHideFlags: 0
@@ -398,6 +407,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8400877279233785878}
+  - component: {fileID: 446466474125251532}
   m_Layer: 9
   m_Name: Hitbox
   m_TagString: Untagged
@@ -422,6 +432,19 @@ Transform:
   - {fileID: 2466127682893671035}
   m_Father: {fileID: 3742156159703627181}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &446466474125251532
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1137529056746443111}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca0d1d98b4bbc3e4eb461b8e76083f04, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::Hitbox
+  m_health: {fileID: 971369539054672765}
 --- !u!1 &1147421278528737797
 GameObject:
   m_ObjectHideFlags: 0
@@ -468,7 +491,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Core::Hitbox
   m_health: {fileID: 971369539054672765}
-  m_stamina: {fileID: 8780740096348751557}
 --- !u!1 &1257687688123719838
 GameObject:
   m_ObjectHideFlags: 0
@@ -575,6 +597,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5372674697608970143}
+  - component: {fileID: 521269469208690789}
   m_Layer: 9
   m_Name: Hitbox
   m_TagString: Untagged
@@ -599,6 +622,19 @@ Transform:
   - {fileID: 3537699378218999974}
   m_Father: {fileID: 5040689746882604698}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &521269469208690789
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1401312554741787265}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca0d1d98b4bbc3e4eb461b8e76083f04, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::Hitbox
+  m_health: {fileID: 971369539054672765}
 --- !u!1 &1748264436838094313
 GameObject:
   m_ObjectHideFlags: 0
@@ -876,6 +912,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 9013095590474012365}
+  - component: {fileID: 216299909687306090}
   m_Layer: 9
   m_Name: Hitbox
   m_TagString: Untagged
@@ -900,6 +937,19 @@ Transform:
   - {fileID: 2476781130673390830}
   m_Father: {fileID: 6298394502585369665}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &216299909687306090
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4436345793524159621}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca0d1d98b4bbc3e4eb461b8e76083f04, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::Hitbox
+  m_health: {fileID: 971369539054672765}
 --- !u!1 &4505286759349500317
 GameObject:
   m_ObjectHideFlags: 0
@@ -1046,6 +1096,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4057673663600854808}
+  - component: {fileID: 4065633354174798718}
   m_Layer: 0
   m_Name: Hitbox
   m_TagString: Untagged
@@ -1070,6 +1121,19 @@ Transform:
   - {fileID: 3284979592638463801}
   m_Father: {fileID: 1072926915106334681}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4065633354174798718
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5758768327778523132}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca0d1d98b4bbc3e4eb461b8e76083f04, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::Hitbox
+  m_health: {fileID: 971369539054672765}
 --- !u!1 &6206825976579038847
 GameObject:
   m_ObjectHideFlags: 0
@@ -1373,6 +1437,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4559648554414019491}
+  - component: {fileID: 2787181434874100885}
   m_Layer: 0
   m_Name: Hitbox
   m_TagString: Untagged
@@ -1397,6 +1462,19 @@ Transform:
   - {fileID: 5721879815433330518}
   m_Father: {fileID: 2860016343966575208}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2787181434874100885
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7947321721054832059}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca0d1d98b4bbc3e4eb461b8e76083f04, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::Hitbox
+  m_health: {fileID: 971369539054672765}
 --- !u!1 &8682870149202065196
 GameObject:
   m_ObjectHideFlags: 0
@@ -1764,6 +1842,9 @@ PrefabInstance:
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7979327020922395008, guid: 4209ff3e04242d249831366d7807a31b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8363611393894784226}
     - targetCorrespondingSourceObject: {fileID: 2314021898761952882, guid: 4209ff3e04242d249831366d7807a31b, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7331784782390689888}
@@ -1802,6 +1883,24 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 2.4, y: 1.15, z: 1.21}
   m_Center: {x: -1.2, y: 0, z: 0.1}
+--- !u!1 &8042087786362608439 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7979327020922395008, guid: 4209ff3e04242d249831366d7807a31b, type: 3}
+  m_PrefabInstance: {fileID: 83175433275163319}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &8363611393894784226
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8042087786362608439}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca0d1d98b4bbc3e4eb461b8e76083f04, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::Hitbox
+  m_health: {fileID: 971369539054672765}
 --- !u!1 &8686189304851606149 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 8767651658933856306, guid: 4209ff3e04242d249831366d7807a31b, type: 3}
@@ -1888,6 +1987,9 @@ PrefabInstance:
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7979327020922395008, guid: 4209ff3e04242d249831366d7807a31b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4170178944836896077}
     - targetCorrespondingSourceObject: {fileID: 2314021898761952882, guid: 4209ff3e04242d249831366d7807a31b, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7693845341646274781}
@@ -1980,6 +2082,24 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 2.87, y: 1.3, z: 2.39}
   m_Center: {x: -2.42, y: 0, z: -0.55}
+--- !u!1 &7568897660308233532 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7979327020922395008, guid: 4209ff3e04242d249831366d7807a31b, type: 3}
+  m_PrefabInstance: {fileID: 555741519944107196}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &4170178944836896077
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7568897660308233532}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca0d1d98b4bbc3e4eb461b8e76083f04, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::Hitbox
+  m_health: {fileID: 971369539054672765}
 --- !u!1 &9086741554573978766 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 8767651658933856306, guid: 4209ff3e04242d249831366d7807a31b, type: 3}
@@ -2108,6 +2228,9 @@ PrefabInstance:
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7979327020922395008, guid: 4209ff3e04242d249831366d7807a31b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8514025709982854111}
     - targetCorrespondingSourceObject: {fileID: 2314021898761952882, guid: 4209ff3e04242d249831366d7807a31b, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3235939709062953990}
@@ -2172,6 +2295,24 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 2.4, y: 1.15, z: 1.21}
   m_Center: {x: 1.18, y: 0, z: -0.35}
+--- !u!1 &8981938901751349409 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7979327020922395008, guid: 4209ff3e04242d249831366d7807a31b, type: 3}
+  m_PrefabInstance: {fileID: 1304357730557335841}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &8514025709982854111
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8981938901751349409}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca0d1d98b4bbc3e4eb461b8e76083f04, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::Hitbox
+  m_health: {fileID: 971369539054672765}
 --- !u!1001 &2169545360790309332
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3858,6 +3999,9 @@ PrefabInstance:
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7979327020922395008, guid: 4209ff3e04242d249831366d7807a31b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4938684605474116351}
     - targetCorrespondingSourceObject: {fileID: 2314021898761952882, guid: 4209ff3e04242d249831366d7807a31b, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1824404335891897941}
@@ -3922,6 +4066,24 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 2.4, y: 1.15, z: 1.21}
   m_Center: {x: 1.21, y: -0, z: 0.11}
+--- !u!1 &8126435951779203712 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7979327020922395008, guid: 4209ff3e04242d249831366d7807a31b, type: 3}
+  m_PrefabInstance: {fileID: 2196250113129714432}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &4938684605474116351
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8126435951779203712}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca0d1d98b4bbc3e4eb461b8e76083f04, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::Hitbox
+  m_health: {fileID: 971369539054672765}
 --- !u!1001 &2511999748566611902
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3986,6 +4148,9 @@ PrefabInstance:
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7979327020922395008, guid: 4209ff3e04242d249831366d7807a31b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8259322530232895366}
     - targetCorrespondingSourceObject: {fileID: 2314021898761952882, guid: 4209ff3e04242d249831366d7807a31b, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4063062238800802395}
@@ -4024,6 +4189,24 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 162400393613072875, guid: 4209ff3e04242d249831366d7807a31b, type: 3}
   m_PrefabInstance: {fileID: 2511999748566611902}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &5503444719686889022 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7979327020922395008, guid: 4209ff3e04242d249831366d7807a31b, type: 3}
+  m_PrefabInstance: {fileID: 2511999748566611902}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &8259322530232895366
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5503444719686889022}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca0d1d98b4bbc3e4eb461b8e76083f04, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::Hitbox
+  m_health: {fileID: 971369539054672765}
 --- !u!1 &6588940859292721036 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 8767651658933856306, guid: 4209ff3e04242d249831366d7807a31b, type: 3}
@@ -4499,6 +4682,9 @@ PrefabInstance:
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7979327020922395008, guid: 4209ff3e04242d249831366d7807a31b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8717047898516495991}
     - targetCorrespondingSourceObject: {fileID: 2314021898761952882, guid: 4209ff3e04242d249831366d7807a31b, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7916305748415251650}
@@ -4527,6 +4713,24 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 6107241428983562847}
   m_SourcePrefab: {fileID: 100100000, guid: 4209ff3e04242d249831366d7807a31b, type: 3}
+--- !u!1 &2322969667840040776 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7979327020922395008, guid: 4209ff3e04242d249831366d7807a31b, type: 3}
+  m_PrefabInstance: {fileID: 5656691817322481352}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &8717047898516495991
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2322969667840040776}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca0d1d98b4bbc3e4eb461b8e76083f04, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::Hitbox
+  m_health: {fileID: 971369539054672765}
 --- !u!1 &3975675200200011514 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 8767651658933856306, guid: 4209ff3e04242d249831366d7807a31b, type: 3}
