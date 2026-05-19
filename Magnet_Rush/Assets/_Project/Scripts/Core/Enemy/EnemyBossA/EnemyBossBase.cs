@@ -39,10 +39,8 @@ public class EnemyBossBase : Entity
             m_stamina.SetRecovery(m_statusData.staminaRecovery, m_statusData.staminaRecoveryCooldown);
         }
 
-        var magnetizable = GetComponent<Magnetizable>();
-        if (magnetizable != null)
-            magnetizable.mass = float.PositiveInfinity;
-
+        // 質量は Magnetizable.m_initialMass=Infinity をプレハブで直接指定。
+        // 旧 override は Awake 順序競合で1に上書きされるバグの温床だったので撤去。
         GameObject playerObj = GameObject.FindWithTag(GameTags.Player);
         if (playerObj != null)
             m_player = playerObj.transform;
@@ -67,13 +65,21 @@ public class EnemyBossBase : Entity
 
     public void AccelerateToward(Vector3 worldDirection, float dt)
     {
+        AccelerateToward(worldDirection, dt, 1f);
+    }
+
+    /// <summary>
+    /// topSpeedMul で moveSpeed の上限を倍率調整して加速する（rush 攻撃等で一時的に高速化する用途）。
+    /// </summary>
+    public void AccelerateToward(Vector3 worldDirection, float dt, float topSpeedMul)
+    {
         if (worldDirection.sqrMagnitude > 0.01f)
         {
             Vector3 localDir = Quaternion.FromToRotation(transform.up, Vector3.up) * worldDirection;
             localDir = localDir.normalized;
 
             Accelerate(localDir, m_statusData.turningDrag,
-                       m_statusData.acceleration, m_statusData.moveSpeed, dt);
+                       m_statusData.acceleration, m_statusData.moveSpeed * topSpeedMul, dt);
             FaceDirection(worldDirection, m_statusData.rotationSpeed, dt);
         }
     }
@@ -84,9 +90,17 @@ public class EnemyBossBase : Entity
         Decelerate(m_statusData.deceleration, dt);
     }
 
-    /// <summary>指定方向を向く。</summary>
-    public void FaceToward(Vector3 direction, float dt)
+    /// <summary>指定方向を向く。deadZoneDegを指定すると現在向きとの角度がそれ以下なら回転しない（追尾ねじれ防止）。</summary>
+    public void FaceToward(Vector3 direction, float dt, float deadZoneDeg = 0f)
     {
+        if (deadZoneDeg > 0f)
+        {
+            Vector3 currentFlat = transform.forward; currentFlat.y = 0f;
+            Vector3 targetFlat = direction; targetFlat.y = 0f;
+            if (currentFlat.sqrMagnitude > 0.0001f && targetFlat.sqrMagnitude > 0.0001f
+                && Vector3.Angle(currentFlat, targetFlat) <= deadZoneDeg)
+                return;
+        }
         FaceDirection(direction, m_statusData.rotationSpeed, dt);
     }
 

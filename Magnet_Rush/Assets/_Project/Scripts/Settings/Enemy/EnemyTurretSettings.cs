@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 
 [CreateAssetMenu(fileName = "EnemyTurretSettings", menuName = "MagnetRush/EnemyTurretSettings")]
+[ClassLabelSO("タレット敵設定")]
 public class EnemyTurretSettings : ScriptableObject
 {
     [Header("[ステータス]")]

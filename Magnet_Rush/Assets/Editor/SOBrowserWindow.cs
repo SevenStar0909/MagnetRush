@@ -535,8 +535,17 @@ public class SOBrowserWindow : EditorWindow
             if (so == null) continue;
             typeSet.Add(so.GetType());
         }
-        m_availableTypes = typeSet.OrderBy(t => t.Name).ToList();
-        m_typeNames = m_availableTypes.Select(t => t.Name).ToArray();
+        m_availableTypes = typeSet.OrderBy(t => GetTypeDisplayName(t)).ToList();
+        m_typeNames = m_availableTypes.Select(t => GetTypeDisplayName(t)).ToArray();
+    }
+
+    /// <summary>
+    /// SO 型のドロップダウン表示名を返す。[ClassLabelSO("...")] が付いていれば日本語名、無ければ型名そのまま。
+    /// </summary>
+    static string GetTypeDisplayName(Type t)
+    {
+        var attr = t.GetCustomAttribute<ClassLabelSOAttribute>(inherit: true);
+        return attr != null ? attr.Text : t.Name;
     }
 
     void ReloadPaneData(Pane pane)

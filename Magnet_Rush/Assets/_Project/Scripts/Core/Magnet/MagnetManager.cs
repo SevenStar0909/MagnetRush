@@ -234,7 +234,7 @@ public class MagnetManager : Singleton<MagnetManager>
 
     private void ProcessPair(Magnetizable a, Magnetizable b, HashSet<long> contactsThisFrame)
     {
-        Vector3 delta = b.transform.position - a.transform.position;
+        Vector3 delta = b.Position - a.Position;
         float distance = delta.magnitude;
 
         // ハードカットオフ（パフォーマンス用）
@@ -243,16 +243,20 @@ public class MagnetManager : Singleton<MagnetManager>
         // 距離解除されたペアは力もスナップも完全スキップ（ワープ防止）
         if (m_snapResolver != null && m_snapResolver.IsBroken(a, b)) { ChannelLogger.LogGuardReturn("Magnet", "brokenペアのためスキップ"); return; }
 
-        // フィールド個別範囲で有効距離を決定（大きい方を採用）
-        float effectiveOuter = Mathf.Max(a.FieldOuterRadius, b.FieldOuterRadius);
-        float effectiveInner = Mathf.Max(a.FieldInnerRadius, b.FieldInnerRadius);
+        // 球vs球判定/減衰: 中心点距離 vs (相手のinner球と自分のouter球が重なる距離)
+        //   フルパワー境界 = 両inner球が表面接触 = A.inner + B.inner
+        //   ゼロ境界       = 相手inner球が自分outer球の表面に触れる = max(A.outer+B.inner, B.outer+A.inner)
+        float effectiveOuter = Mathf.Max(
+            a.FieldOuterRadius + b.FieldInnerRadius,
+            b.FieldOuterRadius + a.FieldInnerRadius);
+        float effectiveInner = a.FieldInnerRadius + b.FieldInnerRadius;
 
         // フィールドがない場合はグローバル値にフォールバック
         if (effectiveOuter <= 0f) effectiveOuter = m_settings.magnetRange;
         if (effectiveInner <= 0f) effectiveInner = effectiveOuter * 0.8f;
 
         // フィールド範囲外なら力を適用しない
-        if (distance > effectiveOuter) { ChannelLogger.LogGuardReturn("Magnet", "有効フィールド範囲外"); return; }
+        if (distance > effectiveOuter) { ChannelLogger.LogGuardReturn("Magnet", "有効フィールド範囲外（球vs球）"); return; }
 
         Vector3 dirAtoB = delta / distance;
 
@@ -310,13 +314,13 @@ public class MagnetManager : Singleton<MagnetManager>
 
         if (isOpposite)
         {
-            a.ApplyForce(dirAtoB * forceMagnitude * ratioA, b.transform.position);
-            b.ApplyForce(-dirAtoB * forceMagnitude * ratioB, a.transform.position);
+            a.ApplyForce(dirAtoB * forceMagnitude * ratioA, b.Position);
+            b.ApplyForce(-dirAtoB * forceMagnitude * ratioB, a.Position);
         }
         else if (isSame)
         {
-            a.ApplyForce(-dirAtoB * forceMagnitude * ratioA, b.transform.position);
-            b.ApplyForce(dirAtoB * forceMagnitude * ratioB, a.transform.position);
+            a.ApplyForce(-dirAtoB * forceMagnitude * ratioA, b.Position);
+            b.ApplyForce(dirAtoB * forceMagnitude * ratioB, a.Position);
         }
 
         // 接触判定 / FixedJoint スナップ（Object×Object 専用。Entity絡みは上の PD 分岐で処理済み）
@@ -367,7 +371,7 @@ public class MagnetManager : Singleton<MagnetManager>
         if (!m_heldPairs.TryGetValue(key, out var pair))
         {
             // 接触方向を維持しつつ、両者の contactRadius 合計で密着距離を算出
-            Vector3 dir = (second.transform.position - first.transform.position).normalized;
+            Vector3 dir = (second.Position - first.Position).normalized;
             pair = new HeldPair
             {
                 a = first,
@@ -387,8 +391,8 @@ public class MagnetManager : Singleton<MagnetManager>
         Vector3 relVel = velB - velA;
 
         // target position は pair.a 基準 + 初回固定の worldOffset
-        Vector3 target = pair.a.transform.position + pair.worldOffset;
-        Vector3 error = target - pair.b.transform.position;
+        Vector3 target = pair.a.Position + pair.worldOffset;
+        Vector3 error = target - pair.b.Position;
 
         // PD 力（質量比配分なし、ApplyHoldForce 内で /mass 変換）
         // mass 源はペア種別依存: Entity=Magnetizable.mass, Object=Rigidbody.mass（設計決定参照）
@@ -461,7 +465,7 @@ public class MagnetManager : Singleton<MagnetManager>
                 continue;
             }
 
-            float sqr = (pair.b.transform.position - pair.a.transform.position).sqrMagnitude;
+            float sqr = (pair.b.Position - pair.a.Position).sqrMagnitude;
             if (sqr > maxDistSqr)
             {
                 (toRemove ??= new List<long>()).Add(kvp.Key);
