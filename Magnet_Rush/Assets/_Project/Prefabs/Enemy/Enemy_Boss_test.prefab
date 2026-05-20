@@ -4656,6 +4656,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 2314021898761952882, guid: 4209ff3e04242d249831366d7807a31b, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7097843701442887088}
+    - targetCorrespondingSourceObject: {fileID: 2314021898761952882, guid: 4209ff3e04242d249831366d7807a31b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2294526869666832220}
     - targetCorrespondingSourceObject: {fileID: 8767651658933856306, guid: 4209ff3e04242d249831366d7807a31b, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7898039730120776822}
@@ -4881,6 +4884,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: MagnetRush.Enemy::BossHandMagnetLink
   m_boneNameOverride: 
   m_outline: {fileID: 0}
+--- !u!114 &2294526869666832220
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4783192110137951924}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bced0bea9b91a6440a0085a1ed88fd15, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Enemy::BossHandMagnetCaster
+  m_handMagnetizable: {fileID: 3538276374272273504}
+  m_bossAI: {fileID: 1337750729755968398}
+  m_boss: {fileID: 7855884024927852017}
+  m_logCast: 1
 --- !u!4 &6934618760689467693 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 162400393613072875, guid: 4209ff3e04242d249831366d7807a31b, type: 3}

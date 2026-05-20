@@ -116,4 +116,10 @@ public class EnemyBossSettings : ScriptableObject
     [Tooltip("スタッガー中の移動速度倍率")]
     [Range(0f, 1f)]
     public float staggerMoveMultiplier = 0.5f;
+
+    [Header("[手の磁力範囲キャスト]")]
+    [Label("手の磁力範囲半径（m）")]
+    [Tooltip("AttackStance/AttackMotion中に右手が磁化された時、ボスを中心にこの半径内のPhysicsObjectに手の逆極を付与する")]
+    [Min(0f)]
+    public float magnetCastRadius = 5.0f;
 }
