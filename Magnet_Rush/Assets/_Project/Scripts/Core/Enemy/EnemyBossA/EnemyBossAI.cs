@@ -9,7 +9,6 @@ using UnityEngine.AI;
 /// 依存: EnemyBossBase, NavMeshAgent, EnemyBossBaseA_Animator
 /// </summary>
 [RequireComponent(typeof(EnemyBossBase))]
-[RequireComponent(typeof(NavMeshAgent))]
 public class EnemyBossAI : MonoBehaviour, IStabReceiver
 {
     public enum BossState { Idle, Chase, AttackStance, AttackMotion, Rush, Missile, Stunned, Stagger }
@@ -109,7 +108,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
 
     void Update()
     {
-        if (m_player == null || m_settings == null || m_agent == null || m_animator == null)
+        if (m_player == null || m_settings == null || m_animator == null)
         { ChannelLogger.LogGuardReturn("Enemy", "プレイヤー/Settings/Agent/Animator未取得"); return; }
 
         float dt = Time.deltaTime;
@@ -304,7 +303,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     {
         if (m_animator.IsStunned) { ChangeState(BossState.Stunned); return; }
 
-        if (m_agent.enabled && m_agent.isOnNavMesh)
+        if (m_agent != null && m_agent.enabled && m_agent.isOnNavMesh)
             m_agent.ResetPath();
 
         m_boss.SlowDown(dt);
@@ -524,7 +523,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
 
     private void MoveTowardPlayer(float dt, float speedMultiplier)
     {
-        if (!m_agent.enabled || !m_agent.isOnNavMesh)
+        if (m_agent == null || !m_agent.enabled || !m_agent.isOnNavMesh)
         {
             // フォールバック直線追跡
             Vector3 dir = GetDirectionToPlayer();
@@ -541,6 +540,9 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
 
     private Vector3 GetNavMeshDirection()
     {
+        if (m_agent == null)
+            return GetDirectionToPlayer();
+
         if (!m_agent.hasPath && !m_agent.pathPending)
             return GetDirectionToPlayer();
 
@@ -568,6 +570,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
 
     private void SyncAgentToBody()
     {
+        if (m_agent == null) return;
         if (!m_agent.enabled || !m_agent.isOnNavMesh) return;
         // EntityController が動かした位置を NavMeshAgent に同期し、内部シミュレーションを抑制
         m_agent.nextPosition = transform.position;
@@ -576,7 +579,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
 
     private void TryRecoverAgent()
     {
-        if (m_agent == null) { ChannelLogger.LogGuardReturn("EnemyBossA", "NavMeshAgentなし"); return; }
+        if (m_agent == null) return;
         if (m_agent.enabled && m_agent.isOnNavMesh) { ChannelLogger.LogGuardReturn("EnemyBossA", "Agent既に有効"); return; }
 
         const float sampleRadius = 20;
