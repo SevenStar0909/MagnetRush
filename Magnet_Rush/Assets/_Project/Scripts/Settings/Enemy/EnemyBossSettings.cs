@@ -73,12 +73,12 @@ public class EnemyBossSettings : ScriptableObject
     [Label("攻撃ダメージ")]
     [Tooltip("1回の攻撃ダメージ")]
     public int attackDamage = 1;
-    [Label("攻撃可能距離（m）")]
-    [Tooltip("近接攻撃可能距離（m）")]
+    [Label("近接攻撃の射程（m）")]
+    [Tooltip("プレイヤーがこの距離より近くにいるとき、近接攻撃を行う")]
     public float attackRange = 20.0f;
 
-    [Label("rush攻撃可能距離（m）")]
-    [Tooltip(" プレイヤーがこの距離（m）以外にいる場合、rush攻撃を行う")]
+    [Label("タックル攻撃の発動距離（m）")]
+    [Tooltip("プレイヤーがこの距離より遠くにいるとき、タックル攻撃を行う（近接攻撃の射程より外で発動）")]
     public float rushAttackRange = 20.0f;
 
     [Label("タックル時の速度倍率")]
@@ -86,8 +86,8 @@ public class EnemyBossSettings : ScriptableObject
     [Range(0.5f, 5.0f)]
     public float rushSpeedMultiplier = 2.0f;
 
-    [Label("missile攻撃可能距離（m）")]
-    [Tooltip(" プレイヤーがこの距離（m）以外にいる場合、missile攻撃を行う")]
+    [Label("ミサイル攻撃の発動距離（m）")]
+    [Tooltip("プレイヤーがこの距離より遠くにいるとき、ミサイル攻撃を行う（タックルと交互に発動）")]
     public float missileAttackRange = 50.0f;
 
     [Label("攻撃間隔（秒）")]
