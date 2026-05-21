@@ -119,7 +119,6 @@ public class BossHandMagnetCaster : MonoBehaviour
         if (m_boss == null || m_settings == null)
         { ChannelLogger.LogGuardReturn("EnemyBossA", "Boss / Settings 未取得でキャスト不可"); return; }
 
-        MagneticPole opposite = handPole == MagneticPole.N ? MagneticPole.S : MagneticPole.N;
         int layerMask = 1 << PhysicsLayers.PhysicsObject;
         Vector3 center = m_boss.transform.position;
         float radius = m_settings.magnetCastRadius;
@@ -139,22 +138,27 @@ public class BossHandMagnetCaster : MonoBehaviour
             if (mag == null) continue;
             if (mag == m_handMagnetizable) continue;
 
-            // 既に登録済みなら極の再付与のみ、damping は二重保存しない（元値が上書きされる事故防止）
+            // 仕様: 既存極を尊重する。極なし物体は何もしない、磁化済み物体は同極=反発/異極=吸引を MagnetManager に委ねる
+            MagneticPole existing = mag.Pole;
+            if (existing == MagneticPole.None) continue;
+
+            // 既に登録済みなら damping だけ同極/異極で更新、元値の保存は初回のみ
+            bool isSamePole = existing == handPole;
+            float overrideDamping = isSamePole ? m_settings.magnetCastDampingSamePole : m_settings.magnetCastDamping;
+
+            var rb = mag.GetComponent<Rigidbody>();
             if (!m_affected.ContainsKey(mag))
             {
-                var rb = mag.GetComponent<Rigidbody>();
                 float originalDamping = rb != null ? rb.linearDamping : 0f;
                 m_affected[mag] = originalDamping;
-                if (rb != null) rb.linearDamping = m_settings.magnetCastDamping;
             }
-
-            mag.SetPole(opposite);
+            if (rb != null) rb.linearDamping = overrideDamping;
         }
 
         SetVisualColor(m_visualColorCasting);
 
         if (m_logCast)
-            ChannelLogger.Log("EnemyBossA", $"[BossHandMagnetCaster] cast hand={handPole} opposite={opposite} radius={radius} hits={count} affected={m_affected.Count}");
+            ChannelLogger.Log("EnemyBossA", $"[BossHandMagnetCaster] cast hand={handPole} radius={radius} hits={count} affected={m_affected.Count}");
     }
 
     private void ClearAffected()
@@ -169,11 +173,9 @@ public class BossHandMagnetCaster : MonoBehaviour
             var mag = kvp.Key;
             if (mag == null) continue;
 
-            // 元の linearDamping を復元してから磁極解除
+            // 元の linearDamping を復元する。仕様: 既存極を尊重するので極は触らない
             var rb = mag.GetComponent<Rigidbody>();
             if (rb != null) rb.linearDamping = kvp.Value;
-
-            mag.Deactivate();
         }
         m_affected.Clear();
 

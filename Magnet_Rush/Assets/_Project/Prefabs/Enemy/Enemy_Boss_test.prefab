@@ -200,6 +200,7 @@ GameObject:
   - component: {fileID: 7781825150316186901}
   - component: {fileID: 3181475508816895662}
   - component: {fileID: 6265531234747577853}
+  - component: {fileID: 9197072081432995460}
   m_Layer: 9
   m_Name: Enemy_Boss_test
   m_TagString: Boss
@@ -453,6 +454,18 @@ MonoBehaviour:
   m_excludeBoneSubtrees:
   - L_Wrist
   - R_Wrist
+--- !u!114 &9197072081432995460
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 569016687892123619}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51e8df34af3836943a859175687136d4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::ImmovableEntity
 --- !u!1 &691930224160693279
 GameObject:
   m_ObjectHideFlags: 0
@@ -4877,6 +4890,9 @@ MonoBehaviour:
   m_bossAI: {fileID: 1337750729755968398}
   m_boss: {fileID: 7855884024927852017}
   m_logCast: 1
+  m_visualColorCasting: {r: 1, g: 0.92, b: 0.016, a: 0.85}
+  m_visualColorIdle: {r: 1, g: 0.92, b: 0.016, a: 0.2}
+  m_visualLineWidth: 0.05
 --- !u!4 &6934618760689467693 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 162400393613072875, guid: 4209ff3e04242d249831366d7807a31b, type: 3}

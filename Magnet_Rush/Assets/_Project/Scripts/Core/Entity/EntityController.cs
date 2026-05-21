@@ -38,6 +38,9 @@ public class EntityController : MonoBehaviour
     // Entity asmdef は Magnet asmdef を参照できないため Common の IMagnetPoleProvider を経由する
     private IMagnetPoleProvider m_ownerMagnetPole;
 
+    // 自分が ImmovableEntity マーカー持ちかのキャッシュ。HandlePenetration で他 Entity からの displacement をスキップする判定に使用。
+    private bool m_isImmovable;
+
     // 押し中のオブジェクト管理
     private readonly List<PushInfo> m_pushActive = new();
 
@@ -74,6 +77,9 @@ public class EntityController : MonoBehaviour
 
         // 接地中の他Entity Pushbox衝突時に y方向を抑えるため、自Entityを参照する
         m_entity = GetComponent<Entity>();
+
+        // 自分が不動 Entity (ImmovableEntity) かをキャッシュ。HandlePenetration で他 Entity との重なりを displace スキップする判定に使う。
+        m_isImmovable = GetComponent<ImmovableEntity>() != null;
     }
 
     /// <summary>
@@ -252,6 +258,9 @@ public class EntityController : MonoBehaviour
                         // 磁気吸着中の Object は通過させずに壁扱い（PDホルダーが位置を制御する）
                         if (IsMagneticallyHeld(checkRb)) goto wallHandling;
 
+                        // ImmovableEntity マーカー持ち (ボス等) は通過させず壁扱い
+                        if (hit.collider.GetComponentInParent<ImmovableEntity>() != null) goto wallHandling;
+
                         m_pushActive.Add(new PushInfo { rb = checkRb, col = hit.collider });
                         m_ignoredColliders.Add(hit.collider);
                         continue;
@@ -266,6 +275,9 @@ public class EntityController : MonoBehaviour
                     {
                         // 磁気吸着中の Object は push しない（PD ホルダーが位置を制御する、箱が無限に押されるバグ源）
                         if (IsMagneticallyHeld(hitRb)) goto wallHandling;
+
+                        // ImmovableEntity マーカー持ち (ボス等) は push せず壁扱い
+                        if (hit.collider.GetComponentInParent<ImmovableEntity>() != null) goto wallHandling;
 
                         // 衝突面に対して正面から押しているか判定（hit.normalベース）
                         Vector3 pushDir = new Vector3(moveDirection.x, 0f, moveDirection.z).normalized;
@@ -337,6 +349,11 @@ public class EntityController : MonoBehaviour
             // 動的Rigidbodyはめり込み解決しない（押し処理で対応）
             var overlapRb = m_overlaps[i].attachedRigidbody;
             if (overlapRb != null && !overlapRb.isKinematic) continue;
+
+            // 自分が不動 Entity (ImmovableEntity) なら、他 Entity / オブジェクト (Rigidbody持ち) との重なりは displace スキップ。
+            // 壁・地面など Rigidbody を持たない静的環境とのめり込みは引き続き解決する。
+            // 「プレイヤーが股を通る時のジッター」防止: kinematic な Player EntityBody との重なりで自分が押し戻されないようにする
+            if (m_isImmovable && overlapRb != null) continue;
 
             if (Physics.ComputePenetration(m_movementCapsule, position, transform.rotation,
                 m_overlaps[i], m_overlaps[i].transform.position, m_overlaps[i].transform.rotation,

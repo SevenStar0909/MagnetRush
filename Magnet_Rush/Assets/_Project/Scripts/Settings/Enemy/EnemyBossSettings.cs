@@ -123,8 +123,13 @@ public class EnemyBossSettings : ScriptableObject
     [Min(0f)]
     public float magnetCastRadius = 5.0f;
 
-    [Label("キャスト対象のlinearDamping上書き値")]
-    [Tooltip("ボス手キャストで磁化された PhysicsObject の Rigidbody.linearDamping を一時的にこの値に上書きする。手に到達する直前で減速させてオーバーシュートを防ぐ。Clear で元に戻る")]
+    [Label("異極時のlinearDamping上書き値")]
+    [Tooltip("範囲内の磁化済み PhysicsObject が手と異極（=引き合う）のとき、Rigidbody.linearDamping をこの値に上書きする。手に到達する直前で減速させてオーバーシュートを防ぐ")]
     [Min(0f)]
     public float magnetCastDamping = 3.0f;
+
+    [Label("同極時のlinearDamping上書き値")]
+    [Tooltip("範囲内の磁化済み PhysicsObject が手と同極（=反発する）のとき、Rigidbody.linearDamping をこの値に上書きする。大きいほど反発が即減衰してふわっと押される挙動になる")]
+    [Min(0f)]
+    public float magnetCastDampingSamePole = 6.0f;
 }
