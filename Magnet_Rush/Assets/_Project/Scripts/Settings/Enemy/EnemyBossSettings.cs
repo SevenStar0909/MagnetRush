@@ -122,4 +122,9 @@ public class EnemyBossSettings : ScriptableObject
     [Tooltip("AttackStance/AttackMotion中に右手が磁化された時、ボスを中心にこの半径内のPhysicsObjectに手の逆極を付与する")]
     [Min(0f)]
     public float magnetCastRadius = 5.0f;
+
+    [Label("キャスト対象のlinearDamping上書き値")]
+    [Tooltip("ボス手キャストで磁化された PhysicsObject の Rigidbody.linearDamping を一時的にこの値に上書きする。手に到達する直前で減速させてオーバーシュートを防ぐ。Clear で元に戻る")]
+    [Min(0f)]
+    public float magnetCastDamping = 3.0f;
 }
