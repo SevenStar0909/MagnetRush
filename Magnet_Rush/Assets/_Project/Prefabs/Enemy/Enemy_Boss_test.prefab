@@ -194,7 +194,6 @@ GameObject:
   - component: {fileID: 2249649121702153851}
   - component: {fileID: 6420921092659608959}
   - component: {fileID: 573067799464740083}
-  - component: {fileID: 2295991578477081772}
   - component: {fileID: 1337750729755968398}
   - component: {fileID: 5546392387088309262}
   - component: {fileID: 7991911151280088202}
@@ -357,28 +356,6 @@ MonoBehaviour:
   m_stunEndName: StunEnd
   m_isStaggerName: IsStagger
   m_staggerEndName: StaggerEnd
---- !u!195 &2295991578477081772
-NavMeshAgent:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 569016687892123619}
-  m_Enabled: 1
-  m_AgentTypeID: -1372625422
-  m_Radius: 0.5
-  m_Speed: 3.5
-  m_Acceleration: 8
-  avoidancePriority: 50
-  m_AngularSpeed: 0
-  m_StoppingDistance: 1.5
-  m_AutoTraverseOffMeshLink: 1
-  m_AutoBraking: 1
-  m_AutoRepath: 1
-  m_Height: 2
-  m_BaseOffset: 0
-  m_WalkableMask: 4294967295
-  m_ObstacleAvoidanceType: 4
 --- !u!114 &1337750729755968398
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -860,7 +837,7 @@ Transform:
   m_GameObject: {fileID: 2065019140952019760}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
