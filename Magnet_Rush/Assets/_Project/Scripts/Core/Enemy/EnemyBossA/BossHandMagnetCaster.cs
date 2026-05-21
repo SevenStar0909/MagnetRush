@@ -2,11 +2,12 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// ボスが AttackStance / AttackMotion に入った瞬間、右手中心の上半球範囲内 PhysicsObject
-/// と右手 Magnetizable に同一の N/S 極をランダム付与する。
-/// プレイヤーは範囲内オブジェクトに対極弾を当てて極を反転させ、手と異極にすることで
-/// オブジェクトを手に吸引する（吸引・接触・スタッガーは既存 MagnetManager / 既存スタッガー仕様に委譲）。
-/// State が AttackStance/AttackMotion を抜けた瞬間に付与した極を全てクリアする。
+/// ボスが AttackStance / AttackMotion に入った瞬間、右手 Magnetizable にだけ N/S を
+/// ランダム付与する（ドーム範囲内のオブジェクトには触らない=同極反発を起こさないため）。
+/// プレイヤーは表示されたドームの色で手の極を読み取り、対極弾をドーム内オブジェクトに当てる。
+/// 既存 Bullet 動作でオブジェクトに対極が付与され、手と異極になるので
+/// MagnetManager が自然に吸引してオブジェクトが手に飛ぶ。
+/// State が AttackStance/AttackMotion を抜けた瞬間に手の極をクリアする。
 /// 範囲ビジュアルは LineRenderer の上半球ドームで自描画する（N=赤 / S=青）。
 /// 依存: 右手 Magnetizable, EnemyBossAI, EnemyBossBase
 /// </summary>
@@ -35,8 +36,6 @@ public class BossHandMagnetCaster : MonoBehaviour
     [Header("Debug")]
     [SerializeField] private bool m_logCast = true;
 
-    private readonly List<Magnetizable> m_affected = new List<Magnetizable>();
-    private static readonly Collider[] s_overlapBuffer = new Collider[64];
     private EnemyBossSettings m_settings;
     private bool m_wasInCastableState;
 
@@ -121,53 +120,26 @@ public class BossHandMagnetCaster : MonoBehaviour
 
     private void Cast(MagneticPole pole)
     {
-        if (m_boss == null || m_settings == null)
-        { ChannelLogger.LogGuardReturn("EnemyBossA", "Boss / Settings 未取得でキャスト不可"); return; }
         if (m_handMagnetizable == null)
         { ChannelLogger.LogGuardReturn("EnemyBossA", "m_handMagnetizable 未アサイン"); return; }
 
-        // 手にも同じ極を付与（プレイヤー反転後の異極吸引が成立する条件）
+        // 手にだけ極を付与する。範囲内オブジェクトには触らない（同極反発で勝手に飛ぶのを防ぐ）。
+        // プレイヤーが対極弾をオブジェクトに当てると、既存 Bullet 動作で極が付き、手と異極になり吸引される
         m_handMagnetizable.SetPole(pole);
-        m_affected.Add(m_handMagnetizable);
-
-        int layerMask = 1 << PhysicsLayers.PhysicsObject;
-        Vector3 center = m_handMagnetizable.transform.position;
-        float radius = m_settings.magnetCastRadius;
-
-        int count = Physics.OverlapSphereNonAlloc(center, radius, s_overlapBuffer, layerMask, QueryTriggerInteraction.Ignore);
-
-        for (int i = 0; i < count; i++)
-        {
-            Collider col = s_overlapBuffer[i];
-            if (col == null) continue;
-
-            Magnetizable mag = col.GetComponentInParent<Magnetizable>();
-            if (mag == null) continue;
-            if (mag == m_handMagnetizable) continue;
-            if (m_affected.Contains(mag)) continue;
-
-            mag.SetPole(pole);
-            m_affected.Add(mag);
-        }
 
         if (m_logCast)
-            ChannelLogger.Log("EnemyBossA", $"[BossHandMagnetCaster] cast pole={pole} radius={radius} affected={m_affected.Count}");
+            ChannelLogger.Log("EnemyBossA", $"[BossHandMagnetCaster] cast hand pole={pole}");
     }
 
     private void ClearAffected()
     {
-        if (m_affected.Count == 0) return;
+        if (m_handMagnetizable == null) return;
+        if (m_handMagnetizable.Pole == MagneticPole.None) return;
 
-        for (int i = 0; i < m_affected.Count; i++)
-        {
-            var mag = m_affected[i];
-            if (mag == null) continue;
-            mag.Deactivate();
-        }
-        m_affected.Clear();
+        m_handMagnetizable.Deactivate();
 
         if (m_logCast)
-            ChannelLogger.Log("EnemyBossA", "[BossHandMagnetCaster] cleared affected");
+            ChannelLogger.Log("EnemyBossA", "[BossHandMagnetCaster] cleared hand pole");
     }
 
     private void BuildVisualizer()
