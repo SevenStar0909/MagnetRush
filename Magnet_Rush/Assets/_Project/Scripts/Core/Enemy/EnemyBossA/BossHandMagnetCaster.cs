@@ -147,4 +147,72 @@ public class BossHandMagnetCaster : MonoBehaviour
         if (m_logCast)
             ChannelLogger.Log("EnemyBossA", "[BossHandMagnetCaster] cleared affected");
     }
+
+#if UNITY_EDITOR
+    // Scene View 専用。キャスト範囲（ボス中心の半径 magnetCastRadius、ドーム上半分）を黄色で描画する
+    private void OnDrawGizmos()
+    {
+        if (m_boss == null) return;
+        var settings = m_settings != null ? m_settings : m_boss.StatusData;
+        if (settings == null) return;
+
+        Vector3 center = m_boss.transform.position;
+        float radius = settings.magnetCastRadius;
+
+        Gizmos.color = new Color(1f, 0.92f, 0.016f, 0.85f);
+        DrawDome(center, radius);
+    }
+
+    private static void DrawDome(Vector3 center, float radius)
+    {
+        const int ringSegments = 48;
+        const int meridianSegments = 24;
+
+        float[] latitudes = { 0f, 30f, 60f, 89f };
+        foreach (float lat in latitudes)
+        {
+            float rad = lat * Mathf.Deg2Rad;
+            float h = Mathf.Sin(rad) * radius;
+            float r = Mathf.Cos(rad) * radius;
+            DrawWireCircle(center + Vector3.up * h, Vector3.up, r, ringSegments);
+        }
+
+        for (int i = 0; i < 4; i++)
+        {
+            float angle = i * 45f * Mathf.Deg2Rad;
+            Vector3 dir = new Vector3(Mathf.Sin(angle), 0f, Mathf.Cos(angle));
+            DrawWireHalfMeridian(center, dir, radius, meridianSegments);
+        }
+    }
+
+    private static void DrawWireCircle(Vector3 center, Vector3 normal, float radius, int segments)
+    {
+        Vector3 up = normal.normalized;
+        Vector3 forward = Mathf.Abs(Vector3.Dot(up, Vector3.up)) < 0.99f
+            ? Vector3.Cross(up, Vector3.up).normalized
+            : Vector3.Cross(up, Vector3.forward).normalized;
+        Vector3 right = Vector3.Cross(up, forward).normalized;
+
+        Vector3 prev = center + forward * radius;
+        for (int i = 1; i <= segments; i++)
+        {
+            float a = (float)i / segments * Mathf.PI * 2f;
+            Vector3 next = center + forward * (Mathf.Cos(a) * radius) + right * (Mathf.Sin(a) * radius);
+            Gizmos.DrawLine(prev, next);
+            prev = next;
+        }
+    }
+
+    private static void DrawWireHalfMeridian(Vector3 center, Vector3 dir, float radius, int segments)
+    {
+        Vector3 prev = center + dir * radius;
+        for (int i = 1; i <= segments; i++)
+        {
+            float a = (float)i / segments * Mathf.PI / 2f;
+            Vector3 next = center + dir * (Mathf.Cos(a) * radius) + Vector3.up * (Mathf.Sin(a) * radius);
+            Gizmos.DrawLine(prev, next);
+            prev = next;
+        }
+    }
+#endif
 }
