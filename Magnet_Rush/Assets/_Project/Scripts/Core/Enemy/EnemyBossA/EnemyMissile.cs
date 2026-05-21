@@ -21,8 +21,12 @@ public class EnemyMissile : MonoBehaviour
     [SerializeField] private Transform m_player;    // プレイヤーへの参照（Inspectorで設定、もしくは起動時に自動検索）
 
     [Header("Combat")]
-    [SerializeField] private int m_damage = 1;  
+    [SerializeField] private int m_damage = 1;
     [SerializeField] private float m_lifetime = 6f;
+
+    [Header("ExplosionEffects")]
+    [SerializeField] private GameObject m_explosionEffect; // P_MS_ExplosionPS
+    [SerializeField] private float m_explosionEffectLifetime = 3f;
 
     private Rigidbody m_rb;
     private Magnetizable m_selfMagnetizable;
@@ -36,6 +40,9 @@ public class EnemyMissile : MonoBehaviour
     {
         m_rb = GetComponent<Rigidbody>();
         m_selfMagnetizable = GetComponent<Magnetizable>();
+
+        if (m_explosionEffect == null)
+            m_explosionEffect = Resources.Load<GameObject>("P_MS_ExplosionPS");
 
         if (m_player == null)
         {
@@ -198,6 +205,16 @@ public class EnemyMissile : MonoBehaviour
         return 10f;
     }
 
+    private void SpawnExplosionEffect(Vector3 position)
+    {
+        if (m_explosionEffect == null)
+            return;
+
+        GameObject effectInstance = Instantiate(m_explosionEffect, position, Quaternion.identity);
+        if (m_explosionEffectLifetime > 0f)
+            Destroy(effectInstance, m_explosionEffectLifetime);
+    }
+
     // Layer Matrix で「当たる相手」を一元管理する設計（原則1）。PlayerBullet × EnemyBullet は OFF。
     // MagnetBullet は SphereCast で EnemyBullet レイヤを直接拾うので、Matrix OFF でも磁化検知は機能する。
     // コリジョンコールバック内で相手の型/タグ判定はしない（原則4）。
@@ -215,6 +232,7 @@ public class EnemyMissile : MonoBehaviour
             });
         }
 
+        SpawnExplosionEffect(other.ClosestPoint(transform.position));
         Destroy(gameObject);
     }
 }
