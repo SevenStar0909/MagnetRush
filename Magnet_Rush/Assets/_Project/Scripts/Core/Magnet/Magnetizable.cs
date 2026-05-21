@@ -22,6 +22,13 @@ public class Magnetizable : MonoBehaviour, IMagnetPoleProvider
     public MagneticPole Pole => m_pole;
     public bool IsActive => m_isActive;
 
+    /// <summary>
+    /// true のとき、同じく RepulsionDisabled が true な相手との同極反発を MagnetManager がスキップする。
+    /// ボス手キャストでドーム内オブジェクトに極を一斉付与した際、それら同士で反発し合わないようにするためのフラグ。
+    /// 異極吸引やドーム外オブジェクトとの相互作用には影響しない。
+    /// </summary>
+    public bool RepulsionDisabled { get; set; }
+
     /// <summary>磁力中心のワールド座標。MagnetField がアタッチされている時はそのフィールドGO位置（着弾点）、無い時は装着GOからm_centerOffset分ローカル空間でずらした位置。</summary>
     public Vector3 Position
     {

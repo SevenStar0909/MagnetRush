@@ -274,6 +274,11 @@ public class MagnetManager : Singleton<MagnetManager>
         bool isOpposite = a.Pole != b.Pole && a.Pole != MagneticPole.None && b.Pole != MagneticPole.None;
         bool isSame = a.Pole == b.Pole;
 
+        // ドーム内オブジェクト同士のような「同じグループとして付与された」ペアは
+        // 同極反発をスキップする。両方フラグが立ってる時だけ無視し、片方だけならそのまま反発する
+        if (isSame && a.RepulsionDisabled && b.RepulsionDisabled)
+        { ChannelLogger.LogGuardReturn("Magnet", "両者RepulsionDisabled同極のため反発スキップ"); return; }
+
         // 引き寄せ/反発で別係数を使う。同極反発は通常 attract より弱めに調整される
         float baseForce;
         float forceCap;

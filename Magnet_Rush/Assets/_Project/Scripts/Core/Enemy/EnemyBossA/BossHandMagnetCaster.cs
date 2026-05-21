@@ -2,19 +2,18 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// ボスが AttackStance / AttackMotion に入った瞬間、右手 Magnetizable にだけ N/S を
-/// ランダム付与する（ドーム範囲内のオブジェクトには触らない=同極反発を起こさないため）。
-/// プレイヤーは表示されたドームの色で手の極を読み取り、対極弾をドーム内オブジェクトに当てる。
-/// 既存 Bullet 動作でオブジェクトに対極が付与され、手と異極になるので
-/// MagnetManager が自然に吸引してオブジェクトが手に飛ぶ。
-/// State が AttackStance/AttackMotion を抜けた瞬間に手の極をクリアする。
+/// ボスが AttackStance / AttackMotion に入った瞬間、ボス中心の上半球ドーム範囲内
+/// PhysicsObject 全員に同一の N/S 極をランダム付与する（手は無極のまま）。
+/// プレイヤーはドームの色（=付与した極）を見て、対極の弾を手に当てて手を磁化させ、
+/// オブジェクト群と手が異極になることで MagnetManager の吸引が成立し全オブジェクトが手に飛ぶ。
+/// State が AttackStance/AttackMotion を抜けた瞬間に付与した極を全てクリアする。
 /// 範囲ビジュアルは LineRenderer の上半球ドームで自描画する（N=赤 / S=青）。
 /// 依存: 右手 Magnetizable, EnemyBossAI, EnemyBossBase
 /// </summary>
 public class BossHandMagnetCaster : MonoBehaviour
 {
     [Header("References")]
-    [Tooltip("極を付与する右手の Magnetizable")]
+    [Tooltip("ドームと範囲キャストの中心となる右手 Magnetizable")]
     [SerializeField] private Magnetizable m_handMagnetizable;
 
     [Tooltip("State 監視用。AttackStance / AttackMotion への突入を検知する")]
@@ -36,6 +35,8 @@ public class BossHandMagnetCaster : MonoBehaviour
     [Header("Debug")]
     [SerializeField] private bool m_logCast = true;
 
+    private readonly List<Magnetizable> m_affected = new List<Magnetizable>();
+    private static readonly Collider[] s_overlapBuffer = new Collider[64];
     private EnemyBossSettings m_settings;
     private bool m_wasInCastableState;
 
@@ -59,7 +60,6 @@ public class BossHandMagnetCaster : MonoBehaviour
 
     private void OnDestroy()
     {
-        // ドームは親無しの独立GOなので、自身が破棄される時に明示的に破棄する
         if (m_visualizerGO != null)
         {
             if (Application.isPlaying) Destroy(m_visualizerGO);
@@ -93,19 +93,19 @@ public class BossHandMagnetCaster : MonoBehaviour
     }
 
     /// <summary>
-    /// ドームを「手のXZ位置 + 真下の地面Y」に毎フレーム再配置する。
+    /// ドームを「ボスのXZ位置 + 真下の地面Y」に毎フレーム再配置する。
     /// 底辺がそのまま地面に張り付くようローカル原点に半球を作ってあるので、ワールド位置だけ動かせば良い。
     /// </summary>
     private void UpdateVisualizerTransform()
     {
-        if (m_handMagnetizable == null) return;
+        if (m_boss == null) return;
 
-        Vector3 handPos = m_handMagnetizable.transform.position;
-        float groundY = handPos.y;
-        if (Physics.Raycast(handPos, Vector3.down, out RaycastHit hit, 100f, PhysicsLayers.MaskGroundCheck, QueryTriggerInteraction.Ignore))
+        Vector3 bossPos = m_boss.transform.position;
+        float groundY = bossPos.y;
+        if (Physics.Raycast(bossPos + Vector3.up * 1f, Vector3.down, out RaycastHit hit, 100f, PhysicsLayers.MaskGroundCheck, QueryTriggerInteraction.Ignore))
             groundY = hit.point.y;
 
-        m_visualizerGO.transform.position = new Vector3(handPos.x, groundY, handPos.z);
+        m_visualizerGO.transform.position = new Vector3(bossPos.x, groundY, bossPos.z);
         m_visualizerGO.transform.rotation = Quaternion.identity;
     }
 
@@ -120,26 +120,53 @@ public class BossHandMagnetCaster : MonoBehaviour
 
     private void Cast(MagneticPole pole)
     {
+        if (m_boss == null || m_settings == null)
+        { ChannelLogger.LogGuardReturn("EnemyBossA", "Boss / Settings 未取得でキャスト不可"); return; }
         if (m_handMagnetizable == null)
         { ChannelLogger.LogGuardReturn("EnemyBossA", "m_handMagnetizable 未アサイン"); return; }
 
-        // 手にだけ極を付与する。範囲内オブジェクトには触らない（同極反発で勝手に飛ぶのを防ぐ）。
-        // プレイヤーが対極弾をオブジェクトに当てると、既存 Bullet 動作で極が付き、手と異極になり吸引される
-        m_handMagnetizable.SetPole(pole);
+        int layerMask = 1 << PhysicsLayers.PhysicsObject;
+        Vector3 center = m_boss.transform.position;
+        float radius = m_settings.magnetCastRadius;
+
+        int count = Physics.OverlapSphereNonAlloc(center, radius, s_overlapBuffer, layerMask, QueryTriggerInteraction.Ignore);
+
+        for (int i = 0; i < count; i++)
+        {
+            Collider col = s_overlapBuffer[i];
+            if (col == null) continue;
+
+            Magnetizable mag = col.GetComponentInParent<Magnetizable>();
+            if (mag == null) continue;
+            // 手は無極のままにする（プレイヤーが対極弾を当てて磁化させる）
+            if (mag == m_handMagnetizable) continue;
+            if (m_affected.Contains(mag)) continue;
+
+            mag.SetPole(pole);
+            // ドーム内オブジェクト同士の同極反発を抑制（MagnetManager.ProcessPair でフラグを見る）
+            mag.RepulsionDisabled = true;
+            m_affected.Add(mag);
+        }
 
         if (m_logCast)
-            ChannelLogger.Log("EnemyBossA", $"[BossHandMagnetCaster] cast hand pole={pole}");
+            ChannelLogger.Log("EnemyBossA", $"[BossHandMagnetCaster] cast pole={pole} radius={radius} affected={m_affected.Count}");
     }
 
     private void ClearAffected()
     {
-        if (m_handMagnetizable == null) return;
-        if (m_handMagnetizable.Pole == MagneticPole.None) return;
+        if (m_affected.Count == 0) return;
 
-        m_handMagnetizable.Deactivate();
+        for (int i = 0; i < m_affected.Count; i++)
+        {
+            var mag = m_affected[i];
+            if (mag == null) continue;
+            mag.RepulsionDisabled = false;
+            mag.Deactivate();
+        }
+        m_affected.Clear();
 
         if (m_logCast)
-            ChannelLogger.Log("EnemyBossA", "[BossHandMagnetCaster] cleared hand pole");
+            ChannelLogger.Log("EnemyBossA", "[BossHandMagnetCaster] cleared affected");
     }
 
     private void BuildVisualizer()
