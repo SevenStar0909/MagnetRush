@@ -29,7 +29,7 @@ public class DebugUI : MonoBehaviour
         {
             m_forceSlider.minValue = 1f;
             m_forceSlider.maxValue = 100f;
-            m_forceSlider.value = m_magnetSettings.magnetForce;
+            m_forceSlider.value = m_magnetSettings.attractForce;
             m_forceSlider.onValueChanged.AddListener(OnForceChanged);
         }
 
@@ -55,7 +55,7 @@ public class DebugUI : MonoBehaviour
 
     private void OnForceChanged(float value)
     {
-        if (m_magnetSettings != null) m_magnetSettings.magnetForce = Mathf.Clamp(value, 1f, 100f);
+        if (m_magnetSettings != null) m_magnetSettings.attractForce = Mathf.Clamp(value, 1f, 100f);
     }
 
     private void OnRangeChanged(float value)
@@ -66,7 +66,7 @@ public class DebugUI : MonoBehaviour
     private void UpdateLabels()
     {
         if (m_magnetSettings == null) { ChannelLogger.LogGuardReturn("UI", "MagnetSettings未設定"); return; }
-        if (m_forceLabel != null) m_forceLabel.text = $"磁力: {m_magnetSettings.magnetForce:F1}";
+        if (m_forceLabel != null) m_forceLabel.text = $"磁力: {m_magnetSettings.attractForce:F1}";
         if (m_rangeLabel != null) m_rangeLabel.text = $"範囲: {m_magnetSettings.magnetRange:F1}";
     }
 

@@ -119,17 +119,7 @@ public class EnemyBossSettings : ScriptableObject
 
     [Header("[手の磁力範囲キャスト]")]
     [Label("手の磁力範囲半径（m）")]
-    [Tooltip("AttackStance/AttackMotion中に右手が磁化された時、ボスを中心にこの半径内のPhysicsObjectに手の逆極を付与する")]
+    [Tooltip("AttackStance/AttackMotion 突入時、右手を中心にこの半径内の PhysicsObject と右手自身に同一の N/S をランダム付与する")]
     [Min(0f)]
     public float magnetCastRadius = 5.0f;
-
-    [Label("異極時のlinearDamping上書き値")]
-    [Tooltip("範囲内の磁化済み PhysicsObject が手と異極（=引き合う）のとき、Rigidbody.linearDamping をこの値に上書きする。手に到達する直前で減速させてオーバーシュートを防ぐ")]
-    [Min(0f)]
-    public float magnetCastDamping = 3.0f;
-
-    [Label("同極時のlinearDamping上書き値")]
-    [Tooltip("範囲内の磁化済み PhysicsObject が手と同極（=反発する）のとき、Rigidbody.linearDamping をこの値に上書きする。大きいほど反発が即減衰してふわっと押される挙動になる")]
-    [Min(0f)]
-    public float magnetCastDampingSamePole = 6.0f;
 }

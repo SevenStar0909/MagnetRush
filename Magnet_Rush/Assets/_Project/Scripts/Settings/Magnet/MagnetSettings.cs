@@ -6,18 +6,26 @@ using UnityEngine.Serialization;
 public class MagnetSettings : ScriptableObject
 {
     [Header("[磁力]")]
-    [Label("磁力の強さ")]
-    [Tooltip("磁力の基本の強さ。inner範囲内でこの値がフルで適用される")]
-    public float magnetForce = 15f;
+    [Label("引き寄せ（異極）の強さ")]
+    [Tooltip("異極ペアを引き合わせる力。inner範囲内でこの値がフルで適用される")]
+    [FormerlySerializedAs("magnetForce")]
+    public float attractForce = 15f;
+    [Label("反発（同極）の強さ")]
+    [Tooltip("同極ペアを反発させる力。inner範囲内でこの値がフルで適用される。引き寄せより弱めにすると暴れにくい")]
+    public float repelForce = 8f;
     [Label("ペア検索カットオフ距離（m）")]
     [Tooltip("ペア検索のハードカットオフ距離（m）。この距離以上のペアは力を計算しない（パフォーマンス用）")]
     public float magnetRange = 10f;
 
     [Header("[制限]")]
-    [Label("1組の磁石にかかる力の上限（0=制限なし）")]
-    [Tooltip("磁石どうしが引き合ったり反発したりするとき、1組あたりに発生する力の上限。強い磁石が暴れすぎないように頭打ちにできる。0で制限なし。")]
+    [Label("1組の引き寄せ力の上限（0=制限なし）")]
+    [Tooltip("異極ペアの引き寄せ力の上限。強すぎる時の頭打ち。0で制限なし")]
     [FormerlySerializedAs("maxForcePerObject")]
-    public float maxForcePerPair = 0f;
+    [FormerlySerializedAs("maxForcePerPair")]
+    public float attractMaxForcePerPair = 0f;
+    [Label("1組の反発力の上限（0=制限なし）")]
+    [Tooltip("同極ペアの反発力の上限。反発だけ頭打ちにしたい時に使う。0で制限なし")]
+    public float repelMaxForcePerPair = 0f;
 
     [Label("プレイヤーが磁場の中で鈍くなる強さの基準値")]
     [Tooltip("プレイヤーが磁場の中で受けてる磁力の合計がこの値に達すると、最大限まで鈍くなる。実際にどれくらい鈍くなるかは『磁場内速度低下率』で決まる。0=磁場の中でも鈍くならない")]

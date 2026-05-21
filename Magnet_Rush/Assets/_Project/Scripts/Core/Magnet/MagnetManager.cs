@@ -271,13 +271,24 @@ public class MagnetManager : Singleton<MagnetManager>
             strength = 1f - (distance - effectiveInner) / (effectiveOuter - effectiveInner);
         }
 
-        float forceMagnitude = m_settings.magnetForce * strength;
-
-        if (m_settings.maxForcePerPair > 0f)
-            forceMagnitude = Mathf.Min(forceMagnitude, m_settings.maxForcePerPair);
-
         bool isOpposite = a.Pole != b.Pole && a.Pole != MagneticPole.None && b.Pole != MagneticPole.None;
         bool isSame = a.Pole == b.Pole;
+
+        // 引き寄せ/反発で別係数を使う。同極反発は通常 attract より弱めに調整される
+        float baseForce;
+        float forceCap;
+        if (isOpposite)
+        {
+            baseForce = m_settings.attractForce;
+            forceCap = m_settings.attractMaxForcePerPair;
+        }
+        else
+        {
+            baseForce = m_settings.repelForce;
+            forceCap = m_settings.repelMaxForcePerPair;
+        }
+        float forceMagnitude = baseForce * strength;
+        if (forceCap > 0f) forceMagnitude = Mathf.Min(forceMagnitude, forceCap);
 
         // Entity 絡みの異極ペアが holdEngageDistance 内なら PD ホルダー経路に分岐（通常引力はスキップ）
         bool entityInvolved = a.CachedEntity != null || b.CachedEntity != null;
