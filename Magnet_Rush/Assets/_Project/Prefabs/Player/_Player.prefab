@@ -44,7 +44,6 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 5721768207443567397}
   - {fileID: 8727765356199317844}
   - {fileID: 1162132546054884071}
   m_Father: {fileID: 0}
@@ -136,7 +135,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f7eb2ea83aeed54c8fa7e632b84756a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MagnetRush.Entity.Health
-  m_maxHealth: 50
   m_damageCooldown: 1
 --- !u!114 &7473496859954039961
 MonoBehaviour:
@@ -153,6 +151,8 @@ MonoBehaviour:
   m_pole: 0
   m_isActive: 0
   m_initialMass: 1
+  m_centerOffset: {x: 0, y: 0, z: 0}
+  m_useEdgeDetectionOutline: 1
 --- !u!54 &4320032113719753399
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -612,12 +612,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4708849457827294797}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.812, z: -0.5}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalRotation: {x: -0.00000023842026, y: 0.00000001487444, z: 1, w: 0.000000025400368}
+  m_LocalPosition: {x: -0.467, y: -0.008, z: 0.05}
+  m_LocalScale: {x: 0.74074084, y: 0.74074084, z: 0.74074084}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 890088630592913366}
+  m_Father: {fileID: 8259244569515467567}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7476629990669682139
 GameObject:
@@ -667,7 +667,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Entity::Hitbox
   m_health: {fileID: 8415192833665430904}
-  m_stamina: {fileID: 0}
 --- !u!1001 &2341635302970523350
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -742,7 +741,10 @@ PrefabInstance:
       objectReference: {fileID: 9100000, guid: fc83acf053d69024a9871d39cfe4a046, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: -3251154951667622407, guid: aa94ade5d4762bc4aac4add1dcc628be, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5721768207443567397}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: aa94ade5d4762bc4aac4add1dcc628be, type: 3}
       insertIndex: -1
@@ -774,5 +776,10 @@ MonoBehaviour:
 --- !u!95 &8148627248615965511 stripped
 Animator:
   m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: aa94ade5d4762bc4aac4add1dcc628be, type: 3}
+  m_PrefabInstance: {fileID: 2341635302970523350}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &8259244569515467567 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -3251154951667622407, guid: aa94ade5d4762bc4aac4add1dcc628be, type: 3}
   m_PrefabInstance: {fileID: 2341635302970523350}
   m_PrefabAsset: {fileID: 0}

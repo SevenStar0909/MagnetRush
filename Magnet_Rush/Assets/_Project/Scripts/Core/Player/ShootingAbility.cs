@@ -149,14 +149,23 @@ public class ShootingAbility : Ability
         m_events.FireReload();
     }
 
-    /// <summary>弾道計算。カメラレイ交差 → 平面交差 → 前方フォールバック。</summary>
+    /// <summary>
+    /// 弾道計算。spawnPos基準→カメラレイ交差→平面交差→前方フォールバック。
+    /// spawnPos からのRaycastを優先する理由: TPS でカメラがプレイヤー後方上にあるため、
+    /// カメラRayは下向き時にプレイヤー後方を指して弾が画面外の方向に飛ぶ問題を防ぐ。
+    /// </summary>
     private Vector3 CalculateTargetPoint(Ray ray, Vector3 camForward, Vector3 spawnPos, int layerMask, float maxDist)
     {
+        // カメラからレティクルへレイを飛ばす (TPSでの遠距離照準合わせ用)
         if (Physics.Raycast(ray, out RaycastHit hit, maxDist, layerMask))
         {
             if (Vector3.Dot(camForward, hit.point - spawnPos) > 0f)
                 return hit.point;
         }
+
+        // 弾の発射点からカメラ方向にRaycast (弾の進行方向と一致するので照準ズレなし)
+        if (Physics.Raycast(spawnPos, camForward, out RaycastHit bulletHit, maxDist, layerMask))
+            return bulletHit.point;
 
         Plane firePlane = new Plane(Vector3.up, spawnPos);
         if (firePlane.Raycast(ray, out float enter) && enter > 0f)

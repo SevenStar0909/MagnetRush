@@ -13,8 +13,9 @@ MonoBehaviour:
   m_Name: MagnetSettings
   m_EditorClassIdentifier: Assembly-CSharp::MagnetSettings
   magnetForce: 200
-  magnetRange: 15
-  maxForcePerObject: 50
+  magnetRange: 80
+  maxForcePerPair: 0
+  influenceNormalizeForce: 300
   snapDistance: 1.5
   snapBreakForce: 100
   holdEngageDistance: 1.5

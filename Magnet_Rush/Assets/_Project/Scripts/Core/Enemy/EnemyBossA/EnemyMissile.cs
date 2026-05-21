@@ -198,8 +198,9 @@ public class EnemyMissile : MonoBehaviour
         return 10f;
     }
 
-    // 何にあたっても消える。Layer Matrix で「当たる相手」を一元管理する設計
-    // （Wall/Ground/PhysicsObject/Player は ON、Enemy/EnemyBullet 等は OFF）
+    // Layer Matrix で「当たる相手」を一元管理する設計（原則1）。PlayerBullet × EnemyBullet は OFF。
+    // MagnetBullet は SphereCast で EnemyBullet レイヤを直接拾うので、Matrix OFF でも磁化検知は機能する。
+    // コリジョンコールバック内で相手の型/タグ判定はしない（原則4）。
     private void OnTriggerEnter(Collider other)
     {
         var hittable = other.GetComponentInParent<IHittable>();

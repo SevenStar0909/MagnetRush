@@ -33,9 +33,12 @@ public class EnemyBullet : MonoBehaviour
             Destroy(gameObject);
     }
 
+    // Layer Matrix で「当たる相手」を一元管理（原則1）。PlayerBullet × EnemyBullet は OFF。
+    // MagnetBullet は SphereCast で EnemyBullet レイヤを直接拾うので Matrix OFF でも磁化検知は機能する。
+    // コリジョンコールバック内で相手の型/タグ判定はしない（原則4）。
     private void OnTriggerEnter(Collider other)
     {
-        // Matrixが「当たるべき相手」だけを通す。Hurtbox 子コライダー直撃でも親 Hitbox の IHittable に到達する
+        // Hurtbox 子コライダー直撃でも親 Hitbox の IHittable に到達する
         var hittable = other.GetComponentInParent<IHittable>();
         if (hittable != null)
         {

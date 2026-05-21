@@ -71,8 +71,8 @@ public static class PhysicsLayers
         // Ground + Wall + EntityBody + PhysicsObject + Default(0)。Trigger系(弾/MeleeHitbox/MagnetField)除外
         MaskEntityCollision = (1 << 0) | SafeMask(Ground) | SafeMask(Wall) | SafeMask(EntityBody) | SafeMask(PhysicsObject);
 
-        // Trigger系 + Player除外
-        MaskShootingRaycast = ~(SafeMask(Player) | SafeMask(PlayerBullet) | SafeMask(EnemyBullet)
+        // Trigger系 + Player除外。EnemyBullet (タレット弾/ミサイル) は磁化対象なので照準で拾う (PhysicsObject と同じ扱い)
+        MaskShootingRaycast = ~(SafeMask(Player) | SafeMask(PlayerBullet)
             | SafeMask(MeleeHitbox) | SafeMask(MagnetField) | (1 << 2));
 
         ValidateLayers();

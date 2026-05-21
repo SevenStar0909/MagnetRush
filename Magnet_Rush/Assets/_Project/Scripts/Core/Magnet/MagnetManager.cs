@@ -273,8 +273,8 @@ public class MagnetManager : Singleton<MagnetManager>
 
         float forceMagnitude = m_settings.magnetForce * strength;
 
-        if (m_settings.maxForcePerObject > 0f)
-            forceMagnitude = Mathf.Min(forceMagnitude, m_settings.maxForcePerObject);
+        if (m_settings.maxForcePerPair > 0f)
+            forceMagnitude = Mathf.Min(forceMagnitude, m_settings.maxForcePerPair);
 
         bool isOpposite = a.Pole != b.Pole && a.Pole != MagneticPole.None && b.Pole != MagneticPole.None;
         bool isSame = a.Pole == b.Pole;
