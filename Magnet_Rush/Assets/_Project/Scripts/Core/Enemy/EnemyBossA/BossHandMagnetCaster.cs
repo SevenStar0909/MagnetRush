@@ -25,15 +25,30 @@ public class BossHandMagnetCaster : MonoBehaviour
     [Header("Debug")]
     [SerializeField] private bool m_logCast = true;
 
+    [Header("Visualizer (Game View)")]
+    [Tooltip("Cast 中の色（不透明寄り）")]
+    [SerializeField] private Color m_visualColorCasting = new Color(1f, 0.92f, 0.016f, 0.85f);
+
+    [Tooltip("非 Cast 中の色（薄い）")]
+    [SerializeField] private Color m_visualColorIdle = new Color(1f, 0.92f, 0.016f, 0.2f);
+
+    [Tooltip("LineRenderer の太さ")]
+    [SerializeField] private float m_visualLineWidth = 0.05f;
+
     // key=Magnetizable, value=元の Rigidbody.linearDamping。ClearAffected で復元する
     private readonly Dictionary<Magnetizable, float> m_affected = new Dictionary<Magnetizable, float>();
     private static readonly Collider[] s_overlapBuffer = new Collider[64];
     private EnemyBossSettings m_settings;
 
+    private Transform m_visualContainer;
+    private readonly List<LineRenderer> m_visualLines = new List<LineRenderer>();
+    private static Material s_lineMaterial;
+
     private void Awake()
     {
         if (m_handMagnetizable == null) m_handMagnetizable = GetComponent<Magnetizable>();
         if (m_boss != null) m_settings = m_boss.StatusData;
+        BuildVisualizer();
     }
 
     private void OnEnable()
@@ -48,6 +63,18 @@ public class BossHandMagnetCaster : MonoBehaviour
             m_handMagnetizable.OnPoleChanged -= HandlePoleChanged;
 
         ClearAffected();
+    }
+
+    private void OnDestroy()
+    {
+        DestroyVisualizer();
+    }
+
+    private void LateUpdate()
+    {
+        // ボスが回転してもドームをワールド軸固定（ローテーションだけ打ち消す）
+        if (m_visualContainer != null)
+            m_visualContainer.rotation = Quaternion.identity;
     }
 
     private void Update()
@@ -124,13 +151,19 @@ public class BossHandMagnetCaster : MonoBehaviour
             mag.SetPole(opposite);
         }
 
+        SetVisualColor(m_visualColorCasting);
+
         if (m_logCast)
             ChannelLogger.Log("EnemyBossA", $"[BossHandMagnetCaster] cast hand={handPole} opposite={opposite} radius={radius} hits={count} affected={m_affected.Count}");
     }
 
     private void ClearAffected()
     {
-        if (m_affected.Count == 0) return;
+        if (m_affected.Count == 0)
+        {
+            SetVisualColor(m_visualColorIdle);
+            return;
+        }
         foreach (var kvp in m_affected)
         {
             var mag = kvp.Key;
@@ -144,8 +177,118 @@ public class BossHandMagnetCaster : MonoBehaviour
         }
         m_affected.Clear();
 
+        SetVisualColor(m_visualColorIdle);
+
         if (m_logCast)
             ChannelLogger.Log("EnemyBossA", "[BossHandMagnetCaster] cleared affected");
+    }
+
+    private void BuildVisualizer()
+    {
+        if (m_boss == null || m_settings == null) return;
+        if (m_visualContainer != null) return;
+
+        var go = new GameObject("BossHandCastVisualizer");
+        m_visualContainer = go.transform;
+        m_visualContainer.SetParent(m_boss.transform, worldPositionStays: false);
+        m_visualContainer.localPosition = Vector3.zero;
+        m_visualContainer.localRotation = Quaternion.identity;
+
+        float radius = m_settings.magnetCastRadius;
+
+        float[] latitudes = { 0f, 30f, 60f, 89f };
+        foreach (float lat in latitudes)
+        {
+            float rad = lat * Mathf.Deg2Rad;
+            float h = Mathf.Sin(rad) * radius;
+            float r = Mathf.Cos(rad) * radius;
+            CreateVisualRing(Vector3.up * h, r);
+        }
+
+        for (int i = 0; i < 4; i++)
+        {
+            float angle = i * 45f * Mathf.Deg2Rad;
+            Vector3 dir = new Vector3(Mathf.Sin(angle), 0f, Mathf.Cos(angle));
+            CreateVisualMeridianHalf(dir, radius);
+        }
+
+        SetVisualColor(m_visualColorIdle);
+    }
+
+    private void DestroyVisualizer()
+    {
+        if (m_visualContainer == null) return;
+        if (Application.isPlaying) Destroy(m_visualContainer.gameObject);
+        else DestroyImmediate(m_visualContainer.gameObject);
+        m_visualContainer = null;
+        m_visualLines.Clear();
+    }
+
+    private void CreateVisualRing(Vector3 localCenter, float radius)
+    {
+        var go = new GameObject("Ring");
+        go.transform.SetParent(m_visualContainer);
+        go.transform.localPosition = localCenter;
+        go.transform.localRotation = Quaternion.identity;
+
+        var lr = go.AddComponent<LineRenderer>();
+        lr.useWorldSpace = false;
+        lr.loop = true;
+        lr.widthMultiplier = m_visualLineWidth;
+        SetupLineMaterial(lr);
+
+        const int segments = 48;
+        lr.positionCount = segments;
+        for (int i = 0; i < segments; i++)
+        {
+            float a = (float)i / segments * Mathf.PI * 2f;
+            lr.SetPosition(i, new Vector3(Mathf.Cos(a) * radius, 0f, Mathf.Sin(a) * radius));
+        }
+
+        m_visualLines.Add(lr);
+    }
+
+    private void CreateVisualMeridianHalf(Vector3 dir, float radius)
+    {
+        var go = new GameObject("Meridian");
+        go.transform.SetParent(m_visualContainer);
+        go.transform.localPosition = Vector3.zero;
+        go.transform.localRotation = Quaternion.identity;
+
+        var lr = go.AddComponent<LineRenderer>();
+        lr.useWorldSpace = false;
+        lr.loop = false;
+        lr.widthMultiplier = m_visualLineWidth;
+        SetupLineMaterial(lr);
+
+        const int segments = 24;
+        lr.positionCount = segments + 1;
+        for (int i = 0; i <= segments; i++)
+        {
+            float a = (float)i / segments * Mathf.PI / 2f;
+            Vector3 pos = dir * (Mathf.Cos(a) * radius) + Vector3.up * (Mathf.Sin(a) * radius);
+            lr.SetPosition(i, pos);
+        }
+
+        m_visualLines.Add(lr);
+    }
+
+    private static void SetupLineMaterial(LineRenderer lr)
+    {
+        if (s_lineMaterial == null)
+            s_lineMaterial = new Material(Shader.Find("Sprites/Default"));
+        lr.material = s_lineMaterial;
+    }
+
+    private void SetVisualColor(Color color)
+    {
+        for (int i = 0; i < m_visualLines.Count; i++)
+        {
+            var lr = m_visualLines[i];
+            if (lr == null) continue;
+            lr.startColor = color;
+            lr.endColor = color;
+        }
     }
 
 #if UNITY_EDITOR
