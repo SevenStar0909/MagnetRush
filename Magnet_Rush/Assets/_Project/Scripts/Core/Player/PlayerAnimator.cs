@@ -228,7 +228,12 @@ public class PlayerAnimator : MonoBehaviour
         if (m_player != null)
         {
             m_animator.SetFloat(m_hMoveSpeed, m_player.lateralVelocity.magnitude);
-            m_animator.SetBool(m_hIsGrounded, m_player.IsGrounded);
+
+            // 物理 IsGrounded は externalVelocity (磁力等) による持ち上がりを検知しないため、
+            // 上向き外力が SnapForce を超えるときは Animator 上「離地」扱いにして Airborne 層へ遷移させる。
+            float snapForce = m_player.Settings != null ? m_player.Settings.snapForce : 0f;
+            bool airborneByExternal = m_player.externalVelocity.y > snapForce;
+            m_animator.SetBool(m_hIsGrounded, m_player.IsGrounded && !airborneByExternal);
         }
 
         if (m_input != null)
@@ -236,7 +241,9 @@ public class PlayerAnimator : MonoBehaviour
             var mv = m_input.MoveInput;
             m_animator.SetFloat(m_hMoveInputX, mv.x);
             m_animator.SetFloat(m_hMoveInputZ, mv.y);
-            m_animator.SetFloat(m_hVerticalSpeed, m_player.velocity.y);
+            // 接地中は velocity.y が -SnapForce 固定なので externalVelocity.y を加算して
+            // 実効的な垂直速度を Animator に渡す (Jump/Fall サブ遷移を磁力上昇でも駆動する)。
+            m_animator.SetFloat(m_hVerticalSpeed, m_player.velocity.y + m_player.externalVelocity.y);
         }
 
         if (m_aim != null)
