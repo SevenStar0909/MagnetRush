@@ -138,31 +138,36 @@ public class PlayerInputHandler : MonoBehaviour
         if (m_selfFire != null && m_selfFire.WasPressedThisFrame()) m_selfFirePressTime = Time.time;
         if (m_jump != null && m_jump.WasPressedThisFrame()) m_jumpPressTime = Time.time;
         if (m_stab != null && m_stab.WasPressedThisFrame()) m_stabPressTime = Time.time;
+
+        if (FireHeld)
+        {
+            m_lastFireHoldDuration = FireHoldDuration;
+        }
     }
 
     void OnEnable() => m_actions?.Enable();
     void OnDisable() => m_actions?.Disable();
 
-   
-    /// <summary>
-    /// 攻撃ボタン（RT）が今「長押しされている最中」かどうかを取得
-    /// ReadValueでトリガーの押し込み量を読み取り、半分以上（0.5f）押されていればtrue
-    /// </summary>
-    public bool IsFireHeld => m_attack != null && m_attack.ReadValue<float>() > 0.5f;
 
+
+    private float m_lastFireHoldDuration; // 離した瞬間に参照するための「直前の長押し時間」記録用
     /// <summary>
+    /// 攻撃ボタン（RT）が今「長押しされている最中」かどうかを取得（命名規則を既存AimHeldに統一）
+    public bool FireHeld => m_attack != null && m_attack.ReadValue<float>() > 0.5f;
+
     /// 攻撃ボタン（RT）が「現在押され始めてから経過した時間（秒）」を取得
-    /// 外のShootingAbilityなどでチャージ時間の計算（settings.ChargeTime超え判定）に使います
-    /// </summary>
     public float FireHoldDuration
     {
         get
         {
-            if (m_firePressTime.HasValue && IsFireHeld)
+            if (m_firePressTime.HasValue && FireHeld)
             {
                 return Time.time - m_firePressTime.Value;
             }
             return 0f;
         }
     }
+
+    /// 離したフレームでも「直前まで何秒間長押しされていたか」を取得できるプロパティ
+    public float LastFireHoldDuration => m_lastFireHoldDuration;
 }

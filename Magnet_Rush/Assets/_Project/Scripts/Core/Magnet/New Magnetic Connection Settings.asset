@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca33f308596f58b459e3073958db50c2, type: 3}
+  m_Name: New Magnetic Connection Settings
+  m_EditorClassIdentifier: MagnetRush.Core::MagneticConnectionSettings
+  m_duration: 5
+  m_maxDistance: 15
+  m_pullForce: 20
+  m_connectionBulletSpeed: 0
+  m_chargeThresholdSeconds: 0
+  m_occluderMask:
+    serializedVersion: 2
+    m_Bits: 0
+  m_sColor: {r: 0, g: 0, b: 0, a: 0}
+  m_nColor: {r: 0, g: 0, b: 0, a: 0}
+  m_visualizerParticlePrefab: {fileID: 0}

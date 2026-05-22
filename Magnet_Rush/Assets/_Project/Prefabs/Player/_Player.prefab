@@ -124,6 +124,8 @@ MonoBehaviour:
   - FallPlayerState, MagnetRush.Player, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - StabPlayerState, MagnetRush.Player, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - StabPlayerState, MagnetRush.Player, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  - ConnectionPullPlayerState, MagnetRush.Player, Version=0.0.0.0, Culture=neutral,
+    PublicKeyToken=null
 --- !u!114 &8415192833665430904
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -249,7 +251,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Player::ShootingController
   m_bulletSettings: {fileID: 11400000, guid: 425ee2473071b7a4fa2afd4ccb6a162c, type: 2}
-  m_connectionSettings: {fileID: 0}
   m_firePoint: {fileID: 5721768207443567397}
 --- !u!114 &460711517580896566
 MonoBehaviour:

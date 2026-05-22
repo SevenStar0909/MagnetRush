@@ -12,23 +12,41 @@ public class MagneticConnection : MonoBehaviour
     public bool IsActivated { get; private set; }   //発動中
     //＊IsPlayerMovingは撤廃（1.6で動作中/静止中の区別を廃止）
 
+    private MagneticConnectionVisualizer m_visualizer;
+
     private MagneticConnectionSettings m_settings;
+    public MagneticConnectionSettings Settings => m_settings;
     private float m_remaining; //生成時から連続、待機中も進行
     private bool m_prevActivated; //変化検出用
 
     public event Action<bool> OnActivatedChanged;
 
+    private void Awake()
+    {
+        m_visualizer = GetComponent<MagneticConnectionVisualizer>();
+    }
+
     public void Initialize(Magnetizable p, Magnetizable t, MagneticConnectionSettings s)
     {
+        if (p == null) Debug.LogError("【デバッグ】第1引数（player）が空っぽ（null）です！");
+        if (t == null) Debug.LogError("【デバッグ】第2引数（target）が空っぽ（null）です！");
+        if (s == null) Debug.LogError("【デバッグ】第3引数（settings）が空っぽ（null）です！");
+
         PlayerSide = p;
         TargetSide = t;
         m_settings = s;
 
-        m_remaining= m_settings.Duration;   //5秒からカウントダウン開始
+        m_remaining　= m_settings.Duration;   //5秒からカウントダウン開始
+
         IsActive = true;
         m_prevActivated = false;
 
         EvaluateActivation();
+
+        if (m_visualizer != null)
+        {
+            m_visualizer.Show(this, m_settings);
+        }
     }
 
     private void FixedUpdate()
@@ -36,7 +54,9 @@ public class MagneticConnection : MonoBehaviour
         EvaluateActivation();
         if (IsActivated != m_prevActivated)
         {
-           OnActivatedChanged?.Invoke(IsActivated);  //State切替
+            Debug.Log($"【状態変化】IsActivated が {m_prevActivated} から {IsActivated} に変わりました！" +
+                      $"(Player: {PlayerSide.Pole} / Target: {TargetSide.Pole})");
+            OnActivatedChanged?.Invoke(IsActivated);
         }
         m_prevActivated = IsActivated;
         m_remaining -= Time.fixedDeltaTime; //(e)待機中も進行
@@ -44,12 +64,16 @@ public class MagneticConnection : MonoBehaviour
         //(c)距離/(d)Linecast/(e)ゼロ　→ Release
         if (CheckTerminationConditions())
         {
+            Debug.Log("【線切断】終了条件（寿命・距離・遮蔽のいずれか）を満たしたため切断します。");
             Release();
             return; // 線が切れたらこれ以降の引力処理は行わない
         }
 
+        if (!IsActive) return;
+
         if (IsActivated)
         {
+            Debug.Log($"【引力動作中】IsActivatedはTrueです！プレイヤー質量: {PlayerSide.VirtualMass} / 対象質量: {TargetSide.VirtualMass}");
             ApplyAttraction();
         }
     }
@@ -59,15 +83,32 @@ public class MagneticConnection : MonoBehaviour
         var p = PlayerSide.Pole;
         var t = TargetSide.Pole;
 
-        IsActivated = (p != MagneticPole.None && t != MagneticPole.None && p != t);
+        // パターン①：プレイヤーが「S」で、対象が「N」のとき
+        bool case1 = (p != MagneticPole.S && t != MagneticPole.N && p != t);
+
+        // パターン②：プレイヤーが「N」で、対象が「S」のとき
+        bool case2 = (p != MagneticPole.N && t != MagneticPole.S && p != t);
+
+        // ①か②のどちらか「異極ペア」が成立していれば発動（true）にする！
+        // それ以外（同極や、どちらかがNone）なら自動的に待機状態（false）になります
+        IsActivated = (case1 || case2);
     }
 
     public void Release()
     {
         IsActive = false;
         IsActivated = false;
+        this.enabled = false;
+
+        if (m_visualizer != null)
+        {
+            m_visualizer.Hide();
+        }
+
+        Destroy(gameObject);
     }
 
+    /*
     // 引力の適用ロジック
     private void ApplyAttraction()
     {
@@ -92,27 +133,93 @@ public class MagneticConnection : MonoBehaviour
             PullObject(TargetSide, PlayerSide.transform.position);
         }
     }
+    */
+
+    private void ApplyAttraction()
+    {
+        int pMass = (PlayerSide.Pole == MagneticPole.None) ? 3 : (int)PlayerSide.VirtualMass;
+        //int pMass = (int)PlayerSide.VirtualMass;
+        int tMass = (int)TargetSide.VirtualMass;
+
+        Debug.Log($"【引力発動中！】IsActivatedはTrueです。現在、物理の力を加えています！");
+        Debug.Log($"【引力計算中】PlayerMass: {PlayerSide.VirtualMass}({(int)pMass}) vs TargetMass: {TargetSide.VirtualMass}({(int)tMass})");
+
+        if (pMass <= tMass)
+        {
+            // プレイヤー側が動く条件（同質量、またはプレイヤーの方が軽い）
+            // ➔ プレイヤーの移動は「ConnectionPullPlayerState」側が面倒を見るので、
+            //    ここでは何もしない（またはプレイヤーに通知するだけにする
+            Debug.Log("➔ 【判定】プレイヤー側が動く条件です。ConnectionPullPlayerStateが動いているか確認してください。");
+        }
+        else
+        {
+            // 対象（敵や箱）の方が軽い場合
+            // ➔ 敵や箱のRigidbodyをここで引っ張る
+            Debug.Log($"➔ 【判定】対象の方が軽いため、オブジェクト({TargetSide.name})を引っ張ります！");
+            PullObject(TargetSide, PlayerSide.transform.position);
+        }
+    }
 
     private void PullObject(Magnetizable target, Vector3 destination)
     {
-        // targetのRigidbody等に対し、destination方向への力（m_settings.PullForce）を毎フレーム加える
+        // 動かす対象がプレイヤー自身なら、ステート側に任せるのでスルー
+        if (target == PlayerSide) return;
 
+        Vector3 direction = (destination - target.transform.position).normalized;
+
+        if (target.TryGetComponent<Rigidbody>(out var rb))
+        {
+            Debug.Log($"【物理適用】{target.name} の Rigidbody に力({direction * m_settings.PullForce})を加えます！(ForceMode: VelocityChange)");
+            // 敵やオブジェクトを引き寄せる物理処理
+            rb.AddForce(direction * m_settings.PullForce, ForceMode.VelocityChange);
+        }
+        else
+        {
+            Debug.LogError($"【物理エラー】{target.name} に Rigidbody が見つからないため、引っ張れません！");
+        }
     }
 
     // 終了条件のチェック (c, d, e)
+    //private bool CheckTerminationConditions()
+    //{
+    //    // (e) 時間経過による寿命（5秒）
+    //    if (m_remaining <= 0f) return true;
+
+    //    // (c) 距離が maxDistance (15m) を超えたか
+    //    float currentDistance = Vector3.Distance(PlayerSide.transform.position, TargetSide.transform.position);
+    //    if (currentDistance > m_settings.MaxDistance) return true;
+
+    //    // (d) 壁や地面（Wall / Ground）による遮蔽判定
+    //    // Physics.Linecast を使用して、2点間に遮蔽レイヤーのコライダーがあるか検出
+    //    if (Physics.Linecast(PlayerSide.transform.position, TargetSide.transform.position, m_settings.OccluderMask))
+    //    {
+    //        return true;
+    //    }
+
+    //    return false;
+    //}
     private bool CheckTerminationConditions()
     {
-        // (e) 時間経過による寿命（5秒）
-        if (m_remaining <= 0f) return true;
+        // 1. 5秒の寿命チェック
+        if (m_remaining <= 0f)
+        {
+            Debug.Log($"【切断原因】5秒の寿命が尽きました。(残り時間: {m_remaining})");
+            return true;
+        }
 
-        // (c) 距離が maxDistance (15m) を超えたか
+        // 2. 15mの距離チェック
         float currentDistance = Vector3.Distance(PlayerSide.transform.position, TargetSide.transform.position);
-        if (currentDistance > m_settings.MaxDistance) return true;
+        if (currentDistance > m_settings.MaxDistance)
+        {
+            Debug.Log($"【切断原因】距離が離れすぎました！ (現在距離: {currentDistance}m / 最大制限: {m_settings.MaxDistance}m)");
+            return true;
+        }
 
-        // (d) 壁や地面（Wall / Ground）による遮蔽判定
-        // Physics.Linecast を使用して、2点間に遮蔽レイヤーのコライダーがあるか検出
+        // 3. 壁や地面による遮蔽チェック
         if (Physics.Linecast(PlayerSide.transform.position, TargetSide.transform.position, m_settings.OccluderMask))
         {
+            Debug.Log($"【切断原因】プレイヤーと対象の間に、壁や地面(OccluderMask)が挟まりました！" +
+                      $" (PlayerPos: {PlayerSide.transform.position} / TargetPos: {TargetSide.transform.position})");
             return true;
         }
 

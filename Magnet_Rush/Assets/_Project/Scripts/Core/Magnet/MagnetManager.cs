@@ -152,6 +152,12 @@ public class MagnetManager : Singleton<MagnetManager>
 
         // 弾同士の近接検出（Trigger×Trigger非発火のため距離ベース）
         ProcessBulletProximity();
+
+        // 管理している線が存在していて、かつその線がすでにアクティブじゃない（寿命などで切れた）場合
+        if (m_activeConnection != null && !m_activeConnection.IsActive)
+        {
+            m_activeConnection = null; // マネージャー側の参照を綺麗にリセットする
+        }
     }
 
     /// <summary>
@@ -559,7 +565,7 @@ public class MagnetManager : Singleton<MagnetManager>
     /// <summary>
     /// 弾が着弾したときなどに呼ばれる、新しい線を張るための窓口
     /// </summary>
-    public void RequestConnection(Magnetizable target)
+    public void RequestConnection(Magnetizable player, Magnetizable target)
     {
         // 1. 同時1本制限：すでに古い線があるなら、先に消してリセットする
         if (m_activeConnection != null)
@@ -568,10 +574,10 @@ public class MagnetManager : Singleton<MagnetManager>
             m_activeConnection = null;
         }
 
-        // 2. 新しい線を生成して初期化する（朝、生成場所のルールを確認して実装を完成させます）
-        // GameObject go = Instantiate(m_connectionPrefab);
-        // m_activeConnection = go.GetComponent<MagneticConnection>();
-        // m_activeConnection.Initialize(playerMagnetizable, target, m_connectionSettings);
+        // 2. 新しい線を生成して初期化する
+         GameObject go = Instantiate(m_connectionPrefab);
+         m_activeConnection = go.GetComponent<MagneticConnection>();
+         m_activeConnection.Initialize(player, target, m_connectionSettings);
     }
 
     /// <summary>

@@ -8,6 +8,7 @@ public class MagneticConnectionVisualizer : MonoBehaviour
     private MagneticConnection m_connection;
     private MagneticConnectionSettings m_settings;
     private Material m_mat;
+
     private void Awake()
     {
         m_mat = new Material(Shader.Find("Sprites/Default")); // カスタムシェーダ不要

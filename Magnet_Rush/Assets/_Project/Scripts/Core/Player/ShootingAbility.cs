@@ -49,7 +49,7 @@ public class ShootingAbility : Ability
         { ChannelLogger.LogGuardReturn("Player", "MainCameraなし"); return; }
 
         float chargeThreshold = 0.5f;
-        bool isConnectionType = m_input.FireHoldDuration > chargeThreshold;
+        bool isConnectionType = m_input.LastFireHoldDuration > chargeThreshold;
 
         m_input.ConsumeFire();
 

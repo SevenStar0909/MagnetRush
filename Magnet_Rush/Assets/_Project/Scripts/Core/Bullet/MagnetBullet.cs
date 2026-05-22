@@ -128,14 +128,14 @@ public class MagnetBullet : MonoBehaviour, IBulletProximity
                 Debug.Log("接続型の弾が当たった");
                 if (MagnetManager.Instance != null && m_playerSide != null)
                 {
-                    MagnetManager.Instance.RequestConnection(targetMag);
+                    MagnetManager.Instance.RequestConnection(m_playerSide, targetMag);
                 }
                 // エリア型ドームは生成せず、役目を終えたので弾を即消滅させて終わる
                 Destroy(gameObject);
                 return;
             }
             // MagnetManagerの窓口を呼び出す（存在すれば）
-            MagnetManager.Instance?.RequestConnection(targetMag);
+            MagnetManager.Instance.RequestConnection(m_playerSide, targetMag);
 
             MagnetizeTarget(other, targetMag);
         }
