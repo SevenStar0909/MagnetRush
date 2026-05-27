@@ -51,6 +51,7 @@ public class MagneticConnection : MonoBehaviour
 
     private void FixedUpdate()
     {
+
         EvaluateActivation();
         if (IsActivated != m_prevActivated)
         {
@@ -69,7 +70,7 @@ public class MagneticConnection : MonoBehaviour
             return; // 線が切れたらこれ以降の引力処理は行わない
         }
 
-        if (!IsActive) return;
+        if (!IsActive || !IsActivated) return;
 
         if (IsActivated)
         {
@@ -83,19 +84,28 @@ public class MagneticConnection : MonoBehaviour
         var p = PlayerSide.Pole;
         var t = TargetSide.Pole;
 
-        // パターン①：プレイヤーが「S」で、対象が「N」のとき
         bool case1 = (p != MagneticPole.S && t != MagneticPole.N && p != t);
-
-        // パターン②：プレイヤーが「N」で、対象が「S」のとき
         bool case2 = (p != MagneticPole.N && t != MagneticPole.S && p != t);
 
-        // ①か②のどちらか「異極ペア」が成立していれば発動（true）にする！
-        // それ以外（同極や、どちらかがNone）なら自動的に待機状態（false）になります
-        IsActivated = (case1 || case2);
+        // ①か②が成立していれば基本は発動（true）
+        bool logicResult = (case1 || case2);
+
+        // もし「両方ともNone」の時は、先輩のロジックだとtrueをすり抜けてしまうバグがあったため、
+        // 両方Noneの時だけは確実にfalse（待機状態）にします！
+        if (p == MagneticPole.None && t == MagneticPole.None)
+        {
+            IsActivated = false;
+            return;
+        }
+
+        IsActivated = logicResult;
     }
 
     public void Release()
     {
+        PlayerSide.SetPole(MagneticPole.None);
+        TargetSide.SetPole(MagneticPole.None);
+
         IsActive = false;
         IsActivated = false;
         this.enabled = false;
@@ -166,11 +176,34 @@ public class MagneticConnection : MonoBehaviour
         if (target == PlayerSide) return;
 
         Vector3 direction = (destination - target.transform.position).normalized;
+        float distance = Vector3.Distance(target.transform.position, destination);
+
+        if (target.TryGetComponent<Collider>(out var targetCollider))
+        {
+            // 目的地（プレイヤー位置など）から、オブジェクトの表面で一番近い点を割り出す
+            Vector3 closestPoint = targetCollider.ClosestPoint(destination);
+            distance = Vector3.Distance(destination, closestPoint);
+        }
+
+        if (distance < 2.0f)
+        {
+            Debug.Log($"【引力終了】{target.name} が目的地に到着したため、磁力の線をReleaseします。");
+
+            // 線を消滅させて、これ以上 FixedUpdate の引力計算が走らないようにする
+            Release();
+            return;
+        }
 
         if (target.TryGetComponent<Rigidbody>(out var rb))
         {
-            Debug.Log($"【物理適用】{target.name} の Rigidbody に力({direction * m_settings.PullForce})を加えます！(ForceMode: VelocityChange)");
             // 敵やオブジェクトを引き寄せる物理処理
+            if (rb.linearVelocity.magnitude > m_settings.PullForce)
+            {
+                // 既に最高速度に達しているので、AddForceをスキップして現在の速度を維持する
+                rb.linearVelocity = rb.linearVelocity.normalized * m_settings.PullForce;
+                return;
+            }
+            Debug.Log($"【物理適用】{target.name} の Rigidbody に力({direction * m_settings.PullForce})を加えます！(ForceMode: VelocityChange)");
             rb.AddForce(direction * m_settings.PullForce, ForceMode.VelocityChange);
         }
         else

@@ -57,12 +57,11 @@ public class ConnectionPullPlayerState : EntityState<Player>
             {
                 Debug.Log("【ステート脱出】ターゲットに到着したため、通常状態に戻ります。");
 
-                // あなたが気づいてくれた最高のコード！
                 connection.Release();
                 Debug.Log("【ステート脱出】磁力の線へ引力終了を通知しました。");
 
                 player.states.Change<IdlePlayerState>();
-                return; // 👈 ここで終わる場合は絶対に下のコードに行かないので安全！
+                return;
             }
         }
 

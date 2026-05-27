@@ -21,7 +21,7 @@ public class ConnectionAbility : MonoBehaviour
 
         var current = MagnetManager.Instance?.ActiveConnection;
 
-        if (current == m_subscribed)
+        if (current == m_subscribed && current != null)
         {
             return;
         }
