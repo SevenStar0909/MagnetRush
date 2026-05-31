@@ -21,7 +21,7 @@ MonoBehaviour:
     m_Value: {x: 0.5, y: 0.5}
   intensity:
     m_OverrideState: 1
-    m_Value: 0.353
+    m_Value: 0.403
   smoothness:
     m_OverrideState: 0
     m_Value: 0.2
@@ -107,7 +107,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ccf1aba9553839d41ae37dd52e9ebcce, type: 3}
   m_Name: MotionBlur
   m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.MotionBlur
-  active: 1
+  active: 0
   mode:
     m_OverrideState: 1
     m_Value: 1
@@ -214,13 +214,13 @@ MonoBehaviour:
     m_Value: 1
   threshold:
     m_OverrideState: 1
-    m_Value: 0.66
+    m_Value: 0.83
   intensity:
     m_OverrideState: 1
-    m_Value: 0.44
+    m_Value: 0.65
   scatter:
     m_OverrideState: 1
-    m_Value: 0.703
+    m_Value: 0.516
   clamp:
     m_OverrideState: 0
     m_Value: 65472
@@ -261,10 +261,10 @@ MonoBehaviour:
   active: 1
   postExposure:
     m_OverrideState: 1
-    m_Value: 0
+    m_Value: 0.63
   contrast:
     m_OverrideState: 1
-    m_Value: 28
+    m_Value: 29
   colorFilter:
     m_OverrideState: 1
     m_Value: {r: 1.0464958, g: 1.0559748, b: 1.0717734, a: 1}
@@ -273,4 +273,4 @@ MonoBehaviour:
     m_Value: 0
   saturation:
     m_OverrideState: 1
-    m_Value: 9
+    m_Value: 15
