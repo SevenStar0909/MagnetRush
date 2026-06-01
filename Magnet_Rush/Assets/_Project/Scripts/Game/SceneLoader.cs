@@ -8,8 +8,10 @@ public class SceneLoader : Singleton<SceneLoader>
 {
     public enum SceneType
     {
-        Title,
-        Game,
+        TitleScene,
+        StageSelectScene,
+        GameScene,
+        TestScene,
         Result
     }
 
@@ -39,7 +41,7 @@ public class SceneLoader : Singleton<SceneLoader>
             return;
         }
 
-        LoadScene(SceneType.Title);
+        LoadScene(SceneType.StageSelectScene);
     }
 
     private void OnEnable() => SceneManager.sceneLoaded += OnSceneLoaded;
@@ -91,7 +93,8 @@ public class SceneLoader : Singleton<SceneLoader>
     private bool ShouldLoadAdditives(string sceneName)
     {
         // Titleはマップ不要
-        if (sceneName == SceneType.Title.ToString()) return false;
+        if (sceneName == SceneType.TitleScene.ToString()) return false;
+        if (sceneName == SceneType.StageSelectScene.ToString()) return false;
         if (sceneName == SceneType.Result.ToString()) return false;
         return true;
     }
@@ -100,5 +103,69 @@ public class SceneLoader : Singleton<SceneLoader>
     public void LoadScene(SceneType sceneType)
     {
         SceneManager.LoadScene(sceneType.ToString(), LoadSceneMode.Single);
+    }
+
+    /// <summary> メインシーンとアディティブマップを指定してロードする </summary>
+    /// <param name="selectedSceneName">メインシーンの名前</param>
+    /// <param name="selectedMapName">アディティブで読み込むマップシーンの名前</param>
+    public void LoadGameWithMap(string selectedSceneName, string selectedMapName)
+    {
+        ChannelLogger.LogGuardReturn("Game", "=== LoadGameWithMap開始 ===");
+        ChannelLogger.LogGuardReturn("Game", $"メインシーン: {selectedSceneName}");
+        ChannelLogger.LogGuardReturn("Game", $"アディティブマップ: {selectedMapName}");
+
+        // 入力値の検証
+        if (string.IsNullOrEmpty(selectedSceneName) || string.IsNullOrEmpty(selectedMapName))
+        {
+            ChannelLogger.LogGuardReturn("Game", "エラー: シーン名が空です");
+            return;
+        }
+
+        // アディティブで読み込むマップシーンを設定
+        m_additiveScenes = new string[] { selectedMapName };
+        ChannelLogger.LogGuardReturn("Game", $"m_additiveScenes設定: {string.Join(", ", m_additiveScenes)}");
+
+        // SceneType列挙型と一致するシーン名を検索して変換
+        if (TryConvertToSceneType(selectedSceneName, out SceneType sceneType))
+        {
+            ChannelLogger.LogGuardReturn("Game", $"SceneType列挙型に一致: {sceneType}");
+            LoadScene(sceneType);
+        }
+        else
+        {
+            // 列挙型に一致しない場合は、シーン名のまま直接ロード
+            ChannelLogger.LogGuardReturn("Game", $"警告: SceneType列挙型に一致しないため、シーン名で直接ロード: {selectedSceneName}");
+            SceneManager.LoadScene(selectedSceneName, LoadSceneMode.Single);
+        }
+    }
+
+    /// <summary> シーン名をSceneType列挙型に変換を試みる </summary>
+    /// <param name="sceneName">シーン名</param>
+    /// <param name="sceneType">変換後のSceneType</param>
+    /// <returns>変換成功時true、失敗時false</returns>
+    private bool TryConvertToSceneType(string sceneName, out SceneType sceneType)
+    {
+        sceneType = SceneType.GameScene;  // デフォルト値
+
+        try
+        {
+            // SceneType列挙型に該当する名前を探す
+            foreach (SceneType type in System.Enum.GetValues(typeof(SceneType)))
+            {
+                if (type.ToString() == sceneName)
+                {
+                    sceneType = type;
+                    return true;
+                }
+            }
+
+            ChannelLogger.LogGuardReturn("Game", $"警告: 列挙型に'{sceneName}'は見つかりません");
+            return false;
+        }
+        catch (System.Exception ex)
+        {
+            ChannelLogger.LogGuardReturn("Game", $"エラー: SceneType変換時に例外発生 - {ex.Message}");
+            return false;
+        }
     }
 }
