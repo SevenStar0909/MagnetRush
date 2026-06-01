@@ -13,13 +13,13 @@ MonoBehaviour:
   m_Name: MagneticConnectionSettings
   m_EditorClassIdentifier: MagnetRush.Core::MagneticConnectionSettings
   m_duration: 5
-  m_maxDistance: 15
+  m_maxDistance: 100
   m_pullForce: 20
   m_connectionBulletSpeed: 0
   m_chargeThresholdSeconds: 0
   m_occluderMask:
     serializedVersion: 2
     m_Bits: 192
-  m_sColor: {r: 0, g: 0, b: 0, a: 0}
-  m_nColor: {r: 0, g: 0, b: 0, a: 0}
+  m_sColor: {r: 0, g: 0.17971182, b: 1, a: 1}
+  m_nColor: {r: 1, g: 0, b: 0.02137804, a: 1}
   m_visualizerParticlePrefab: {fileID: 0}

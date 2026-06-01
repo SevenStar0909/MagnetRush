@@ -53,10 +53,12 @@ public class MagneticConnection : MonoBehaviour
     {
 
         EvaluateActivation();
+
         if (IsActivated != m_prevActivated)
         {
             Debug.Log($"【状態変化】IsActivated が {m_prevActivated} から {IsActivated} に変わりました！" +
                       $"(Player: {PlayerSide.Pole} / Target: {TargetSide.Pole})");
+
             OnActivatedChanged?.Invoke(IsActivated);
         }
         m_prevActivated = IsActivated;
@@ -72,11 +74,13 @@ public class MagneticConnection : MonoBehaviour
 
         if (!IsActive || !IsActivated) return;
 
-        if (IsActivated)
-        {
-            Debug.Log($"【引力動作中】IsActivatedはTrueです！プレイヤー質量: {PlayerSide.VirtualMass} / 対象質量: {TargetSide.VirtualMass}");
-            ApplyAttraction();
-        }
+        ApplyAttraction();
+
+        //if (IsActivated)
+        //{
+        //    Debug.Log($"【引力動作中】IsActivatedはTrueです！プレイヤー質量: {PlayerSide.VirtualMass} / 対象質量: {TargetSide.VirtualMass}");
+        //    ApplyAttraction();
+        //}
     }
 
     private void EvaluateActivation()
@@ -84,21 +88,7 @@ public class MagneticConnection : MonoBehaviour
         var p = PlayerSide.Pole;
         var t = TargetSide.Pole;
 
-        bool case1 = (p != MagneticPole.S && t != MagneticPole.N && p != t);
-        bool case2 = (p != MagneticPole.N && t != MagneticPole.S && p != t);
-
-        // ①か②が成立していれば基本は発動（true）
-        bool logicResult = (case1 || case2);
-
-        // もし「両方ともNone」の時は、先輩のロジックだとtrueをすり抜けてしまうバグがあったため、
-        // 両方Noneの時だけは確実にfalse（待機状態）にします！
-        if (p == MagneticPole.None && t == MagneticPole.None)
-        {
-            IsActivated = false;
-            return;
-        }
-
-        IsActivated = logicResult;
+        IsActivated = (p != MagneticPole.None && t != MagneticPole.None && p != t);
     }
 
     public void Release()
@@ -118,35 +108,17 @@ public class MagneticConnection : MonoBehaviour
         Destroy(gameObject);
     }
 
-    /*
-    // 引力の適用ロジック
     private void ApplyAttraction()
     {
-        // 1.4 仮想質量の比較（仕様：数値が小さい方が軽い）
-        int pMass = (int)PlayerSide.VirtualMass;
-        int tMass = (int)TargetSide.VirtualMass;
+        Debug.Log($"【引力作動チェック】IsActivated: {IsActivated} / " +
+              $"Player磁極: {PlayerSide.Pole} / Target磁極: {TargetSide.Pole}");
 
-        // 同質量のマッピング（例：Heavy同士）の場合は、プレイヤーを優先して動かす
-        if (pMass == tMass)
+        if (!IsActivated)
         {
-            // プレイヤーをターゲット側へ動かす処理
-            PullObject(PlayerSide, TargetSide.transform.position);
+            Debug.LogWarning("【引力拒否】IsActivatedがFalse（同極またはNone）のため、引力の適用をスキップします。");
+            return;
         }
-        else if (pMass < tMass)
-        {
-            // プレイヤーの方が軽い（壁やボス、中型敵に対してなど）→ プレイヤーが飛ぶ
-            PullObject(PlayerSide, TargetSide.transform.position);
-        }
-        else
-        {
-            // 対象の方が軽い（小型敵や箱など）→ 敵やオブジェクトを引き寄せる
-            PullObject(TargetSide, PlayerSide.transform.position);
-        }
-    }
-    */
 
-    private void ApplyAttraction()
-    {
         int pMass = (PlayerSide.Pole == MagneticPole.None) ? 3 : (int)PlayerSide.VirtualMass;
         //int pMass = (int)PlayerSide.VirtualMass;
         int tMass = (int)TargetSide.VirtualMass;
@@ -185,7 +157,7 @@ public class MagneticConnection : MonoBehaviour
             distance = Vector3.Distance(destination, closestPoint);
         }
 
-        if (distance < 2.0f)
+        if (distance < 2.2f)
         {
             Debug.Log($"【引力終了】{target.name} が目的地に到着したため、磁力の線をReleaseします。");
 
@@ -212,25 +184,6 @@ public class MagneticConnection : MonoBehaviour
         }
     }
 
-    // 終了条件のチェック (c, d, e)
-    //private bool CheckTerminationConditions()
-    //{
-    //    // (e) 時間経過による寿命（5秒）
-    //    if (m_remaining <= 0f) return true;
-
-    //    // (c) 距離が maxDistance (15m) を超えたか
-    //    float currentDistance = Vector3.Distance(PlayerSide.transform.position, TargetSide.transform.position);
-    //    if (currentDistance > m_settings.MaxDistance) return true;
-
-    //    // (d) 壁や地面（Wall / Ground）による遮蔽判定
-    //    // Physics.Linecast を使用して、2点間に遮蔽レイヤーのコライダーがあるか検出
-    //    if (Physics.Linecast(PlayerSide.transform.position, TargetSide.transform.position, m_settings.OccluderMask))
-    //    {
-    //        return true;
-    //    }
-
-    //    return false;
-    //}
     private bool CheckTerminationConditions()
     {
         // 1. 5秒の寿命チェック

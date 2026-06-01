@@ -591,5 +591,4 @@ public class MagnetManager : Singleton<MagnetManager>
             m_activeConnection = null;
         }
     }
-
 }
