@@ -54,8 +54,6 @@ public class EnemyAirBase : Entity
     {
         if (m_health != null)
             m_health.OnDie -= Die;
-
-        TriggerDisappearEffect();
     }
 
     private void Update()
