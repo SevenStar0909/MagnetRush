@@ -24,11 +24,7 @@ public class DebugHpBar : MonoBehaviour
 
     void Start()
     {
-        if (!Debug.isDebugBuild && !Application.isEditor)
-        {
-            Destroy(this);
-            return;
-        }
+        // HPバーは Release ビルドでも描画する（プレイヤーが視認する必須情報）
 
         m_whiteTex = new Texture2D(1, 1);
         m_whiteTex.SetPixel(0, 0, Color.white);

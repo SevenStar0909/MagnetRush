@@ -87,6 +87,9 @@ public class Player : Entity
         // HP=0でDiePlayerStateに遷移
         if (m_health != null)
         {
+            if (m_settings != null)
+                m_health.SetMaxHealth(m_settings.maxHp);
+
             m_health.OnDie += OnDie;
         }
 
@@ -236,7 +239,7 @@ public class Player : Entity
             return;
         }
 
-        float influence = magnetizable.GetInfluence(MagnetManager.Instance.Settings.maxForcePerObject);
+        float influence = magnetizable.GetInfluence(MagnetManager.Instance.Settings.influenceNormalizeForce);
         float damping = MagnetManager.Instance.Settings.magnetSpeedDamping;
 
         topSpeedMultiplier = 1f - influence * damping;

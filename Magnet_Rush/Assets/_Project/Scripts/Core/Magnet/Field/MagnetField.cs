@@ -55,8 +55,8 @@ public class MagnetField : MonoBehaviour, IMagnetField
         SetupTriggerCollider();
         m_initialized = true;
 
-        // sibling の Magnetizable にフィールド参照を登録
-        var mag = GetComponent<Magnetizable>();
+        // 親階層の Magnetizable にフィールド参照を登録（本体子コライダーのように Magnetizable が祖先にある場合も対応）
+        var mag = GetComponentInParent<Magnetizable>();
         if (mag != null) mag.SetField(this);
     }
 
@@ -82,6 +82,15 @@ public class MagnetField : MonoBehaviour, IMagnetField
         // ブリッジ: 子GOのトリガーイベントを親MagnetFieldに転送
         var bridge = m_triggerGO.AddComponent<MagnetFieldTriggerBridge>();
         bridge.Initialize(this);
+
+        // 親GOのルートコライダーとの自己発火を物理エンジン側で除外する。
+        // Magnetizable 持ちオブジェクトに本フィールドが AddComponent された時、本体コライダーと
+        // 子トリガーが重なって OnTriggerEnter が誤発火する問題への対処（Layer Matrix では表現不能）
+        var parentColliders = transform.GetComponents<Collider>();
+        for (int i = 0; i < parentColliders.Length; i++)
+        {
+            Physics.IgnoreCollision(m_triggerCollider, parentColliders[i], true);
+        }
     }
 
     private float CalcTriggerRadius()

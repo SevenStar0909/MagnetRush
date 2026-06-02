@@ -1,6 +1,7 @@
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "MagneticMoverSettings", menuName = "MagnetRush/MagneticMoverSettings")]
+[ClassLabelSO("磁力移動設定")]
 public class MagneticMoverSettings : ScriptableObject
 {
     [Header("[移動]")]

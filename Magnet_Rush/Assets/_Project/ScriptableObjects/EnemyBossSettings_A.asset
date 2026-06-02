@@ -12,10 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 20f418b8a91078a4c8502133f347c9d4, type: 3}
   m_Name: EnemyBossSettings_A
   m_EditorClassIdentifier: MagnetRush.Data::EnemyBossSettings
-  maxHp: 500
+  maxHp: 20
+  healthBarSegments: 3
+  maxStamina: 90
+  staminaRecovery: 1
+  staminaRecoveryCooldown: 15
+  staminaBreakDuration: 7
+  armStunStaminaDamage: 30
   moveSpeed: 3.5
   acceleration: 8
-  chaseRange: 20
+  chaseRange: 40
   stopDistance: 1.5
   turningDrag: 15
   deceleration: 20
@@ -24,12 +30,18 @@ MonoBehaviour:
   groundCheckDistance: 0.3
   groundLayer:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 65
   externalDrag: 3
-  attackDamage: 1
+  attackDamage: 5
   attackRange: 20
-  attackInterval: 1.2
-  rotationSpeed: 10
+  rushAttackRange: 22
+  rushSpeedMultiplier: 2
+  missileAttackRange: 24
+  attackInterval: 5
+  rotationSpeed: 7
   attackHitboxDuration: 0.2
+  faceDeadZoneDeg: 0
+  attackMotionFaceDeadZoneDeg: 180
   staggerDuration: 1.5
   staggerMoveMultiplier: 0.5
+  magnetCastRadius: 20

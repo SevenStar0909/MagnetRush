@@ -6,7 +6,7 @@
 public class EnemyBossBaseA_AnimationEventForwarder : MonoBehaviour
 {
     [SerializeField] private EnemyBossBaseA_Animator m_target;
-
+    //test comment
     void Awake()
     {
         if (m_target == null)
@@ -34,6 +34,16 @@ public class EnemyBossBaseA_AnimationEventForwarder : MonoBehaviour
     public void TriggerStunEnd()
     {
         if (m_target != null) m_target.TriggerStunEnd();
+    }
+
+    public void TriggerAttackRush()
+    {
+        if (m_target != null) m_target.TriggerAttackRush();
+    }
+
+    public void TriggerMissile()
+    {
+        if (m_target != null) m_target.TriggerMissile();
     }
 
     public void SetCanInterruptTrue()
@@ -66,6 +76,26 @@ public class EnemyBossBaseA_AnimationEventForwarder : MonoBehaviour
         if (m_target != null) m_target.DisableArmHitboxEvent();
     }
 
+    public void EnableWindEffectEvent()
+    {
+        if (m_target != null) m_target.EnableWindEffectEvent();
+    }
+
+    public void DisableWindEffectEvent()
+    {
+        if (m_target != null) m_target.DisableWindEffectEvent();
+    }
+
+    public void EnableDustEffectEvent()
+    {
+        if (m_target != null) m_target.EnableDustEffectEvent();
+    }
+
+    public void DisableDustEffectEvent()
+    {
+        if (m_target != null) m_target.DisableDustEffectEvent();
+    }
+
     public void OnAttackFinishedEvent()
     {
         if (m_target != null) m_target.OnAttackFinishedEvent();
@@ -74,5 +104,28 @@ public class EnemyBossBaseA_AnimationEventForwarder : MonoBehaviour
     public void OnStunEndEvent()
     {
         if (m_target != null) m_target.OnStunEndEvent();
+    }
+
+    public void OnRushFinishedEvent()
+    {
+        if (m_target != null) m_target.OnRushFinishedEvent();
+    }
+
+    public void OnMissileFinishedEvent()
+    {
+        if (m_target != null) m_target.OnMissileFinishedEvent();
+    }
+
+    public void OnMissileFireEvent()
+    {
+        if (m_target != null) m_target.OnMissileFireEvent();
+    }
+
+    /// <summary>
+    /// AnimationEvent からの転送。腕上げピーク・地面激突等の特定フレームで Animator を seconds 秒フリーズ。
+    /// </summary>
+    public void FreezeAnim(float seconds)
+    {
+        if (m_target != null) m_target.FreezeAnim(seconds);
     }
 }

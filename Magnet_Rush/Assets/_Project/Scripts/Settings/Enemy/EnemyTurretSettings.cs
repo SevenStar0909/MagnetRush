@@ -1,12 +1,12 @@
 ﻿using UnityEngine;
 
 [CreateAssetMenu(fileName = "EnemyTurretSettings", menuName = "MagnetRush/EnemyTurretSettings")]
+[ClassLabelSO("タレット敵設定")]
 public class EnemyTurretSettings : ScriptableObject
 {
     [Header("[ステータス]")]
     [Label("最大HP")]
     [Tooltip("最大HP")]
-    // TODO: Health.cs の m_maxHealth を廃止し、本フィールドを参照するよう配線
     public int maxHp = 10;
 
     [Header("[索敵・照準]")]

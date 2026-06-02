@@ -1,8 +1,10 @@
 using UnityEngine;
+
 /// <summary>
 /// 敵の基底クラス。Entityを継承しHealth・IMagnetTargetを共有する。
 /// 移動はUpdateEntity() → EntityController経由。AIサブクラスがAccelerateToward等で速度を駆動する。
 /// </summary>
+[RequireComponent(typeof(Stamina))]
 public class EnemyBossBase : Entity
 {
     [Header("Data")]
@@ -18,9 +20,6 @@ public class EnemyBossBase : Entity
     public EnemyBossSettings StatusData => m_statusData;
     public Transform Player => m_player;
 
-    /// <summary>MagneticMover が磁力移動モード中かどうか。AI はこの間スキップされる。</summary>
-    //public bool IsMagnetControlled => m_mover != null && m_mover.IsMagnetActive;
-
     protected override float Gravity => m_statusData != null ? m_statusData.gravity : base.Gravity;
     protected override float SnapForce => m_statusData != null ? m_statusData.snapForce : base.SnapForce;
     protected override float ExternalDrag => m_statusData != null ? m_statusData.externalDrag : base.ExternalDrag;
@@ -30,13 +29,18 @@ public class EnemyBossBase : Entity
     protected override void Awake()
     {
         base.Awake();
-        //m_mover = GetComponentInChildren<MagneticMover>();
 
-        var magnetizable = GetComponent<Magnetizable>();
-        if (magnetizable != null)
-            magnetizable.mass = float.PositiveInfinity;
+        if (m_health != null && m_statusData != null)
+            m_health.SetMaxHealth(m_statusData.maxHp);
 
-        // Playerタグ付きオブジェクトを常に取得
+        if (m_stamina != null && m_statusData != null)
+        {
+            m_stamina.SetMaxStamina(m_statusData.maxStamina);
+            m_stamina.SetRecovery(m_statusData.staminaRecovery, m_statusData.staminaRecoveryCooldown);
+        }
+
+        // 質量は Magnetizable.m_initialMass=Infinity をプレハブで直接指定。
+        // 旧 override は Awake 順序競合で1に上書きされるバグの温床だったので撤去。
         GameObject playerObj = GameObject.FindWithTag(GameTags.Player);
         if (playerObj != null)
             m_player = playerObj.transform;
@@ -59,17 +63,23 @@ public class EnemyBossBase : Entity
         UpdateEntity(Time.deltaTime);
     }
 
-    /// <summary>指定方向（ワールド空間）に加速する。AIが計算した移動方向を渡す。</summary>
     public void AccelerateToward(Vector3 worldDirection, float dt)
+    {
+        AccelerateToward(worldDirection, dt, 1f);
+    }
+
+    /// <summary>
+    /// topSpeedMul で moveSpeed の上限を倍率調整して加速する（rush 攻撃等で一時的に高速化する用途）。
+    /// </summary>
+    public void AccelerateToward(Vector3 worldDirection, float dt, float topSpeedMul)
     {
         if (worldDirection.sqrMagnitude > 0.01f)
         {
-            // Accelerate()はlateralVelocity（ローカル空間）で計算するため変換が必要
             Vector3 localDir = Quaternion.FromToRotation(transform.up, Vector3.up) * worldDirection;
             localDir = localDir.normalized;
 
             Accelerate(localDir, m_statusData.turningDrag,
-                       m_statusData.acceleration, m_statusData.moveSpeed, dt);
+                       m_statusData.acceleration, m_statusData.moveSpeed * topSpeedMul, dt);
             FaceDirection(worldDirection, m_statusData.rotationSpeed, dt);
         }
     }
@@ -80,9 +90,17 @@ public class EnemyBossBase : Entity
         Decelerate(m_statusData.deceleration, dt);
     }
 
-    /// <summary>指定方向を向く。</summary>
-    public void FaceToward(Vector3 direction, float dt)
+    /// <summary>指定方向を向く。deadZoneDegを指定すると現在向きとの角度がそれ以下なら回転しない（追尾ねじれ防止）。</summary>
+    public void FaceToward(Vector3 direction, float dt, float deadZoneDeg = 0f)
     {
+        if (deadZoneDeg > 0f)
+        {
+            Vector3 currentFlat = transform.forward; currentFlat.y = 0f;
+            Vector3 targetFlat = direction; targetFlat.y = 0f;
+            if (currentFlat.sqrMagnitude > 0.0001f && targetFlat.sqrMagnitude > 0.0001f
+                && Vector3.Angle(currentFlat, targetFlat) <= deadZoneDeg)
+                return;
+        }
         FaceDirection(direction, m_statusData.rotationSpeed, dt);
     }
 

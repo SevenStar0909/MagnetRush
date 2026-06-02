@@ -1,6 +1,7 @@
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "MagneticDeflectorSettings", menuName = "MagnetRush/MagneticDeflectorSettings")]
+[ClassLabelSO("磁力軌道変化設定")]
 public class MagneticDeflectorSettings : ScriptableObject
 {
     [Header("[軌道変化]")]

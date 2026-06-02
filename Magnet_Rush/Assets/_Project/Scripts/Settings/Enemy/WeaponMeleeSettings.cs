@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 
 [CreateAssetMenu(fileName = "WeaponMeleeSettings", menuName = "MagnetRush/WeaponMeleeSettings")]
+[ClassLabelSO("近接武器設定")]
 public class WeaponMeleeSettings : ScriptableObject
 {
     [Header("[攻撃]")]

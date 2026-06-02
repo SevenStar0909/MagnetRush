@@ -4,6 +4,7 @@ using UnityEngine;
 /// 磁力接触ダメージの設定。箱・武器部位ごとに別アセットで管理。
 /// </summary>
 [CreateAssetMenu(menuName = "MagnetRush/ContactDamageSettings")]
+[ClassLabelSO("接触ダメージ設定")]
 public class ContactDamageSettings : ScriptableObject
 {
     [Header("[ダメージ]")]

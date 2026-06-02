@@ -1,7 +1,13 @@
 using UnityEngine;
 [CreateAssetMenu(fileName = "PlayerSettings", menuName = "MagnetRush/PlayerSettings")]
+[ClassLabelSO("プレイヤー設定")]
 public class PlayerSettings : ScriptableObject
 {
+    [Header("[体力]")]
+    [Label("最大HP")]
+    [Tooltip("最大HP。Player.Awake で Health.SetMaxHealth に流し込まれる")]
+    public int maxHp = 50;
+
     [Header("[移動]")]
     [Label("最高移動速度（m/s）")]
     [Tooltip("最高移動速度（m/s）")]
@@ -39,12 +45,18 @@ public class PlayerSettings : ScriptableObject
     public float jumpInitialVelocity = 8f;
 
     [Header("[カメラ]")]
-    [Label("水平感度")]
-    [Tooltip("カメラの水平感度")]
+    [Label("水平感度 (パッド)")]
+    [Tooltip("ゲームパッドの水平感度。秒積分されるので度/秒の係数")]
     public float cameraSensitivityX = 200f;
-    [Label("垂直感度")]
-    [Tooltip("カメラの垂直感度")]
+    [Label("垂直感度 (パッド)")]
+    [Tooltip("ゲームパッドの垂直感度。秒積分されるので度/秒の係数")]
     public float cameraSensitivityY = 200f;
+    [Label("水平感度 (マウス)")]
+    [Tooltip("マウスの水平感度。1pxあたりの度に掛かる係数")]
+    public float cameraMouseSensitivityX = 3f;
+    [Label("垂直感度 (マウス)")]
+    [Tooltip("マウスの垂直感度。1pxあたりの度に掛かる係数")]
+    public float cameraMouseSensitivityY = 3f;
     [Label("カメラ距離")]
     [Tooltip("カメラとプレイヤーの距離")]
     public float cameraDistance = 5f;
@@ -66,7 +78,22 @@ public class PlayerSettings : ScriptableObject
     [Header("[スタブ攻撃]")]
     [Label("接近判定距離（m）")]
     [Tooltip("ボスがスタン中かつこの距離以内ならスタブ攻撃を発動できる")]
-    public float stabRange = 2f;
+    public float stabRange = 7f;
+    [Label("スタブダメージ")]
+    [Tooltip("スタブ1回で与える固定ダメージ量。Health.DamageIgnoreCooldown 経由でクールダウン無視で適用される")]
+    public int stabDamage = 5;
+    [Label("スタブヒットVFX")]
+    [Tooltip("スタブが当たった瞬間に発生させるプレハブ。null可")]
+    public GameObject stabHitVfx;
+    [Label("スタブヒットVFX寿命（秒）")]
+    [Tooltip("InstantiateしたVFXを自動削除するまでの秒数")]
+    public float stabHitVfxLifetime = 2f;
+    [Label("スタブヒットVFX前方オフセット（m）")]
+    [Tooltip("プレイヤーの前方何メートルにVFXを出すか")]
+    public float stabHitVfxForwardOffset = 1.5f;
+    [Label("スタブヒットVFXスケール倍率")]
+    [Tooltip("VFXプレハブのスケールに乗算する倍率")]
+    public float stabHitVfxScale = 3f;
     [Label("モーションタイムアウト（秒）")]
     [Tooltip("スタブモーションの強制復帰時間（秒）。AnimEvent OnStabMotionFinishedEvent の配線漏れ保険")]
     public float stabMotionMaxDuration = 1.5f;

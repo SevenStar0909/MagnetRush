@@ -1,0 +1,52 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: satara_night_8k
+  m_Shader: {fileID: 4800000, guid: 5e444cd13928b274babcaedb447ba3ef, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - <noninit>:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Tex:
+        m_Texture: {fileID: 8900000, guid: c8f21f62fdb3e43c5b32917c84683698, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - <noninit>: 0
+    - _Exposure: 0.8
+    - _FogBottom: 0
+    - _FogEnd: 0.161
+    - _FogIntens: 0.22
+    - _FogStart: 0
+    - _MieIntens: 0
+    - _MieSize: 0.152
+    - _Rotation: 0
+    - _SunDir: 0
+    m_Colors:
+    - <noninit>: {r: 0, g: 2.0182498, b: 1e-45, a: 1.2904559e-15}
+    - _FogCol: {r: 0.4759256, g: 0.5459327, b: 0.6509434, a: 0.5}
+    - _MieTint: {r: 0.990566, g: 0.990566, b: 0.990566, a: 0.5}
+    - _Tint: {r: 0.09803922, g: 0.12156863, b: 0.20784314, a: 0.5}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

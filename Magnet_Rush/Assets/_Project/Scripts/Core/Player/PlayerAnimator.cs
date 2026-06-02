@@ -29,6 +29,9 @@ public class PlayerAnimator : MonoBehaviour
     [Tooltip("エイム Ability。未設定なら親の GetComponentInParent<AimAbility>()")]
     [SerializeField] private AimAbility m_aim;
 
+    [Tooltip("スタブ Ability。未設定なら親の GetComponentInParent<StabAbility>()")]
+    [SerializeField] private StabAbility m_stab;
+
     [Header("Animator Parameter Names (Inspector 単一箇所管理)")]
     [SerializeField] private string m_stateName = "State";
     [SerializeField] private string m_lastStateName = "LastState";
@@ -92,6 +95,7 @@ public class PlayerAnimator : MonoBehaviour
         if (m_states   == null) m_states   = GetComponentInParent<PlayerStateManager>();
         if (m_player   == null) m_player   = GetComponentInParent<Player>();
         if (m_aim      == null) m_aim      = GetComponentInParent<AimAbility>();
+        if (m_stab     == null) m_stab     = GetComponentInParent<StabAbility>();
 
         if (m_animator == null)
         {
@@ -195,6 +199,7 @@ public class PlayerAnimator : MonoBehaviour
         {
             m_events.onShoot.AddListener(HandleShoot);
             m_events.onReload.AddListener(HandleReload);
+            m_events.onStab.AddListener(HandleStab);
         }
         if (m_states != null)
         {
@@ -208,6 +213,7 @@ public class PlayerAnimator : MonoBehaviour
         {
             m_events.onShoot.RemoveListener(HandleShoot);
             m_events.onReload.RemoveListener(HandleReload);
+            m_events.onStab.RemoveListener(HandleStab);
         }
         if (m_states != null)
         {
@@ -222,7 +228,12 @@ public class PlayerAnimator : MonoBehaviour
         if (m_player != null)
         {
             m_animator.SetFloat(m_hMoveSpeed, m_player.lateralVelocity.magnitude);
-            m_animator.SetBool(m_hIsGrounded, m_player.IsGrounded);
+
+            // 物理 IsGrounded は externalVelocity (磁力等) による持ち上がりを検知しないため、
+            // 上向き外力が SnapForce を超えるときは Animator 上「離地」扱いにして Airborne 層へ遷移させる。
+            float snapForce = m_player.Settings != null ? m_player.Settings.snapForce : 0f;
+            bool airborneByExternal = m_player.externalVelocity.y > snapForce;
+            m_animator.SetBool(m_hIsGrounded, m_player.IsGrounded && !airborneByExternal);
         }
 
         if (m_input != null)
@@ -230,7 +241,9 @@ public class PlayerAnimator : MonoBehaviour
             var mv = m_input.MoveInput;
             m_animator.SetFloat(m_hMoveInputX, mv.x);
             m_animator.SetFloat(m_hMoveInputZ, mv.y);
-            m_animator.SetFloat(m_hVerticalSpeed, m_player.velocity.y);
+            // 接地中は velocity.y が -SnapForce 固定なので externalVelocity.y を加算して
+            // 実効的な垂直速度を Animator に渡す (Jump/Fall サブ遷移を磁力上昇でも駆動する)。
+            m_animator.SetFloat(m_hVerticalSpeed, m_player.velocity.y + m_player.externalVelocity.y);
         }
 
         if (m_aim != null)
@@ -263,11 +276,33 @@ public class PlayerAnimator : MonoBehaviour
 
     private void HandleShoot()  { if (m_animator != null) m_animator.SetTrigger(m_hShoot); }
     private void HandleReload() { if (m_animator != null) m_animator.SetTrigger(m_hReload); }
+    private void HandleStab()   { if (m_animator != null) m_animator.SetTrigger(m_hStab); }
 
+    // Stab はステート遷移と同時に FireStab → SetTrigger(Stab) するため、ここでリセットすると直後に消える。
+    // 1フレーム内で State 変化 → ResetTriggers → Enter → SetTrigger(Stab) の順なら問題ないが、
+    // 現状 EntityStateManager は Enter → OnStateChanged の順で発火するため Stab を除外する。
     private void ResetTriggersExceptStateChange()
     {
         if (m_animator == null) return;
         m_animator.ResetTrigger(m_hShoot);
         m_animator.ResetTrigger(m_hReload);
+    }
+
+    /// <summary>
+    /// 突き刺し瞬間の AnimEvent → StabAbility へ転送。
+    /// </summary>
+    public void OnStabHitEvent()
+    {
+        m_stab?.OnStabHitEvent();
+    }
+
+    /// <summary>
+    /// スタブモーション終了の AnimEvent → StabPlayerState へ転送。
+    /// State が StabPlayerState でなければ無視。
+    /// </summary>
+    public void OnStabMotionFinishedEvent()
+    {
+        if (m_states?.current is StabPlayerState stabState)
+            stabState.OnStabMotionFinished(m_player);
     }
 }

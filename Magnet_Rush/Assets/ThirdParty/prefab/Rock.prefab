@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 30725336300571938}
   - component: {fileID: 7524739309315275981}
   - component: {fileID: 6802568208222515341}
-  m_Layer: 0
+  m_Layer: 14
   m_Name: Rock
   m_TagString: Wall
   m_Icon: {fileID: 0}
@@ -156,3 +156,5 @@ MonoBehaviour:
   m_pole: 0
   m_isActive: 0
   m_initialMass: 1
+  m_centerOffset: {x: 0, y: 0, z: 0}
+  m_useEdgeDetectionOutline: 1

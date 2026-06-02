@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5c78a0652301aff42b1cb9ae795437dd, type: 3}
   m_Name: PlayerSettings
   m_EditorClassIdentifier: Assembly-CSharp::PlayerSettings
+  maxHp: 50
   topSpeed: 6
   acceleration: 30
   deceleration: 25
@@ -23,19 +24,26 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 193
-  jumpInitialVelocity: 20
-  cameraSensitivityX: 35
-  cameraSensitivityY: 25
+  jumpInitialVelocity: 7
+  cameraSensitivityX: 200
+  cameraSensitivityY: 150
+  cameraMouseSensitivityX: 3
+  cameraMouseSensitivityY: 3
   cameraDistance: 5
   shoulderOffset: {x: 1.3, y: 0.3, z: 0}
   cameraPitchMin: -90
   cameraPitchMax: 90
   firePointHeight: 1.2
-  stabRange: 2
+  stabRange: 7
+  stabDamage: 5
+  stabHitVfx: {fileID: 7608947279581240675, guid: 5cf22e19cf37f644f89272000f420869, type: 3}
+  stabHitVfxLifetime: 2
+  stabHitVfxForwardOffset: 3.5
+  stabHitVfxScale: 6
   stabMotionMaxDuration: 1.5
   aimReleaseGraceTime: 0.15
   aimTimeScale: 0.3
-  aimMaxDuration: 3
+  aimMaxDuration: 6
   aimEnterDuration: 0.12
   aimExitDuration: 0.18
   aimFOV: 40

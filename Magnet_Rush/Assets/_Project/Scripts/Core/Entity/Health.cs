@@ -1,11 +1,12 @@
 using System;
 using UnityEngine;
+
 /// <summary>
 /// ダメージクールダウン付きのHP管理。
 /// </summary>
 public class Health : MonoBehaviour
 {
-    [SerializeField] private int m_maxHealth = 3;
+    private int m_maxHealth = 1;
     [SerializeField] private float m_damageCooldown = 1f;
 
     public int MaxHealth => m_maxHealth;
@@ -22,7 +23,26 @@ public class Health : MonoBehaviour
 
     void Awake()
     {
+        if (m_maxHealth <= 0)
+            m_maxHealth = 1;
+
         CurrentHealth = m_maxHealth;
+    }
+
+    public void SetMaxHealth(int maxHealth, bool resetCurrent = true)
+    {
+        if (maxHealth <= 0)
+        {
+            ChannelLogger.LogGuardReturn("Entity", "maxHealth が 0 以下です");
+            return;
+        }
+
+        m_maxHealth = maxHealth;
+
+        if (resetCurrent)
+            CurrentHealth = m_maxHealth;
+        else
+            CurrentHealth = Mathf.Min(CurrentHealth, m_maxHealth);
     }
 
     /// <summary>
@@ -32,6 +52,24 @@ public class Health : MonoBehaviour
     {
         if (IsDead) { ChannelLogger.LogGuardReturn("Entity", "既に死亡"); return; }
         if (IsRecovering) { ChannelLogger.LogGuardReturn("Entity", "無敵時間中"); return; }
+        if (amount <= 0) { ChannelLogger.LogGuardReturn("Entity", "ダメージ量0以下"); return; }
+
+        CurrentHealth = Mathf.Max(CurrentHealth - amount, 0);
+        m_lastDamageTime = Time.time;
+        OnDamage?.Invoke(amount);
+
+        if (IsDead)
+        {
+            OnDie?.Invoke();
+        }
+    }
+
+    /// <summary>
+    /// ダメージを与える。クールダウン判定を無視する（死亡中は無視）。
+    /// </summary>
+    public void DamageIgnoreCooldown(int amount)
+    {
+        if (IsDead) { ChannelLogger.LogGuardReturn("Entity", "既に死亡"); return; }
         if (amount <= 0) { ChannelLogger.LogGuardReturn("Entity", "ダメージ量0以下"); return; }
 
         CurrentHealth = Mathf.Max(CurrentHealth - amount, 0);

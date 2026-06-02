@@ -93,7 +93,9 @@ public class OutlineRendererFeature : ScriptableRendererFeature
                 m_shaderTagIds, renderingData, cameraData, lightData, SortingCriteria.CommonOpaque);
             drawingSettings.overrideMaterial = m_normalsMaterial;
             // Physics LayerフィルタリングはRendering Layer Maskに移行済み。全Physics Layer通過。
-            var filteringSettings = new FilteringSettings(RenderQueueRange.opaque, ~0);
+            // Transparent マテリアルの磁化対象（renderQueue=3000+）もアウトラインに乗せるため all 指定。
+            // renderingLayerMask(bit8=Magnetized) で対象は磁化中のオブジェクトのみに絞られる。
+            var filteringSettings = new FilteringSettings(RenderQueueRange.all, ~0);
             filteringSettings.renderingLayerMask = m_renderingLayerMask;
             var rlParams = new RendererListParams(renderingData.cullResults, drawingSettings, filteringSettings);
             var rendererListHandle = renderGraph.CreateRendererList(rlParams);
