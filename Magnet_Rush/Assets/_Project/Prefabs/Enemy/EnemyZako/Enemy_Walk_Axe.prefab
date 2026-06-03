@@ -29,6 +29,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 1084594936345564161}
   - {fileID: 7593657030336370097}
   - {fileID: 4053838563486499774}
   m_Father: {fileID: 7025300836606099460}
@@ -51,7 +52,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &7593657030336370097
 Transform:
   m_ObjectHideFlags: 0
@@ -196,10 +197,10 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.7
-  m_Height: 1
+  m_Radius: 2
+  m_Height: 2
   m_Direction: 1
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Center: {x: 0, y: 1, z: 0}
 --- !u!1 &4575423196274916746
 GameObject:
   m_ObjectHideFlags: 0
@@ -301,9 +302,9 @@ CapsuleCollider:
   m_Enabled: 1
   serializedVersion: 2
   m_Radius: 0.5
-  m_Height: 2
+  m_Height: 2.4
   m_Direction: 1
-  m_Center: {x: 0, y: 0.5, z: 0}
+  m_Center: {x: 0, y: 0.7, z: 0}
 --- !u!1 &7342549653092073069
 GameObject:
   m_ObjectHideFlags: 0
@@ -330,7 +331,7 @@ Transform:
   m_GameObject: {fileID: 7342549653092073069}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 1, z: -0, w: 0}
-  m_LocalPosition: {x: 0, y: 0, z: -4}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -356,9 +357,9 @@ CapsuleCollider:
   m_Enabled: 0
   serializedVersion: 2
   m_Radius: 0.5
-  m_Height: 3
+  m_Height: 2.4
   m_Direction: 1
-  m_Center: {x: 0, y: 1.5, z: 0}
+  m_Center: {x: 0, y: 0.7, z: 0}
 --- !u!1 &7655374763120775714
 GameObject:
   m_ObjectHideFlags: 0
@@ -370,10 +371,12 @@ GameObject:
   - component: {fileID: 7025300836606099460}
   - component: {fileID: 2756956252481435442}
   - component: {fileID: 6635251846347781248}
+  - component: {fileID: 8112345678901234567}
   - component: {fileID: 272791022539229585}
   - component: {fileID: 2958568544906377151}
   - component: {fileID: 5793265015369139466}
   - component: {fileID: 4325063793620339370}
+  - component: {fileID: 8112345678901234568}
   - component: {fileID: 1675817586269981184}
   - component: {fileID: 5789753094642808056}
   m_Layer: 9
@@ -409,9 +412,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 7655374763120775714}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e6927d64b6530624bbcad48ecbc31976, type: 3}
+  m_Script: {fileID: 11500000, guid: a8d5a53e3a2d4b7ab7ed7294f7bb1f31, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: MagnetRush.Enemy::EnemyAirBase
+  m_EditorClassIdentifier: MagnetRush.Enemy::EnemyWalkBase
   entityEvents:
     onGroundEnter:
       m_PersistentCalls:
@@ -424,11 +427,9 @@ MonoBehaviour:
   velocity: {x: 0, y: 0, z: 0}
   externalVelocity: {x: 0, y: 0, z: 0}
   holdVelocity: {x: 0, y: 0, z: 0}
-  m_statusData: {fileID: 11400000, guid: 9a433bd3f87a7524caa660f83196e956, type: 2}
+  m_statusData: {fileID: 11400000, guid: 4ee3148f3a80a1949b743efb41c05d5b, type: 2}
   m_player: {fileID: 0}
   m_mover: {fileID: 5793265015369139466}
-  m_disappearEffectPrefab: {fileID: 7608947279581240675, guid: bf9ba2edd393fca46b6ff93c1bcdbc0f, type: 3}
-  m_disappearEffectLifetime: 0.75
 --- !u!114 &6635251846347781248
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -438,10 +439,23 @@ MonoBehaviour:
   m_GameObject: {fileID: 7655374763120775714}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 120259dbf685cc74aa6ce58d8e24a9de, type: 3}
+  m_Script: {fileID: 11500000, guid: ffd6d7fd57f148ea8fd9e83347df64de, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: MagnetRush.Enemy::EnemyAirAi
-  m_attackBox: {fileID: 3371804068742996250}
+  m_EditorClassIdentifier: MagnetRush.Enemy::EnemyWalkAxeAi
+--- !u!114 &8112345678901234567
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7655374763120775714}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9f71666c694f49cfba97401766f71724, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Enemy::EnemyWalkAxeAttack
+  m_attackHitbox: {fileID: 3371804068742996250}
+  m_attackHitboxMeshRenderer: {fileID: 0}
 --- !u!54 &272791022539229585
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -517,6 +531,28 @@ MonoBehaviour:
   collisionLayer:
     serializedVersion: 2
     m_Bits: 32755
+--- !u!195 &8112345678901234568
+NavMeshAgent:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7655374763120775714}
+  m_Enabled: 1
+  m_AgentTypeID: -1372625422
+  m_Radius: 0.5
+  m_Speed: 3.5
+  m_Acceleration: 8
+  avoidancePriority: 50
+  m_AngularSpeed: 120
+  m_StoppingDistance: 0
+  m_AutoTraverseOffMeshLink: 1
+  m_AutoBraking: 1
+  m_AutoRepath: 1
+  m_Height: 3
+  m_BaseOffset: 0
+  m_WalkableMask: 4294967295
+  m_ObstacleAvoidanceType: 4
 --- !u!114 &1675817586269981184
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -595,9 +631,9 @@ CapsuleCollider:
   m_Enabled: 1
   serializedVersion: 2
   m_Radius: 0.5
-  m_Height: 1
+  m_Height: 2.4
   m_Direction: 1
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Center: {x: 0, y: 0.7, z: 0}
 --- !u!1 &9035872966031649093
 GameObject:
   m_ObjectHideFlags: 0
@@ -616,7 +652,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &4053838563486499774
 Transform:
   m_ObjectHideFlags: 0
@@ -710,3 +746,65 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!1001 &614732709216777194
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 1363601711625296601}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: 941e3e7dd39fa36449179512446bf358, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 941e3e7dd39fa36449179512446bf358, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.65
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 941e3e7dd39fa36449179512446bf358, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 941e3e7dd39fa36449179512446bf358, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 941e3e7dd39fa36449179512446bf358, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 941e3e7dd39fa36449179512446bf358, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 941e3e7dd39fa36449179512446bf358, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 941e3e7dd39fa36449179512446bf358, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 941e3e7dd39fa36449179512446bf358, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 941e3e7dd39fa36449179512446bf358, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 941e3e7dd39fa36449179512446bf358, type: 3}
+      propertyPath: m_Name
+      value: AXenemy
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 941e3e7dd39fa36449179512446bf358, type: 3}
+--- !u!4 &1084594936345564161 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 941e3e7dd39fa36449179512446bf358, type: 3}
+  m_PrefabInstance: {fileID: 614732709216777194}
+  m_PrefabAsset: {fileID: 0}
