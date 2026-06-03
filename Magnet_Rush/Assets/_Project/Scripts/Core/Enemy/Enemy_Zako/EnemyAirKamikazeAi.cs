@@ -1,15 +1,16 @@
 ﻿using UnityEngine;
 
 /// <summary>
-/// 空中敵のAI。EnemyAirBase を前提に、プレイヤー追跡と攻撃判定を実装する。
+/// カミカゼ空中敵のAI。EnemyAirBase を前提に、プレイヤーへ突撃して接触時に自壊する。
 /// 追跡は3D移動、回転はY軸のみ。攻撃判定はAttackBox Colliderで行う。
 /// </summary>
 [DisallowMultipleComponent]
 [RequireComponent(typeof(EnemyAirBase))]
-public class EnemyAirAi : MonoBehaviour
+public class EnemyAirKamikazeAi : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private Collider m_attackBox;
+    [SerializeField] private EnemyAirKamikazeAnimator m_animator;
 
     private EnemyAirBase m_enemyBase;
     private Magnetizable m_magnetizable;
@@ -19,12 +20,15 @@ public class EnemyAirAi : MonoBehaviour
     {
         if (!TryGetComponent(out m_enemyBase))
         {
-            Debug.LogError($"[EnemyAirAi] {name}: EnemyAirBase が見つかりません。", this);
+            Debug.LogError($"[{nameof(EnemyAirKamikazeAi)}] {name}: EnemyAirBase が見つかりません。", this);
             enabled = false;
             return;
         }
 
         m_magnetizable = GetComponent<Magnetizable>();
+
+        if (m_animator == null)
+            m_animator = GetComponentInChildren<EnemyAirKamikazeAnimator>(true);
 
         if (m_attackBox == null)
             m_attackBox = FindAttackBoxCollider();
@@ -35,7 +39,7 @@ public class EnemyAirAi : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning($"[EnemyAirAi] {name}: attackbox 用 Collider が見つかりません。", this);
+            Debug.LogWarning($"[{nameof(EnemyAirKamikazeAi)}] {name}: attackbox 用 Collider が見つかりません。", this);
         }
     }
 
@@ -75,26 +79,24 @@ public class EnemyAirAi : MonoBehaviour
         EnemyAirSettings data = m_enemyBase.StatusData;
         if (data != null)
         {
+            // もし追跡範囲が設定されているなら、プレイヤーが範囲外のときは追跡しない
             if (data.chaseRange > 0f)
             {
                 float chaseRangeSqr = data.chaseRange * data.chaseRange;
                 if (toPlayer.sqrMagnitude > chaseRangeSqr)
                 {
+                    if (m_animator != null) m_animator.SetAttacking(false);
                     m_enemyBase.SlowDown(Time.deltaTime);
                     return;
                 }
             }
+        }
 
-            if (data.stopDistance > 0f)
-            {
-                float stopDistanceSqr = data.stopDistance * data.stopDistance;
-                if (toPlayer.sqrMagnitude <= stopDistanceSqr)
-                {
-                    m_enemyBase.FaceTowardYaw(toPlayer, Time.deltaTime);
-                    m_enemyBase.SlowDown(Time.deltaTime);
-                    return;
-                }
-            }
+        // プレイヤーが追跡範囲内のときは、停止距離を見ずに突撃する。
+        if (m_animator != null)
+        {
+            m_animator.SetAttackTargetDirection(toPlayer);
+            m_animator.TriggerAttack();
         }
 
         m_enemyBase.AccelerateToward(toPlayer, Time.deltaTime);

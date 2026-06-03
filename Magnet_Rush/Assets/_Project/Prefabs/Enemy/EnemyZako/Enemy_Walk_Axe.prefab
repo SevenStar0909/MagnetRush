@@ -371,7 +371,6 @@ GameObject:
   - component: {fileID: 7025300836606099460}
   - component: {fileID: 2756956252481435442}
   - component: {fileID: 6635251846347781248}
-  - component: {fileID: 8112345678901234567}
   - component: {fileID: 272791022539229585}
   - component: {fileID: 2958568544906377151}
   - component: {fileID: 5793265015369139466}
@@ -442,20 +441,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ffd6d7fd57f148ea8fd9e83347df64de, type: 3}
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Enemy::EnemyWalkAxeAi
---- !u!114 &8112345678901234567
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7655374763120775714}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9f71666c694f49cfba97401766f71724, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: MagnetRush.Enemy::EnemyWalkAxeAttack
-  m_attackHitbox: {fileID: 3371804068742996250}
-  m_attackHitboxMeshRenderer: {fileID: 0}
+  m_attackBox: {fileID: 3371804068742996250}
+  m_attackBoxMeshRenderer: {fileID: 0}
 --- !u!54 &272791022539229585
 Rigidbody:
   m_ObjectHideFlags: 0
