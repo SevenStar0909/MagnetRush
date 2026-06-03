@@ -109,7 +109,7 @@ public class LongPressGauge : MonoBehaviour, IPointerDownHandler, IPointerUpHand
     {
         Debug.Log("[PressGaugeCoroutine] 開始");
 
-        while (m_isPressed && m_currentPressTime < m_requiredPressDuration)
+        while (m_currentPressTime < m_requiredPressDuration)
         {
             m_currentPressTime += Time.deltaTime;
 
@@ -146,7 +146,7 @@ public class LongPressGauge : MonoBehaviour, IPointerDownHandler, IPointerUpHand
 
         Debug.Log($"[WaitForTransition] 待機終了 - m_isPressed: {m_isPressed}, 時間: {m_currentPressTime:F2}秒");
 
-        if (m_isPressed && m_currentPressTime >= m_requiredPressDuration)
+        if (m_currentPressTime >= m_requiredPressDuration)
         {
             Debug.Log("[WaitForTransition] 遷移条件確認 - タイトルに遷移");
             OnLongPressComplete();
