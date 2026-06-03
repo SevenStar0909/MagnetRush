@@ -17,6 +17,9 @@ public class EnemyAirDysonAi : MonoBehaviour
         Reposition
     }
 
+    [Header("References")]
+    [SerializeField] private EnemyAirDysonAnimator m_animator;
+
     [Header("Positioning")]
     [SerializeField] private float m_keepDistance = 5f;
     [SerializeField] private float m_keepDistanceTolerance = 0.75f;
@@ -55,6 +58,9 @@ public class EnemyAirDysonAi : MonoBehaviour
             Debug.LogError($"[EnemyAirDysonAi] {name}: EnemyAirBase was not found.", this);
             enabled = false;
         }
+
+        if (m_animator == null)
+            m_animator = GetComponentInChildren<EnemyAirDysonAnimator>(true);
     }
 
     private void Update()
@@ -253,27 +259,44 @@ public class EnemyAirDysonAi : MonoBehaviour
         if (m_state == next)
             return;
 
+        DysonState previous = m_state;
         m_state = next;
 
         switch (m_state)
         {
             case DysonState.Search:
+                if (previous == DysonState.Pull)
+                    m_animator?.TriggerSuctionEnd();
+                else
+                    m_animator?.PlayIdle();
+
                 m_stateTimer = Mathf.Max(0f, m_searchDuration);
                 m_approachTimer = 0f;
                 m_currentPullSpeed = 0f;
                 m_enemyBase.velocity = Vector3.zero;
                 break;
             case DysonState.Pull:
+                m_animator?.TriggerSuctionStart();
                 m_stateTimer = Mathf.Max(0.1f, m_pullDuration);
                 m_approachTimer = 0f;
                 m_currentPullSpeed = 0f;
                 break;
             case DysonState.Reposition:
+                if (previous == DysonState.Pull)
+                    m_animator?.TriggerSuctionEnd();
+                else
+                    m_animator?.PlayIdle();
+
                 m_stateTimer = Mathf.Max(0f, m_repositionDuration);
                 m_approachTimer = 0f;
                 m_currentPullSpeed = 0f;
                 break;
             default:
+                if (previous == DysonState.Pull)
+                    m_animator?.TriggerSuctionEnd();
+                else
+                    m_animator?.PlayIdle();
+
                 m_stateTimer = 0f;
                 m_approachTimer = 0f;
                 m_currentPullSpeed = 0f;
