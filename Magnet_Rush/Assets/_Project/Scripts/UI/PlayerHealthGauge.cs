@@ -15,8 +15,12 @@ public class PlayerHealthGauge : MonoBehaviour
     private Health m_health;
     private Coroutine m_blinkCoroutine; // コルーチンの二重起動・リセット管理用
 
+    private float m_gaugeMaxWidth;
+
     void Start()
     {
+        m_gaugeMaxWidth = m_greenGauge.rectTransform.rect.width;
+
         GameObject playerObj = GameObject.FindWithTag(GameTags.Player);
         if (playerObj != null)
         {
@@ -28,6 +32,7 @@ public class PlayerHealthGauge : MonoBehaviour
         {
             m_health.OnDamage += HandleOnDamage;
             m_health.OnHeal += HandleOnHeal;
+            m_health.OnHealthReset += SnapToCurrentHealth;
 
             // ゲーム開始時のHPをUIに即座に反映
             RefreshGaugeInstant();
@@ -45,6 +50,7 @@ public class PlayerHealthGauge : MonoBehaviour
         {
             m_health.OnDamage -= HandleOnDamage;
             m_health.OnHeal -= HandleOnHeal;
+            m_health.OnHealthReset -= SnapToCurrentHealth;
         }
     }
 
@@ -53,12 +59,8 @@ public class PlayerHealthGauge : MonoBehaviour
     /// </summary>
     private void HandleOnDamage(int amount)
     {
-        // 最新のHP割合にゲージの長さを合わせる
-        float fillRatio = m_health.HealthRatio;
-        m_greenGauge.fillAmount = fillRatio;
-        m_whiteGauge.fillAmount = fillRatio;
+        UpdateGaugeWidth(m_health.HealthRatio);
 
-        // すでに点滅中なら一度止めて、新しく点滅をやり直す（連続被弾対策）
         if (m_blinkCoroutine != null)
         {
             StopCoroutine(m_blinkCoroutine);
@@ -71,7 +73,14 @@ public class PlayerHealthGauge : MonoBehaviour
     /// </summary>
     private void HandleOnHeal(int amount)
     {
-        // 回復時は点滅させず、即座に最新のHPを反映
+        RefreshGaugeInstant();
+    }
+
+    /// <summary>
+    ///HealthのOnHealthResetイベントから自動で呼び出される
+    /// </summary>
+    private void SnapToCurrentHealth()
+    {
         RefreshGaugeInstant();
     }
 
@@ -87,15 +96,32 @@ public class PlayerHealthGauge : MonoBehaviour
         }
 
         float fillRatio = m_health != null ? m_health.HealthRatio : 1f;
-        m_greenGauge.fillAmount = fillRatio;
-        m_whiteGauge.fillAmount = fillRatio;
+
+        UpdateGaugeWidth(fillRatio);
         SetNormalMode();
+    }
+
+
+    private void UpdateGaugeWidth(float fillRatio)
+    {
+        // 割合に応じたターゲットの横幅を計算
+        float targetWidth = m_gaugeMaxWidth * fillRatio;
+
+        m_greenGauge.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, targetWidth);
+        m_whiteGauge.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, targetWidth);
+
+        // HPが0以下になった時は非表示にする
+        m_greenGauge.enabled = (fillRatio > 0f);
+        if (m_blinkCoroutine == null)
+        {
+            m_whiteGauge.enabled = (fillRatio > 0f);
+        }
     }
 
     private IEnumerator BlinkWhite()
     {
-        // 緑ゲージを非表示にする
-        m_greenGauge.enabled = false;
+        // HPが残っている時だけ緑を非表示にする
+        if (m_health.HealthRatio > 0f) m_greenGauge.enabled = false;
 
         for (int i = 0; i < m_blinkCount; i++)
         {
@@ -113,6 +139,6 @@ public class PlayerHealthGauge : MonoBehaviour
     private void SetNormalMode()
     {
         m_whiteGauge.enabled = false;
-        m_greenGauge.enabled = true;
+        m_greenGauge.enabled = (m_health != null && m_health.HealthRatio > 0f);
     }
 }
