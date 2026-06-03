@@ -12,6 +12,7 @@ public class EnemyAirAi : MonoBehaviour
     [SerializeField] private Collider m_attackBox;
 
     private EnemyAirBase m_enemyBase;
+    private Magnetizable m_magnetizable;
     private bool m_hasHit;
 
     private void Awake()
@@ -22,6 +23,8 @@ public class EnemyAirAi : MonoBehaviour
             enabled = false;
             return;
         }
+
+        m_magnetizable = GetComponent<Magnetizable>();
 
         if (m_attackBox == null)
             m_attackBox = FindAttackBoxCollider();
@@ -40,12 +43,18 @@ public class EnemyAirAi : MonoBehaviour
     {
         if (m_enemyBase != null)
             m_enemyBase.EnvironmentContact += HandleEnvironmentContact;
+
+        if (m_magnetizable != null)
+            m_magnetizable.OnMagnetContact += HandleMagnetContact;
     }
 
     private void OnDisable()
     {
         if (m_enemyBase != null)
             m_enemyBase.EnvironmentContact -= HandleEnvironmentContact;
+
+        if (m_magnetizable != null)
+            m_magnetizable.OnMagnetContact -= HandleMagnetContact;
     }
 
     private void Update()
@@ -154,6 +163,30 @@ public class EnemyAirAi : MonoBehaviour
     {
         if (m_hasHit)
             return;
+
+        m_hasHit = true;
+        DestroySelf();
+    }
+
+    private void HandleMagnetContact(Magnetizable other)
+    {
+        if (m_hasHit)
+            return;
+
+        if (other == null || other.transform.root == transform.root)
+            return;
+
+        var hittable = other.GetComponentInParent<IHittable>();
+        if (hittable != null)
+        {
+            hittable.OnHit(new HitData
+            {
+                damage = m_enemyBase != null ? m_enemyBase.ImpactDamage : 1,
+                hitPoint = other.Position,
+                knockbackDir = (other.Position - transform.position).normalized,
+                source = gameObject
+            });
+        }
 
         m_hasHit = true;
         DestroySelf();

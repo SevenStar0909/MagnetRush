@@ -12,6 +12,7 @@ public class EnemyAirDysonAi : MonoBehaviour
     private enum DysonState
     {
         Approach,
+        Search,
         Pull,
         Reposition
     }
@@ -21,6 +22,8 @@ public class EnemyAirDysonAi : MonoBehaviour
     [SerializeField] private float m_keepDistanceTolerance = 0.75f;
     [SerializeField] private bool m_useAirSettingsChaseRange = true;
     [SerializeField] private float m_approachHeightOffset = 5.0f;  // Y軸方向のオフセット。
+    [SerializeField] private float m_approachTimeout = 3f;
+    [SerializeField] private float m_searchDuration = 1f;
 
     [Header("Pull Timing")]
     [SerializeField] private float m_pullDuration = 2.5f;
@@ -42,6 +45,7 @@ public class EnemyAirDysonAi : MonoBehaviour
     private Transform m_pullTargetThisFrame;
     private DysonState m_state = DysonState.Approach;
     private float m_stateTimer;
+    private float m_approachTimer;
     private float m_currentPullSpeed;
 
     private void Awake()
@@ -62,13 +66,17 @@ public class EnemyAirDysonAi : MonoBehaviour
 
         if (m_enemyBase.IsMagnetControlled)
         {
-            ChangeState(DysonState.Approach);
+            m_currentPullSpeed = 0f;
             return;
         }
 
         Transform player = m_enemyBase.Player;
         if (player == null)
+        {
+            m_enemyBase.SlowDown(Time.deltaTime);
+            m_currentPullSpeed = 0f;
             return;
+        }
 
         CachePlayerEntity(player);
 
@@ -82,12 +90,19 @@ public class EnemyAirDysonAi : MonoBehaviour
 
         switch (m_state)
         {
+            // プレイヤーに近づくフェーズ。プレイヤーへの水平距離が一定以上ある場合は近づき、近すぎる場合は減速する。
             case DysonState.Approach:
                 TickApproach(flatToPlayer, distance, dt);
                 break;
+            // プレイヤーを見失ったときのフェーズ。一定時間経過後に再びApproachフェーズに移行する。
+            case DysonState.Search:
+                TickSearch(flatToPlayer, distance, dt);
+                break;
+            // プレイヤーを引き寄せるフェーズ。一定時間経過後、またはプレイヤーが近すぎる場合にRepositionフェーズに移行する。
             case DysonState.Pull:
                 TickPull(player, flatToPlayer, distance, dt);
                 break;
+            // プレイヤーから一定距離を保ちながら位置を調整するフェーズ。一定時間経過後に再びApproachフェーズに移行する。
             case DysonState.Reposition:
                 TickReposition(flatToPlayer, distance, dt);
                 break;
@@ -120,13 +135,20 @@ public class EnemyAirDysonAi : MonoBehaviour
         // 追跡範囲は、プレイヤーへの水平距離がdata.chaseRange以下の場合とする
         if (m_useAirSettingsChaseRange && data != null && data.chaseRange > 0f && distance > data.chaseRange)
         {
-            m_enemyBase.SlowDown(dt);
+            ChangeState(DysonState.Search);
             return;
         }
 
         // プレイヤーへの水平距離が、m_keepDistance + m_keepDistanceTolerance より大きい場合は、プレイヤーに近づく
         if (distance > m_keepDistance + m_keepDistanceTolerance)
         {
+            m_approachTimer += dt;
+            if (m_approachTimeout > 0f && m_approachTimer >= m_approachTimeout)
+            {
+                ChangeState(DysonState.Search);
+                return;
+            }
+
             // Y軸方向のオフセットを加えたプレイヤーへのベクトルを計算
             Vector3 approachTarget = m_enemyBase.Player.position + Vector3.up * m_approachHeightOffset;
             Vector3 toApproachTarget = approachTarget - transform.position;
@@ -134,6 +156,7 @@ public class EnemyAirDysonAi : MonoBehaviour
             return;
         }
 
+        m_approachTimer = 0f;
         m_enemyBase.FaceTowardYaw(flatToPlayer, dt);
         m_enemyBase.SlowDown(dt);
 
@@ -141,6 +164,18 @@ public class EnemyAirDysonAi : MonoBehaviour
             ChangeState(DysonState.Pull);
     }
 
+    // プレイヤーを見失ったときのフェーズ。一定時間経過後に再びApproachフェーズに移行する。
+    private void TickSearch(Vector3 flatToPlayer, float distance, float dt)
+    {
+        m_enemyBase.FaceTowardYaw(flatToPlayer, dt);
+        m_enemyBase.SlowDown(dt);
+
+        m_stateTimer -= dt;
+        if (m_stateTimer <= 0f)
+            ChangeState(DysonState.Approach);
+    }
+
+    // プレイヤーを引き寄せるフェーズ。一定時間経過後、またはプレイヤーが近すぎる場合にRepositionフェーズに移行する。
     private void TickPull(Transform player, Vector3 flatToPlayer, float distance, float dt)
     {
         m_enemyBase.FaceTowardYaw(flatToPlayer, dt);
@@ -152,6 +187,7 @@ public class EnemyAirDysonAi : MonoBehaviour
             ChangeState(DysonState.Reposition);
     }
 
+    // プレイヤーから一定距離を保ちながら位置を調整するフェーズ。一定時間経過後に再びApproachフェーズに移行する。
     private void TickReposition(Vector3 flatToPlayer, float distance, float dt)
     {
         m_stateTimer -= dt;
@@ -170,6 +206,7 @@ public class EnemyAirDysonAi : MonoBehaviour
             ChangeState(DysonState.Approach);
     }
 
+    // プレイヤーを引き寄せる処理。プレイヤーが一定距離以上離れている場合に、加速度を計算してプレイヤーを引き寄せる。
     private void PullPlayer(Transform player, float dt)
     {
         if (m_playerEntity == null)
@@ -210,6 +247,7 @@ public class EnemyAirDysonAi : MonoBehaviour
         }
     }
 
+    // 状態を変更する処理。状態が変わるたびに、タイマーや引き寄せ速度などの変数をリセットする。
     private void ChangeState(DysonState next)
     {
         if (m_state == next)
@@ -219,16 +257,25 @@ public class EnemyAirDysonAi : MonoBehaviour
 
         switch (m_state)
         {
+            case DysonState.Search:
+                m_stateTimer = Mathf.Max(0f, m_searchDuration);
+                m_approachTimer = 0f;
+                m_currentPullSpeed = 0f;
+                m_enemyBase.velocity = Vector3.zero;
+                break;
             case DysonState.Pull:
                 m_stateTimer = Mathf.Max(0.1f, m_pullDuration);
+                m_approachTimer = 0f;
                 m_currentPullSpeed = 0f;
                 break;
             case DysonState.Reposition:
                 m_stateTimer = Mathf.Max(0f, m_repositionDuration);
+                m_approachTimer = 0f;
                 m_currentPullSpeed = 0f;
                 break;
             default:
                 m_stateTimer = 0f;
+                m_approachTimer = 0f;
                 m_currentPullSpeed = 0f;
                 break;
         }

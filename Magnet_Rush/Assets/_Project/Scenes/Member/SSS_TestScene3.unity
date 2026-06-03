@@ -309,7 +309,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2387208754698167448, guid: 37032c1edd1675b47b516a8b3d917f76, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -29.000366
+      value: -29.000244
       objectReference: {fileID: 0}
     - target: {fileID: 5836681742755971000, guid: 37032c1edd1675b47b516a8b3d917f76, type: 3}
       propertyPath: m_LocalPosition.x
@@ -874,9 +874,45 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 397329176636918230, guid: 053558ec5eb5f15469ce89137c948873, type: 3}
+      propertyPath: m_Radius
+      value: 0.75
+      objectReference: {fileID: 0}
+    - target: {fileID: 397329176636918230, guid: 053558ec5eb5f15469ce89137c948873, type: 3}
+      propertyPath: m_Center.y
+      value: 0.25
+      objectReference: {fileID: 0}
+    - target: {fileID: 1167506149281023372, guid: 053558ec5eb5f15469ce89137c948873, type: 3}
+      propertyPath: m_Radius
+      value: 1.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1167506149281023372, guid: 053558ec5eb5f15469ce89137c948873, type: 3}
+      propertyPath: m_Center.y
+      value: 0.25
+      objectReference: {fileID: 0}
+    - target: {fileID: 3371804068742996250, guid: 053558ec5eb5f15469ce89137c948873, type: 3}
+      propertyPath: m_Radius
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3371804068742996250, guid: 053558ec5eb5f15469ce89137c948873, type: 3}
+      propertyPath: m_Center.y
+      value: 0.25
+      objectReference: {fileID: 0}
     - target: {fileID: 6009071072714012878, guid: 053558ec5eb5f15469ce89137c948873, type: 3}
       propertyPath: m_LocalPosition.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6182999027824245529, guid: 053558ec5eb5f15469ce89137c948873, type: 3}
+      propertyPath: m_Height
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 6182999027824245529, guid: 053558ec5eb5f15469ce89137c948873, type: 3}
+      propertyPath: m_Radius
+      value: 0.75
+      objectReference: {fileID: 0}
+    - target: {fileID: 6182999027824245529, guid: 053558ec5eb5f15469ce89137c948873, type: 3}
+      propertyPath: m_Center.y
+      value: 0.25
       objectReference: {fileID: 0}
     - target: {fileID: 6635251846347781248, guid: 053558ec5eb5f15469ce89137c948873, type: 3}
       propertyPath: m_approachHeightOffset
@@ -939,6 +975,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 822942889103692037, guid: 566cc4526e30f434599a8a83c1f94dcd, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6009071072714012878, guid: 566cc4526e30f434599a8a83c1f94dcd, type: 3}
       propertyPath: m_LocalPosition.z
       value: 0

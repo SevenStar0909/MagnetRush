@@ -197,10 +197,10 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.7
+  m_Radius: 1
   m_Height: 1
   m_Direction: 1
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Center: {x: 0, y: 0.25, z: 0}
 --- !u!1 &4575423196274916746
 GameObject:
   m_ObjectHideFlags: 0
@@ -301,10 +301,10 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.5
+  m_Radius: 0.75
   m_Height: 2
   m_Direction: 1
-  m_Center: {x: 0, y: 0.5, z: 0}
+  m_Center: {x: 0, y: 0.25, z: 0}
 --- !u!1 &7342549653092073069
 GameObject:
   m_ObjectHideFlags: 0
@@ -356,10 +356,10 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 0
   serializedVersion: 2
-  m_Radius: 0.5
-  m_Height: 3
+  m_Radius: 0.75
+  m_Height: 2
   m_Direction: 1
-  m_Center: {x: 0, y: 0.5, z: 0}
+  m_Center: {x: 0, y: 0.25, z: 0}
 --- !u!1 &7655374763120775714
 GameObject:
   m_ObjectHideFlags: 0
@@ -442,16 +442,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cb19a06977a3c574982051bd3a449f30, type: 3}
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Enemy::EnemyAirDysonAi
-  m_keepDistance: 5
+  m_keepDistance: 7
   m_keepDistanceTolerance: 0
   m_useAirSettingsChaseRange: 1
   m_approachHeightOffset: 3
+  m_approachTimeout: 3
+  m_searchDuration: 1
   m_pullDuration: 2.5
   m_pullCooldown: 1
   m_repositionDuration: 1
   m_pullRange: 10
   m_pullAcceleration: 50
-  m_pullMaxSpeed: 10
+  m_pullMaxSpeed: 12
   m_pullMinDistance: 0.5
   m_useDistanceFalloff: 1
 --- !u!54 &272791022539229585
@@ -606,10 +608,10 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.5
+  m_Radius: 1.2
   m_Height: 1
   m_Direction: 1
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Center: {x: 0, y: 0.25, z: 0}
 --- !u!1 &9035872966031649093
 GameObject:
   m_ObjectHideFlags: 0
