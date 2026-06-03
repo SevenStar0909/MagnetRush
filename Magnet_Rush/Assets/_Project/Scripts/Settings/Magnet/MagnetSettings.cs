@@ -67,4 +67,9 @@ public class MagnetSettings : ScriptableObject
     [LabelRange("プレイヤーが磁場の中で鈍くなる率（0=変化なし, 1=完全停止）", 0f, 1f)]
     [Tooltip("プレイヤーが磁場の中で動く時、どれくらい鈍くなるか。0=磁場の中でも普通に動ける、1=完全停止")]
     public float magnetSpeedDamping = 0.3f;
+
+    [Header("[重なり]")]
+    [Label("磁場が重なったとき力を足し合わせる")]
+    [Tooltip("ON=磁場を重ねた分だけ引っ張る力が強くなる（従来）。OFF=何個重ねても一番強い磁場1個分だけ効く（重ねても強くならない）。1発の磁力の強さや鈍さには影響しない。")]
+    public bool addOverlapForce = true;
 }

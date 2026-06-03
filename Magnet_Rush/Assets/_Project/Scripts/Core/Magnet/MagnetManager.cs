@@ -144,6 +144,14 @@ public class MagnetManager : Singleton<MagnetManager>
             }
         }
 
+        // 溜めた磁力を集約して適用。加算OFF時は一番強い磁力源1件だけ効かせ、重なりの加算を消す
+        float overlapWeight = (m_settings == null || m_settings.addOverlapForce) ? 1f : 0f;
+        for (int i = 0; i < m_cachedList.Count; i++)
+        {
+            if (!m_cachedList[i].IsActive) continue;
+            m_cachedList[i].ResolveMagneticForces(overlapWeight);
+        }
+
         // Entity ↔ Field 割り当て（nearest-wins）
         AssignFieldsToEntities();
 

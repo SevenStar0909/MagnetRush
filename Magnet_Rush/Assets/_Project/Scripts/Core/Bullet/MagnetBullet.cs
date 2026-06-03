@@ -112,8 +112,17 @@ public class MagnetBullet : MonoBehaviour, IBulletProximity
         if (IsStuck || m_rb == null || m_settings == null) { ChannelLogger.LogGuardReturn("Bullet", "着弾済みまたはRigidbody/Settings未設定"); return; }
         if (MagnetManager.Instance == null) { ChannelLogger.LogGuardReturn("Bullet", "MagnetManager未初期化"); return; }
 
-        // 磁場で速度を曲げる（既存挙動）。Kinematic だが velocity は自前変数なのでそのまま加算
+        // 磁場で速度を曲げる。Kinematic だが velocity は自前変数なのでそのまま加算。
+        // 磁場が重なった所では、一番強い1個はフル、残りは重なり係数で減衰して足す（重ねても曲がりすぎない）
         var fields = MagnetManager.Instance.GetActiveFields();
+        var magnetSettings = MagnetManager.Instance.Settings;
+        float overlapWeight = (magnetSettings == null || magnetSettings.addOverlapForce) ? 1f : 0f;
+
+        int strongestIndex = -1;
+        float strongestPull = 0f;
+        Vector3 strongestDelta = Vector3.zero;
+        Vector3 weightedRestDelta = Vector3.zero;
+
         for (int i = 0; i < fields.Count; i++)
         {
             var field = fields[i];
@@ -126,9 +135,24 @@ public class MagnetBullet : MonoBehaviour, IBulletProximity
             bool attract = Pole != field.Pole && field.Pole != MagneticPole.None && Pole != MagneticPole.None;
             Vector3 toCenter = (field.Center - transform.position).normalized;
             float pull = strength * m_settings.fieldAttractionFactor;
+            Vector3 delta = (attract ? toCenter : -toCenter) * pull * Time.fixedDeltaTime;
 
-            m_velocity += (attract ? toCenter : -toCenter) * pull * Time.fixedDeltaTime;
+            if (pull > strongestPull)
+            {
+                // これまでの最強は「残り」へ回して係数を掛ける
+                if (strongestIndex >= 0) weightedRestDelta += strongestDelta * overlapWeight;
+                strongestPull = pull;
+                strongestDelta = delta;
+                strongestIndex = i;
+            }
+            else
+            {
+                weightedRestDelta += delta * overlapWeight;
+            }
         }
+
+        if (strongestIndex >= 0)
+            m_velocity += strongestDelta + weightedRestDelta;
 
         // 自前 SphereCast による衝突検出。物理エンジンの CCD に頼らないので
         // 厚み0の MeshCollider でも確実に検知できる
