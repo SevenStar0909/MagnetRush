@@ -15,6 +15,7 @@ using Debug = UnityEngine.Debug;
 ///   - 現在ブランチを origin/<current> で上書き
 ///   - 現在ブランチを別ブランチ (origin/...) で上書き
 ///   - リモート origin/<current> をローカルで上書き（force-with-lease push）
+///   - ローカル + リモートを選択ブランチで一括上書き（最終手段、確認ダイアログ2回）
 /// 安全策: 操作前にシーン保存 + AssetDatabase.SaveAssets()、操作後に AssetDatabase.Refresh()。
 ///         破壊的操作は確認ダイアログを表示し、未コミット変更がある場合は abort する。
 ///         main/master/develop など共有ブランチへの force push はガードする。
@@ -127,6 +128,44 @@ public class GitSyncWindow : EditorWindow
                 $"feature/* 等の作業ブランチに切り替えてから実行してください。",
                 MessageType.Warning);
         }
+
+        EditorGUILayout.Space(8);
+        EditorGUILayout.LabelField("▼ ローカル + リモートを一括上書き（最終手段）", EditorStyles.boldLabel);
+        EditorGUILayout.HelpBox(
+            "ローカル現在ブランチを選択ブランチで reset --hard したあと、リモート origin/<current> へ force push します。\n" +
+            "ローカル・リモート双方の現在ブランチの内容を完全に置き換える破壊的操作です。安全のため確認ダイアログを2回表示します。",
+            MessageType.Warning);
+
+        EditorGUI.BeginDisabledGroup(isProtectedBranch || m_remoteBranches.Count == 0);
+        if (m_remoteBranches.Count > 0)
+        {
+            string overwriteTarget = m_remoteBranches[m_selectedRemoteIndex];
+            if (GUILayout.Button($"ローカル + origin/{m_currentBranch} を {overwriteTarget} で上書き"))
+            {
+                if (ConfirmDanger(
+                    $"【1/2】ローカル {m_currentBranch} と リモート origin/{m_currentBranch} の両方を、\n" +
+                    $"{overwriteTarget} の状態で完全に上書きします。\n\n" +
+                    $"未push のコミット・未commitの変更は失われます。\n" +
+                    $"他メンバーの未push 作業も上書きされる可能性があります。"))
+                {
+                    if (ConfirmDanger(
+                        $"【2/2】最終確認です。本当に実行しますか？\n\n" +
+                        $"対象: ローカル {m_currentBranch} と リモート origin/{m_currentBranch}\n" +
+                        $"上書き元: {overwriteTarget}\n\n" +
+                        $"他メンバーに事前確認しましたか？"))
+                    {
+                        ExecuteWithSafety(() =>
+                        {
+                            var f = RunGit("fetch origin");
+                            var r = RunGit($"reset --hard {overwriteTarget}");
+                            var p = RunGit($"push --force-with-lease origin {m_currentBranch}");
+                            return f + "\n" + r + "\n" + p;
+                        }, $"reset --hard {overwriteTarget} + push --force-with-lease origin {m_currentBranch}");
+                    }
+                }
+            }
+        }
+        EditorGUI.EndDisabledGroup();
 
         EditorGUILayout.Space(20);
         EditorGUILayout.BeginHorizontal();

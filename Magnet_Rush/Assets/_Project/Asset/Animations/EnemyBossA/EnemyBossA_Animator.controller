@@ -95,7 +95,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: 6ad7467f59c467c48a0058d44cc93ae4, type: 2}
+  m_Motion: {fileID: 7400000, guid: ae97ee10f33549b4f9c9e0fa786e82b2, type: 2}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
@@ -108,10 +108,7 @@ AnimatorStateTransition:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: 
-  m_Conditions:
-  - m_ConditionMode: 1
-    m_ConditionEvent: AttackFinished
-    m_EventTreshold: 0
+  m_Conditions: []
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: -2792476126846933008}
   m_Solo: 0
@@ -120,8 +117,8 @@ AnimatorStateTransition:
   serializedVersion: 3
   m_TransitionDuration: 0.25
   m_TransitionOffset: 0
-  m_ExitTime: 1
-  m_HasExitTime: 0
+  m_ExitTime: 0.95
+  m_HasExitTime: 1
   m_HasFixedDuration: 1
   m_InterruptionSource: 0
   m_OrderedInterruption: 1
@@ -224,7 +221,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: d1cc176d6b1946b459e3db5b5dd57903, type: 2}
+  m_Motion: {fileID: 7400000, guid: 94baf1aa2f6280a4aab224cbcaa1d4ec, type: 2}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
@@ -560,7 +557,7 @@ AnimatorStateMachine:
     m_Position: {x: 430, y: 130, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -7898377504023083210}
-    m_Position: {x: 650, y: 130, z: 0}
+    m_Position: {x: 660, y: 130, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -3127807838596419620}
     m_Position: {x: 430, y: -230, z: 0}
@@ -569,7 +566,7 @@ AnimatorStateMachine:
     m_Position: {x: 430, y: -50, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -3602893473253789944}
-    m_Position: {x: 800, y: 0, z: 0}
+    m_Position: {x: 800, y: -10, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 1872817599549378325}
     m_Position: {x: 200, y: -230, z: 0}
@@ -667,11 +664,8 @@ AnimatorStateTransition:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: 
-  m_Conditions:
-  - m_ConditionMode: 1
-    m_ConditionEvent: AttackRushFinished
-    m_EventTreshold: 0
+  m_Name:
+  m_Conditions: []
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: -2792476126846933008}
   m_Solo: 0
@@ -680,8 +674,8 @@ AnimatorStateTransition:
   serializedVersion: 3
   m_TransitionDuration: 0.25
   m_TransitionOffset: 0
-  m_ExitTime: 0.96753246
-  m_HasExitTime: 0
+  m_ExitTime: 0.95
+  m_HasExitTime: 1
   m_HasFixedDuration: 1
   m_InterruptionSource: 0
   m_OrderedInterruption: 1
@@ -707,7 +701,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: 9ccff1d9efb0d2a4594927fe4a7d1d98, type: 2}
+  m_Motion: {fileID: 7400000, guid: 24b4b726b7b2ea8499dfcc70f469fbac, type: 2}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
