@@ -40,8 +40,6 @@ public class SceneLoader : Singleton<SceneLoader>
             ChannelLogger.LogGuardReturn("Game", "タイトル遷移をスキップ");
             return;
         }
-
-        LoadScene(SceneType.StageSelectScene);
     }
 
     private void OnEnable() => SceneManager.sceneLoaded += OnSceneLoaded;

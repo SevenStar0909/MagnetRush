@@ -13,25 +13,25 @@ MonoBehaviour:
   m_Name: PlayerSettings
   m_EditorClassIdentifier: Assembly-CSharp::PlayerSettings
   maxHp: 50
-  topSpeed: 6
-  acceleration: 30
+  topSpeed: 8
+  acceleration: 40
   deceleration: 25
   turningDrag: 20
   rotationSpeed: 15
-  gravity: -20
+  gravity: -15
   snapForce: 2
   groundCheckDistance: 0.3
   groundLayer:
     serializedVersion: 2
     m_Bits: 193
-  jumpInitialVelocity: 7
+  jumpInitialVelocity: 10
   cameraSensitivityX: 200
   cameraSensitivityY: 150
   cameraMouseSensitivityX: 3
   cameraMouseSensitivityY: 3
   cameraDistance: 5
   shoulderOffset: {x: 1.3, y: 0.3, z: 0}
-  cameraPitchMin: -90
+  cameraPitchMin: -80
   cameraPitchMax: 90
   firePointHeight: 1.2
   stabRange: 7
