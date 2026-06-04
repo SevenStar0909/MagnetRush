@@ -5,7 +5,7 @@ using System.Collections;
 public class ButtonScaleAnimation : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     private Vector3 m_normalScale = Vector3.one;
-    private Vector3 m_highlightedScale = new Vector3(1.1f, 1.1f, 1f);
+    [SerializeField] private Vector3 m_highlightedScale = new Vector3(1.1f, 1.1f, 1f);
 
     [SerializeField] private float m_scaleDuration = 0.2f;  // アニメーション時間
 
