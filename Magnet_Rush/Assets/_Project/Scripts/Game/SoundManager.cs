@@ -3,9 +3,9 @@ using CriWare;
 using CriWare.Assets;
 
 /// <summary>
-/// <para>サウンド管理クラス</para>
-/// <para>再生の要求を受けて、CriAtomExPlayer を用いてサウンドを再生する。</para>
-/// <para>再生した後のサウンドの制御は Playback 構造体のインスタンスを通して行う。</para>
+/// サウンド管理クラス
+/// 再生の要求を受けて、CriAtomExPlayer を用いてサウンドを再生する。
+/// 再生した後のサウンドの制御は Playback 構造体のインスタンスを通して行う。
 /// </summary>
 public class SoundManager : Singleton<SoundManager>
 {
@@ -13,8 +13,8 @@ public class SoundManager : Singleton<SoundManager>
     public CriAtomExPlayer Player { get => m_player; }
 
     /// <summary>
-    /// <para>サウンド再生の制御構造体</para>
-    /// <para>CriAtomExPlayback のラッパーで、再生の一時停止や再開、音量やピッチの変更などを行う。</para>
+    /// サウンド再生の制御構造体
+    /// CriAtomExPlayback のラッパーで、再生の一時停止や再開、音量やピッチの変更などを行う。
     /// </summary>
     public struct Playback
     {
@@ -75,14 +75,12 @@ public class SoundManager : Singleton<SoundManager>
     }
 
     /// <summary>
-    /// <para>サウンド再生要求を受けて、CriAtomExPlayer を用いてサウンドを再生する。</para>
-    /// <para>制御を行うための Playback 構造体のインスタンスを返す。</para>
-    /// <para>サウンドキューの定数クラスを使ってファイルを指定する。</para>
+    /// サウンド再生要求を受けて、CriAtomExPlayer を用いてサウンドを再生する。
+    /// 制御を行うための Playback 構造体のインスタンスを返す。
     /// </summary>
-    public Playback StartPlayback(string cueSheetName, string cueName, float vol = 1.0f, float pitch = 0)
+    public Playback StartPlayback(CriAtomCueReference cue, float vol = 1.0f, float pitch = 0)
     {
-        var acb = CriAtomExAcb.LoadAcbFile(null, cueSheetName + ".acb", "");
-        Player.SetCue(acb, cueName);
+        Player.SetCue(cue.AcbAsset.Handle, cue.CueId);
         Player.SetVolume(vol);
         Player.SetPitch(pitch);
         Playback pb = new Playback(Player, Player.Start());
