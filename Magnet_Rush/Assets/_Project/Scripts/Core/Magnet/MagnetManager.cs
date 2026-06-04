@@ -144,8 +144,8 @@ public class MagnetManager : Singleton<MagnetManager>
             }
         }
 
-        // 溜めた磁力を集約して適用。加算OFF時は一番強い磁力源1件だけ効かせ、重なりの加算を消す
-        float overlapWeight = (m_settings == null || m_settings.addOverlapForce) ? 1f : 0f;
+        // 溜めた磁力を集約して適用。加算0で一番強い磁力源1件だけ、1で全件加算（重なりの加算量を調整）
+        float overlapWeight = m_settings != null ? m_settings.overlapForceWeight : 1f;
         for (int i = 0; i < m_cachedList.Count; i++)
         {
             if (!m_cachedList[i].IsActive) continue;

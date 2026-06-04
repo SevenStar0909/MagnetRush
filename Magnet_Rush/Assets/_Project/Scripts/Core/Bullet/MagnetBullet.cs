@@ -116,7 +116,7 @@ public class MagnetBullet : MonoBehaviour, IBulletProximity
         // 磁場が重なった所では、一番強い1個はフル、残りは重なり係数で減衰して足す（重ねても曲がりすぎない）
         var fields = MagnetManager.Instance.GetActiveFields();
         var magnetSettings = MagnetManager.Instance.Settings;
-        float overlapWeight = (magnetSettings == null || magnetSettings.addOverlapForce) ? 1f : 0f;
+        float overlapWeight = magnetSettings != null ? magnetSettings.overlapForceWeight : 1f;
 
         int strongestIndex = -1;
         float strongestPull = 0f;
