@@ -1,4 +1,5 @@
 using UnityEngine;
+using System;
 
 /// <summary>
 /// 敵の基底クラス。Entityを継承しHealth・IMagnetTargetを共有する。
@@ -25,6 +26,9 @@ public class EnemyBossBase : Entity
     protected override float ExternalDrag => m_statusData != null ? m_statusData.externalDrag : base.ExternalDrag;
     protected override float GroundCheckDistance => m_statusData != null ? m_statusData.groundCheckDistance : base.GroundCheckDistance;
     protected override LayerMask GroundLayer => (m_statusData != null && m_statusData.groundLayer != 0) ? m_statusData.groundLayer : base.GroundLayer;
+
+    // ボス死亡を通知するための静的イベント
+    public static event Action OnBossDefeated;
 
     protected override void Awake()
     {
@@ -106,6 +110,20 @@ public class EnemyBossBase : Entity
 
     protected virtual void Die()
     {
+        // ログ①：そもそもこの関数が呼ばれているか
+        Debug.Log($"[EnemyBossBase] Die() が呼ばれました。オブジェクト名: {name}, タグ: {gameObject.tag}");
+
+        if (gameObject.CompareTag("Boss"))
+        {
+            // ログ②：タグの判定を通過したか
+            Debug.Log("[EnemyBossBase] Bossタグを検知しました。イベントを発火します。");
+            OnBossDefeated?.Invoke();
+        }
+        else
+        {
+            Debug.LogWarning("[EnemyBossBase] タグが 'Boss' ではないため、イベント発火をスキップしました。");
+        }
+
         Destroy(gameObject);
     }
 }
