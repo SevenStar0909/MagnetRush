@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8670dd453f8699c4283b65ae8f36ee08, type: 3}
+  m_Name: EnemyAirSettings
+  m_EditorClassIdentifier: MagnetRush.Data::EnemyAirSettings
+  maxHp: 10
+  moveSpeed: 12
+  acceleration: 18
+  chaseRange: 25
+  stopDistance: 0
+  turningDrag: 36
+  deceleration: 20
+  rotationSpeed: 12
+  impactDamage: 1
+  externalDrag: 3

@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 [CreateAssetMenu(fileName = "EnemySettings", menuName = "MagnetRush/EnemySettings")]
 [ClassLabelSO("敵設定")]
