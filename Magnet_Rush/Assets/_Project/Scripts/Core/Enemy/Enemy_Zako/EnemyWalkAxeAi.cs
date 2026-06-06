@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
@@ -11,6 +10,7 @@ public class EnemyWalkAxeAi : MonoBehaviour
     [Header("Attack")]
     [SerializeField] private CapsuleCollider m_attackBox;
     [SerializeField] private MeshRenderer m_attackBoxMeshRenderer;
+    [SerializeField] private EnemyWalkAxeAnimator m_animator;
 
     private EnemyWalkBase m_enemyBase;
     private NavMeshAgent m_agent;
@@ -26,6 +26,12 @@ public class EnemyWalkAxeAi : MonoBehaviour
     {
         m_enemyBase = GetComponent<EnemyWalkBase>();
         m_agent = GetComponent<NavMeshAgent>();
+
+        if (m_animator == null)
+            m_animator = GetComponent<EnemyWalkAxeAnimator>();
+
+        if (m_animator == null)
+            m_animator = gameObject.AddComponent<EnemyWalkAxeAnimator>();
 
         if (m_agent != null)
         {
@@ -72,6 +78,7 @@ public class EnemyWalkAxeAi : MonoBehaviour
 
         if (m_enemyBase.IsMagnetControlled)
         {
+            SetMoving(false);
             SetAttackBoxActive(false);
             return;
         }
@@ -79,6 +86,7 @@ public class EnemyWalkAxeAi : MonoBehaviour
         Transform player = m_enemyBase.Player;
         if (player == null)
         {
+            SetMoving(false);
             m_enemyBase.SlowDown(Time.deltaTime);
             return;
         }
@@ -98,6 +106,7 @@ public class EnemyWalkAxeAi : MonoBehaviour
         float distance = Vector3.Distance(transform.position, player.position);
         if (distance > m_data.chaseRange)
         {
+            SetMoving(false);
             m_agent.ResetPath();
             m_enemyBase.SlowDown(dt);
             return;
@@ -105,6 +114,7 @@ public class EnemyWalkAxeAi : MonoBehaviour
 
         if (distance <= m_data.attackRange)
         {
+            SetMoving(false);
             m_agent.ResetPath();
             m_enemyBase.SlowDown(dt);
             FacePlayer(player, dt);
@@ -113,6 +123,7 @@ public class EnemyWalkAxeAi : MonoBehaviour
         }
 
         m_agent.SetDestination(player.position);
+        SetMoving(true);
         m_enemyBase.AccelerateToward(GetNavMeshDirection(player), dt);
     }
 
@@ -121,18 +132,21 @@ public class EnemyWalkAxeAi : MonoBehaviour
         float distance = Vector3.Distance(transform.position, player.position);
         if (distance > m_data.chaseRange)
         {
+            SetMoving(false);
             m_enemyBase.SlowDown(dt);
             return;
         }
 
         if (distance <= m_data.attackRange)
         {
+            SetMoving(false);
             m_enemyBase.SlowDown(dt);
             FacePlayer(player, dt);
             TryAttack();
             return;
         }
 
+        SetMoving(true);
         m_enemyBase.AccelerateToward(GetDirectionToPlayer(player), dt);
     }
 
@@ -147,27 +161,48 @@ public class EnemyWalkAxeAi : MonoBehaviour
         if (m_attackTimer < m_data.attackInterval)
             return;
 
-        StartCoroutine(AttackRoutine());
+        BeginAttack();
     }
 
-    private IEnumerator AttackRoutine()
+    private void BeginAttack()
     {
         m_isAttacking = true;
         m_attackTimer = 0f;
         m_hitTargets.Clear();
+        m_animator?.TriggerAttack();
+        SetAttackBoxActive(false);
+    }
+
+    public void OnAttackHitStartEvent()
+    {
+        if (!m_isAttacking)
+            return;
+
         SetAttackBoxActive(true);
+        CheckAttackBoxOverlapAndDamage();
+    }
 
-        float timer = 0f;
-        float duration = Mathf.Max(0.01f, m_data.attackHitboxDuration);
-        while (timer < duration)
-        {
-            timer += Time.deltaTime;
-            CheckAttackBoxOverlapAndDamage();
-            yield return null;
-        }
+    public void OnAttackHitEndEvent()
+    {
+        SetAttackBoxActive(false);
+    }
 
+    public void OnAttackFinishedEvent()
+    {
         SetAttackBoxActive(false);
         m_isAttacking = false;
+    }
+
+    private void SetMoving(bool isMoving)
+    {
+        m_animator?.SetMoving(isMoving && !m_isAttacking);
+    }
+
+    private void OnDisable()
+    {
+        SetAttackBoxActive(false);
+        m_isAttacking = false;
+        SetMoving(false);
     }
 
     private void SetAttackBoxActive(bool active)
@@ -349,5 +384,98 @@ public class EnemyWalkAxeAi : MonoBehaviour
             m_agent.updateRotation = false;
             m_agent.velocity = Vector3.zero;
         }
+    }
+}
+
+[DisallowMultipleComponent]
+[RequireComponent(typeof(EnemyWalkBase))]
+public class EnemyWalkAxeAnimator : MonoBehaviour
+{
+    [Header("References")]
+    [Tooltip("Driven Animator. If unset, the first child Animator is used.")]
+    [SerializeField] private Animator m_animator;
+
+    [Header("Animator Parameter Names")]
+    [SerializeField] private string m_isMovingParameterName = "IsMoving";
+    [SerializeField] private string m_attackTriggerName = "Attack";
+
+    private int m_isMovingParameterHash;
+    private int m_attackTriggerHash;
+    private bool m_isMoving;
+
+    private void Awake()
+    {
+        if (m_animator == null)
+            m_animator = GetComponentInChildren<Animator>(true);
+
+        m_isMovingParameterHash = Animator.StringToHash(m_isMovingParameterName);
+        m_attackTriggerHash = Animator.StringToHash(m_attackTriggerName);
+
+        if (m_animator == null)
+        {
+            ChannelLogger.LogGuardReturn("Enemy", $"[{nameof(EnemyWalkAxeAnimator)}] {name}: Animator was not found.");
+            enabled = false;
+            return;
+        }
+
+        EnemyWalkAxeAnimationEventRelay relay =
+            m_animator.GetComponent<EnemyWalkAxeAnimationEventRelay>();
+        if (relay == null)
+            relay = m_animator.gameObject.AddComponent<EnemyWalkAxeAnimationEventRelay>();
+
+        relay.Initialize(GetComponent<EnemyWalkAxeAi>());
+        m_animator.SetBool(m_isMovingParameterHash, false);
+    }
+
+    public void SetMoving(bool isMoving)
+    {
+        if (m_animator == null || m_isMoving == isMoving)
+            return;
+
+        m_isMoving = isMoving;
+        m_animator.SetBool(m_isMovingParameterHash, isMoving);
+    }
+
+    public void TriggerAttack()
+    {
+        if (m_animator == null)
+            return;
+
+        SetMoving(false);
+        m_animator.SetTrigger(m_attackTriggerHash);
+    }
+
+    public bool IsMoving => m_isMoving;
+}
+
+[DisallowMultipleComponent]
+public class EnemyWalkAxeAnimationEventRelay : MonoBehaviour
+{
+    private EnemyWalkAxeAi m_target;
+
+    public void Initialize(EnemyWalkAxeAi target)
+    {
+        m_target = target;
+    }
+
+    private void Awake()
+    {
+        if (m_target == null)
+            m_target = GetComponentInParent<EnemyWalkAxeAi>();
+    }
+
+    public void OnAttackHitStartEvent()
+    {
+        m_target?.OnAttackHitStartEvent();
+    }
+
+    public void OnAttackHitEndEvent()
+    {
+        m_target?.OnAttackHitEndEvent();
+    }
+
+    public void OnAttackFinishedEvent()
+    {
+        m_target?.OnAttackFinishedEvent();
     }
 }

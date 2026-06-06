@@ -18,6 +18,10 @@ public class EnemyAirDysonAnimator : MonoBehaviour
     [SerializeField] private string m_suctionLoopStateName = "Dyson";
     [SerializeField] private string m_suctionEndStateName = "Dyson_End";
 
+    [Header("Animator Parameter Names")]
+    [SerializeField] private string m_startSuctionTriggerName = "StartSuction";
+    [SerializeField] private string m_endSuctionTriggerName = "EndSuction";
+
     [Header("Blend")]
     [SerializeField] private float m_crossFadeTime = 0.08f;
 
@@ -25,6 +29,8 @@ public class EnemyAirDysonAnimator : MonoBehaviour
     private int m_suctionStartStateHash;
     private int m_suctionLoopStateHash;
     private int m_suctionEndStateHash;
+    private int m_startSuctionTriggerHash;
+    private int m_endSuctionTriggerHash;
     private bool m_isSuctioning;
 
     private void Awake()
@@ -36,6 +42,8 @@ public class EnemyAirDysonAnimator : MonoBehaviour
         m_suctionStartStateHash = Animator.StringToHash(m_suctionStartStateName);
         m_suctionLoopStateHash = Animator.StringToHash(m_suctionLoopStateName);
         m_suctionEndStateHash = Animator.StringToHash(m_suctionEndStateName);
+        m_startSuctionTriggerHash = Animator.StringToHash(m_startSuctionTriggerName);
+        m_endSuctionTriggerHash = Animator.StringToHash(m_endSuctionTriggerName);
 
         if (m_animator == null)
         {
@@ -59,7 +67,8 @@ public class EnemyAirDysonAnimator : MonoBehaviour
             return;
 
         m_isSuctioning = true;
-        CrossFade(m_suctionStartStateHash);
+        m_animator.ResetTrigger(m_endSuctionTriggerHash);
+        m_animator.SetTrigger(m_startSuctionTriggerHash);
     }
 
     public void TriggerSuctionEnd()
@@ -68,7 +77,8 @@ public class EnemyAirDysonAnimator : MonoBehaviour
             return;
 
         m_isSuctioning = false;
-        CrossFade(m_suctionEndStateHash);
+        m_animator.ResetTrigger(m_startSuctionTriggerHash);
+        m_animator.SetTrigger(m_endSuctionTriggerHash);
     }
 
     public bool IsSuctioning => m_isSuctioning;
