@@ -66,6 +66,8 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
 
     public EnemyBossSettings Settings => m_settings;
 
+    public Stamina Stamina => m_stamina;
+
     void Awake()
     {
         m_boss = GetComponent<EnemyBossBase>();
@@ -259,6 +261,11 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         m_wasInStunAnim = false;
         m_wasInStaggerAnim = false;
         m_staminaBreakEndRequested = false;
+
+        if (m_stamina != null)
+        {
+            m_stamina.ResetStamina();
+        }
     }
 
     // === 各状態の Tick ===
