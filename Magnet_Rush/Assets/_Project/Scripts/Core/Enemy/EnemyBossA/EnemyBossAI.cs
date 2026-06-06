@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -59,7 +60,11 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     // 入り transition と exit transition を区別し、exit 時の player 追尾回転を抑制する。
     private bool m_rushHasStarted;
 
+    public event Action OnStabHitSucceeded;   // スタブが成功したときに発火
+
     public BossState State => m_state;
+
+    public EnemyBossSettings Settings => m_settings;
 
     void Awake()
     {
@@ -496,6 +501,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         { ChannelLogger.LogGuardReturn("EnemyBossA", "Stab 算出ダメージ0"); return; }
 
         m_health.DamageIgnoreCooldown(damage);
+        OnStabHitSucceeded?.Invoke();
         ChannelLogger.Log("EnemyBossA", $"[Stab] bar {currentBarsRemaining}→{targetBarsRemaining} dmg={damage} src={(data.source != null ? data.source.name : "null")} hp={m_health.CurrentHealth}/{maxHp}");
     }
 
