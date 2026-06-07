@@ -32,6 +32,61 @@ Transform:
   - {fileID: 3462340016821278126}
   m_Father: {fileID: 6652155985440203101}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &362657356442060551
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8271609699821274392}
+  - component: {fileID: 3466776497266544288}
+  m_Layer: 9
+  m_Name: WallBlocker
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8271609699821274392
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 362657356442060551}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: -5, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5658813393588128381}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!136 &3466776497266544288
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 362657356442060551}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 0
+  serializedVersion: 2
+  m_Radius: 8
+  m_Height: 13
+  m_Direction: 1
+  m_Center: {x: 0, y: 6, z: 2.9}
 --- !u!1 &531744917548940451
 GameObject:
   m_ObjectHideFlags: 0
@@ -203,6 +258,7 @@ GameObject:
   - component: {fileID: 3181475508816895662}
   - component: {fileID: 6265531234747577853}
   - component: {fileID: 9197072081432995460}
+  - component: {fileID: 7612307786705529290}
   m_Layer: 9
   m_Name: Enemy_Boss_test
   m_TagString: Boss
@@ -474,6 +530,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 51e8df34af3836943a859175687136d4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Core::ImmovableEntity
+--- !u!114 &7612307786705529290
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 569016687892123619}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6a7614cb3e6ace447acd2a91322a1a40, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Enemy::BossWallBlocker
+  m_bodyCapsule: {fileID: 3466776497266544288}
+  m_wallMask:
+    serializedVersion: 2
+    m_Bits: 128
+  m_maxIterations: 2
+  m_horizontalOnly: 1
 --- !u!1 &691930224160693279
 GameObject:
   m_ObjectHideFlags: 0
@@ -606,6 +680,61 @@ MonoBehaviour:
   m_EditorClassIdentifier: MagnetRush.Core::Hitbox
   m_health: {fileID: 2249649121702153851}
   m_hitGroup: 1
+--- !u!1 &1333010363162900375
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6064099974869101586}
+  - component: {fileID: 4069594296851366756}
+  m_Layer: 9
+  m_Name: WallBlocker
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6064099974869101586
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1333010363162900375}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: -5, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5658813393588128381}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!136 &4069594296851366756
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1333010363162900375}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 0
+  serializedVersion: 2
+  m_Radius: 8
+  m_Height: 13
+  m_Direction: 1
+  m_Center: {x: 0, y: 6, z: 2.9}
 --- !u!1 &1431650970072808209
 GameObject:
   m_ObjectHideFlags: 0
@@ -864,6 +993,8 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1864681167293986285}
+  - {fileID: 6064099974869101586}
+  - {fileID: 8271609699821274392}
   m_Father: {fileID: 6652155985440203101}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &6963472914516098255

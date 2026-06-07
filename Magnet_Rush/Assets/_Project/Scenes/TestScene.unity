@@ -233,6 +233,29 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 6b054d6dbebac8b49be1e9aed68e9497, type: 3}
+--- !u!1 &375136106 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 569016687892123619, guid: 595708abaf7beee438dc7b5e80cbc9d0, type: 3}
+  m_PrefabInstance: {fileID: 5567607591048211451}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &375136121
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 375136106}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6a7614cb3e6ace447acd2a91322a1a40, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Enemy::BossWallBlocker
+  m_bodyCapsule: {fileID: 1834738195}
+  m_wallMask:
+    serializedVersion: 2
+    m_Bits: 128
+  m_maxIterations: 2
+  m_horizontalOnly: 1
 --- !u!1001 &645861716
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -294,6 +317,11 @@ PrefabInstance:
 GameObject:
   m_CorrespondingSourceObject: {fileID: 177638, guid: 0abab5bb77339e4428787a870eb31bd3, type: 3}
   m_PrefabInstance: {fileID: 1759057002}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &1046390726 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5658813393588128381, guid: 595708abaf7beee438dc7b5e80cbc9d0, type: 3}
+  m_PrefabInstance: {fileID: 5567607591048211451}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1095209964
 PrefabInstance:
@@ -858,6 +886,61 @@ MonoBehaviour:
   m_EditorClassIdentifier: MagnetRush.UI::GraphyStagedToggle
   m_toggleKey: 95
   m_japaneseFont: {fileID: 12800000, guid: 80a98eb751d060845a93d115d7b5e0ab, type: 3}
+--- !u!1 &1834738194
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1834738196}
+  - component: {fileID: 1834738195}
+  m_Layer: 9
+  m_Name: WallBlocker
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!136 &1834738195
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1834738194}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 0
+  serializedVersion: 2
+  m_Radius: 8
+  m_Height: 13
+  m_Direction: 1
+  m_Center: {x: 0, y: 6, z: 2.9}
+--- !u!4 &1834738196
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1834738194}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: -5, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1046390726}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &5567607591048211451
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -912,8 +995,14 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 5658813393588128381, guid: 595708abaf7beee438dc7b5e80cbc9d0, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1834738196}
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 569016687892123619, guid: 595708abaf7beee438dc7b5e80cbc9d0, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 375136121}
   m_SourcePrefab: {fileID: 100100000, guid: 595708abaf7beee438dc7b5e80cbc9d0, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

@@ -76,6 +76,7 @@ GameObject:
   - component: {fileID: 3863513731280759696}
   - component: {fileID: 8774293733114710440}
   - component: {fileID: 2352887071160559212}
+  - component: {fileID: 5259512155968354724}
   m_Layer: 9
   m_Name: Enemy_Boss_ver_0517
   m_TagString: Boss
@@ -370,6 +371,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 51e8df34af3836943a859175687136d4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Core::ImmovableEntity
+--- !u!114 &5259512155968354724
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 529854419887168867}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6a7614cb3e6ace447acd2a91322a1a40, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Enemy::BossWallBlocker
+  m_bodyCapsule: {fileID: 3094973238409901957}
+  m_wallMask:
+    serializedVersion: 2
+    m_Bits: 128
+  m_maxIterations: 2
+  m_horizontalOnly: 1
 --- !u!1 &1087868980716705503
 GameObject:
   m_ObjectHideFlags: 0
@@ -497,6 +516,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1254147958317872086}
+  - {fileID: 670011939497139803}
   m_Father: {fileID: 9143151154395978059}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &5091773845958119871
@@ -1347,6 +1367,61 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 3.97, y: 1.92, z: 2.38}
   m_Center: {x: 0, y: 0, z: 0.34}
+--- !u!1 &7569532096466058637
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 670011939497139803}
+  - component: {fileID: 3094973238409901957}
+  m_Layer: 9
+  m_Name: WallBlocker
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &670011939497139803
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7569532096466058637}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3430188263162592626}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!136 &3094973238409901957
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7569532096466058637}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 0
+  serializedVersion: 2
+  m_Radius: 8
+  m_Height: 13
+  m_Direction: 1
+  m_Center: {x: 0, y: 6, z: 2.9}
 --- !u!1 &7604928231185075239
 GameObject:
   m_ObjectHideFlags: 0
