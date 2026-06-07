@@ -79,14 +79,21 @@ public class BossWallBlocker : MonoBehaviour
             Physics.SyncTransforms();
         }
 
-        for (int i = 0; i < m_maxIterations; i++)
+        try
         {
-            if (!ResolvePenetration())
-                break;
+            for (int i = 0; i < m_maxIterations; i++)
+            {
+                if (!ResolvePenetration())
+                    break;
+            }
         }
-
-        if (!wasEnabled)
-            m_bodyCapsule.enabled = false;
+        finally
+        {
+            // 例外が起きても必ず無効化へ戻す。有効のまま残ると巨大カプセルが物理シーンに居座り、
+            // 次の物理ステップで敵/弾/プレイヤー等と衝突イベントを発火させてしまう。
+            if (!wasEnabled)
+                m_bodyCapsule.enabled = false;
+        }
 
         m_prevPosition = transform.position;
     }
