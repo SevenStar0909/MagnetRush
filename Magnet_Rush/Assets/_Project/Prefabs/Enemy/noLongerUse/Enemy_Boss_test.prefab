@@ -83,7 +83,7 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 0
   serializedVersion: 2
-  m_Radius: 8
+  m_Radius: 11.79
   m_Height: 13
   m_Direction: 1
   m_Center: {x: 0, y: 6, z: 2.9}
@@ -545,7 +545,8 @@ MonoBehaviour:
   m_bodyCapsule: {fileID: 3466776497266544288}
   m_wallMask:
     serializedVersion: 2
-    m_Bits: 128
+    m_Bits: 193
+  m_skinWidth: 0.08
   m_maxIterations: 2
   m_horizontalOnly: 1
 --- !u!1 &691930224160693279

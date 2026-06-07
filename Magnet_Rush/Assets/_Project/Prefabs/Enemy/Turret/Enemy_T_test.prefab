@@ -322,6 +322,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Entity::Hitbox
   m_health: {fileID: 3295255653146135985}
+  m_hitGroup: 1
 --- !u!1 &6629291254456774930
 GameObject:
   m_ObjectHideFlags: 0
@@ -446,7 +447,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 10, y: -0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1.1886, y: 1.1886, z: 1.1886}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1985756065580208590}
@@ -473,9 +474,13 @@ MonoBehaviour:
       m_PersistentCalls:
         m_Calls: []
   m_health: {fileID: 0}
+  m_stamina: {fileID: 0}
   velocity: {x: 0, y: 0, z: 0}
   externalVelocity: {x: 0, y: 0, z: 0}
   holdVelocity: {x: 0, y: 0, z: 0}
+  m_collisionMask:
+    serializedVersion: 2
+    m_Bits: 0
   m_statusData: {fileID: 11400000, guid: 9927f74da5777824497fc50cc8a967bf, type: 2}
   m_player: {fileID: 0}
   m_firePoint: {fileID: 3334483711500213624}
@@ -521,6 +526,8 @@ MonoBehaviour:
   m_pole: 0
   m_isActive: 0
   m_initialMass: 1
+  m_centerOffset: {x: 0, y: 0, z: 0}
+  m_useEdgeDetectionOutline: 1
 --- !u!54 &7730523117461317999
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -560,7 +567,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f7eb2ea83aeed54c8fa7e632b84756a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Entity::Health
-  m_maxHealth: 3
   m_damageCooldown: 1
 --- !u!114 &8407417141161511162
 MonoBehaviour:
