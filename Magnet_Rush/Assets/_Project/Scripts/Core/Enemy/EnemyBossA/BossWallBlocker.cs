@@ -27,6 +27,10 @@ public class BossWallBlocker : MonoBehaviour
     private float m_skinWidth = 0.08f;
 
     [SerializeField]
+    [Tooltip("1フレームで押し戻す最大距離。深いめり込みを一気に押し出して瞬間移動するのを防ぐ（数フレームで滑らかに出す）")]
+    private float m_maxPushPerFrame = 1f;
+
+    [SerializeField]
     [Tooltip("ComputePenetration の押し戻しを繰り返す回数（角で複数の凸壁に同時に刺さった時用）")]
     private int m_maxIterations = 2;
 
@@ -197,7 +201,11 @@ public class BossWallBlocker : MonoBehaviour
         }
 
         if (pushed)
+        {
+            // 一気に押し出すと瞬間移動になるので、1フレームの補正量を制限して数フレームで滑らかに出す
+            totalPush = Vector3.ClampMagnitude(totalPush, m_maxPushPerFrame);
             transform.position += totalPush;
+        }
 
         return pushed;
     }
