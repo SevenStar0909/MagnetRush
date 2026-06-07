@@ -1,0 +1,297 @@
+using System.Collections;
+using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
+
+/// <summary>
+/// ゲームオーバー演出。プレイヤーが HP0 で死亡したら起動する。
+/// スプライトシート(1〜4: 横m_columns×縦m_rows のコマ)を順番にアニメ再生 → 5 を静止表示 →
+/// RETRY/SELECT メニューを表示し、矢印カーソルを上下で動かして決定する。
+/// RETRY=同じステージを再読込 / SELECT=ステージ選択シーンへ。
+/// 演出中は Time.timeScale=0 で凍結する(PlayerRespawner の自動リスポーン待機も止まる)。
+/// 依存: Player(static Current/OnPlayerReady), Health.OnDie, UnityEngine.SceneManagement
+/// 設計: テクスチャは RawImage の uvRect でコマ送りするのでスプライト化(スライス)不要。
+/// </summary>
+public class GameOverPresentation : MonoBehaviour
+{
+    [Header("演出テクスチャ")]
+    [Tooltip("順番に再生するスプライトシート(1〜4)。各シートを m_columns×m_rows のコマでアニメする")]
+    [SerializeField] private Texture[] m_sheetTextures;
+    [Tooltip("1〜4の後に再生する最後のシート(5)。m_staticColumns×m_staticRows のコマでアニメする")]
+    [SerializeField] private Texture m_staticTexture;
+    [Tooltip("RETRY/SELECT メニュー画像")]
+    [SerializeField] private Texture m_menuTexture;
+    [Tooltip("選択カーソルの矢印画像")]
+    [SerializeField] private Texture m_arrowTexture;
+
+    [Header("シート設定")]
+    [Tooltip("シート1枚の横のコマ数")]
+    [SerializeField] private int m_columns = 4;
+    [Tooltip("シート1枚の縦のコマ数")]
+    [SerializeField] private int m_rows = 7;
+    [Tooltip("コマ送りの速さ(1秒あたりのコマ数)")]
+    [SerializeField] private float m_fps = 16f;
+    [Tooltip("5(最後のシート)の横のコマ数")]
+    [SerializeField] private int m_staticColumns = 4;
+    [Tooltip("5(最後のシート)の縦のコマ数")]
+    [SerializeField] private int m_staticRows = 3;
+    [Tooltip("5を再生し終えたあと、メニュー表示までの追加待ち秒数")]
+    [SerializeField] private float m_staticHold = 0.6f;
+
+    [Header("UI参照")]
+    [Tooltip("演出全体の表示ON/OFFを切り替える親オブジェクト")]
+    [SerializeField] private GameObject m_root;
+    [Tooltip("1〜5・メニューを表示する全画面 RawImage")]
+    [SerializeField] private RawImage m_sequenceImage;
+    [Tooltip("選択カーソルの RawImage")]
+    [SerializeField] private RawImage m_arrowImage;
+
+    [Header("黒フェード")]
+    [Tooltip("背景を黒く暗転させる全画面 Image(演出の後ろに置く)")]
+    [SerializeField] private Image m_fadeImage;
+    [Tooltip("黒フェードの所要時間(秒)")]
+    [SerializeField] private float m_fadeDuration = 0.5f;
+    [Tooltip("黒フェードの最終濃さ(1で真っ黒)")]
+    [SerializeField] private float m_fadeTargetAlpha = 1f;
+
+    [Header("矢印の位置(anchoredPosition)")]
+    [Tooltip("RETRY を選んでいるときの矢印位置")]
+    [SerializeField] private Vector2 m_arrowRetryPos = new Vector2(-450f, -150f);
+    [Tooltip("SELECT を選んでいるときの矢印位置")]
+    [SerializeField] private Vector2 m_arrowSelectPos = new Vector2(-450f, -250f);
+
+    [Header("遷移先シーン")]
+    [Tooltip("RETRY で読み込むシーン名(空なら現在のシーンを再読込)")]
+    [SerializeField] private string m_retrySceneName = "";
+    [Tooltip("SELECT で読み込むシーン名")]
+    [SerializeField] private string m_selectSceneName = "StageSelectScene";
+
+    private Health m_health;
+    private bool m_menuActive;
+    private bool m_playing;
+    private int m_index;
+
+    void Awake()
+    {
+        if (m_root != null) m_root.SetActive(false);
+    }
+
+    void OnEnable()
+    {
+        Player.OnPlayerReady += HandlePlayerReady;
+        if (Player.Current != null) Bind(Player.Current);
+    }
+
+    void OnDisable()
+    {
+        Player.OnPlayerReady -= HandlePlayerReady;
+        Unbind();
+    }
+
+    private void HandlePlayerReady(Player player)
+    {
+        Hide();
+        Bind(player);
+    }
+
+    private void Bind(Player player)
+    {
+        Unbind();
+        if (player == null) { ChannelLogger.LogGuardReturn("Game", "Player が null"); return; }
+        m_health = player.GetComponent<Health>();
+        if (m_health == null) { ChannelLogger.LogGuardReturn("Game", "Player に Health が無い"); return; }
+        m_health.OnDie += HandleDie;
+    }
+
+    private void Unbind()
+    {
+        if (m_health != null) m_health.OnDie -= HandleDie;
+        m_health = null;
+    }
+
+    private void HandleDie()
+    {
+        if (m_playing) { ChannelLogger.LogGuardReturn("Game", "ゲームオーバー演出が既に再生中"); return; }
+        if (m_sequenceImage == null) { ChannelLogger.LogGuardReturn("Game", "m_sequenceImage 未設定"); return; }
+        StartCoroutine(PlayRoutine());
+    }
+
+    private IEnumerator PlayRoutine()
+    {
+        m_playing = true;
+        m_menuActive = false;
+        if (m_root != null) m_root.SetActive(true);
+        if (m_arrowImage != null) m_arrowImage.gameObject.SetActive(false);
+
+        Time.timeScale = 0f;
+
+        // 死亡直後から背景を黒くフェードイン(演出の後ろ)。シート再生と並行で進める。
+        SetFadeAlpha(0f);
+        StartCoroutine(FadeRoutine());
+
+        float frameDur = m_fps > 0f ? 1f / m_fps : 0.0625f;
+        int perSheet = Mathf.Max(1, m_columns * m_rows);
+
+        if (m_sheetTextures != null)
+        {
+            for (int s = 0; s < m_sheetTextures.Length; s++)
+            {
+                var tex = m_sheetTextures[s];
+                if (tex == null) continue;
+                m_sequenceImage.texture = tex;
+                for (int f = 0; f < perSheet; f++)
+                {
+                    m_sequenceImage.uvRect = FrameUv(f, m_columns, m_rows);
+                    yield return WaitUnscaled(frameDur);
+                }
+            }
+        }
+
+        if (m_staticTexture != null)
+        {
+            m_sequenceImage.texture = m_staticTexture;
+            int finalTotal = Mathf.Max(1, m_staticColumns * m_staticRows);
+            for (int f = 0; f < finalTotal; f++)
+            {
+                m_sequenceImage.uvRect = FrameUv(f, m_staticColumns, m_staticRows);
+                yield return WaitUnscaled(frameDur);
+            }
+            if (m_staticHold > 0f) yield return WaitUnscaled(m_staticHold);
+        }
+
+        ShowMenu();
+    }
+
+    // frame=0 を左上として、左→右・上→下の順にコマを取り出す。uvRect は左下原点。
+    private Rect FrameUv(int frame, int cols, int rows)
+    {
+        int col = frame % cols;
+        int row = frame / cols;
+        float w = 1f / cols;
+        float h = 1f / rows;
+        return new Rect(col * w, 1f - (row + 1) * h, w, h);
+    }
+
+    private void ShowMenu()
+    {
+        if (m_menuTexture != null)
+        {
+            m_sequenceImage.texture = m_menuTexture;
+            m_sequenceImage.uvRect = new Rect(0f, 0f, 1f, 1f);
+        }
+        if (m_arrowImage != null)
+        {
+            if (m_arrowTexture != null) m_arrowImage.texture = m_arrowTexture;
+            m_arrowImage.gameObject.SetActive(true);
+        }
+        m_index = 0;
+        UpdateArrow();
+        m_menuActive = true;
+    }
+
+    void Update()
+    {
+        if (m_menuActive)
+        {
+            int dir = ReadVertical();
+            if (dir != 0)
+            {
+                m_index = Mathf.Clamp(m_index + dir, 0, 1);
+                UpdateArrow();
+            }
+            if (ReadSubmit()) Confirm();
+        }
+    }
+
+    private void UpdateArrow()
+    {
+        if (m_arrowImage != null)
+            m_arrowImage.rectTransform.anchoredPosition = m_index == 0 ? m_arrowRetryPos : m_arrowSelectPos;
+    }
+
+    private void Confirm()
+    {
+        m_menuActive = false;
+        Time.timeScale = 1f;
+
+        if (m_index == 0)
+        {
+            string scene = string.IsNullOrEmpty(m_retrySceneName) ? SceneManager.GetActiveScene().name : m_retrySceneName;
+            SceneManager.LoadScene(scene);
+        }
+        else
+        {
+            SceneManager.LoadScene(m_selectSceneName);
+        }
+    }
+
+    private void Hide()
+    {
+        StopAllCoroutines();
+        m_playing = false;
+        m_menuActive = false;
+        SetFadeAlpha(0f);
+        if (m_root != null) m_root.SetActive(false);
+    }
+
+    private IEnumerator FadeRoutine()
+    {
+        if (m_fadeImage == null) yield break;
+        float t = 0f;
+        while (t < m_fadeDuration)
+        {
+            t += Time.unscaledDeltaTime;
+            float k = m_fadeDuration > 0f ? Mathf.Clamp01(t / m_fadeDuration) : 1f;
+            SetFadeAlpha(k * m_fadeTargetAlpha);
+            yield return null;
+        }
+        SetFadeAlpha(m_fadeTargetAlpha);
+    }
+
+    private void SetFadeAlpha(float a)
+    {
+        if (m_fadeImage == null) return;
+        var c = m_fadeImage.color;
+        c.a = a;
+        m_fadeImage.color = c;
+    }
+
+    // 下=+1(SELECTへ) / 上=-1(RETRYへ)。キーボードとゲームパッド両対応。
+    private int ReadVertical()
+    {
+        int d = 0;
+        var k = Keyboard.current;
+        if (k != null)
+        {
+            if (k.downArrowKey.wasPressedThisFrame || k.sKey.wasPressedThisFrame) d = 1;
+            else if (k.upArrowKey.wasPressedThisFrame || k.wKey.wasPressedThisFrame) d = -1;
+        }
+        var g = Gamepad.current;
+        if (g != null)
+        {
+            if (g.dpad.down.wasPressedThisFrame || g.leftStick.down.wasPressedThisFrame) d = 1;
+            else if (g.dpad.up.wasPressedThisFrame || g.leftStick.up.wasPressedThisFrame) d = -1;
+        }
+        return d;
+    }
+
+    private bool ReadSubmit()
+    {
+        var k = Keyboard.current;
+        if (k != null && (k.enterKey.wasPressedThisFrame || k.spaceKey.wasPressedThisFrame)) return true;
+        var g = Gamepad.current;
+        if (g != null && (g.buttonSouth.wasPressedThisFrame || g.startButton.wasPressedThisFrame)) return true;
+        return false;
+    }
+
+    private IEnumerator WaitUnscaled(float seconds)
+    {
+        float t = 0f;
+        while (t < seconds)
+        {
+            t += Time.unscaledDeltaTime;
+            yield return null;
+        }
+    }
+}

@@ -18,6 +18,7 @@ public class BossEnemyHealthIcon : MonoBehaviour
     private bool m_warnedNoBossTag;
     private bool m_isSpawned = false;
     private int m_alive;
+    private bool m_subscribed;
 
     private List<BossIcon> m_activeIcons = new List<BossIcon>();
 
@@ -36,15 +37,27 @@ public class BossEnemyHealthIcon : MonoBehaviour
 
     void OnEnable()
     {
-        m_boss.OnStabHitSucceeded += DestroyOneIcon;
+        // OnEnable は Start より前に走るため、初回は m_boss がまだ未解決(null)。
+        // ボスが見つかった時点(TryResolveBoss)で購読するので、ここでは解決済みのときだけ購読する。
+        TrySubscribe();
     }
 
     void OnDisable()
     {
-        if (m_boss != null)
+        if (m_boss != null && m_subscribed)
         {
             m_boss.OnStabHitSucceeded -= DestroyOneIcon;
+            m_subscribed = false;
         }
+    }
+
+    /// <summary>ボスが解決済みでまだ購読していなければイベント購読する。多重購読しない。</summary>
+    private void TrySubscribe()
+    {
+        if (m_subscribed || m_boss == null) return;
+
+        m_boss.OnStabHitSucceeded += DestroyOneIcon;
+        m_subscribed = true;
     }
 
     void Update()
@@ -127,6 +140,8 @@ public class BossEnemyHealthIcon : MonoBehaviour
             return false;
         }
 
+        // ボスが解決できたこのタイミングで初めてイベント購読できる（OnEnable では間に合わない）
+        TrySubscribe();
         return true;
     }
 }

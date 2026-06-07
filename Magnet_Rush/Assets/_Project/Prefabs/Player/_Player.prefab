@@ -272,6 +272,7 @@ MonoBehaviour:
   m_player: {fileID: 0}
   m_aim: {fileID: 0}
   m_stab: {fileID: 0}
+  m_health: {fileID: 0}
   m_stateName: State
   m_lastStateName: LastState
   m_onStateChangedName: OnStateChanged
@@ -284,6 +285,7 @@ MonoBehaviour:
   m_reloadName: Reload
   m_verticalSpeedName: VerticalSpeed
   m_stabName: Stab
+  m_hitName: Hit
   m_aimLayerName: Upper Body
   m_aimLayerFadeTime: 0.15
   m_shootUpperBodyHold: 0.6
@@ -318,7 +320,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1725508640444081474}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ac50e8793994532448de734eafa9aa2f, type: 3}
   m_Name: 

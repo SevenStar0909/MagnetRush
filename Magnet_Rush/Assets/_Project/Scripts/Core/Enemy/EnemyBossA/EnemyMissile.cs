@@ -24,10 +24,10 @@ public class EnemyMissile : MonoBehaviour
     [SerializeField] private int m_damage = 1;
 
     [SerializeField]
-    [Tooltip("ヒット解決上の所属グループ。敵のミサイルなので Enemy")]
-    private HitGroup m_hitGroup = HitGroup.Enemy;
+    [Tooltip("ヒット解決上の所属グループ。誰にでも当たる物理ハザードなので Physics（Player/Enemy 両方にダメージが通る）")]
+    private HitGroup m_hitGroup = HitGroup.Physics;
 
-    /// <summary>所属グループ。被弾側との比較で自傷・同士討ちを弾く（強制は段階2c以降）。</summary>
+    /// <summary>所属グループ。被弾側と HitGroup が異なるときだけダメージを通す。Physics は Player/Enemy 両方に通る。</summary>
     public HitGroup HitGroup => m_hitGroup;
     [SerializeField] private float m_lifetime = 6f;
 
@@ -42,11 +42,14 @@ public class EnemyMissile : MonoBehaviour
     private float m_seekTimer;
     private float m_refreshTimer;
     private bool m_initialized;
+    private Collider m_collider;
+    private bool m_exploded;
 
     private void Awake()
     {
         m_rb = GetComponent<Rigidbody>();
         m_selfMagnetizable = GetComponent<Magnetizable>();
+        m_collider = GetComponent<Collider>();
 
         if (m_explosionEffect == null)
             m_explosionEffect = Resources.Load<GameObject>("P_MS_ExplosionPS");
@@ -233,24 +236,54 @@ public class EnemyMissile : MonoBehaviour
             Destroy(effectInstance, m_explosionEffectLifetime);
     }
 
-    // Layer Matrix で「当たる相手」を一元管理する設計（原則1）。PlayerBullet × EnemyBullet は OFF。
-    // MagnetBullet は SphereCast で EnemyBullet レイヤを直接拾うので、Matrix OFF でも磁化検知は機能する。
-    // コリジョンコールバック内で相手の型/タグ判定はしない（原則4）。
-    private void OnTriggerEnter(Collider other)
+    // PhysicsObject レイヤーの物理ハザードとして、相手の Pushbox(EntityBody)/地面/壁/他物理オブジェクトと
+    // OnCollisionEnter で衝突する（Matrix で一元管理。原則1）。トリガー(MagnetField 等)では発火しないので誤爆しない。
+    // 相手の HitGroup が自分(Physics)と異なるときだけダメージを通す（Player/Enemy 両方に通る。物理同士は弾く。原則3）。
+    private void OnCollisionEnter(Collision collision)
     {
-        var hittable = other.GetComponentInParent<IHittable>();
-        if (hittable != null)
+        if (m_exploded) { ChannelLogger.LogGuardReturn("Enemy", "Missile既に爆発済み"); return; }
+
+        // ミサイル同士が接触したら両方爆発する（発射点は左右で離れているので spawn 時の相殺は起きない）。
+        Vector3 point = collision.contactCount > 0 ? collision.GetContact(0).point : transform.position;
+
+        var hittable = collision.collider.GetComponentInParent<IHittable>();
+        if (hittable != null && hittable.HitGroup != m_hitGroup)
         {
             hittable.OnHit(new HitData
             {
                 damage = m_damage,
-                hitPoint = other.ClosestPoint(transform.position),
+                hitPoint = point,
                 knockbackDir = m_rb != null ? m_rb.linearVelocity.normalized : transform.forward,
                 source = gameObject
             });
         }
 
-        SpawnExplosionEffect(other.ClosestPoint(transform.position));
+        // どんな接触でも爆発する（通常のヒット処理）
+        Explode(point);
+    }
+
+    /// <summary>爆発エフェクトを出して自身を破棄する。</summary>
+    private void Explode(Vector3 point)
+    {
+        m_exploded = true;
+        SpawnExplosionEffect(point);
         Destroy(gameObject);
+    }
+
+    /// <summary>
+    /// 発射元（ボス）等のコライダーとの衝突を無効化する。spawn 直後の自己衝突・自傷を防ぐ。
+    /// </summary>
+    /// <param name="source">無視したい相手（発射元のルート GameObject）</param>
+    public void IgnoreCollisionsWith(GameObject source)
+    {
+        if (source == null) { ChannelLogger.LogGuardReturn("Enemy", "Missile: ignore source なし"); return; }
+        if (m_collider == null) m_collider = GetComponent<Collider>();
+        if (m_collider == null) { ChannelLogger.LogGuardReturn("Enemy", "Missile: 自身のColliderなし"); return; }
+
+        foreach (var c in source.GetComponentsInChildren<Collider>(true))
+        {
+            if (c != null)
+                Physics.IgnoreCollision(m_collider, c, true);
+        }
     }
 }

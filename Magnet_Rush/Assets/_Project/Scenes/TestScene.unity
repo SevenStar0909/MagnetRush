@@ -366,6 +366,7 @@ GameObject:
   - component: {fileID: 1248705267}
   - component: {fileID: 1248705268}
   - component: {fileID: 1248705269}
+  - component: {fileID: 1248705270}
   m_Layer: 0
   m_Name: _DebugHpBars
   m_TagString: Untagged
@@ -466,6 +467,18 @@ MonoBehaviour:
   m_stunDuration: 30
   m_teleportDistance: 1
   m_restoreHpValue: 100
+--- !u!114 &1248705270
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1248705261}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 376629c1997804a4089693c1e3a7327f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DebugGameClearButton
 --- !u!1 &1323587764
 GameObject:
   m_ObjectHideFlags: 0

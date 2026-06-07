@@ -502,6 +502,8 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         Quaternion rotation = Quaternion.LookRotation(direction, Vector3.up);
         EnemyMissile missile = Instantiate(m_missilePrefab, spawnPos, rotation);
         missile.Initialize(m_player, direction, seekDelayOverride);
+        // ミサイルは PhysicsObject なので発射元ボスの Pushbox 等と衝突してしまう。spawn 即爆発・自傷を防ぐ。
+        missile.IgnoreCollisionsWith(gameObject);
     }
 
     // === IStabReceiver 実装 (Player → Boss スタブ受信) ===
