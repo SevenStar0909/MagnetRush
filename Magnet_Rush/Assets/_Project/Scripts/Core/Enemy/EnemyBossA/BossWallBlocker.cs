@@ -65,12 +65,24 @@ public class BossWallBlocker : MonoBehaviour
         // (1) この1フレームの水平移動をスイープして壁の手前で止める（非凸 Mesh 対応・トンネリング防止）
         SweepClampHorizontal();
 
-        // (2) 残った凸コライダーへのめり込みを押し戻す（Box 等の取りこぼし）
+        // (2) 残った凸コライダーへのめり込みを押し戻す（Box 等の取りこぼし）。
+        // ComputePenetration は disabled collider（物理シーン未登録）では false を返すので、
+        // 押し戻しの間だけ一時的に有効化する。物理ステップ外の LateUpdate なので衝突イベントは発火しない。
+        bool wasEnabled = m_bodyCapsule.enabled;
+        if (!wasEnabled)
+        {
+            m_bodyCapsule.enabled = true;
+            Physics.SyncTransforms();
+        }
+
         for (int i = 0; i < m_maxIterations; i++)
         {
             if (!ResolvePenetration())
                 break;
         }
+
+        if (!wasEnabled)
+            m_bodyCapsule.enabled = false;
 
         m_prevPosition = transform.position;
     }
