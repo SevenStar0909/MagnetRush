@@ -73,6 +73,11 @@ public class EnemyBossSettings : ScriptableObject
     [Label("攻撃ダメージ")]
     [Tooltip("1回の攻撃ダメージ")]
     public int attackDamage = 1;
+
+    [Label("起動範囲（m）")]
+    [Tooltip("プレイヤーがこの距離より遠いと、攻撃も向き直りもせず Idle のまま待機する（戦闘を始める半径）")]
+    public float activationRange = 30.0f;
+
     [Label("近接攻撃の射程（m）")]
     [Tooltip("プレイヤーがこの距離より近くにいるとき、近接攻撃を行う")]
     public float attackRange = 20.0f;

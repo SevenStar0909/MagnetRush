@@ -292,13 +292,17 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         // ここで再検出すると Animator のトランジション遅延中に二重発火してループする
 
         m_boss.SlowDown(dt);
+
+        float distance = DistanceToPlayer();
+
+        // プレイヤーが起動範囲の外なら、向き直りも攻撃もせず Idle のまま待機する
+        if (distance > m_settings.activationRange)
+            return;
+
         FacePlayer(dt, m_settings.faceDeadZoneDeg);
 
         if (m_cooldownTimer > 0f)
             return;
-
-        float distance = DistanceToPlayer();
-        ChannelLogger.Log("EnemyBossA", $"distanceToPlayer = {distance}");
 
         if (distance <= m_settings.attackRange)
         {
