@@ -79,6 +79,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Core::Hitbox
   m_health: {fileID: 2249649121702153851}
+  m_hitGroup: 1
 --- !u!1 &533614567122732144
 GameObject:
   m_ObjectHideFlags: 0
@@ -179,6 +180,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Core::Hitbox
   m_health: {fileID: 2249649121702153851}
+  m_hitGroup: 1
 --- !u!1 &569016687892123619
 GameObject:
   m_ObjectHideFlags: 0
@@ -252,6 +254,9 @@ MonoBehaviour:
   velocity: {x: 0, y: 0, z: 0}
   externalVelocity: {x: 0, y: 0, z: 0}
   holdVelocity: {x: 0, y: 0, z: 0}
+  m_collisionMask:
+    serializedVersion: 2
+    m_Bits: 0
   m_statusData: {fileID: 11400000, guid: c18fd890e7dc6ab42854abb4e3c2e1f1, type: 2}
   m_player: {fileID: 0}
 --- !u!54 &1901141826038069963
@@ -375,6 +380,9 @@ MonoBehaviour:
   - {fileID: 1901699130609342651}
   - {fileID: 8739865488034590185}
   m_missileSpawnOffsets: []
+  m_fireLobMissiles: 1
+  m_missileLobAngle: 90
+  m_missileLobRiseTime: 0.65
   m_logStateChange: 1
   m_nextLongRangeAttackIsRush: 1
 --- !u!114 &5546392387088309262
@@ -597,6 +605,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Core::Hitbox
   m_health: {fileID: 2249649121702153851}
+  m_hitGroup: 1
 --- !u!1 &1431650970072808209
 GameObject:
   m_ObjectHideFlags: 0
@@ -870,6 +879,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Core::Hitbox
   m_health: {fileID: 2249649121702153851}
+  m_hitGroup: 1
 --- !u!1 &3526876920166974200
 GameObject:
   m_ObjectHideFlags: 0
@@ -1246,6 +1256,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Core::Hitbox
   m_health: {fileID: 2249649121702153851}
+  m_hitGroup: 1
 --- !u!1 &5381987395709714339
 GameObject:
   m_ObjectHideFlags: 0
@@ -1346,6 +1357,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Core::Hitbox
   m_health: {fileID: 2249649121702153851}
+  m_hitGroup: 1
 --- !u!1 &5673529461734019420
 GameObject:
   m_ObjectHideFlags: 0
@@ -1665,6 +1677,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Core::Hitbox
   m_health: {fileID: 2249649121702153851}
+  m_hitGroup: 1
 --- !u!1 &8589145246419172716
 GameObject:
   m_ObjectHideFlags: 0
@@ -2011,6 +2024,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Core::Hitbox
   m_health: {fileID: 2249649121702153851}
+  m_hitGroup: 1
 --- !u!1 &8661513487256532567 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 8767651658933856306, guid: 4209ff3e04242d249831366d7807a31b, type: 3}
@@ -2202,6 +2216,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Core::Hitbox
   m_health: {fileID: 2249649121702153851}
+  m_hitGroup: 1
 --- !u!1 &8619442352547254307 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 8767651658933856306, guid: 4209ff3e04242d249831366d7807a31b, type: 3}
@@ -4058,6 +4073,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Core::Hitbox
   m_health: {fileID: 2249649121702153851}
+  m_hitGroup: 1
 --- !u!1001 &5098759921363410690
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4496,6 +4512,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Core::Hitbox
   m_health: {fileID: 2249649121702153851}
+  m_hitGroup: 1
 --- !u!4 &6130047494163816041 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 162400393613072875, guid: 4209ff3e04242d249831366d7807a31b, type: 3}
@@ -4683,6 +4700,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Core::Hitbox
   m_health: {fileID: 2249649121702153851}
+  m_hitGroup: 1
 --- !u!4 &6660262701997361669 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 162400393613072875, guid: 4209ff3e04242d249831366d7807a31b, type: 3}
@@ -4836,6 +4854,7 @@ MonoBehaviour:
   m_stamina: {fileID: 5546392387088309262}
   m_animator: {fileID: 573067799464740083}
   m_settings: {fileID: 11400000, guid: c18fd890e7dc6ab42854abb4e3c2e1f1, type: 2}
+  m_hitGroup: 1
 --- !u!1 &2004301888153645300 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 8767651658933856306, guid: 4209ff3e04242d249831366d7807a31b, type: 3}
@@ -5239,6 +5258,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Core::Hitbox
   m_health: {fileID: 2249649121702153851}
+  m_hitGroup: 1
 --- !u!1 &6467005041017966877 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 2314021898761952882, guid: 4209ff3e04242d249831366d7807a31b, type: 3}
