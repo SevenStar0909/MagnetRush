@@ -636,6 +636,10 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
             }
         }
 
+        // 突進終了地点。Agent は NavMesh 上でないと有効化できないので一旦サンプル点へ移すが、
+        // 最後にここへ戻す。これをしないとボスが NavMesh 最寄り点へ瞬間移動する（突進終了時のワープの原因）。
+        Vector3 endPosition = transform.position;
+
         if (m_agent.enabled)
             m_agent.enabled = false;
 
@@ -648,10 +652,17 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
             m_agent.updateRotation = false;
             m_agent.velocity = Vector3.zero;
 
+            // updatePosition=false なので Agent は内部位置(NavMesh上)を保ったまま、ボスの transform だけ
+            // 突進終了地点へ戻す。以降は通常の追従移動で滑らかに NavMesh 上へ戻る（瞬間移動しない）。
+            transform.position = endPosition;
+            m_agent.nextPosition = endPosition;
+
             ChannelLogger.Log("EnemyBossA", $"Agent復帰成功 pos={transform.position} hit={hit.position}");
         }
         else
         {
+            // 復帰できなかった場合もボスは飛ばさず元の位置へ戻す
+            transform.position = endPosition;
             ChannelLogger.LogWarning("EnemyBossA", $"Agent復帰失敗 pos={transform.position}");
         }
     }
