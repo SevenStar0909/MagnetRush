@@ -9830,7 +9830,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7b8ce691af6aeca409cf98a1c21c1e21, type: 3}
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Enemy::EnemyMissile
-  m_maxSpeed: 6
+  m_maxSpeed: 10
   m_acceleration: 3
   m_turnRate: 10
   m_seekDelay: 0.2
@@ -9838,7 +9838,8 @@ MonoBehaviour:
   m_targetOffset: {x: 0, y: 0, z: 0}
   m_targetRefreshInterval: 0.1
   m_player: {fileID: 0}
-  m_damage: 3
+  m_damage: 2
+  m_hitGroup: 1
   m_lifetime: 20
   m_explosionEffect: {fileID: 7608947279581240675, guid: bf9ba2edd393fca46b6ff93c1bcdbc0f, type: 3}
   m_explosionEffectLifetime: 0.75
