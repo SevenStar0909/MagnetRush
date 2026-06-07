@@ -172,9 +172,10 @@ public class MagnetBullet : MonoBehaviour, IBulletProximity
 
         if (Physics.SphereCast(transform.position, radius, dir, out RaycastHit hit, dist, GetCollisionMask(), QueryTriggerInteraction.Collide))
         {
-            // ヒット位置の少し手前に止める（めり込み防止）
-            m_rb.MovePosition(hit.point - dir * radius);
-            ResolveHit(hit.collider, hit.normal);
+            // 着弾で停止するので MovePosition の1フレーム遅延を避け、表面の手前へ直接スナップ。
+            // この位置がそのまま磁場の中心（＝着弾点）になる。
+            transform.position = hit.point - dir * radius;
+            ResolveHit(hit.collider);
         }
         else
         {
@@ -183,7 +184,7 @@ public class MagnetBullet : MonoBehaviour, IBulletProximity
     }
 
     /// <summary>SphereCast でヒットした collider に対する処理。</summary>
-    private void ResolveHit(Collider other, Vector3 surfaceNormal)
+    private void ResolveHit(Collider other)
     {
         if (IsStuck) return;
 
@@ -191,7 +192,7 @@ public class MagnetBullet : MonoBehaviour, IBulletProximity
         if (targetMag != null)
             MagnetizeTarget(other, targetMag);
         else
-            StickToSurface(other, surfaceNormal);
+            StickToSurface(other);
     }
 
     /// <summary>
@@ -240,32 +241,19 @@ public class MagnetBullet : MonoBehaviour, IBulletProximity
     /// パターン1: 弾がくっつき、弾自身が磁力源。壁/天井/タレット用。
     /// フィールド期限切れで弾ごと消える。
     /// </summary>
-    private void StickToSurface(Collider surface, Vector3 surfaceNormal)
+    private void StickToSurface(Collider surface)
     {
         IsStuck = true;
         m_velocity = Vector3.zero;
         m_rb.isKinematic = true;
 
-        // CCD で薄い MeshCollider に高速ヒットすると、衝突検出時の transform.position が
-        // 既に surface を貫通した位置になっていることがある。bounds の最近点に補正して
-        // 「表側」に貼り付けないと、裏面のみ描画される平面の裏に潜って見えなくなる。
-        Vector3 corrected = surface.bounds.ClosestPoint(transform.position);
-        if (corrected != transform.position)
-            transform.position = corrected;
-
-        // 弾の up を着弾面の法線に揃える。VFX/MagnetFieldVisualizer (Cylinder等) が
-        // 着弾面に対し常に垂直になり、斜め発射時に磁場が斜め描画される問題を解消
-        if (surfaceNormal.sqrMagnitude > 0.0001f)
-            transform.up = surfaceNormal;
-
-        // 親 lossyScale が非均一だと子 VFX/Visualizer が楕円化する（Plane の (2.4,1.2,2.1) 等）。
-        // MagnetField.CylinderHeight も lossyScale.y を掛けて算出するため磁場の形も歪む。
-        // 静的地面は動かない前提で、非均一スケール親への SetParent はスキップする。
-        Vector3 ps = surface.transform.lossyScale;
-        const float scaleEpsilon = 0.001f;
-        bool uniformScale = Mathf.Abs(ps.x - ps.y) < scaleEpsilon && Mathf.Abs(ps.y - ps.z) < scaleEpsilon;
-        if (uniformScale)
-            transform.SetParent(surface.transform, true);
+        // 着弾点（FixedUpdate で transform.position に確定済み）を中心に正球形の磁場を出す。
+        // 着弾オブジェクト（壁/地面/メッシュコライダー）へ parent すると、そのスケール・回転を
+        // 磁場の球コライダーとビジュアライザが引き継いで楕円化・サイズ変化していた。
+        // 環境は静的前提なので parent せず、回転・スケールを正規化したルートに固定する。
+        transform.SetParent(null, true);
+        transform.rotation = Quaternion.identity;
+        transform.localScale = Vector3.one;
 
         var mag = GetComponent<Magnetizable>();
         if (mag != null)

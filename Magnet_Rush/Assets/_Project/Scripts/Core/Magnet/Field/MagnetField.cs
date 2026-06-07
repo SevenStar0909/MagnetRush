@@ -68,6 +68,8 @@ public class MagnetField : MonoBehaviour, IMagnetField
         // 親GOのレイヤーを変えずに、Bullet レイヤーとの衝突を Layer Matrix で遮断できる
         m_triggerGO = new GameObject("MagnetFieldTrigger");
         m_triggerGO.transform.SetParent(transform, false);
+        // 親（弾/磁化対象）の lossyScale を打ち消し、検出範囲をワールド等倍の正球に保つ
+        m_triggerGO.transform.localScale = InverseLossyScale(transform);
         m_triggerGO.layer = PhysicsLayers.MagnetField;
 
         m_triggerCollider = m_triggerGO.AddComponent<SphereCollider>();
@@ -103,6 +105,16 @@ public class MagnetField : MonoBehaviour, IMagnetField
             FieldShape.Cylinder => Mathf.Max(m_settings.cylinderHeight * 0.5f, m_settings.cylinderRadius) + m_settings.EffectiveOuterRadius,
             _ => m_settings.EffectiveOuterRadius
         };
+    }
+
+    /// <summary>親の lossyScale を打ち消す localScale。子の磁場をワールド等倍に保つ。</summary>
+    private static Vector3 InverseLossyScale(Transform parent)
+    {
+        Vector3 s = parent.lossyScale;
+        return new Vector3(
+            Mathf.Abs(s.x) > 1e-4f ? 1f / s.x : 1f,
+            Mathf.Abs(s.y) > 1e-4f ? 1f / s.y : 1f,
+            Mathf.Abs(s.z) > 1e-4f ? 1f / s.z : 1f);
     }
 
     /// <summary>
