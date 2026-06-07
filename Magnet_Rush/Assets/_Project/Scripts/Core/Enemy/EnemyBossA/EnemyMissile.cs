@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 [DisallowMultipleComponent]
@@ -60,6 +61,18 @@ public class EnemyMissile : MonoBehaviour
             if (playerObj != null)
                 m_player = playerObj.transform;
         }
+    }
+
+    private void OnEnable()
+    {
+        if (m_selfMagnetizable != null)
+            m_selfMagnetizable.OnMagnetContact += HandleMagnetContact;
+    }
+
+    private void OnDisable()
+    {
+        if (m_selfMagnetizable != null)
+            m_selfMagnetizable.OnMagnetContact -= HandleMagnetContact;
     }
 
     private void Start()
@@ -189,14 +202,18 @@ public class EnemyMissile : MonoBehaviour
         if (selfPole == MagneticPole.None)
             return null;
 
-        Magnetizable[] all = FindObjectsByType<Magnetizable>(FindObjectsSortMode.None);
+        // 全シーン走査(FindObjectsByType)は配列確保のGCゴミと全探索コストが重い。
+        // MagnetManager がキャッシュ済みの登録一覧を読む(結果は同一・ゴミゼロ)。
+        if (MagnetManager.Instance == null)
+            return null;
+        List<Magnetizable> all = MagnetManager.Instance.GetActiveMagnetizables();
 
         Magnetizable nearest = null;
         float detectionRange = ResolveDetectionRange();
         float nearestSqr = detectionRange * detectionRange;
         Vector3 origin = transform.position;
 
-        for (int i = 0; i < all.Length; i++)
+        for (int i = 0; i < all.Count; i++)
         {
             Magnetizable candidate = all[i];
             if (candidate == null) continue;
@@ -243,22 +260,42 @@ public class EnemyMissile : MonoBehaviour
     {
         if (m_exploded) { ChannelLogger.LogGuardReturn("Enemy", "Missile既に爆発済み"); return; }
 
-        // ミサイル同士が接触したら両方爆発する（発射点は左右で離れているので spawn 時の相殺は起きない）。
         Vector3 point = collision.contactCount > 0 ? collision.GetContact(0).point : transform.position;
+        ResolveHitAndExplode(collision.collider != null ? collision.collider.gameObject : null, point);
+    }
 
-        var hittable = collision.collider.GetComponentInParent<IHittable>();
-        if (hittable != null && hittable.HitGroup != m_hitGroup)
+    // 磁化されると異極の磁化オブジェクト同士が FixedJoint で固定され、Joint は既定で enableCollision=false の
+    // ため OnCollisionEnter が発火しない。磁石に保持されて壁際で止まる弾も自由落下しなくなる。
+    // よって磁石の接触イベントでも爆発させる。これで磁化中でもミサイル同士・磁化物体への接触で確実に爆発する。
+    private void HandleMagnetContact(Magnetizable other)
+    {
+        if (m_exploded) { ChannelLogger.LogGuardReturn("Enemy", "Missile既に爆発済み"); return; }
+
+        Vector3 point = other != null ? Vector3.Lerp(transform.position, other.transform.position, 0.5f) : transform.position;
+        ResolveHitAndExplode(other != null ? other.gameObject : null, point);
+    }
+
+    // OnCollisionEnter（物理衝突）と HandleMagnetContact（磁石接触）の共通経路。
+    // 相手から IHittable を取り、HitGroup が自分(Physics)と異なるときだけダメージを通してから爆発する。
+    private void ResolveHitAndExplode(GameObject other, Vector3 point)
+    {
+        if (m_exploded) return;
+
+        if (other != null)
         {
-            hittable.OnHit(new HitData
+            var hittable = other.GetComponentInParent<IHittable>();
+            if (hittable != null && hittable.HitGroup != m_hitGroup)
             {
-                damage = m_damage,
-                hitPoint = point,
-                knockbackDir = m_rb != null ? m_rb.linearVelocity.normalized : transform.forward,
-                source = gameObject
-            });
+                hittable.OnHit(new HitData
+                {
+                    damage = m_damage,
+                    hitPoint = point,
+                    knockbackDir = m_rb != null ? m_rb.linearVelocity.normalized : transform.forward,
+                    source = gameObject
+                });
+            }
         }
 
-        // どんな接触でも爆発する（通常のヒット処理）
         Explode(point);
     }
 

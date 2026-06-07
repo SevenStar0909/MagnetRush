@@ -274,8 +274,11 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
 
         m_animator.SetIsStaggerFalse();
         m_animator.SetIsStunnedFalse();
-        m_wasInStunAnim = false;
-        m_wasInStaggerAnim = false;
+        // Animator のトランジション遅延中はまだ Stun/Stagger ステートに残っている。
+        // ここで false 固定すると、次フレームで TickStunEntry/TickStaggerEntry が立ち上がりエッジを
+        // 誤検出して再入場し、Stagger(Stun) がループする。実ステートに同期させてエッジ誤検出を防ぐ。
+        m_wasInStunAnim = m_animator.IsStunned;
+        m_wasInStaggerAnim = m_animator.IsInStagger;
         m_staminaBreakEndRequested = false;
 
         if (m_stamina != null)

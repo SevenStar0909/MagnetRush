@@ -94,6 +94,13 @@ public class MagnetManager : Singleton<MagnetManager>
     /// <summary>弾道吸引用。アクティブなフィールド一覧を返す。</summary>
     public List<MagnetField> GetActiveFields() => m_cachedFields;
 
+    /// <summary>
+    /// 登録済み全 Magnetizable のキャッシュ一覧を返す。
+    /// FindObjectsByType の代替: 毎フレーム呼んでも配列確保(GCゴミ)も全シーン走査も発生しない。
+    /// 返り値は内部リストの参照なので呼び出し側で変更しないこと(読み取り専用)。
+    /// </summary>
+    public List<Magnetizable> GetActiveMagnetizables() => m_cachedList;
+
     void FixedUpdate()
     {
         // ① 全磁化 Entity の holdVelocity を毎フレームゼロリセット（ProcessHold が再計算で上書き）
