@@ -13,6 +13,7 @@ public class EnemyWalkAxeAi : MonoBehaviour
     [SerializeField] private EnemyWalkAxeAnimator m_animator;
 
     private EnemyWalkBase m_enemyBase;
+    private Health m_selfHealth;
     private NavMeshAgent m_agent;
     private EnemySettings m_data;
     private Vector3 m_lastDirection;
@@ -25,6 +26,7 @@ public class EnemyWalkAxeAi : MonoBehaviour
     private void Awake()
     {
         m_enemyBase = GetComponent<EnemyWalkBase>();
+        m_selfHealth = GetComponent<Health>();
         m_agent = GetComponent<NavMeshAgent>();
 
         if (m_animator == null)
@@ -75,6 +77,9 @@ public class EnemyWalkAxeAi : MonoBehaviour
             return;
 
         m_attackTimer += Time.deltaTime;
+
+        if (m_attackBox != null && m_attackBox.enabled)
+            CheckAttackBoxOverlapAndDamage();
 
         if (m_enemyBase.IsMagnetControlled)
         {
@@ -226,7 +231,7 @@ public class EnemyWalkAxeAi : MonoBehaviour
             p1,
             radius,
             m_overlapResults,
-            1 << PhysicsLayers.Player,
+            (1 << PhysicsLayers.Player) | (1 << PhysicsLayers.Enemy),
             QueryTriggerInteraction.Collide
         );
 
@@ -298,6 +303,9 @@ public class EnemyWalkAxeAi : MonoBehaviour
             return;
 
         Health health = other.GetComponentInParent<Health>();
+        if (health == m_selfHealth)
+            return;
+
         if (health != null && !m_hitTargets.Add(health))
             return;
 

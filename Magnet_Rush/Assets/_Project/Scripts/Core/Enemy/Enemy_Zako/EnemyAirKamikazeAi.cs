@@ -13,8 +13,12 @@ public class EnemyAirKamikazeAi : MonoBehaviour
     [SerializeField] private EnemyAirKamikazeAnimator m_animator;
 
     private EnemyAirBase m_enemyBase;
+    private Health m_selfHealth;
     private Magnetizable m_magnetizable;
     private bool m_hasHit;
+
+    private readonly System.Collections.Generic.HashSet<Health> m_hitTargets = new();
+    private readonly Collider[] m_overlapResults = new Collider[32];
 
     private void Awake()
     {
@@ -26,6 +30,7 @@ public class EnemyAirKamikazeAi : MonoBehaviour
         }
 
         m_magnetizable = GetComponent<Magnetizable>();
+        m_selfHealth = GetComponent<Health>();
 
         if (m_animator == null)
             m_animator = GetComponentInChildren<EnemyAirKamikazeAnimator>(true);
@@ -144,20 +149,11 @@ public class EnemyAirKamikazeAi : MonoBehaviour
         if (other.transform.root == transform.root)
             return;
 
-        var hittable = other.GetComponentInParent<IHittable>();
-        if (hittable == null)
+        if (other.GetComponentInParent<IHittable>() == null)
             return;
 
         m_hasHit = true;
-
-        hittable.OnHit(new HitData
-        {
-            damage = m_enemyBase != null ? m_enemyBase.ImpactDamage : 1,
-            hitPoint = other.ClosestPoint(transform.position),
-            knockbackDir = (other.transform.position - transform.position).normalized,
-            source = gameObject
-        });
-
+        DamageExplosionTargets();
         DestroySelf();
     }
 
@@ -167,6 +163,7 @@ public class EnemyAirKamikazeAi : MonoBehaviour
             return;
 
         m_hasHit = true;
+        DamageExplosionTargets();
         DestroySelf();
     }
 
@@ -178,20 +175,54 @@ public class EnemyAirKamikazeAi : MonoBehaviour
         if (other == null || other.transform.root == transform.root)
             return;
 
-        var hittable = other.GetComponentInParent<IHittable>();
-        if (hittable != null)
+        m_hasHit = true;
+        DamageExplosionTargets();
+        DestroySelf();
+    }
+
+    private void DamageExplosionTargets()
+    {
+        if (m_attackBox == null)
+            return;
+
+        Bounds bounds = m_attackBox.bounds;
+        float radius = bounds.extents.magnitude;
+        if (radius <= 0f)
+            return;
+
+        m_hitTargets.Clear();
+
+        int hitCount = Physics.OverlapSphereNonAlloc(
+            bounds.center,
+            radius,
+            m_overlapResults,
+            (1 << PhysicsLayers.Player) | (1 << PhysicsLayers.Enemy),
+            QueryTriggerInteraction.Collide
+        );
+
+        for (int i = 0; i < hitCount; i++)
         {
+            Collider col = m_overlapResults[i];
+            if (col == null)
+                continue;
+
+            Health health = col.GetComponentInParent<Health>();
+            if (health == null || health == m_selfHealth)
+                continue;
+
+            IHittable hittable = col.GetComponentInParent<IHittable>();
+            if (hittable == null || !m_hitTargets.Add(health))
+                continue;
+
+            Vector3 targetPosition = col.ClosestPoint(bounds.center);
             hittable.OnHit(new HitData
             {
                 damage = m_enemyBase != null ? m_enemyBase.ImpactDamage : 1,
-                hitPoint = other.Position,
-                knockbackDir = (other.Position - transform.position).normalized,
+                hitPoint = targetPosition,
+                knockbackDir = (targetPosition - bounds.center).normalized,
                 source = gameObject
             });
         }
-
-        m_hasHit = true;
-        DestroySelf();
     }
 
     private void DestroySelf()
