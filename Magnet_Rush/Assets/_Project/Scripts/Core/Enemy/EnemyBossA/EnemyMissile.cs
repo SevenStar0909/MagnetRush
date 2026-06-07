@@ -22,6 +22,13 @@ public class EnemyMissile : MonoBehaviour
 
     [Header("Combat")]
     [SerializeField] private int m_damage = 1;
+
+    [SerializeField]
+    [Tooltip("ヒット解決上の所属グループ。敵のミサイルなので Enemy")]
+    private HitGroup m_hitGroup = HitGroup.Enemy;
+
+    /// <summary>所属グループ。被弾側との比較で自傷・同士討ちを弾く（強制は段階2c以降）。</summary>
+    public HitGroup HitGroup => m_hitGroup;
     [SerializeField] private float m_lifetime = 6f;
 
     [Header("ExplosionEffects")]
@@ -80,6 +87,17 @@ public class EnemyMissile : MonoBehaviour
         Vector3 dir = initialDirection.sqrMagnitude > 0f ? initialDirection.normalized : transform.forward;
         m_rb.linearVelocity = dir * Mathf.Max(0.1f, m_maxSpeed * 0.6f);
         transform.rotation = Quaternion.LookRotation(dir, Vector3.up);
+    }
+
+    /// <summary>
+    /// seekDelay を上書きして初期化する。アーク弾（上げてから狙う）用に、ホーミング開始までの上昇時間を延ばす。
+    /// </summary>
+    /// <param name="seekDelayOverride">0以上で上書き。負値なら既定の m_seekDelay を使う</param>
+    public void Initialize(Transform target, Vector3 initialDirection, float seekDelayOverride)
+    {
+        Initialize(target, initialDirection);
+        if (seekDelayOverride >= 0f)
+            m_seekTimer = seekDelayOverride;
     }
 
     public void SetPlayer(Transform player)

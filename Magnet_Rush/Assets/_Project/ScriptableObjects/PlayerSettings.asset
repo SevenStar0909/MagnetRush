@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5c78a0652301aff42b1cb9ae795437dd, type: 3}
   m_Name: PlayerSettings
   m_EditorClassIdentifier: Assembly-CSharp::PlayerSettings
-  maxHp: 50
+  maxHp: 3
   topSpeed: 8
   acceleration: 40
   deceleration: 25
@@ -50,6 +50,7 @@ MonoBehaviour:
   aimCameraDistance: 3
   aimMoveSpeedMultiplier: 0.5
   respawnDelay: 0.5
+  fallRespawnDelay: 0.5
   slopeUpwardForce: 15
   slopeDownwardForce: 25
   magnetResistance: 0.5

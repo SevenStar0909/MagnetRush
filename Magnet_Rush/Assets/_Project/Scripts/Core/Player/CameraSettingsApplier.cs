@@ -20,11 +20,14 @@ public class CameraSettingsApplier : MonoBehaviour
     private float m_yaw;
     private float m_pitch;
     private bool m_initialized;
+    private bool m_isFrozen;
 
     void OnEnable()
     {
         AimAbility.OnAimChanged += SetAimMode;
         Player.OnPlayerReady += InitializeWithPlayer;
+        Player.OnFallRespawnStart += OnFallRespawnStart;
+        Player.OnFallRespawnEnd += OnFallRespawnEnd;
         if (Player.Current != null) InitializeWithPlayer(Player.Current);
     }
 
@@ -32,6 +35,8 @@ public class CameraSettingsApplier : MonoBehaviour
     {
         AimAbility.OnAimChanged -= SetAimMode;
         Player.OnPlayerReady -= InitializeWithPlayer;
+        Player.OnFallRespawnStart -= OnFallRespawnStart;
+        Player.OnFallRespawnEnd -= OnFallRespawnEnd;
     }
 
     private void InitializeWithPlayer(Player playerComponent)
@@ -96,6 +101,8 @@ public class CameraSettingsApplier : MonoBehaviour
 
     void LateUpdate()
     {
+        // 凍結中は入力でピボットを回さない。落下→復帰の間カメラを静止させる
+        if (m_isFrozen) return;
         if (m_cameraPivot == null || m_settings == null) { ChannelLogger.LogGuardReturn("Player", "カメラピボットまたは設定なし"); return; }
 
         // マウス: ピクセル差分 (フレーム独立)。deltaTime を掛けない。
@@ -132,6 +139,34 @@ public class CameraSettingsApplier : MonoBehaviour
             var lens = m_cinemachineCamera.Lens;
             lens.FieldOfView = aiming ? m_settings.aimFOV : m_defaultFOV;
             m_cinemachineCamera.Lens = lens;
+        }
+    }
+
+    private void OnFallRespawnStart() => Freeze(true);
+    private void OnFallRespawnEnd() => Freeze(false);
+
+    /// <summary>
+    /// カメラを止める/再開する。止める間は追従対象を外して本体をその場に固定し、
+    /// 落下するプレイヤーを追わない。再開時は追従を戻し、ダンピングなしで新しい足場へカットする。
+    /// </summary>
+    /// <param name="value">true で凍結、false で解除</param>
+    private void Freeze(bool value)
+    {
+        m_isFrozen = value;
+
+        if (m_cinemachineCamera == null) { ChannelLogger.LogGuardReturn("Player", "CinemachineCamera未設定 — 凍結スキップ"); return; }
+
+        if (value)
+        {
+            m_cinemachineCamera.Follow = null;
+            m_cinemachineCamera.LookAt = null;
+        }
+        else
+        {
+            m_cinemachineCamera.Follow = m_cameraPivot;
+            m_cinemachineCamera.LookAt = m_cameraPivot;
+            // 前フレーム状態を破棄して、復帰先の足場へ補間なしで即カットさせる
+            m_cinemachineCamera.PreviousStateIsValid = false;
         }
     }
 }

@@ -26,6 +26,18 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     [Tooltip("各生成位置のローカルオフセット。m_missileSpawnPoints と同じ順番で指定")]
     [SerializeField] private Vector3[] m_missileSpawnOffsets;
 
+    [Tooltip("ONで2発目のアニメイベントをアーク弾(上げてから狙う)にする。OFFで両方とも通常弾。発射数は変わらない(計4発)")]
+    [SerializeField] private bool m_fireLobMissiles = true;
+
+    [Tooltip("アーク弾の打ち上げ角度(度)。前方から上へ傾ける。大きいほど高く上がる")]
+    [SerializeField] private float m_missileLobAngle = 45f;
+
+    [Tooltip("アーク弾が上昇してからプレイヤーへ向き直すまでの時間(秒)。長いほど高く上げてから落ちる")]
+    [SerializeField] private float m_missileLobRiseTime = 0.45f;
+
+    // 次の OnMissileFireEvent でアーク弾を撃つか。アニメの2イベントで 通常→アーク と交互に切り替える
+    private bool m_nextMissileIsLob;
+
     [Header("Debug")]
     [SerializeField] private bool m_logStateChange = true;
 
@@ -221,6 +233,10 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
 
         if (next == BossState.Idle)
             ClearStaminaFlags();
+
+        // ミサイル攻撃の入り口でトグルをリセット（必ず 1発目=通常波 から始める）
+        if (next == BossState.Missile)
+            m_nextMissileIsLob = false;
 
         // Rush 中に Stun/Stagger で割り込まれると Rush 側の Disable AnimEvent が発火せず
         // Wind/Dust が出続けるので、ブレイク入り口で明示停止する
@@ -422,9 +438,23 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
             return;
         }
 
+        // アニメの2イベントで 1発目=通常波 / 2発目=アーク波 と交互に撃つ（発射数は元のまま 計4発）
+        bool lob = m_fireLobMissiles && m_nextMissileIsLob;
+        FireMissileWave(lob);
+        m_nextMissileIsLob = !m_nextMissileIsLob;
+    }
+
+    /// <summary>1波分。全発射点から通常弾 or アーク弾を1発ずつ撃つ。</summary>
+    private void FireMissileWave(bool lob)
+    {
+        if (m_missilePrefab == null) return;
+
+        Vector3 direction = lob ? ComputeLobDirection() : transform.forward;
+        float seekDelay = lob ? m_missileLobRiseTime : -1f;
+
         if (m_missileSpawnPoints == null || m_missileSpawnPoints.Length == 0)
         {
-            SpawnMissileAt(this.transform);
+            SpawnMissileAt(this.transform, Vector3.zero, direction, seekDelay);
             return;
         }
 
@@ -437,28 +467,29 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
             if (m_missileSpawnOffsets != null && i < m_missileSpawnOffsets.Length)
                 offset = m_missileSpawnOffsets[i];
 
-            SpawnMissileAt(spawnPoint, offset);
+            SpawnMissileAt(spawnPoint, offset, direction, seekDelay);
         }
     }
 
-    private void SpawnMissileAt(Transform spawnPoint, Vector3 localOffset)
+    /// <summary>アーク弾の初期方向。ボス正面を上へ m_missileLobAngle 度だけ傾ける。</summary>
+    private Vector3 ComputeLobDirection()
+    {
+        Vector3 fwd = transform.forward;
+        if (fwd.sqrMagnitude <= 0.0001f) fwd = Vector3.forward;
+        return Vector3.RotateTowards(fwd, Vector3.up, m_missileLobAngle * Mathf.Deg2Rad, 0f).normalized;
+    }
+
+    private void SpawnMissileAt(Transform spawnPoint, Vector3 localOffset, Vector3 direction, float seekDelayOverride)
     {
         Vector3 spawnPos = spawnPoint.position + spawnPoint.TransformDirection(localOffset);
 
-        Vector3 direction = transform.forward;
         if (direction.sqrMagnitude <= 0.0001f)
             direction = spawnPoint.forward;
-
         direction = direction.normalized;
+
         Quaternion rotation = Quaternion.LookRotation(direction, Vector3.up);
-
         EnemyMissile missile = Instantiate(m_missilePrefab, spawnPos, rotation);
-        missile.Initialize(m_player, direction);
-    }
-
-    private void SpawnMissileAt(Transform spawnPoint)
-    {
-        SpawnMissileAt(spawnPoint, Vector3.zero);
+        missile.Initialize(m_player, direction, seekDelayOverride);
     }
 
     // === IStabReceiver 実装 (Player → Boss スタブ受信) ===

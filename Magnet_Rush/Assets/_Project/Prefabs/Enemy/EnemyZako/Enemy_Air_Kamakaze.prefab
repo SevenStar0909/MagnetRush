@@ -459,10 +459,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Enemy::EnemyAirKamikazeAnimator
   m_animator: {fileID: 6096728488902875340}
+  m_tiltRoot: {fileID: 0}
   m_idleStateName: Idel
   m_attackStateName: Attack
   m_attackTriggerName: Attack
   m_crossFadeTime: 0.08
+  m_maxTiltAngle: 45
+  m_tiltSpeed: 10
+  m_returnSpeed: 3
 --- !u!54 &272791022539229585
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -849,6 +853,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -1578373571446707184, guid: a1250f53a64533d48a41b5c5b401b8f9, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 8eaae161fff42e7439eac99c06e57cfb, type: 2}
     - target: {fileID: 919132149155446097, guid: a1250f53a64533d48a41b5c5b401b8f9, type: 3}
       propertyPath: m_Name
       value: A_Enemy_kamikaze_03_Rging_Model

@@ -54,7 +54,11 @@ public class ShootingAbility : Ability
         Ray ray = m_mainCamera.ScreenPointToRay(screenCenter);
         Vector3 camForward = m_mainCamera.transform.forward;
 
-        int layerMask = PhysicsLayers.MaskShootingRaycast;
+        // 自分(Player)・自弾(PlayerBullet)・Trigger系(MeleeHitbox/MagnetField)・IgnoreRaycast を除外した全部
+        // TODO(段階2): 陣営除外(Player/PlayerBullet)は HitGroup ベースに寄せる
+        int layerMask = ~(PhysicsLayers.Bit(PhysicsLayers.Player) | PhysicsLayers.Bit(PhysicsLayers.PlayerBullet)
+            | PhysicsLayers.Bit(PhysicsLayers.MeleeHitbox) | PhysicsLayers.Bit(PhysicsLayers.MagnetField)
+            | PhysicsLayers.Bit(PhysicsLayers.IgnoreRaycast));
         float maxDist = m_bulletSettings.raycastDistance;
 
         Vector3 targetPoint = CalculateTargetPoint(ray, camForward, spawnPos, layerMask, maxDist);

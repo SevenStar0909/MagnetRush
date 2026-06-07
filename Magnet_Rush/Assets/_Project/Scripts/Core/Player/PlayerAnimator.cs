@@ -53,6 +53,10 @@ public class PlayerAnimator : MonoBehaviour
     [SerializeField] private float m_aimLayerFadeTime = 0.15f;
     private int m_aimLayerIndex = -1;
 
+    [Tooltip("射撃時に上半身レイヤーを上げ続ける時間 (秒)。移動しながら撃つとき、下半身は歩いたまま上半身だけ撃たせるため。")]
+    [SerializeField] private float m_shootUpperBodyHold = 0.6f;
+    private float m_shootHoldTimer;
+
     /// <summary>
     /// State 型 → Animator の State Int 値への固定マッピング。
     /// 新 State を Animator と連動させたい場合はここに追加し、PlayerStateIndex enum にも対応値を定義。
@@ -246,18 +250,21 @@ public class PlayerAnimator : MonoBehaviour
             m_animator.SetFloat(m_hVerticalSpeed, m_player.velocity.y + m_player.externalVelocity.y);
         }
 
+        bool aiming = m_aim != null && m_aim.IsAiming;
         if (m_aim != null)
-        {
-            m_animator.SetBool(m_hIsAiming, m_aim.IsAiming);
+            m_animator.SetBool(m_hIsAiming, aiming);
 
-            // 上半身 Aim Layer の重みを補間切替（Idle 等を Aim ポーズとして上半身だけ重ねる）
-            if (m_aimLayerIndex >= 0)
-            {
-                float current = m_animator.GetLayerWeight(m_aimLayerIndex);
-                float target = m_aim.IsAiming ? 1f : 0f;
-                float maxDelta = (m_aimLayerFadeTime > 0f) ? (Time.deltaTime / m_aimLayerFadeTime) : 1f;
-                m_animator.SetLayerWeight(m_aimLayerIndex, Mathf.MoveTowards(current, target, maxDelta));
-            }
+        // 射撃直後は一定時間だけ上半身レイヤーを上げてホールドする。
+        // これで移動中に撃っても下半身は歩いたまま、上半身だけ射撃モーションを重ねられる。
+        if (m_shootHoldTimer > 0f) m_shootHoldTimer -= Time.deltaTime;
+
+        // 上半身 Aim Layer の重みを補間切替（エイム中 or 射撃直後は上半身だけポーズを重ねる）
+        if (m_aimLayerIndex >= 0)
+        {
+            float current = m_animator.GetLayerWeight(m_aimLayerIndex);
+            float target = (aiming || m_shootHoldTimer > 0f) ? 1f : 0f;
+            float maxDelta = (m_aimLayerFadeTime > 0f) ? (Time.deltaTime / m_aimLayerFadeTime) : 1f;
+            m_animator.SetLayerWeight(m_aimLayerIndex, Mathf.MoveTowards(current, target, maxDelta));
         }
     }
 
@@ -274,7 +281,7 @@ public class PlayerAnimator : MonoBehaviour
         m_animator.SetTrigger(m_hOnStateChanged);
     }
 
-    private void HandleShoot()  { if (m_animator != null) m_animator.SetTrigger(m_hShoot); }
+    private void HandleShoot()  { if (m_animator != null) { m_animator.SetTrigger(m_hShoot); m_shootHoldTimer = m_shootUpperBodyHold; } }
     private void HandleReload() { if (m_animator != null) m_animator.SetTrigger(m_hReload); }
     private void HandleStab()   { if (m_animator != null) m_animator.SetTrigger(m_hStab); }
 

@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 /// <summary>
 /// プレイヤーエンティティ。入力・ステート・磁力の統合制御を行うハブ。
@@ -26,18 +27,27 @@ public class Player : Entity
     /// <summary>Player.Awake で発火。シーン参照なしでサブシステムが Player を取得する用。</summary>
     public static event Action<Player> OnPlayerReady;
 
+    /// <summary>落下リスポーン開始時に発火。カメラを止める（追従解除）用。CameraSettingsApplier が購読。</summary>
+    public static event Action OnFallRespawnStart;
+
+    /// <summary>落下リスポーン完了時に発火。カメラ追従を戻して新しい足場へカットする用。</summary>
+    public static event Action OnFallRespawnEnd;
+
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void ResetStatics()
     {
         Current = null;
         OnPlayerReady = null;
+        OnFallRespawnStart = null;
+        OnFallRespawnEnd = null;
     }
 
     protected override float Gravity => m_settings.gravity;
     protected override float SnapForce => m_settings.snapForce;
     protected override float ExternalDrag => m_settings.externalDrag;
     protected override float GroundCheckDistance => m_settings.groundCheckDistance;
-    protected override LayerMask GroundLayer => m_settings.groundLayer != 0 ? m_settings.groundLayer : PhysicsLayers.MaskGroundCheck;
+    protected override LayerMask GroundLayer => m_settings.groundLayer != 0 ? m_settings.groundLayer
+        : (LayerMask)(PhysicsLayers.Bit(PhysicsLayers.Default) | PhysicsLayers.Bit(PhysicsLayers.Ground) | PhysicsLayers.Bit(PhysicsLayers.Wall));
     protected override float PullOrientationThreshold => m_settings.pullOrientationThreshold;
     protected override float PullOrientationSpeed => m_settings.pullOrientationSpeed;
 
@@ -68,6 +78,12 @@ public class Player : Entity
     /// <summary>スタブ攻撃 Ability。Stab() / OnStabHitEvent() メソッド本体は feature/stab で実装する。</summary>
     public StabAbility stab { get; private set; }
 
+    /// <summary>最後に接地した位置の記録。落下リスポーンの戻り先に使う。任意（無くても固定スポーンへフォールバック）。</summary>
+    private PlayerGroundTracker m_groundTracker;
+
+    /// <summary>落下リスポーンの多重起動を防ぐフラグ。</summary>
+    private bool m_isFallRespawning;
+
     protected override void Awake()
     {
         base.Awake();
@@ -80,9 +96,10 @@ public class Player : Entity
         pole = GetComponent<PoleAbility>();
         jump = GetComponent<JumpAbility>();
         stab = GetComponent<StabAbility>();
+        m_groundTracker = GetComponent<PlayerGroundTracker>();
 
         if (m_settings.groundLayer == 0)
-            Debug.LogWarning("[Player] PlayerSettings.groundLayerが未設定。PhysicsLayers.MaskGroundCheckを使用。");
+            Debug.LogWarning("[Player] PlayerSettings.groundLayerが未設定。環境(Default/Ground/Wall)の既定マスクを使用。");
 
         // HP=0でDiePlayerStateに遷移
         if (m_health != null)
@@ -135,6 +152,63 @@ public class Player : Entity
         }
 
         states.Change<IdlePlayerState>();
+    }
+
+    /// <summary>
+    /// 奈落（デスボックス）に落ちたときのソフトリスポーン。HPは減らさず、最後に接地していた位置へ戻す。
+    /// 敵に倒された場合の通常リスポーン（<see cref="Respawn"/>）とは別経路で、死亡演出も経由しない。
+    /// 落下〜復帰の間はカメラを止め（OnFallRespawnStart）、復帰後に追従を戻す（OnFallRespawnEnd）。
+    /// </summary>
+    public void FallRespawn()
+    {
+        if (m_isFallRespawning)
+        {
+            ChannelLogger.LogGuardReturn("Player", "落下リスポーン処理中 — 多重起動をスキップ");
+            return;
+        }
+        if (states.IsCurrentOfType<DiePlayerState>())
+        {
+            ChannelLogger.LogGuardReturn("Player", "死亡中 — 落下リスポーンは通常リスポーンに任せる");
+            return;
+        }
+        StartCoroutine(FallRespawnRoutine());
+    }
+
+    private IEnumerator FallRespawnRoutine()
+    {
+        m_isFallRespawning = true;
+        OnFallRespawnStart?.Invoke();
+
+        // 落下中の入力・速度を断ち切ってからカメラ静止の余韻を待つ
+        input.ClearBuffers();
+        input.enabled = false;
+        velocity = Vector3.zero;
+        externalVelocity = Vector3.zero;
+
+        float delay = m_settings != null ? m_settings.fallRespawnDelay : 0.5f;
+        yield return new WaitForSeconds(delay);
+
+        // 最後の足場へ。一度も接地していなければ固定スポーン地点へフォールバック
+        if (m_groundTracker != null && m_groundTracker.TryGetLastGrounded(out var groundedPosition))
+        {
+            transform.position = groundedPosition;
+        }
+        else if (GameManager.Instance != null)
+        {
+            transform.position = GameManager.Instance.GetSpawnPosition();
+        }
+        else
+        {
+            ChannelLogger.LogGuardReturn("Game", "接地位置もGameManagerも無し — テレポートをスキップ");
+        }
+
+        velocity = Vector3.zero;
+        externalVelocity = Vector3.zero;
+        states.Change<IdlePlayerState>();
+        input.enabled = true;
+
+        m_isFallRespawning = false;
+        OnFallRespawnEnd?.Invoke();
     }
 
     void OnDisable()

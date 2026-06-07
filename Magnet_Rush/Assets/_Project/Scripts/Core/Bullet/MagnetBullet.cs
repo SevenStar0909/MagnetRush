@@ -10,6 +10,13 @@ public class MagnetBullet : MonoBehaviour, IBulletProximity
 {
     [SerializeField] private BulletSettings m_settings;
 
+    [SerializeField]
+    [Tooltip("ヒット解決上の所属グループ。プレイヤーの弾なので Player")]
+    private HitGroup m_hitGroup = HitGroup.Player;
+
+    /// <summary>所属グループ。被弾側との比較で自傷・同士討ちを弾く（強制は段階2c以降）。</summary>
+    public HitGroup HitGroup => m_hitGroup;
+
     public MagneticPole Pole { get; private set; }
     public bool IsStuck { get; private set; }
 

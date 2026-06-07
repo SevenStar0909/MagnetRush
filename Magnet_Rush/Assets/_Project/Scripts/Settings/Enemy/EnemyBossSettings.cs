@@ -63,7 +63,7 @@ public class EnemyBossSettings : ScriptableObject
     [Tooltip("接地判定の追加距離")]
     public float groundCheckDistance = 0.3f;
     [Label("接地判定レイヤー")]
-    [Tooltip("接地判定レイヤー（0=PhysicsLayers.MaskGroundCheck）")]
+    [Tooltip("接地判定レイヤー（0=環境(Default/Ground/Wall)の既定マスク）")]
     public LayerMask groundLayer;
     [Label("外部力減衰率")]
     [Tooltip("外部力（磁力等）の指数減衰率。大きいほど早く減速する")]

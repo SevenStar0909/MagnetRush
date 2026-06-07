@@ -15,6 +15,13 @@ public sealed class ArmStunHitbox : MonoBehaviour, IHittable
     [SerializeField] private EnemyBossBaseA_Animator m_animator;
     [SerializeField] private EnemyBossSettings m_settings;
 
+    [SerializeField]
+    [Tooltip("ヒット解決上の所属グループ。ボスなので通常 Enemy")]
+    private HitGroup m_hitGroup = HitGroup.Enemy;
+
+    /// <summary>所属グループ。攻撃側との比較で自傷・同士討ちを弾く。</summary>
+    public HitGroup HitGroup => m_hitGroup;
+
     public event Action<HitData> OnHitEvent;
 
     void Awake()
