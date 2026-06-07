@@ -3861,6 +3861,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: c3dfd9af8e7ee194187aa18dc68da177, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1030670396058247425}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: c3dfd9af8e7ee194187aa18dc68da177, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4529275146913340813}
   m_SourcePrefab: {fileID: 100100000, guid: c3dfd9af8e7ee194187aa18dc68da177, type: 3}
 --- !u!4 &368898604817703465 stripped
 Transform:
@@ -3960,6 +3963,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Enemy::EnemyBossBaseA_AnimationEventForwarder
   m_target: {fileID: 573067799464740083}
+--- !u!114 &4529275146913340813
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4271491941884022548}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51a559664da34d040908ad1a2e7ecdcd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Enemy::RootMotionToController
 --- !u!4 &4574213040475318635 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 647625670549068590, guid: c3dfd9af8e7ee194187aa18dc68da177, type: 3}

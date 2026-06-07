@@ -387,6 +387,7 @@ MonoBehaviour:
   m_wallMask:
     serializedVersion: 2
     m_Bits: 193
+  m_skinWidth: 0.08
   m_maxIterations: 2
   m_horizontalOnly: 1
 --- !u!1 &1087868980716705503
@@ -3844,6 +3845,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: c3dfd9af8e7ee194187aa18dc68da177, type: 3}
       insertIndex: -1
       addedObject: {fileID: 5047543483388849281}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: c3dfd9af8e7ee194187aa18dc68da177, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7942701266893736617}
   m_SourcePrefab: {fileID: 100100000, guid: c3dfd9af8e7ee194187aa18dc68da177, type: 3}
 --- !u!4 &732264009184725880 stripped
 Transform:
@@ -3883,6 +3887,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Enemy::EnemyBossBaseA_AnimationEventForwarder
   m_target: {fileID: 1537800206930250247}
+--- !u!114 &7942701266893736617
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1358591559151252613}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51a559664da34d040908ad1a2e7ecdcd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Enemy::RootMotionToController
 --- !u!4 &1410146372708197251 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 975625964649392727, guid: c3dfd9af8e7ee194187aa18dc68da177, type: 3}
