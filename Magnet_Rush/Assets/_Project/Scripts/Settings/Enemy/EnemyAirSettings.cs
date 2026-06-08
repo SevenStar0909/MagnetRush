@@ -44,6 +44,15 @@ public class EnemyAirSettings : ScriptableObject
     [Tooltip("プレイヤーへ体当たりした時のダメージ")]
     public int impactDamage = 1;
 
+    [Label("磁力衝突ダメージ")]
+    [Tooltip("磁力で引き寄せられた敵同士がぶつかって自爆した時、相手に与えるダメージ")]
+    public int explosionDamage = 10;
+
+    [Header("[リスポーン]")]
+    [Label("リスポーン時間（秒）")]
+    [Tooltip("倒されてから復活するまでの秒数。0なら復活せず消滅する")]
+    public float respawnDelay = 0f;
+
     [Header("[物理]")]
     [Label("外部力減衰率")]
     [Tooltip("外部力（磁力等）の指数減衰率。大きいほど早く減速する")]

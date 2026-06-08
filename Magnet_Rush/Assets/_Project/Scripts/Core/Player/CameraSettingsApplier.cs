@@ -32,6 +32,12 @@ public class CameraSettingsApplier : MonoBehaviour
     private bool m_initialized;
     private bool m_isFrozen;
 
+    private bool m_isDead;
+    private float m_deathBlend;
+    private float m_deathStartPivotY;
+    private float m_deathStartShoulderX;
+    private float m_deathStartDistance;
+
     void OnEnable()
     {
         AimAbility.OnAimChanged += SetAimMode;
@@ -115,6 +121,9 @@ public class CameraSettingsApplier : MonoBehaviour
 
     void LateUpdate()
     {
+        // 死亡中は寄せ＋中央寄せを毎フレーム適用（Play中にInspector値を変えると即反映＝ライブ調整可）
+        if (m_isDead && m_thirdPersonFollow != null) { UpdateDeathFraming(); return; }
+
         // 凍結中は入力でピボットを回さない。落下→復帰の間カメラを静止させる
         if (m_isFrozen) return;
         if (m_cameraPivot == null || m_settings == null) { ChannelLogger.LogGuardReturn("Player", "カメラピボットまたは設定なし"); return; }
@@ -184,48 +193,40 @@ public class CameraSettingsApplier : MonoBehaviour
         }
     }
 
-    // 死亡時: カメラをプレイヤーへ寄せて死亡を大きく見せる。入力での回転は止める（追従は維持）。
+    // 死亡時: 寄せ＋中央寄せの開始値を記録してフラグを立てる。実適用は LateUpdate の UpdateDeathFraming が毎フレーム行う。
     private void HandlePlayerDeath()
     {
         if (m_thirdPersonFollow == null || m_deathZoomDistance <= 0f) { ChannelLogger.LogGuardReturn("Player", "死亡カメラ寄り: ThirdPersonFollowなしまたは無効"); return; }
+        if (m_isDead) { ChannelLogger.LogGuardReturn("Player", "既に死亡フレーミング中"); return; }
+
+        m_deathStartDistance = m_thirdPersonFollow.CameraDistance;
+        m_deathStartShoulderX = m_thirdPersonFollow.ShoulderOffset.x;
+        m_deathStartPivotY = m_cameraPivot != null ? m_cameraPivot.localPosition.y : m_deathCenterHeight;
+        m_deathBlend = 0f;
+        m_isDead = true;
         m_isFrozen = true;
-        StartCoroutine(DeathZoomRoutine());
     }
 
-    // 死亡ビートのスロー/停止中でも進むよう実時間(unscaled)で、寄せ＋画面中央寄せを同時に行う。
+    // 死亡中、毎フレーム「寄せ＋中央寄せ」を適用する。
     // 通常は肩越し(オフセットX)＋胸の高さ(1.2)を見るので、倒れた体が画面中央下に映る。
-    // 死亡時は横=肩オフセットを0(真後ろ)、縦=見る高さを倒れた体へ下げて、プレイヤーを画面中央に収める。
-    private IEnumerator DeathZoomRoutine()
+    // 死亡時は横=肩オフセットを0(真後ろ)、縦=見る高さ(m_deathCenterHeight)へ寄せてプレイヤーを画面中央に収める。
+    // 毎フレーム m_deathCenterHeight 等を読むので、Play中に Inspector でいじると即反映される（ライブ調整可）。
+    private void UpdateDeathFraming()
     {
-        float startDist = m_thirdPersonFollow.CameraDistance;
-        Vector3 startShoulder = m_thirdPersonFollow.ShoulderOffset;
-        float startPivotY = m_cameraPivot != null ? m_cameraPivot.localPosition.y : m_deathCenterHeight;
-
         float dur = Mathf.Max(0.01f, m_deathZoomDuration);
-        float t = 0f;
-        while (t < dur)
-        {
-            t += Time.unscaledDeltaTime;
-            float k = Mathf.SmoothStep(0f, 1f, t / dur);
+        m_deathBlend = Mathf.MoveTowards(m_deathBlend, 1f, Time.unscaledDeltaTime / dur);
+        float k = Mathf.SmoothStep(0f, 1f, m_deathBlend);
 
-            m_thirdPersonFollow.CameraDistance = Mathf.Lerp(startDist, m_deathZoomDistance, k);
-            m_thirdPersonFollow.ShoulderOffset = new Vector3(Mathf.Lerp(startShoulder.x, 0f, k), startShoulder.y, startShoulder.z);
+        m_thirdPersonFollow.CameraDistance = Mathf.Lerp(m_deathStartDistance, m_deathZoomDistance, k);
 
-            if (m_cameraPivot != null)
-            {
-                Vector3 lp = m_cameraPivot.localPosition;
-                lp.y = Mathf.Lerp(startPivotY, m_deathCenterHeight, k);
-                m_cameraPivot.localPosition = lp;
-            }
-            yield return null;
-        }
+        Vector3 shoulder = m_thirdPersonFollow.ShoulderOffset;
+        shoulder.x = Mathf.Lerp(m_deathStartShoulderX, 0f, k);
+        m_thirdPersonFollow.ShoulderOffset = shoulder;
 
-        m_thirdPersonFollow.CameraDistance = m_deathZoomDistance;
-        m_thirdPersonFollow.ShoulderOffset = new Vector3(0f, startShoulder.y, startShoulder.z);
         if (m_cameraPivot != null)
         {
             Vector3 lp = m_cameraPivot.localPosition;
-            lp.y = m_deathCenterHeight;
+            lp.y = Mathf.Lerp(m_deathStartPivotY, m_deathCenterHeight, k);
             m_cameraPivot.localPosition = lp;
         }
     }

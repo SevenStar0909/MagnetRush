@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 
 using System;
+using System.Collections;
 
 /// <summary>
 /// 空中敵の基底クラス。Entity を継承し、プレイヤー参照・HP・3D飛行移動を共通化する。
@@ -25,10 +26,32 @@ public class EnemyAirBase : Entity
     private readonly Collider[] m_environmentContactBuffer = new Collider[8];
     private bool m_disappearEffectPlayed;
 
+    private Magnetizable m_magnetizable;
+    private Transform m_modelRoot;
+    private Transform m_hitboxRoot;
+    private Vector3 m_spawnPosition;
+    private Quaternion m_spawnRotation;
+    private bool m_spawnCaptured;
+    private bool m_isDead;
+
     public EnemyAirSettings StatusData => m_statusData;
     public Transform Player => m_player;
     public bool IsMagnetControlled => m_mover != null && m_mover.IsMagnetActive;
     public event Action<Collider> EnvironmentContact;
+
+    /// <summary>リスポーン待ち（ソフト死）中かどうか。AI・移動はこの間スキップされる。</summary>
+    public bool IsDead => m_isDead;
+
+    /// <summary>最初に配置された位置。死亡演出で敵をここへ戻すのに使う。未確定時は現在位置を返す。</summary>
+    public Vector3 SpawnPosition => m_spawnCaptured ? m_spawnPosition : transform.position;
+
+    /// <summary>最初に配置された向き。</summary>
+    public Quaternion SpawnRotation => m_spawnCaptured ? m_spawnRotation : transform.rotation;
+
+    /// <summary>リスポーン完了時に発火。AI がヒット済みフラグ等をリセットするために購読する。</summary>
+    public event Action Respawned;
+
+    private float RespawnDelay => m_statusData != null ? m_statusData.respawnDelay : 0f;
 
     protected override float Gravity => 0f;
     protected override float SnapForce => 0f;
@@ -40,6 +63,9 @@ public class EnemyAirBase : Entity
     {
         base.Awake();
         m_mover = GetComponentInChildren<MagneticMover>();
+        m_magnetizable = GetComponent<Magnetizable>();
+        m_modelRoot = transform.Find("Model");
+        m_hitboxRoot = transform.Find("Hitbox");
 
         if (m_health != null && m_statusData != null)
             m_health.SetMaxHealth(m_statusData.maxHp);
@@ -56,8 +82,19 @@ public class EnemyAirBase : Entity
             m_health.OnDie -= Die;
     }
 
+    private void Start()
+    {
+        // スポーン地点をリスポーン用に保存する。スポナーが Instantiate 後に位置を設定する場合に備え、
+        // Awake ではなく Start（全 Awake 完了後）で確定させる。
+        m_spawnPosition = transform.position;
+        m_spawnRotation = transform.rotation;
+        m_spawnCaptured = true;
+    }
+
     private void Update()
     {
+        if (m_isDead) { ChannelLogger.LogGuardReturn("Enemy", "リスポーン待ちのため停止中"); return; }
+
         CachePlayer();
         UpdateAir(Time.deltaTime);
         UpdateMagneticOrientation(Time.deltaTime);
@@ -126,15 +163,87 @@ public class EnemyAirBase : Entity
 
     public int ImpactDamage => m_statusData != null ? m_statusData.impactDamage : 1;
 
+    /// <summary>磁力衝突で自爆した時、接触相手に与えるダメージ。</summary>
+    public int ExplosionDamage => m_statusData != null ? m_statusData.explosionDamage : 1;
+
     public void SetPlayer(Transform player)
     {
         m_player = player;
     }
 
+    /// <summary>
+    /// 消滅エフェクトを出して死亡処理に入る。respawnDelay&gt;0 ならリスポーン、0以下なら破棄する。
+    /// </summary>
     public void DestroyWithDisappearEffect()
     {
+        HandleDeath();
+    }
+
+    /// <summary>
+    /// 全死因（HP0・カミカゼ自爆）の共通チョークポイント。
+    /// respawnDelay&gt;0 ならソフト死してリスポーンを予約し、0以下なら従来どおり破棄する。
+    /// </summary>
+    private void HandleDeath()
+    {
+        if (m_isDead) { ChannelLogger.LogGuardReturn("Enemy", "既に死亡（リスポーン待ち）"); return; }
+
         TriggerDisappearEffect();
-        Destroy(gameObject);
+
+        float delay = RespawnDelay;
+        if (delay <= 0f)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        BeginRespawn(delay);
+    }
+
+    /// <summary>ソフト死: 見た目・当たり判定・磁力・移動を止めてリスポーンを待つ。root は active のまま保つ。</summary>
+    private void BeginRespawn(float delay)
+    {
+        m_isDead = true;
+
+        velocity = Vector3.zero;
+        externalVelocity = Vector3.zero;
+        holdVelocity = Vector3.zero;
+        if (m_magnetizable != null) m_magnetizable.Deactivate();
+
+        SetBodyActive(false);
+        StartCoroutine(RespawnAfterDelay(delay));
+    }
+
+    private IEnumerator RespawnAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        Respawn();
+    }
+
+    /// <summary>スポーン地点・HP・見た目を元に戻して復活する。</summary>
+    public void Respawn()
+    {
+        if (m_spawnCaptured)
+            transform.SetPositionAndRotation(m_spawnPosition, m_spawnRotation);
+
+        velocity = Vector3.zero;
+        externalVelocity = Vector3.zero;
+        holdVelocity = Vector3.zero;
+
+        SetBodyActive(true);
+
+        if (m_health != null) m_health.ResetHealth();
+
+        m_disappearEffectPlayed = false;
+        m_isDead = false;
+
+        Respawned?.Invoke();
+    }
+
+    /// <summary>見た目(Model)と当たり判定(Hitbox)の子オブジェクトをまとめて表示/非表示する。</summary>
+    private void SetBodyActive(bool active)
+    {
+        if (m_modelRoot != null) m_modelRoot.gameObject.SetActive(active);
+        if (m_hitboxRoot != null) m_hitboxRoot.gameObject.SetActive(active);
     }
 
     protected void CachePlayer()
@@ -183,6 +292,6 @@ public class EnemyAirBase : Entity
 
     protected virtual void Die()
     {
-        DestroyWithDisappearEffect();
+        HandleDeath();
     }
 }

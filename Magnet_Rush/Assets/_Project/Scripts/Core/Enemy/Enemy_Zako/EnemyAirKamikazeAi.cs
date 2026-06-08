@@ -15,6 +15,11 @@ public class EnemyAirKamikazeAi : MonoBehaviour
     private EnemyAirBase m_enemyBase;
     private Magnetizable m_magnetizable;
     private bool m_hasHit;
+    private readonly Collider[] m_overlapBuffer = new Collider[8];
+
+    // カミカゼの爆発は「誰にでも当たる中立ハザード」として扱う。
+    // 当たり判定設計原則: Physics は Player でも Enemy でもないので両方にダメージが通る（同士討ちを弾かない）。
+    private const HitGroup k_DetonationHitGroup = HitGroup.Physics;
 
     private void Awake()
     {
@@ -46,24 +51,32 @@ public class EnemyAirKamikazeAi : MonoBehaviour
     private void OnEnable()
     {
         if (m_enemyBase != null)
+        {
             m_enemyBase.EnvironmentContact += HandleEnvironmentContact;
-
-        if (m_magnetizable != null)
-            m_magnetizable.OnMagnetContact += HandleMagnetContact;
+            m_enemyBase.Respawned += HandleRespawned;
+        }
     }
 
     private void OnDisable()
     {
         if (m_enemyBase != null)
+        {
             m_enemyBase.EnvironmentContact -= HandleEnvironmentContact;
-
-        if (m_magnetizable != null)
-            m_magnetizable.OnMagnetContact -= HandleMagnetContact;
+            m_enemyBase.Respawned -= HandleRespawned;
+        }
     }
 
     private void Update()
     {
         if (m_enemyBase == null)
+            return;
+
+        if (m_enemyBase.IsDead)
+            return;
+
+        // 磁化中は「引き寄せられて他の磁化オブジェクトに実接触したら自爆」を最優先で判定する。
+        // 磁力移動中こそ衝突が起きるため、IsMagnetControlled の早期returnより前に置く。
+        if (!m_hasHit && m_magnetizable != null && m_magnetizable.IsActive && CheckMagnetizedContact())
             return;
 
         if (m_enemyBase.IsMagnetControlled)
@@ -170,28 +183,65 @@ public class EnemyAirKamikazeAi : MonoBehaviour
         DestroySelf();
     }
 
-    private void HandleMagnetContact(Magnetizable other)
+    /// <summary>
+    /// 磁化中、実際に接触した別の磁化オブジェクトを検出して自爆する。
+    /// 当たり判定設計原則準拠: ①OverlapEntity の LayerMask で事前フィルタ → ②Magnetizable / IHittable を
+    /// コンポーネント取得して相手を特定（タグ・陣営レイヤーで判定しない）→ ③HitGroup で加害可否を決める。
+    /// </summary>
+    /// <returns>自爆したら true。</returns>
+    private bool CheckMagnetizedContact()
     {
-        if (m_hasHit)
-            return;
-
-        if (other == null || other.transform.root == transform.root)
-            return;
-
-        var hittable = other.GetComponentInParent<IHittable>();
-        if (hittable != null)
+        int count = m_enemyBase.OverlapEntity(m_overlapBuffer, 0.02f);
+        for (int i = 0; i < count; i++)
         {
-            hittable.OnHit(new HitData
+            Collider col = m_overlapBuffer[i];
+            if (col == null)
+                continue;
+
+            if (col.transform.root == transform.root)
+                continue;
+
+            // 相手が「磁化された別オブジェクト」か。磁化状態というデータで判定する（陣営では判定しない）。
+            var otherMagnet = col.GetComponentInParent<Magnetizable>();
+            if (otherMagnet == null || otherMagnet == m_magnetizable || !otherMagnet.IsActive)
+                continue;
+
+            var hittable = col.GetComponentInParent<IHittable>();
+            if (hittable == null)
+                continue;
+
+            Detonate(hittable, col.ClosestPoint(transform.position));
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>磁力衝突による自爆。爆発（中立ハザード）を相手に通してから自分を消す。</summary>
+    private void Detonate(IHittable target, Vector3 point)
+    {
+        m_hasHit = true;
+
+        // 爆発は Physics ハザード。相手の HitGroup が異なるときだけ通す
+        // （Physics≠Player / Physics≠Enemy は通る、Physics同士は弾く）。
+        if (target.HitGroup != k_DetonationHitGroup)
+        {
+            target.OnHit(new HitData
             {
-                damage = m_enemyBase != null ? m_enemyBase.ImpactDamage : 1,
-                hitPoint = other.Position,
-                knockbackDir = (other.Position - transform.position).normalized,
+                damage = m_enemyBase != null ? m_enemyBase.ExplosionDamage : 1,
+                hitPoint = point,
+                knockbackDir = (point - transform.position).normalized,
                 source = gameObject
             });
         }
 
-        m_hasHit = true;
         DestroySelf();
+    }
+
+    /// <summary>リスポーンしたらヒット済みフラグを戻し、再び突撃・自爆できるようにする。</summary>
+    private void HandleRespawned()
+    {
+        m_hasHit = false;
     }
 
     private void DestroySelf()

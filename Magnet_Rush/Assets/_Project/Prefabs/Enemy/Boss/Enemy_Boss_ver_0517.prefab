@@ -388,6 +388,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 193
   m_skinWidth: 0.08
+  m_maxPushPerFrame: 1
   m_maxIterations: 2
   m_horizontalOnly: 1
 --- !u!1 &1087868980716705503
@@ -1788,7 +1789,7 @@ SkinnedMeshRenderer:
   m_MaskInteraction: 0
   serializedVersion: 2
   m_Quality: 0
-  m_UpdateWhenOffscreen: 0
+  m_UpdateWhenOffscreen: 1
   m_SkinnedMotionVectors: 1
   m_Mesh: {fileID: -4938993824696555104, guid: c3dfd9af8e7ee194187aa18dc68da177, type: 3}
   m_Bones:
@@ -2857,6 +2858,10 @@ PrefabInstance:
     - target: {fileID: -2198888584636164399, guid: c3dfd9af8e7ee194187aa18dc68da177, type: 3}
       propertyPath: m_LocalPosition.z
       value: -1.1588448
+      objectReference: {fileID: 0}
+    - target: {fileID: -1286026620953302761, guid: c3dfd9af8e7ee194187aa18dc68da177, type: 3}
+      propertyPath: m_UpdateWhenOffscreen
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: -593783285362046255, guid: c3dfd9af8e7ee194187aa18dc68da177, type: 3}
       propertyPath: m_Layer

@@ -16,6 +16,16 @@ public class EnemyWalkBase : Entity
     public Transform Player => m_player;
     public bool IsMagnetControlled => m_mover != null && m_mover.IsMagnetActive;
 
+    private Vector3 m_spawnPosition;
+    private Quaternion m_spawnRotation;
+    private bool m_spawnCaptured;
+
+    /// <summary>最初に配置された位置。死亡演出で敵をここへ戻すのに使う。未確定時は現在位置を返す。</summary>
+    public Vector3 SpawnPosition => m_spawnCaptured ? m_spawnPosition : transform.position;
+
+    /// <summary>最初に配置された向き。</summary>
+    public Quaternion SpawnRotation => m_spawnCaptured ? m_spawnRotation : transform.rotation;
+
     protected override float Gravity => m_statusData != null ? m_statusData.gravity : base.Gravity;
     protected override float SnapForce => m_statusData != null ? m_statusData.snapForce : base.SnapForce;
     protected override float ExternalDrag => m_statusData != null ? m_statusData.externalDrag : base.ExternalDrag;
@@ -44,6 +54,14 @@ public class EnemyWalkBase : Entity
     {
         if (m_health != null)
             m_health.OnDie -= Die;
+    }
+
+    private void Start()
+    {
+        // スポーン地点を記録する。スポナーが Instantiate 後に位置を設定する場合に備え Start で確定させる。
+        m_spawnPosition = transform.position;
+        m_spawnRotation = transform.rotation;
+        m_spawnCaptured = true;
     }
 
     private void Update()
