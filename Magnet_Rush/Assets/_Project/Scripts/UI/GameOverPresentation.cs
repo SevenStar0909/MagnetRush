@@ -55,6 +55,12 @@ public class GameOverPresentation : MonoBehaviour
     [Tooltip("黒フェードの最終濃さ(1で真っ黒)")]
     [SerializeField] private float m_fadeTargetAlpha = 1f;
 
+    [Header("死亡ビート")]
+    [Tooltip("ゲームオーバー画面を出す前に、スローで死亡アニメを見せる時間(秒・実時間)。0で即ゲームオーバー")]
+    [SerializeField] private float m_deathBeatDuration = 1.5f;
+    [Tooltip("死亡を見せている間の時間の遅さ。0=完全停止だが、0.3前後のスローの方が死亡モーションが見えて良い")]
+    [SerializeField] private float m_deathBeatTimeScale = 0.35f;
+
     [Header("矢印の位置(anchoredPosition)")]
     [Tooltip("RETRY を選んでいるときの矢印位置")]
     [SerializeField] private Vector2 m_arrowRetryPos = new Vector2(-450f, -150f);
@@ -121,6 +127,11 @@ public class GameOverPresentation : MonoBehaviour
     {
         m_playing = true;
         m_menuActive = false;
+
+        // ゲームオーバーUIを出す前に、スローで死亡アニメをそのまま見せる短いビート。
+        // 死亡した瞬間に timeScale=0＋暗転すると死亡モーションが0フレームで凍って見えないため挟む。
+        yield return DeathBeatRoutine();
+
         if (m_root != null) m_root.SetActive(true);
         if (m_arrowImage != null) m_arrowImage.gameObject.SetActive(false);
 
@@ -161,6 +172,22 @@ public class GameOverPresentation : MonoBehaviour
         }
 
         ShowMenu();
+    }
+
+    // 死亡直後、ゲームオーバー画面の前にスローで死亡アニメを見せる間。実時間(unscaled)で計る。
+    private IEnumerator DeathBeatRoutine()
+    {
+        if (m_deathBeatDuration <= 0f) yield break;
+
+        Time.timeScale = Mathf.Clamp(m_deathBeatTimeScale, 0.01f, 1f);
+
+        float t = 0f;
+        while (t < m_deathBeatDuration)
+        {
+            t += Time.unscaledDeltaTime;
+            yield return null;
+        }
+        // この後 PlayRoutine が timeScale=0 にして暗転へ進む
     }
 
     // frame=0 を左上として、左→右・上→下の順にコマを取り出す。uvRect は左下原点。
@@ -231,6 +258,7 @@ public class GameOverPresentation : MonoBehaviour
         StopAllCoroutines();
         m_playing = false;
         m_menuActive = false;
+        Time.timeScale = 1f;   // 死亡ビートのスローが残らないよう、復帰時は必ず通常速度へ戻す
         SetFadeAlpha(0f);
         if (m_root != null) m_root.SetActive(false);
     }

@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Unity.Cinemachine;
@@ -11,7 +12,16 @@ public class CameraSettingsApplier : MonoBehaviour
 {
     [SerializeField] private CinemachineCamera m_cinemachineCamera;
 
+    [Header("死亡演出")]
+    [Tooltip("死亡時にこのカメラ距離まで寄せてプレイヤーを大きく写す。0以下で寄り無効")]
+    [SerializeField] private float m_deathZoomDistance = 2f;
+    [Tooltip("死亡時の寄り・中央寄せにかける時間(秒・実時間)")]
+    [SerializeField] private float m_deathZoomDuration = 1.2f;
+    [Tooltip("死亡時に見る高さ(プレイヤー基準のローカルY)。倒れた体を画面中央に収めるため通常(1.2)より低くする")]
+    [SerializeField] private float m_deathCenterHeight = 0.5f;
+
     private PlayerSettings m_settings;
+    private Health m_health;
 
     private CinemachineThirdPersonFollow m_thirdPersonFollow;
     private float m_defaultFOV;
@@ -37,6 +47,7 @@ public class CameraSettingsApplier : MonoBehaviour
         Player.OnPlayerReady -= InitializeWithPlayer;
         Player.OnFallRespawnStart -= OnFallRespawnStart;
         Player.OnFallRespawnEnd -= OnFallRespawnEnd;
+        if (m_health != null) m_health.OnDie -= HandlePlayerDeath;
     }
 
     private void InitializeWithPlayer(Player playerComponent)
@@ -47,6 +58,9 @@ public class CameraSettingsApplier : MonoBehaviour
 
         m_settings = playerComponent.Settings;
         var player = playerComponent.gameObject;
+
+        m_health = playerComponent.GetComponent<Health>();
+        if (m_health != null) m_health.OnDie += HandlePlayerDeath;
 
         // カメラ回転ピボットをプレイヤーの子に生成
         var pivotGO = new GameObject("CameraPivot");
@@ -167,6 +181,52 @@ public class CameraSettingsApplier : MonoBehaviour
             m_cinemachineCamera.LookAt = m_cameraPivot;
             // 前フレーム状態を破棄して、復帰先の足場へ補間なしで即カットさせる
             m_cinemachineCamera.PreviousStateIsValid = false;
+        }
+    }
+
+    // 死亡時: カメラをプレイヤーへ寄せて死亡を大きく見せる。入力での回転は止める（追従は維持）。
+    private void HandlePlayerDeath()
+    {
+        if (m_thirdPersonFollow == null || m_deathZoomDistance <= 0f) { ChannelLogger.LogGuardReturn("Player", "死亡カメラ寄り: ThirdPersonFollowなしまたは無効"); return; }
+        m_isFrozen = true;
+        StartCoroutine(DeathZoomRoutine());
+    }
+
+    // 死亡ビートのスロー/停止中でも進むよう実時間(unscaled)で、寄せ＋画面中央寄せを同時に行う。
+    // 通常は肩越し(オフセットX)＋胸の高さ(1.2)を見るので、倒れた体が画面中央下に映る。
+    // 死亡時は横=肩オフセットを0(真後ろ)、縦=見る高さを倒れた体へ下げて、プレイヤーを画面中央に収める。
+    private IEnumerator DeathZoomRoutine()
+    {
+        float startDist = m_thirdPersonFollow.CameraDistance;
+        Vector3 startShoulder = m_thirdPersonFollow.ShoulderOffset;
+        float startPivotY = m_cameraPivot != null ? m_cameraPivot.localPosition.y : m_deathCenterHeight;
+
+        float dur = Mathf.Max(0.01f, m_deathZoomDuration);
+        float t = 0f;
+        while (t < dur)
+        {
+            t += Time.unscaledDeltaTime;
+            float k = Mathf.SmoothStep(0f, 1f, t / dur);
+
+            m_thirdPersonFollow.CameraDistance = Mathf.Lerp(startDist, m_deathZoomDistance, k);
+            m_thirdPersonFollow.ShoulderOffset = new Vector3(Mathf.Lerp(startShoulder.x, 0f, k), startShoulder.y, startShoulder.z);
+
+            if (m_cameraPivot != null)
+            {
+                Vector3 lp = m_cameraPivot.localPosition;
+                lp.y = Mathf.Lerp(startPivotY, m_deathCenterHeight, k);
+                m_cameraPivot.localPosition = lp;
+            }
+            yield return null;
+        }
+
+        m_thirdPersonFollow.CameraDistance = m_deathZoomDistance;
+        m_thirdPersonFollow.ShoulderOffset = new Vector3(0f, startShoulder.y, startShoulder.z);
+        if (m_cameraPivot != null)
+        {
+            Vector3 lp = m_cameraPivot.localPosition;
+            lp.y = m_deathCenterHeight;
+            m_cameraPivot.localPosition = lp;
         }
     }
 }
