@@ -202,7 +202,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 270405653}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1906762029}
+        m_TargetAssemblyTypeName: SceneSelectUI, MagnetRush.Game
+        m_MethodName: OnClickStageButtonByMapName
+        m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: Stage2_MAP
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &270405653
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -465,7 +477,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 831616824}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1906762029}
+        m_TargetAssemblyTypeName: SceneSelectUI, MagnetRush.Game
+        m_MethodName: OnClickStageButtonByMapName
+        m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: TutorialScene
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &831616824
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -671,6 +695,7 @@ MonoBehaviour:
   m_requiredPressDuration: 2
   m_gaugeImage: {fileID: 1452071769}
   m_transitionDelay: 0.1
+  m_targetMapName: 
 --- !u!1 &1115390560
 GameObject:
   m_ObjectHideFlags: 0

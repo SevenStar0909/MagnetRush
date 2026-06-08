@@ -71,9 +71,6 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     private bool m_wasInStaggerAnim;
     private bool m_staminaBreakEndRequested;
 
-    private bool m_resetStunEndTrigger;
-    private bool m_resetStaggerEndTrigger;
-
     // Rush 中に Animator が一度でも IsInRush=true になったか。
     // 入り transition と exit transition を区別し、exit 時の player 追尾回転を抑制する。
     private bool m_rushHasStarted;
@@ -227,12 +224,23 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
 
         if (!alreadyInBreak && inStunAnim && !m_wasInStunAnim)
         {
+            // 入場時に前サイクルの未消費な退場トリガーを掃除する。退場トリガーは「出した側」では即 Reset せず
+            // 消費されるまで保持する方針なので、入場側でここで一度クリアして即抜けを防ぐ。
+            m_animator.ResetStunEnd();
+            m_animator.ResetStaggerEnd();
+
             m_staminaBreakTimer = Mathf.Max(0f, m_settings.staminaBreakDuration);
             m_staminaBreakEndRequested = false;
             ChangeState(BossState.Stunned);
             // StunAnim に入ったら IsStunned bool を即落とす。AnyState→StunAnim は IsStunned==true で遷移するため、
             // true のままだと StunkeepAnim から AnyState 経由で StunAnim へ戻り続けてループする。
             // 状態保持は StunAnim→StunkeepAnim→(StunEnd)→Idle が担うので、bool は入場トリガーとして1回使えば十分。
+            m_animator.SetIsStunnedFalse();
+        }
+        else if (alreadyInBreak && inStunAnim)
+        {
+            // 既に崩れ中に IsStunned bool が立つ（崩れ中の腕カウンター等）と、AnyState→StunAnim が
+            // 引き続けて StunAnim↔StunkeepAnim で永久ループする。入場はブロックしつつ bool は消費して止める。
             m_animator.SetIsStunnedFalse();
         }
 
@@ -247,6 +255,9 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
 
         if (!alreadyInBreak && inStaggerAnim && !m_wasInStaggerAnim && !m_animator.IsStunned)
         {
+            m_animator.ResetStunEnd();
+            m_animator.ResetStaggerEnd();
+
             // よろけ（蓄積ルート）は専用の継続時間を使う。仕様＝10秒。スタン（カウンタールート）は staminaBreakDuration＝5秒。
             m_staminaBreakTimer = Mathf.Max(0f, m_settings.staggerDuration);
             m_staminaBreakEndRequested = false;
@@ -265,21 +276,32 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         if (m_staminaBreakTimer > 0f) return;
 
         m_staminaBreakEndRequested = true;
+        EndBreakAnimations();
+        ChangeState(BossState.Idle);
+    }
 
-        if (m_state == BossState.Stunned)
+    // 崩れ（Stun/Stagger）を終了させる退場トリガーを出す。m_state ではなく「実際に再生中のアニメ状態」を見て
+    // 一致する退場トリガーを出すので、再トリガーで m_state とアニメがズレていても確実に keep ループから抜ける。
+    // トリガーはここで Reset しない（消費されるまで保持）。Reset は次の崩れ入場時に行う＝即抜け事故と取り逃し事故の両方を防ぐ。
+    private void EndBreakAnimations()
+    {
+        if (m_animator == null) return;
+
+        bool inStunAnim = m_animator.IsStunned;
+        bool inStaggerAnim = m_animator.IsInStagger;
+
+        if (inStunAnim) m_animator.TriggerStunEnd();
+        if (inStaggerAnim) m_animator.TriggerStaggerEnd();
+
+        // どちらのアニメ状態でもない（遷移中など）場合の保険として両方出す
+        if (!inStunAnim && !inStaggerAnim)
         {
             m_animator.TriggerStunEnd();
-            m_animator.SetIsStunnedFalse();
-            m_resetStunEndTrigger = true;
-        }
-        else
-        {
             m_animator.TriggerStaggerEnd();
-            m_animator.SetIsStaggerFalse();
-            m_resetStaggerEndTrigger = true;
         }
 
-        ChangeState(BossState.Idle);
+        m_animator.SetIsStunnedFalse();
+        m_animator.SetIsStaggerFalse();
     }
 
     // === 状態遷移 ===
@@ -628,21 +650,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         if (m_stamina != null)
             m_stamina.ResetStamina();
 
-        if (m_animator != null)
-        {
-            if (m_state == BossState.Stunned)
-            {
-                m_animator.TriggerStunEnd();
-                m_animator.SetIsStunnedFalse();
-                m_resetStunEndTrigger = true;
-            }
-            else if (m_state == BossState.Stagger)
-            {
-                m_animator.TriggerStaggerEnd();
-                m_animator.SetIsStaggerFalse();
-                m_resetStaggerEndTrigger = true;
-            }
-        }
+        EndBreakAnimations();
 
         m_staminaBreakEndRequested = true;
         ChangeState(BossState.Idle);
@@ -785,20 +793,4 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         }
     }
 
-    void LateUpdate()
-    {
-        if (m_animator == null) return;
-
-        if (m_resetStunEndTrigger)
-        {
-            m_animator.ResetStunEnd();
-            m_resetStunEndTrigger = false;
-        }
-
-        if (m_resetStaggerEndTrigger)
-        {
-            m_animator.ResetStaggerEnd();
-            m_resetStaggerEndTrigger = false;
-        }
-    }
 }
