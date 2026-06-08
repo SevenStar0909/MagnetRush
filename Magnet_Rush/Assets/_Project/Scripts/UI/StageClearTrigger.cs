@@ -46,6 +46,38 @@ public class GameClearTrigger : MonoBehaviour
         if (m_root != null) m_root.SetActive(false);
     }
 
+    private void Start()
+    {
+        // 1. シーン全体から「GameClearCanvas」という名前のオブジェクトを検索
+        GameObject clearCanvas = GameObject.Find("GameClearCanvas");
+
+        if (clearCanvas != null)
+        {
+            // 2. GameClearCanvasの直下にある「Root」を探して自動セット
+            Transform rootTransform = clearCanvas.transform.Find("Root");
+            if (rootTransform != null)
+            {
+                m_root = rootTransform.gameObject; // ➔ 変数名に合わせて書き換えてください
+
+                // 3. Rootのさらに直下にある「Sequence」を探して自動セット
+                Transform sequenceTransform = rootTransform.Find("Sequence");
+                if (sequenceTransform != null)
+                {
+                    // ➔ 変数名に合わせて書き換えてください
+                    m_sequenceImage = sequenceTransform.GetComponent<RawImage>();
+
+                    // 💡 もしm_sequenceの型がGameObjectではなく、特定のコンポーネント（例: PlayableDirectorなど）の場合は以下のように記述します
+                    // m_sequence = sequenceTransform.GetComponent<型名>();
+                }
+            }
+            Debug.Log("[Goal] シーンの壁を越えて、GameClearCanvasのRootとSequenceを自動接続しました！");
+        }
+        else
+        {
+            Debug.LogWarning("[Goal] GameClearCanvasが見つかりませんでした。オブジェクト名を確認してください。");
+        }
+    }
+
     void Update()
     {
         // 最終コマで止まっているとき、いずれかのボタンが押されたら次へ
@@ -55,28 +87,22 @@ public class GameClearTrigger : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        // 💡 触れてきた相手自身、またはその親（ルート）が Player タグを持っているかチェック
+        // 磁力フィールドは完全に無視する
+        if (other.name.Contains("MagnetField"))
+        {
+            return; // ここで処理を終了して追い返す
+        }
+
+        // 触れてきた相手自身、またはその親（ルート）が Player タグを持っているかチェック
         bool isPlayer = other.CompareTag(m_playerTag) ||
                         (other.transform.root != null && other.transform.root.CompareTag(m_playerTag));
 
         if (isPlayer)
         {
-            Debug.Log("[Goal] プレイヤーの接触を検知！演出を開始します。");
+            Debug.Log($"[Goal] 確定検知！相手は 【{other.name}】 です。演出を開始します。");
             PlayClear();
         }
     }
-
-    private void OnTriggerEnter2D(Collider2D other)
-    {
-        Debug.Log($"[2D接触ロボ] 何かが触れました！ 相手: {other.name} / タグ: {other.tag}");
-
-        if (other.CompareTag(m_playerTag))
-        {
-            Debug.Log("[Goal] 2Dでプレイヤーを検知！演出を開始します。");
-            PlayClear();
-        }
-    }
-
     /// <summary>クリア演出を再生する（外部やデバッグボタンから手動で呼ぶことも可能）</summary>
     public void PlayClear()
     {
