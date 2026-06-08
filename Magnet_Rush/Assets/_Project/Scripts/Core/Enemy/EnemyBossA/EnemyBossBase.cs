@@ -26,6 +26,9 @@ public class EnemyBossBase : Entity
     protected override float GroundCheckDistance => m_statusData != null ? m_statusData.groundCheckDistance : base.GroundCheckDistance;
     protected override LayerMask GroundLayer => (m_statusData != null && m_statusData.groundLayer != 0) ? m_statusData.groundLayer : base.GroundLayer;
 
+    // 接地が一瞬切れても数フレームは接地扱いを維持し、めり込み押し出しや床の継ぎ目での「急に沈む」を防ぐ。
+    protected override int GroundGraceFrames => 3;
+
     protected override void Awake()
     {
         base.Awake();

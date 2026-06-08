@@ -108,6 +108,12 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
     /// <summary>接地判定の追加レイ距離。</summary>
     protected virtual float GroundCheckDistance => 0.3f;
 
+    /// <summary>接地が一瞬切れても非接地と判定するまでの猶予フレーム数。0で即時(プレイヤー等は0=従来通り)。</summary>
+    protected virtual int GroundGraceFrames => 0;
+
+    // 接地が単発で切れたフレームを数える。GroundGraceFrames を超えたら本当に非接地にする。
+    private int m_groundGraceCounter;
+
     /// <summary>磁力で引かれているとき向き直す速度の閾値。</summary>
     protected virtual float PullOrientationThreshold => 5f;
 
@@ -355,19 +361,34 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
         bool wasGrounded = IsGrounded;
         float groundCheckDist = height * 0.5f + GroundCheckDistance;
 
+        bool rawGrounded = false;
         if (Physics.Raycast(transform.position, -transform.up, out var hit, groundCheckDist,
             GroundLayer, QueryTriggerInteraction.Ignore))
         {
             float footDist = hit.distance - height * 0.5f;
-            IsGrounded = footDist < 0.1f;
+            rawGrounded = footDist < 0.1f;
 
-            if (IsGrounded)
+            if (rawGrounded)
             {
                 groundHit = hit;
                 groundNormal = hit.normal;
                 groundAngle = Vector3.Angle(Vector3.up, hit.normal);
                 localSlopeDirection = new Vector3(groundNormal.x, 0f, groundNormal.z).normalized;
             }
+        }
+
+        // 接地→空中の単発切れを猶予フレーム分だけ吸収する(接地復帰は即時)。直前の接地情報を保持したまま
+        // 接地扱いを維持するので、めり込み押し出しや床の継ぎ目で1フレーム接地が外れても重力でガクッと沈まない。
+        // GroundGraceFrames=0 のプレイヤー等は従来どおり即時で非接地になる。
+        if (rawGrounded)
+        {
+            m_groundGraceCounter = 0;
+            IsGrounded = true;
+        }
+        else if (wasGrounded && m_groundGraceCounter < GroundGraceFrames)
+        {
+            m_groundGraceCounter++;
+            IsGrounded = true;
         }
         else
         {

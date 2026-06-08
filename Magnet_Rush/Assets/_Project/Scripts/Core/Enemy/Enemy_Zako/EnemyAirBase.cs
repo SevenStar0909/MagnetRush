@@ -207,10 +207,27 @@ public class EnemyAirBase : Entity
         velocity = Vector3.zero;
         externalVelocity = Vector3.zero;
         holdVelocity = Vector3.zero;
-        if (m_magnetizable != null) m_magnetizable.Deactivate();
+        ClearMagnetism();
 
         SetBodyActive(false);
         StartCoroutine(RespawnAfterDelay(delay));
+    }
+
+    /// <summary>
+    /// 弾着弾で付与された磁力を完全に解除する。MagnetField を ForceExpire すると
+    /// OnFieldExpired 経由で極解除・ビジュアライザ・着弾エフェクトまで片付くため、
+    /// リスポーン後に磁力（オーラ）が残らない。Magnetizable.Deactivate だけでは
+    /// 子に AddComponent された MagnetField が hide/show で復活してしまう。
+    /// </summary>
+    private void ClearMagnetism()
+    {
+        var fields = GetComponentsInChildren<MagnetField>(true);
+        for (int i = 0; i < fields.Length; i++)
+        {
+            if (fields[i] != null) fields[i].ForceExpire();
+        }
+
+        if (m_magnetizable != null) m_magnetizable.Deactivate();
     }
 
     private IEnumerator RespawnAfterDelay(float delay)
