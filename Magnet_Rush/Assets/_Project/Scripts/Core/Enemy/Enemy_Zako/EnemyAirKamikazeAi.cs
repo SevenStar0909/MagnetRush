@@ -162,6 +162,7 @@ public class EnemyAirKamikazeAi : MonoBehaviour
             return;
 
         m_hasHit = true;
+        ChannelLogger.Log("Enemy", $"[Kamikaze診断] AttackBox接触で自爆 vs {other.name}");
 
         hittable.OnHit(new HitData
         {
@@ -180,6 +181,7 @@ public class EnemyAirKamikazeAi : MonoBehaviour
             return;
 
         m_hasHit = true;
+        ChannelLogger.Log("Enemy", $"[Kamikaze診断] 環境接触で自爆 vs {other.name}");
         DestroySelf();
     }
 
@@ -221,6 +223,7 @@ public class EnemyAirKamikazeAi : MonoBehaviour
     private void Detonate(IHittable target, Vector3 point)
     {
         m_hasHit = true;
+        ChannelLogger.Log("Enemy", "[Kamikaze診断] 磁化衝突で自爆 (CheckMagnetizedContact)");
 
         // 爆発は Physics ハザード。相手の HitGroup が異なるときだけ通す
         // （Physics≠Player / Physics≠Enemy は通る、Physics同士は弾く）。

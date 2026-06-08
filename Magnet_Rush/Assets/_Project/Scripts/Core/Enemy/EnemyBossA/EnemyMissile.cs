@@ -350,6 +350,19 @@ public class EnemyMissile : MonoBehaviour
     }
 
     /// <summary>
+    /// 発射元（ボス）との衝突無効時間を上書きして <see cref="IgnoreCollisionsWith(GameObject)"/> を呼ぶ。
+    /// ボス側 Inspector から発射ごとに猶予秒数を渡せるようにするためのオーバーロード。
+    /// </summary>
+    /// <param name="source">無視したい相手（発射元のルート GameObject）</param>
+    /// <param name="restoreDelay">0以上でこの秒数だけ衝突無効。負値なら既定の m_collisionRestoreDelay を使う</param>
+    public void IgnoreCollisionsWith(GameObject source, float restoreDelay)
+    {
+        if (restoreDelay >= 0f)
+            m_collisionRestoreDelay = restoreDelay;
+        IgnoreCollisionsWith(source);
+    }
+
+    /// <summary>
     /// 発射元（ボス）等のコライダーとの衝突を無効化する。spawn 直後の自己衝突・自傷を防ぐ。
     /// </summary>
     /// <param name="source">無視したい相手（発射元のルート GameObject）</param>
@@ -369,6 +382,29 @@ public class EnemyMissile : MonoBehaviour
                 Physics.IgnoreCollision(m_collider, c, true);
                 m_ignoredColliders.Add(c);
             }
+        }
+
+        IgnoreOtherMissilesDuringGrace();
+    }
+
+    // 1波4発が同時発射 → 密集や誘導での収束でミサイル同士がぶつかり、無条件 Explode で即自爆する
+    // （ログで 0.01s と 0.64s の PhysicsObject 同士衝突を確認）。ボスと同じ猶予時間(m_collisionRestoreDelay)の間だけ
+    // 生存中の他ミサイルとの衝突も無効化し、RestoreIgnoredCollisionsIfCleared で経過後に通常へ戻す。
+    private void IgnoreOtherMissilesDuringGrace()
+    {
+        if (m_collider == null) return;
+
+        EnemyMissile[] others = FindObjectsByType<EnemyMissile>(FindObjectsSortMode.None);
+        for (int i = 0; i < others.Length; i++)
+        {
+            EnemyMissile other = others[i];
+            if (other == null || other == this) continue;
+
+            Collider c = other.m_collider != null ? other.m_collider : other.GetComponent<Collider>();
+            if (c == null || m_ignoredColliders.Contains(c)) continue;
+
+            Physics.IgnoreCollision(m_collider, c, true);
+            m_ignoredColliders.Add(c);
         }
     }
 }

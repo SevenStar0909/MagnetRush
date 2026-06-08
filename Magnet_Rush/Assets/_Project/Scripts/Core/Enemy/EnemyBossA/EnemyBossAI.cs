@@ -36,6 +36,9 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     [Tooltip("アーク弾が上昇してからプレイヤーへ向き直すまでの時間(秒)。長いほど高く上げてから落ちる")]
     [SerializeField] private float m_missileLobRiseTime = 0.45f;
 
+    [Tooltip("発射してからこの秒数はミサイルがボス本体に当たらない(発射直後の自爆防止)。経過後はボスにも当たる=磁力で撃ち返せる。0で即当たる")]
+    [SerializeField] private float m_missileCollisionGrace = 3f;
+
     // 次の OnMissileFireEvent でアーク弾を撃つか。アニメの2イベントで 通常→アーク と交互に切り替える
     private bool m_nextMissileIsLob;
 
@@ -569,7 +572,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         EnemyMissile missile = Instantiate(m_missilePrefab, spawnPos, rotation);
         missile.Initialize(m_player, direction, seekDelayOverride);
         // ミサイルは PhysicsObject なので発射元ボスの Pushbox 等と衝突してしまう。spawn 即爆発・自傷を防ぐ。
-        missile.IgnoreCollisionsWith(gameObject);
+        missile.IgnoreCollisionsWith(gameObject, m_missileCollisionGrace);
     }
 
     // === IStabReceiver 実装 (Player → Boss スタブ受信) ===

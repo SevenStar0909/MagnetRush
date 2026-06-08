@@ -190,6 +190,7 @@ public class EnemyAirBase : Entity
         TriggerDisappearEffect();
 
         float delay = RespawnDelay;
+        ChannelLogger.Log("Enemy", $"[EnemyAir診断] HandleDeath delay={delay} ({(delay > 0f ? "リスポーン" : "破棄")})");
         if (delay <= 0f)
         {
             Destroy(gameObject);
