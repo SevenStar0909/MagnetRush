@@ -66,6 +66,7 @@ public class EnemyHealthBarManager : MonoBehaviour
         public Image health;
         public Image trail;
         public Collider headSource;
+        public Renderer[] renderers;
         public float trailValue;
         public float lastRatio;
         public float trailTimer;
@@ -148,6 +149,7 @@ public class EnemyHealthBarManager : MonoBehaviour
             health = health,
             trail = trail,
             headSource = ResolveHeadCollider(h),
+            renderers = h.transform.root.GetComponentsInChildren<Renderer>(true),
             trailValue = ratio,
             lastRatio = ratio,
             trailTimer = 0f
@@ -186,6 +188,14 @@ public class EnemyHealthBarManager : MonoBehaviour
         {
             view.root.gameObject.SetActive(false);
             m_removeBuffer.Add(h);
+            return;
+        }
+
+        // 本体が非表示（カミカゼのソフト死＝Modelを SetActive(false) してリスポーン待ち等）なら、
+        // 敵は生存中でも見えないのでバーも隠す。リスポーンで本体が戻れば自動でバーも復活する。
+        if (!HasVisibleBody(view))
+        {
+            if (view.root.gameObject.activeSelf) view.root.gameObject.SetActive(false);
             return;
         }
 
@@ -273,5 +283,18 @@ public class EnemyHealthBarManager : MonoBehaviour
         var col = h.GetComponent<Collider>();
         if (col == null) col = h.GetComponentInChildren<Collider>();
         return col;
+    }
+
+    // 本体の Renderer が1つでも表示中なら true。すべて非アクティブ/無効なら body が隠れているとみなす。
+    private static bool HasVisibleBody(BarView view)
+    {
+        if (view.renderers == null) return true;
+        for (int i = 0; i < view.renderers.Length; i++)
+        {
+            var r = view.renderers[i];
+            if (r != null && r.enabled && r.gameObject.activeInHierarchy)
+                return true;
+        }
+        return false;
     }
 }

@@ -17,6 +17,9 @@ public class EnemyAirKamikazeAi : MonoBehaviour
     private bool m_hasHit;
     private readonly Collider[] m_overlapBuffer = new Collider[8];
 
+    // 自分の所属グループ（敵=Enemy）。Awake で自身の Hitbox から取得し、OnTriggerEnter の同士討ち判定に使う。
+    private HitGroup m_ownHitGroup = HitGroup.Enemy;
+
     // カミカゼの爆発は「誰にでも当たる中立ハザード」として扱う。
     // 当たり判定設計原則: Physics は Player でも Enemy でもないので両方にダメージが通る（同士討ちを弾かない）。
     private const HitGroup k_DetonationHitGroup = HitGroup.Physics;
@@ -31,6 +34,10 @@ public class EnemyAirKamikazeAi : MonoBehaviour
         }
 
         m_magnetizable = GetComponent<Magnetizable>();
+
+        var ownHittable = GetComponentInChildren<IHittable>(true);
+        if (ownHittable != null)
+            m_ownHitGroup = ownHittable.HitGroup;
 
         if (m_animator == null)
             m_animator = GetComponentInChildren<EnemyAirKamikazeAnimator>(true);
@@ -159,6 +166,12 @@ public class EnemyAirKamikazeAi : MonoBehaviour
 
         var hittable = other.GetComponentInParent<IHittable>();
         if (hittable == null)
+            return;
+
+        // 同グループ（敵同士／磁界トリガー経由で自陣 Hitbox に到達したケース）は自爆させない。
+        // OnTriggerEnter はルートのRigidbodyに集約され HurtBox(Enemy層) 等の接触も拾う。
+        // 他敵の MagnetFieldTrigger(8m) に HurtBox が触れて誤発火するのを HitGroup で弾く。
+        if (hittable.HitGroup == m_ownHitGroup)
             return;
 
         m_hasHit = true;
