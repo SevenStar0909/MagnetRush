@@ -2358,6 +2358,91 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &663872423
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 663872426}
+  - component: {fileID: 663872425}
+  - component: {fileID: 663872424}
+  m_Layer: 0
+  m_Name: EnemyArenaGate2
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &663872424
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 663872423}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5e32eca0710b2ac499c08c5d121d16e1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Enemy::EnemyArenaGate
+  m_areaBox: {fileID: 0}
+  m_playerTag: Player
+  m_sealTriggerInset: 6
+  m_autoCollectEnemies: 1
+  m_manualEnemies: []
+  m_ignoreTurretsAndKamikaze: 1
+  m_autoGenerateWalls: 1
+  m_barriers: []
+  m_wallMaterial: {fileID: 2100000, guid: db85ff7256dd1e24cbe6cd162e4778e4, type: 2}
+  m_wallColor: {r: 0.25, g: 0.8, b: 1, a: 0.7}
+  m_wallHeight: 30
+  m_wallThickness: 0.6
+  m_wallLayerName: Wall
+  m_onSealed:
+    m_PersistentCalls:
+      m_Calls: []
+  m_onCleared:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!65 &663872425
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 663872423}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 126, y: 38, z: 126}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!4 &663872426
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 663872423}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -69.9, y: -31.5, z: -91.4}
+  m_LocalScale: {x: 0.7, y: 1, z: 0.54}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &669771873
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3320,6 +3405,91 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &786537541
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 786537544}
+  - component: {fileID: 786537543}
+  - component: {fileID: 786537542}
+  m_Layer: 0
+  m_Name: EnemyArenaGate1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &786537542
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 786537541}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5e32eca0710b2ac499c08c5d121d16e1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Enemy::EnemyArenaGate
+  m_areaBox: {fileID: 0}
+  m_playerTag: Player
+  m_sealTriggerInset: 6
+  m_autoCollectEnemies: 1
+  m_manualEnemies: []
+  m_ignoreTurretsAndKamikaze: 1
+  m_autoGenerateWalls: 1
+  m_barriers: []
+  m_wallMaterial: {fileID: 2100000, guid: db85ff7256dd1e24cbe6cd162e4778e4, type: 2}
+  m_wallColor: {r: 0.25, g: 0.8, b: 1, a: 0.7}
+  m_wallHeight: 30
+  m_wallThickness: 0.6
+  m_wallLayerName: Wall
+  m_onSealed:
+    m_PersistentCalls:
+      m_Calls: []
+  m_onCleared:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!65 &786537543
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 786537541}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 126, y: 38, z: 126}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!4 &786537544
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 786537541}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 8.1, y: -37, z: -6.9}
+  m_LocalScale: {x: 0.4, y: 1, z: 0.4}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &798369024
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -10824,3 +10994,5 @@ SceneRoots:
   - {fileID: 1735997951}
   - {fileID: 1691125576}
   - {fileID: 1438260068}
+  - {fileID: 786537544}
+  - {fileID: 663872426}
