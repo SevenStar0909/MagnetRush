@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 2839016567970913988}
   - component: {fileID: 2260526186468488249}
   - component: {fileID: 7757730752402268235}
+  - component: {fileID: 5729691248470583217}
   m_Layer: 6
   m_Name: SM_Floor_Goal
   m_TagString: Untagged
@@ -112,3 +113,31 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &5729691248470583217
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5369869881260251668}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1df86231b48982342a5362122d2e369d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.UI::GameClearTrigger
+  m_sheetTextures:
+  - {fileID: 2800000, guid: bf050f59dc999754bb70421344f63b14, type: 3}
+  - {fileID: 2800000, guid: bc04d03ef00dc8445b539451fbdb3eb2, type: 3}
+  - {fileID: 2800000, guid: bffb4294bfe7fb34bbe714ac9b7e881b, type: 3}
+  - {fileID: 2800000, guid: 029b477a10585c7439b5cb3917f23049, type: 3}
+  m_finalSheetTexture: {fileID: 2800000, guid: ba32fd5685cece34cad545f87a32765c, type: 3}
+  m_columns: 4
+  m_rows: 7
+  m_finalColumns: 4
+  m_finalRows: 3
+  m_fps: 16
+  m_startDelay: 0
+  m_root: {fileID: 0}
+  m_sequenceImage: {fileID: 0}
+  m_nextSceneName: StageSelectScene
+  m_playerTag: Player

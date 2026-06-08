@@ -2420,6 +2420,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: CrateBig (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 1463147217919897055, guid: 9b79296ec4070f74e8491b7cab99385d, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2235461105667749733, guid: 9b79296ec4070f74e8491b7cab99385d, type: 3}
       propertyPath: m_LocalScale.x
       value: 1.349302
@@ -2598,6 +2602,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: CrateBig
       objectReference: {fileID: 0}
+    - target: {fileID: 1463147217919897055, guid: 9b79296ec4070f74e8491b7cab99385d, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2235461105667749733, guid: 9b79296ec4070f74e8491b7cab99385d, type: 3}
       propertyPath: m_LocalScale.x
       value: 1.349302
@@ -2668,9 +2676,21 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 8004474778324780070}
     m_Modifications:
+    - target: {fileID: 535314505766905222, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1367372084905098933, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
       propertyPath: m_Name
       value: Weapon_Axe (3)
+      objectReference: {fileID: 0}
+    - target: {fileID: 1367372084905098933, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1596013426674253858, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+      propertyPath: m_Layer
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1851596299686503439, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
       propertyPath: m_LocalScale.x
@@ -2720,6 +2740,38 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1885055998646422609, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3591664329864478015, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3898998465771294246, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4346429278139289001, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4994329262881212077, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7086320215559854137, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7142722367677689061, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7806384027028353527, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -2741,6 +2793,10 @@ PrefabInstance:
     - target: {fileID: 1463147217919897055, guid: 9b79296ec4070f74e8491b7cab99385d, type: 3}
       propertyPath: m_Name
       value: CrateBig (6)
+      objectReference: {fileID: 0}
+    - target: {fileID: 1463147217919897055, guid: 9b79296ec4070f74e8491b7cab99385d, type: 3}
+      propertyPath: m_Layer
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2235461105667749733, guid: 9b79296ec4070f74e8491b7cab99385d, type: 3}
       propertyPath: m_LocalScale.x
@@ -3440,6 +3496,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: CrateBig (5)
       objectReference: {fileID: 0}
+    - target: {fileID: 1463147217919897055, guid: 9b79296ec4070f74e8491b7cab99385d, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2235461105667749733, guid: 9b79296ec4070f74e8491b7cab99385d, type: 3}
       propertyPath: m_LocalScale.x
       value: 1.349302
@@ -3516,7 +3576,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1496510454010691508, guid: 20684a98816bb144093f259f7e299bd2, type: 3}
       propertyPath: m_Layer
-      value: 6
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2274173744245597454, guid: 20684a98816bb144093f259f7e299bd2, type: 3}
       propertyPath: m_LocalScale.x
@@ -3826,9 +3886,21 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 8004474778324780070}
     m_Modifications:
+    - target: {fileID: 535314505766905222, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1367372084905098933, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
       propertyPath: m_Name
       value: Weapon_Axe (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 1367372084905098933, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1596013426674253858, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+      propertyPath: m_Layer
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1851596299686503439, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
       propertyPath: m_LocalScale.x
@@ -3876,6 +3948,38 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1851596299686503439, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1885055998646422609, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3591664329864478015, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3898998465771294246, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4346429278139289001, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4994329262881212077, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7086320215559854137, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7142722367677689061, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7806384027028353527, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+      propertyPath: m_Layer
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
@@ -4004,6 +4108,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: CrateBig (4)
       objectReference: {fileID: 0}
+    - target: {fileID: 1463147217919897055, guid: 9b79296ec4070f74e8491b7cab99385d, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2235461105667749733, guid: 9b79296ec4070f74e8491b7cab99385d, type: 3}
       propertyPath: m_LocalScale.x
       value: 1.3493018
@@ -4074,9 +4182,21 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 8004474778324780070}
     m_Modifications:
+    - target: {fileID: 535314505766905222, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1367372084905098933, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
       propertyPath: m_Name
       value: Weapon_Axe
+      objectReference: {fileID: 0}
+    - target: {fileID: 1367372084905098933, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1596013426674253858, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+      propertyPath: m_Layer
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1851596299686503439, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
       propertyPath: m_LocalScale.x
@@ -4126,6 +4246,38 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1885055998646422609, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3591664329864478015, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3898998465771294246, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4346429278139289001, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4994329262881212077, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7086320215559854137, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7142722367677689061, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7806384027028353527, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -4147,6 +4299,10 @@ PrefabInstance:
     - target: {fileID: 1463147217919897055, guid: 9b79296ec4070f74e8491b7cab99385d, type: 3}
       propertyPath: m_Name
       value: CrateBig (7)
+      objectReference: {fileID: 0}
+    - target: {fileID: 1463147217919897055, guid: 9b79296ec4070f74e8491b7cab99385d, type: 3}
+      propertyPath: m_Layer
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2235461105667749733, guid: 9b79296ec4070f74e8491b7cab99385d, type: 3}
       propertyPath: m_LocalScale.x
@@ -4222,6 +4378,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: CrateBig (2)
       objectReference: {fileID: 0}
+    - target: {fileID: 1463147217919897055, guid: 9b79296ec4070f74e8491b7cab99385d, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2235461105667749733, guid: 9b79296ec4070f74e8491b7cab99385d, type: 3}
       propertyPath: m_LocalScale.x
       value: 1.3493022
@@ -4292,9 +4452,21 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 8004474778324780070}
     m_Modifications:
+    - target: {fileID: 535314505766905222, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1367372084905098933, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
       propertyPath: m_Name
       value: Weapon_Axe (2)
+      objectReference: {fileID: 0}
+    - target: {fileID: 1367372084905098933, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1596013426674253858, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+      propertyPath: m_Layer
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1851596299686503439, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
       propertyPath: m_LocalScale.x
@@ -4342,6 +4514,38 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1851596299686503439, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1885055998646422609, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3591664329864478015, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3898998465771294246, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4346429278139289001, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4994329262881212077, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7086320215559854137, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7142722367677689061, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7806384027028353527, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+      propertyPath: m_Layer
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
@@ -4470,6 +4674,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: CrateBig (3)
       objectReference: {fileID: 0}
+    - target: {fileID: 1463147217919897055, guid: 9b79296ec4070f74e8491b7cab99385d, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2235461105667749733, guid: 9b79296ec4070f74e8491b7cab99385d, type: 3}
       propertyPath: m_LocalScale.x
       value: 1.349302
@@ -4543,6 +4751,10 @@ PrefabInstance:
     - target: {fileID: 5369869881260251668, guid: bc235ab3797c64346bc60711a20530c2, type: 3}
       propertyPath: m_Name
       value: SM_Floor_Goal
+      objectReference: {fileID: 0}
+    - target: {fileID: 5369869881260251668, guid: bc235ab3797c64346bc60711a20530c2, type: 3}
+      propertyPath: m_Layer
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6959286809627223730, guid: bc235ab3797c64346bc60711a20530c2, type: 3}
       propertyPath: m_LocalScale.x
@@ -4668,7 +4880,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3153878714780184285, guid: dfcb18643fb027141b3d5249f34356e5, type: 3}
       propertyPath: m_Layer
-      value: 6
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
