@@ -45,12 +45,20 @@ public class SceneLoader : Singleton<SceneLoader>
     private void OnEnable() => SceneManager.sceneLoaded += OnSceneLoaded;
     private void OnDisable() => SceneManager.sceneLoaded -= OnSceneLoaded;
 
-    /// <summary>シーンロード完了時のコールバック。Singleモードの場合のみ追加シーンをロード。</summary>
+    /// <summary>シーンロード完了時のコールバック。Singleモードでゲームプレイなら追加シーンをロード、メニューならカーソルを解除する。</summary>
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        if (mode == LoadSceneMode.Single && ShouldLoadAdditives(scene.name))
+        if (mode != LoadSceneMode.Single) return;
+
+        if (ShouldLoadAdditives(scene.name))
         {
             LoadAdditiveScenes();
+        }
+        else
+        {
+            // ゲームプレイ中にロックされたカーソルがメニューに持ち越されてUI操作不能になるのを防ぐ
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
         }
     }
 
