@@ -8,18 +8,27 @@ public class PlayerHealthGauge : MonoBehaviour
     [SerializeField] private Image m_greenGauge;
     [SerializeField] private Image m_whiteGauge;
 
+    [Header("色設定")]
+    [SerializeField] private Color m_normalColor = Color.white;
+    [SerializeField] private Color m_blinkColor = Color.red;
+
     [Header("点滅設定")]
-    [SerializeField] private int m_blinkCount = 4;          // 点滅回数（白→消→白→消 の回数）
+    [SerializeField] private int m_blinkCount = 4;          // 点滅回数
     [SerializeField] private float m_blinkInterval = 0.1f;  // 点滅間隔（秒）
 
+    [Header("白ゲージ減少設定")]
+    [SerializeField] private float m_whiteShrinkDuration = 0.4f;
+
     private Health m_health;
-    private Coroutine m_blinkCoroutine; // コルーチンの二重起動・リセット管理用
+    private Coroutine m_damageCoroutine; // コルーチンの二重起動・リセット管理用
 
     private float m_gaugeMaxWidth;
 
     void Start()
     {
         m_gaugeMaxWidth = m_greenGauge.rectTransform.rect.width;
+
+        m_greenGauge.color = m_normalColor;
 
         GameObject playerObj = GameObject.FindWithTag(GameTags.Player);
         if (playerObj != null)
@@ -59,13 +68,14 @@ public class PlayerHealthGauge : MonoBehaviour
     /// </summary>
     private void HandleOnDamage(int amount)
     {
-        UpdateGaugeWidth(m_health.HealthRatio);
+        // ダメージ時は緑ゲージだけを即座に新しいHPまで減らす
+        UpdateGreenGaugeWidth(m_health.HealthRatio);
 
-        if (m_blinkCoroutine != null)
+        if (m_damageCoroutine != null)
         {
-            StopCoroutine(m_blinkCoroutine);
+            StopCoroutine(m_damageCoroutine);
         }
-        m_blinkCoroutine = StartCoroutine(BlinkWhite());
+        m_damageCoroutine = StartCoroutine(ColorBlinkRoutine());
     }
 
     /// <summary>
@@ -89,56 +99,85 @@ public class PlayerHealthGauge : MonoBehaviour
     /// </summary>
     private void RefreshGaugeInstant()
     {
-        if (m_blinkCoroutine != null)
+        if (m_damageCoroutine != null)
         {
-            StopCoroutine(m_blinkCoroutine);
-            m_blinkCoroutine = null;
+            StopCoroutine(m_damageCoroutine);
+            m_damageCoroutine = null;
         }
 
         float fillRatio = m_health != null ? m_health.HealthRatio : 1f;
 
-        UpdateGaugeWidth(fillRatio);
+        UpdateGreenGaugeWidth(fillRatio);
+        UpdateWhiteGaugeWidth(fillRatio);
         SetNormalMode();
     }
 
-
-    private void UpdateGaugeWidth(float fillRatio)
+    /// <summary>
+    /// 緑ゲージの横幅を更新する
+    /// </summary>
+    private void UpdateGreenGaugeWidth(float fillRatio)
     {
-        // 割合に応じたターゲットの横幅を計算
         float targetWidth = m_gaugeMaxWidth * fillRatio;
-
         m_greenGauge.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, targetWidth);
-        m_whiteGauge.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, targetWidth);
-
-        // HPが0以下になった時は非表示にする
         m_greenGauge.enabled = (fillRatio > 0f);
-        if (m_blinkCoroutine == null)
-        {
-            m_whiteGauge.enabled = (fillRatio > 0f);
-        }
     }
 
-    private IEnumerator BlinkWhite()
+    /// <summary>
+    /// 白ゲージの横幅を更新する
+    /// </summary>
+    private void UpdateWhiteGaugeWidth(float fillRatio)
     {
-        // HPが残っている時だけ緑を非表示にする
-        if (m_health.HealthRatio > 0f) m_greenGauge.enabled = false;
+        float targetWidth = m_gaugeMaxWidth * fillRatio;
+        m_whiteGauge.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, targetWidth);
+    }
 
+    private IEnumerator ColorBlinkRoutine()
+    {
+        // 白ゲージを表示
+        m_whiteGauge.enabled = true;
+
+        // 設定された回数だけ、色を交互に切り替える
         for (int i = 0; i < m_blinkCount; i++)
         {
-            m_whiteGauge.enabled = true;
+            m_greenGauge.color = m_blinkColor;
             yield return new WaitForSeconds(m_blinkInterval);
-            m_whiteGauge.enabled = false;
+
+            m_greenGauge.color = m_normalColor;
             yield return new WaitForSeconds(m_blinkInterval);
         }
 
-        // 点滅終了 → 通常モードに戻す
+        m_greenGauge.color = m_normalColor;
+
+        float startWidth = m_whiteGauge.rectTransform.rect.width;
+        float targetWidth = m_gaugeMaxWidth * (m_health != null ? m_health.HealthRatio : 0f);
+        float elapsed = 0f;
+
+        while (elapsed < m_whiteShrinkDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / m_whiteShrinkDuration);
+
+            float smoothedT = Mathf.SmoothStep(0f, 1f, t);
+            float currentWidth = Mathf.Lerp(startWidth, targetWidth, smoothedT);
+
+            m_whiteGauge.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, currentWidth);
+
+            yield return null; // 1フレーム待つ
+        }
+
+        if (m_health != null)
+        {
+            UpdateWhiteGaugeWidth(m_health.HealthRatio);
+        }
+
+        // 通常状態に戻す
         SetNormalMode();
-        m_blinkCoroutine = null;
+        m_damageCoroutine = null;
     }
 
     private void SetNormalMode()
     {
-        m_whiteGauge.enabled = false;
+        m_greenGauge.color = m_normalColor;
         m_greenGauge.enabled = (m_health != null && m_health.HealthRatio > 0f);
     }
 }
