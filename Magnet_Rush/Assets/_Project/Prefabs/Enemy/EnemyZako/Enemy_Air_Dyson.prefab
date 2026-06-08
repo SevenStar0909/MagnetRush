@@ -250,6 +250,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Core::Hitbox
   m_health: {fileID: 1675817586269981184}
+  m_hitGroup: 1
 --- !u!1 &7038778406177454225
 GameObject:
   m_ObjectHideFlags: 0
@@ -426,6 +427,9 @@ MonoBehaviour:
   velocity: {x: 0, y: 0, z: 0}
   externalVelocity: {x: 0, y: 0, z: 0}
   holdVelocity: {x: 0, y: 0, z: 0}
+  m_collisionMask:
+    serializedVersion: 2
+    m_Bits: 0
   m_statusData: {fileID: 11400000, guid: 9a433bd3f87a7524caa660f83196e956, type: 2}
   m_player: {fileID: 0}
   m_mover: {fileID: 5793265015369139466}
@@ -552,7 +556,7 @@ MonoBehaviour:
   skinWidth: 0.01
   collisionLayer:
     serializedVersion: 2
-    m_Bits: 32755
+    m_Bits: 65523
 --- !u!114 &1675817586269981184
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -239,16 +239,11 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         }
 
         if (next == BossState.Idle)
-            ClearStaminaFlags();
-
-        // ミサイル攻撃の入り口でトグルをリセット（必ず 1発目=通常波 から始める）
-        if (next == BossState.Missile)
-            m_nextMissileIsLob = false;
-
-        // Rush 中に Stun/Stagger で割り込まれると Rush 側の Disable AnimEvent が発火せず
-        // Wind/Dust が出続けるので、ブレイク入り口で明示停止する
-        if (next == BossState.Stunned || next == BossState.Stagger)
         {
+            ClearStaminaFlags();
+            // Idle に戻る時は Wind/Dust を必ず止める。Rush の DisableWindEffectEvent が
+            // 中断（被弾→Stagger 等）で発火しないまま Idle へ戻ると Wind が出続けるため、保険として停止する。
+            // Wind/Dust は Rush/Stun 中しか点かないので Idle で消すのは常に正しい。
             if (m_animator != null)
             {
                 m_animator.DisableWindEffectEvent();
@@ -256,12 +251,19 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
             }
         }
 
-        // Stun/Stagger から抜ける時に Dust を止める。
-        // BossStunAnim は EnableDustEffectEvent (t=1.833s) のみで Disable イベントが無いため、ここで停止
-        if ((prev == BossState.Stunned || prev == BossState.Stagger) && next == BossState.Idle)
+        // ミサイル攻撃の入り口でトグルをリセット（必ず 1発目=通常波 から始める）
+        if (next == BossState.Missile)
+            m_nextMissileIsLob = false;
+
+        // Rush 中に Stun/Stagger で割り込まれると Rush 側の Disable AnimEvent が発火せず
+        // Wind/Dust が出続けるので、ブレイク入り口でも明示停止する
+        if (next == BossState.Stunned || next == BossState.Stagger)
         {
             if (m_animator != null)
+            {
+                m_animator.DisableWindEffectEvent();
                 m_animator.DisableDustEffectEvent();
+            }
         }
 
         if (prev == BossState.AttackMotion || prev == BossState.Rush || prev == BossState.Missile)
