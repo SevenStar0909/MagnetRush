@@ -183,26 +183,25 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     private void OnBodyHit(HitData hit)
     {
         if (m_stamina == null) return;
-        if (m_stamina.IsBroken) return;                                       // 既に満タン（よろけ発火済み）
-        if (m_state == BossState.Stunned || m_state == BossState.Stagger) return; // 崩れ中は溜めない
+        if (m_state == BossState.Stunned || m_state == BossState.Stagger) return; // 崩れ中は無視
         if (hit.source == null) return;
         if (hit.source.transform.IsChildOf(transform)) return;               // 自分由来は無視
 
-        // ぶつかった物ごとの蓄積率を読む。箱は MagneticContactDamage（小=10% / 大=30%）、誘導ミサイルは EnemyMissile（30%/発）。
-        // それ以外で磁化体なら既定値、磁化体でなければ（弾など）スタン値は溜めない。
-        int percent;
-        var contact = hit.source.GetComponentInParent<MagneticContactDamage>();
-        var missile = hit.source.GetComponentInParent<EnemyMissile>();
-        if (contact != null)
-            percent = contact.StunGaugePercent;
-        else if (missile != null)
-            percent = missile.StunGaugePercent;
-        else if (hit.source.GetComponentInParent<Magnetizable>() != null)
-            percent = m_settings != null ? m_settings.stunGaugePercentPerBodyHit : 10;
-        else
-            return;
+        int percent = ResolveStunPercent(hit.source);
+        if (percent <= 0) return;                                            // スタン値を持たない物（弾など）は無視
 
-        if (percent <= 0) return;
+        // 前回スタブされずスタン値が満タンのまま残っている場合：減らさず、本体ヒットでよろけを再発火する。
+        // （スタン値はスタブを当てるまで減らない＝満タン維持。取り逃しても次の1発で再び崩せる）。
+        if (m_stamina.IsBroken)
+        {
+            if (m_animator != null)
+            {
+                m_animator.SetIsStaggerTrue();
+                m_animator.TriggerBeInterrupted();
+            }
+            ChannelLogger.Log("EnemyBossA", "[StunGauge] スタン値満タン維持 → 本体ヒットでよろけ再発火");
+            return;
+        }
 
         int max = m_stamina.MaxStamina;
         int amount = Mathf.Max(1, Mathf.RoundToInt(max * percent / 100f));
@@ -210,6 +209,22 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
 
         ChannelLogger.Log("EnemyBossA",
             $"[StunGauge] 本体ヒット +{percent}% (+{amount}) 蓄積={max - m_stamina.CurrentStamina}/{max} src={hit.source.name}");
+    }
+
+    // ぶつかった物のスタン値蓄積率（％）を返す。箱=MagneticContactDamage（小10/大30）、誘導ミサイル=EnemyMissile（30）、
+    // その他の磁化体は既定値、磁化体でなければ（弾など）0。
+    private int ResolveStunPercent(GameObject source)
+    {
+        var contact = source.GetComponentInParent<MagneticContactDamage>();
+        if (contact != null) return contact.StunGaugePercent;
+
+        var missile = source.GetComponentInParent<EnemyMissile>();
+        if (missile != null) return missile.StunGaugePercent;
+
+        if (source.GetComponentInParent<Magnetizable>() != null)
+            return m_settings != null ? m_settings.stunGaugePercentPerBodyHit : 10;
+
+        return 0;
     }
 
     private void TickStunEntry()
@@ -339,10 +354,8 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         m_wasInStaggerAnim = m_animator.IsInStagger;
         m_staminaBreakEndRequested = false;
 
-        if (m_stamina != null)
-        {
-            m_stamina.ResetStamina();
-        }
+        // ここではスタン値（Stamina）をリセットしない。スタン値はスタブを当てるまで減らない仕様。
+        // リセットは OnStabHit（スタブ成功時）の EndBreakAfterStab でのみ行う。
     }
 
     // === 各状態の Tick ===
@@ -608,6 +621,35 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         m_health.DamageIgnoreCooldown(damage);
         OnStabHitSucceeded?.Invoke();
         ChannelLogger.Log("EnemyBossA", $"[Stab] bar {currentBarsRemaining}→{targetBarsRemaining} dmg={damage} src={(data.source != null ? data.source.name : "null")} hp={m_health.CurrentHealth}/{maxHp}");
+
+        // スタブを当てたらスタン値を0にリセットし、崩れを終了させる（1回のスタンにつきスタブ1回）。
+        EndBreakAfterStab();
+    }
+
+    // スタブ成功時：スタン値を0に戻し、スタン/よろけを終了して Idle へ。これ以上スタブできない＝1回のスタンにつき1回。
+    private void EndBreakAfterStab()
+    {
+        if (m_stamina != null)
+            m_stamina.ResetStamina();
+
+        if (m_animator != null)
+        {
+            if (m_state == BossState.Stunned)
+            {
+                m_animator.TriggerStunEnd();
+                m_animator.SetIsStunnedFalse();
+                m_resetStunEndTrigger = true;
+            }
+            else if (m_state == BossState.Stagger)
+            {
+                m_animator.TriggerStaggerEnd();
+                m_animator.SetIsStaggerFalse();
+                m_resetStaggerEndTrigger = true;
+            }
+        }
+
+        m_staminaBreakEndRequested = true;
+        ChangeState(BossState.Idle);
     }
 
     // === ヘルパ ===

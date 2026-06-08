@@ -33,6 +33,10 @@ public class EnemyMissile : MonoBehaviour
     public int StunGaugePercent => m_stunGaugePercent;
 
     [SerializeField]
+    [Tooltip("発射元（ボス）との衝突を再び有効にする距離(m)。これだけボスから離れたら、磁力で撃ち返したときにボスへ当たるようになる")]
+    private float m_collisionRestoreDistance = 5f;
+
+    [SerializeField]
     [Tooltip("ヒット解決上の所属グループ。誰にでも当たる物理ハザードなので Physics（Player/Enemy 両方にダメージが通る）")]
     private HitGroup m_hitGroup = HitGroup.Physics;
 
@@ -53,6 +57,10 @@ public class EnemyMissile : MonoBehaviour
     private bool m_initialized;
     private Collider m_collider;
     private bool m_exploded;
+
+    private readonly List<Collider> m_ignoredColliders = new List<Collider>();
+    private Transform m_ignoredSource;
+    private bool m_collisionRestored = true;
 
     private void Awake()
     {
@@ -133,9 +141,28 @@ public class EnemyMissile : MonoBehaviour
     {
         if (!m_initialized) { ChannelLogger.LogGuardReturn("Enemy", "Missile未初期化"); return; }
 
+        RestoreIgnoredCollisionsIfCleared();
+
         m_timer -= Time.deltaTime;
         if (m_timer <= 0f)
             Destroy(gameObject);
+    }
+
+    // 発射直後は発射元（ボス）との衝突を無効にしているが、ボスから十分離れたら再有効化する。
+    // これで「ボスのミサイルを磁力で誘導してボスに当てる」（仕様）が物理衝突でも成立し、スタン値が溜まる。
+    private void RestoreIgnoredCollisionsIfCleared()
+    {
+        if (m_collisionRestored) return;
+        if (m_ignoredSource == null || m_collider == null) { m_collisionRestored = true; return; }
+        if (Vector3.Distance(transform.position, m_ignoredSource.position) < m_collisionRestoreDistance) return;
+
+        for (int i = 0; i < m_ignoredColliders.Count; i++)
+        {
+            var c = m_ignoredColliders[i];
+            if (c != null)
+                Physics.IgnoreCollision(m_collider, c, false);
+        }
+        m_collisionRestored = true;
     }
 
     private void FixedUpdate()
@@ -325,10 +352,16 @@ public class EnemyMissile : MonoBehaviour
         if (m_collider == null) m_collider = GetComponent<Collider>();
         if (m_collider == null) { ChannelLogger.LogGuardReturn("Enemy", "Missile: 自身のColliderなし"); return; }
 
+        m_ignoredColliders.Clear();
+        m_ignoredSource = source.transform;
+        m_collisionRestored = false;
         foreach (var c in source.GetComponentsInChildren<Collider>(true))
         {
             if (c != null)
+            {
                 Physics.IgnoreCollision(m_collider, c, true);
+                m_ignoredColliders.Add(c);
+            }
         }
     }
 }
