@@ -36,8 +36,8 @@ public class EnemyMissile : MonoBehaviour
     public int StunGaugePercent => (m_selfMagnetizable != null && m_selfMagnetizable.IsActive) ? m_stunGaugePercent : 0;
 
     [SerializeField]
-    [Tooltip("発射元（ボス）との衝突を再び有効にする距離(m)。これだけボスから離れたら、磁力で撃ち返したときにボスへ当たるようになる")]
-    private float m_collisionRestoreDistance = 5f;
+    [Tooltip("発射してからこの秒数は発射元（ボス）と当たらない（自爆防止）。経過後はボスにも当たる＝磁力で撃ち返せる")]
+    private float m_collisionRestoreDelay = 3f;
 
     [SerializeField]
     [Tooltip("ヒット解決上の所属グループ。誰にでも当たる物理ハザードなので Physics（Player/Enemy 両方にダメージが通る）")]
@@ -62,8 +62,8 @@ public class EnemyMissile : MonoBehaviour
     private bool m_exploded;
 
     private readonly List<Collider> m_ignoredColliders = new List<Collider>();
-    private Transform m_ignoredSource;
     private bool m_collisionRestored = true;
+    private float m_restoreTimer;
 
     private void Awake()
     {
@@ -156,8 +156,12 @@ public class EnemyMissile : MonoBehaviour
     private void RestoreIgnoredCollisionsIfCleared()
     {
         if (m_collisionRestored) return;
-        if (m_ignoredSource == null || m_collider == null) { m_collisionRestored = true; return; }
-        if (Vector3.Distance(transform.position, m_ignoredSource.position) < m_collisionRestoreDistance) return;
+        if (m_collider == null) { m_collisionRestored = true; return; }
+
+        // 発射してから m_collisionRestoreDelay 秒の間は発射元（ボス）と当たらない＝自爆しない。
+        // 経過したらボスとの衝突を戻すので、磁力で撃ち返したミサイルがボスに当たって +30% が入る。
+        m_restoreTimer -= Time.deltaTime;
+        if (m_restoreTimer > 0f) return;
 
         for (int i = 0; i < m_ignoredColliders.Count; i++)
         {
@@ -356,8 +360,8 @@ public class EnemyMissile : MonoBehaviour
         if (m_collider == null) { ChannelLogger.LogGuardReturn("Enemy", "Missile: 自身のColliderなし"); return; }
 
         m_ignoredColliders.Clear();
-        m_ignoredSource = source.transform;
         m_collisionRestored = false;
+        m_restoreTimer = m_collisionRestoreDelay;
         foreach (var c in source.GetComponentsInChildren<Collider>(true))
         {
             if (c != null)

@@ -9,6 +9,7 @@ public class LongPressGauge : MonoBehaviour, IPointerDownHandler, IPointerUpHand
     [SerializeField] private float m_requiredPressDuration = 2f;
     [SerializeField] private Image m_gaugeImage;
     [SerializeField] private float m_transitionDelay = 0.1f;
+    [SerializeField] private string m_targetMapName;
 
     private Coroutine m_pressCoroutine;
     private Coroutine m_transitionCoroutine;
@@ -161,7 +162,10 @@ public class LongPressGauge : MonoBehaviour, IPointerDownHandler, IPointerUpHand
     {
         Debug.Log("[OnLongPressComplete] é¿çs");
         m_isPressed = false;
-        SceneLoader.Instance.LoadScene(SceneLoader.SceneType.TitleScene);
+        if (string.IsNullOrEmpty(m_targetMapName))
+            SceneLoader.Instance.LoadScene(SceneLoader.SceneType.TitleScene);
+        else
+            SceneLoader.Instance.LoadGameWithMap(SceneLoader.SceneType.GameScene.ToString(), m_targetMapName);
     }
 
     private void ResetGauge()
