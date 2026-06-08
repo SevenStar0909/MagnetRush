@@ -76,25 +76,34 @@ public class EnemyStunGaugeUI : MonoBehaviour
 
         if (isStunnedOrStagger)
         {
+            // よろけ(蓄積ルート)とスタン(カウンタールート)で継続時間が違うので状態で使い分ける。
+            float maxDuration = ResolveBreakDuration();
+
             if (!wasStunnedOrStagger)
-            {
-                m_uiStunTimer = m_boss.Settings != null ? m_boss.Settings.staminaBreakDuration : 3.0f;
-            }
+                m_uiStunTimer = maxDuration;
 
             m_uiStunTimer = Mathf.Max(0f, m_uiStunTimer - Time.deltaTime);
 
-            float maxDuration = m_boss.Settings != null ? m_boss.Settings.staminaBreakDuration : 3.0f;
             displayRatio = maxDuration > 0f ? 1.0f - (m_uiStunTimer / maxDuration) : 1f;
         }
         else
         {
-            displayRatio = m_boss.Stamina.StaminaRatio;
+            // Stamina は内部的に「満タン→0」で減るが、プレイヤーには「スタンゲージが溜まる」見せ方にする。
+            displayRatio = 1f - m_boss.Stamina.StaminaRatio;
         }
 
         m_lastBossState = m_boss.State;
         m_gaugeFillImage.fillAmount = displayRatio;
 
         ApplyGaugeColor(displayRatio, isStunnedOrStagger);
+    }
+
+    // よろけ(Stagger)とスタン(Stunned)で継続時間が違うので、現在の状態に対応する継続時間を返す。
+    private float ResolveBreakDuration()
+    {
+        var s = m_boss.Settings;
+        if (s == null) return 3.0f;
+        return m_boss.State == EnemyBossAI.BossState.Stagger ? s.staggerDuration : s.staminaBreakDuration;
     }
 
     /// <summary>
@@ -110,14 +119,15 @@ public class EnemyStunGaugeUI : MonoBehaviour
         }
         else
         {
-            if (ratio >= 0.7f)
-                targetColor = m_colorHigh;    // 70%以上は緑
-            else if (ratio >= 0.4f)
-                targetColor = m_colorMid;     // 40%以上は黄
-            else if (ratio >= 0.15f)
-                targetColor = m_colorLow;     // 15%以上はオレンジ
+            // ratio = スタンゲージ蓄積量（0=空 → 1=満タン）。溜まるほど危険色に寄せる。
+            if (ratio < 0.3f)
+                targetColor = m_colorHigh;     // 30%未満は緑（まだ余裕）
+            else if (ratio < 0.6f)
+                targetColor = m_colorMid;      // 黄
+            else if (ratio < 0.85f)
+                targetColor = m_colorLow;      // オレンジ
             else
-                targetColor = m_colorCritical; // 15%未満は赤
+                targetColor = m_colorCritical; // 85%以上は赤（もうすぐよろけ）
         }
 
         m_gaugeBackgroundImage.color = targetColor;

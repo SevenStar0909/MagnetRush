@@ -10,6 +10,9 @@ public class MagneticContactDamage : MonoBehaviour
 {
     [SerializeField] private ContactDamageSettings m_settings;
 
+    /// <summary>この物理オブジェクトがボス本体に当たった時に与えるスタン値の蓄積率（％）。設定SOから取得。</summary>
+    public int StunGaugePercent => m_settings != null ? m_settings.stunGaugePercent : 0;
+
     private Magnetizable m_magnetizable;
     private Rigidbody m_rb;
     private readonly HashSet<IHittable> m_hitTargets = new HashSet<IHittable>();

@@ -49,6 +49,9 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     private Stamina m_stamina;
     private Health m_health;
 
+    // ボス本体（各ボーン）の Hitbox。物理オブジェクト接触でスタンゲージを溜める（機構1）。
+    private Hitbox[] m_bodyHitboxes;
+
     private BossState m_state = BossState.Idle;
     private float m_cooldownTimer;
     private float m_staminaBreakTimer;
@@ -87,6 +90,9 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         m_stamina = GetComponent<Stamina>();
         m_health = GetComponent<Health>();
 
+        // 右手の ArmStunHitbox は Hitbox 派生ではないので含まれない（＝カウンター経路と分離される）。
+        m_bodyHitboxes = GetComponentsInChildren<Hitbox>(true);
+
         if (m_animator == null)
             m_animator = GetComponentInChildren<EnemyBossBaseA_Animator>();
 
@@ -101,12 +107,20 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     {
         if (m_stamina != null)
             m_stamina.OnBreak += HandleStaminaBreak;
+
+        if (m_bodyHitboxes != null)
+            foreach (var hb in m_bodyHitboxes)
+                if (hb != null) hb.OnHitEvent += OnBodyHit;
     }
 
     void OnDisable()
     {
         if (m_stamina != null)
             m_stamina.OnBreak -= HandleStaminaBreak;
+
+        if (m_bodyHitboxes != null)
+            foreach (var hb in m_bodyHitboxes)
+                if (hb != null) hb.OnHitEvent -= OnBodyHit;
     }
 
     void Start()
@@ -153,12 +167,49 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         }
     }
 
+    // スタンゲージが満タン（＝Stamina 0）になった時に Stamina.OnBreak から呼ばれる。
+    // よろけ（Stagger）を1回だけ発火する。OnBreak はゲージが 0 に落ちた瞬間に1度だけ発火するのでループしない。
+    // よろけ中もスタブ可（CanReceiveStab が Stagger を含む）。スタン（振り上げカウンター=ArmStunHitbox）でも同様にスタブできる。
     private void HandleStaminaBreak()
     {
         if (m_animator == null) return;
 
-        m_animator.SetIsStunnedTrue();
-        m_animator.SetIsStaggerFalse();
+        m_animator.SetIsStaggerTrue();
+        m_animator.TriggerBeInterrupted();
+    }
+
+    // ボス本体（ボーンの Hitbox）に物理オブジェクトが当たった時に呼ばれる。スタンゲージを蓄積する（機構1）。
+    // 弾など磁化体でないものは無視。満タンになると Stamina.OnBreak → HandleStaminaBreak でよろけが発火する。
+    private void OnBodyHit(HitData hit)
+    {
+        if (m_stamina == null) return;
+        if (m_stamina.IsBroken) return;                                       // 既に満タン（よろけ発火済み）
+        if (m_state == BossState.Stunned || m_state == BossState.Stagger) return; // 崩れ中は溜めない
+        if (hit.source == null) return;
+        if (hit.source.transform.IsChildOf(transform)) return;               // 自分由来は無視
+
+        // ぶつかった物ごとの蓄積率を読む。箱は MagneticContactDamage（小=10% / 大=30%）、誘導ミサイルは EnemyMissile（30%/発）。
+        // それ以外で磁化体なら既定値、磁化体でなければ（弾など）スタン値は溜めない。
+        int percent;
+        var contact = hit.source.GetComponentInParent<MagneticContactDamage>();
+        var missile = hit.source.GetComponentInParent<EnemyMissile>();
+        if (contact != null)
+            percent = contact.StunGaugePercent;
+        else if (missile != null)
+            percent = missile.StunGaugePercent;
+        else if (hit.source.GetComponentInParent<Magnetizable>() != null)
+            percent = m_settings != null ? m_settings.stunGaugePercentPerBodyHit : 10;
+        else
+            return;
+
+        if (percent <= 0) return;
+
+        int max = m_stamina.MaxStamina;
+        int amount = Mathf.Max(1, Mathf.RoundToInt(max * percent / 100f));
+        m_stamina.Consume(amount);
+
+        ChannelLogger.Log("EnemyBossA",
+            $"[StunGauge] 本体ヒット +{percent}% (+{amount}) 蓄積={max - m_stamina.CurrentStamina}/{max} src={hit.source.name}");
     }
 
     private void TickStunEntry()
@@ -173,6 +224,10 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
             m_staminaBreakTimer = Mathf.Max(0f, m_settings.staminaBreakDuration);
             m_staminaBreakEndRequested = false;
             ChangeState(BossState.Stunned);
+            // StunAnim に入ったら IsStunned bool を即落とす。AnyState→StunAnim は IsStunned==true で遷移するため、
+            // true のままだと StunkeepAnim から AnyState 経由で StunAnim へ戻り続けてループする。
+            // 状態保持は StunAnim→StunkeepAnim→(StunEnd)→Idle が担うので、bool は入場トリガーとして1回使えば十分。
+            m_animator.SetIsStunnedFalse();
         }
 
         m_wasInStunAnim = inStunAnim;
@@ -186,7 +241,8 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
 
         if (!alreadyInBreak && inStaggerAnim && !m_wasInStaggerAnim && !m_animator.IsStunned)
         {
-            m_staminaBreakTimer = Mathf.Max(0f, m_settings.staminaBreakDuration);
+            // よろけ（蓄積ルート）は専用の継続時間を使う。仕様＝10秒。スタン（カウンタールート）は staminaBreakDuration＝5秒。
+            m_staminaBreakTimer = Mathf.Max(0f, m_settings.staggerDuration);
             m_staminaBreakEndRequested = false;
             ChangeState(BossState.Stagger);
         }
@@ -517,8 +573,8 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
 
     // === IStabReceiver 実装 (Player → Boss スタブ受信) ===
 
-    /// <summary>体幹ブレイク (Stunned) 中のみ true。</summary>
-    public bool CanReceiveStab => m_state == BossState.Stunned;
+    /// <summary>体幹ブレイク中 (Stunned=振り上げカウンター成立 / Stagger=スタンゲージ満タン) のとき true。どちらの崩しでもスタブを受け付ける。</summary>
+    public bool CanReceiveStab => m_state == BossState.Stunned || m_state == BossState.Stagger;
 
     /// <summary>
     /// プレイヤーのスタブAnimEventから呼ばれる。HPバー1本分を一気に削る（クールダウン無視）。
@@ -528,7 +584,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     public void OnStabHit(StabHitData data)
     {
         if (!CanReceiveStab)
-        { ChannelLogger.LogGuardReturn("EnemyBossA", "Stunned 以外のため Stab 無効"); return; }
+        { ChannelLogger.LogGuardReturn("EnemyBossA", "Stunned/Stagger 以外のため Stab 無効"); return; }
 
         if (m_health == null)
         { ChannelLogger.LogGuardReturn("EnemyBossA", "Health 未取得"); return; }

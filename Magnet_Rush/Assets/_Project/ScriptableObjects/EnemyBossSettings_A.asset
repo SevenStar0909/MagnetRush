@@ -15,10 +15,10 @@ MonoBehaviour:
   maxHp: 500
   healthBarSegments: 3
   maxStamina: 40
-  staminaRecovery: 1
+  staminaRecovery: 0
   staminaRecoveryCooldown: 15
-  staminaBreakDuration: 7
-  armStunStaminaDamage: 30
+  staminaBreakDuration: 5
+  stunGaugePercentPerBodyHit: 10
   moveSpeed: 3.5
   acceleration: 8
   chaseRange: 40
@@ -43,6 +43,6 @@ MonoBehaviour:
   attackHitboxDuration: 0.2
   faceDeadZoneDeg: 0
   attackMotionFaceDeadZoneDeg: 180
-  staggerDuration: 1.5
+  staggerDuration: 10
   staggerMoveMultiplier: 0.5
   magnetCastRadius: 20

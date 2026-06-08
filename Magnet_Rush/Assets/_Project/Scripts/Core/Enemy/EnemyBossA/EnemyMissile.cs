@@ -25,6 +25,14 @@ public class EnemyMissile : MonoBehaviour
     [SerializeField] private int m_damage = 1;
 
     [SerializeField]
+    [Tooltip("磁力で誘導してボス本体に当てたとき、ボスのスタンゲージが何％溜まるか。仕様＝30")]
+    [Range(0, 100)]
+    private int m_stunGaugePercent = 30;
+
+    /// <summary>誘導してボス本体に当てた時に与えるスタン値の蓄積率（％）。仕様＝30%/発。</summary>
+    public int StunGaugePercent => m_stunGaugePercent;
+
+    [SerializeField]
     [Tooltip("ヒット解決上の所属グループ。誰にでも当たる物理ハザードなので Physics（Player/Enemy 両方にダメージが通る）")]
     private HitGroup m_hitGroup = HitGroup.Physics;
 

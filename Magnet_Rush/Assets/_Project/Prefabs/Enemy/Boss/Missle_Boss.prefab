@@ -9726,7 +9726,7 @@ GameObject:
   - component: {fileID: 4128426385969949894}
   - component: {fileID: 4577923171924511738}
   - component: {fileID: 5509490972982333118}
-  m_Layer: 11
+  m_Layer: 14
   m_Name: Missle_Boss
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -9793,7 +9793,7 @@ CapsuleCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
@@ -9839,7 +9839,7 @@ MonoBehaviour:
   m_targetRefreshInterval: 0.1
   m_player: {fileID: 0}
   m_damage: 2
-  m_hitGroup: 1
+  m_hitGroup: 2
   m_lifetime: 20
   m_explosionEffect: {fileID: 7608947279581240675, guid: bf9ba2edd393fca46b6ff93c1bcdbc0f, type: 3}
   m_explosionEffectLifetime: 0.75
