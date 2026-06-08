@@ -29,8 +29,11 @@ public class EnemyMissile : MonoBehaviour
     [Range(0, 100)]
     private int m_stunGaugePercent = 30;
 
-    /// <summary>誘導してボス本体に当てた時に与えるスタン値の蓄積率（％）。仕様＝30%/発。</summary>
-    public int StunGaugePercent => m_stunGaugePercent;
+    /// <summary>
+    /// 誘導してボス本体に当てた時に与えるスタン値の蓄積率（％）。仕様＝30%/発。
+    /// 磁化中（プレイヤーが磁力で誘導した状態）に当たった時だけ有効。磁化せずに当たった場合は 0（ただ爆発するだけ）。
+    /// </summary>
+    public int StunGaugePercent => (m_selfMagnetizable != null && m_selfMagnetizable.IsActive) ? m_stunGaugePercent : 0;
 
     [SerializeField]
     [Tooltip("発射元（ボス）との衝突を再び有効にする距離(m)。これだけボスから離れたら、磁力で撃ち返したときにボスへ当たるようになる")]

@@ -184,24 +184,12 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     {
         if (m_stamina == null) return;
         if (m_state == BossState.Stunned || m_state == BossState.Stagger) return; // 崩れ中は無視
+        if (m_stamina.IsBroken) return;                                      // 満タン到達済み（崩れ処理中）。崩れ終了時にリセットされる
         if (hit.source == null) return;
         if (hit.source.transform.IsChildOf(transform)) return;               // 自分由来は無視
 
         int percent = ResolveStunPercent(hit.source);
         if (percent <= 0) return;                                            // スタン値を持たない物（弾など）は無視
-
-        // 前回スタブされずスタン値が満タンのまま残っている場合：減らさず、本体ヒットでよろけを再発火する。
-        // （スタン値はスタブを当てるまで減らない＝満タン維持。取り逃しても次の1発で再び崩せる）。
-        if (m_stamina.IsBroken)
-        {
-            if (m_animator != null)
-            {
-                m_animator.SetIsStaggerTrue();
-                m_animator.TriggerBeInterrupted();
-            }
-            ChannelLogger.Log("EnemyBossA", "[StunGauge] スタン値満タン維持 → 本体ヒットでよろけ再発火");
-            return;
-        }
 
         int max = m_stamina.MaxStamina;
         int amount = Mathf.Max(1, Mathf.RoundToInt(max * percent / 100f));
@@ -586,8 +574,13 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
 
     // === IStabReceiver 実装 (Player → Boss スタブ受信) ===
 
-    /// <summary>体幹ブレイク中 (Stunned=振り上げカウンター成立 / Stagger=スタンゲージ満タン) のとき true。どちらの崩しでもスタブを受け付ける。</summary>
-    public bool CanReceiveStab => m_state == BossState.Stunned || m_state == BossState.Stagger;
+    /// <summary>
+    /// スタブを受け付ける条件。崩れ中 (Stunned=振り上げカウンター / Stagger=スタンゲージ満タン) に加え、
+    /// スタン値が満タン (Stamina.IsBroken) の間も true。満タンはスタブを当てるまで維持されるので、
+    /// 崩れアニメが終わって取り逃しても、近づいてスタブを決めれば成立する（ソフトロック防止）。
+    /// </summary>
+    public bool CanReceiveStab => m_state == BossState.Stunned || m_state == BossState.Stagger
+        || (m_stamina != null && m_stamina.IsBroken);
 
     /// <summary>
     /// プレイヤーのスタブAnimEventから呼ばれる。HPバー1本分を一気に削る（クールダウン無視）。
