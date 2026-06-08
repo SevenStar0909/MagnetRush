@@ -177,6 +177,7 @@ MonoBehaviour:
   collisionLayer:
     serializedVersion: 2
     m_Bits: 65523
+  m_canPushPhysicsObjects: 1
 --- !u!114 &971369539054672765
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -280,6 +281,7 @@ MonoBehaviour:
   m_fireLobMissiles: 1
   m_missileLobAngle: 90
   m_missileLobRiseTime: 0.65
+  m_missileCollisionGrace: 3
   m_logStateChange: 1
   m_nextLongRangeAttackIsRush: 1
 --- !u!114 &8780740096348751557
@@ -340,6 +342,7 @@ MonoBehaviour:
   m_pole: 0
   m_isActive: 0
   m_initialMass: 9999
+  m_immovable: 1
   m_centerOffset: {x: 0, y: 0, z: 0}
   m_useEdgeDetectionOutline: 0
 --- !u!114 &8774293733114710440
@@ -4550,9 +4553,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Enemy::ArmStunHitbox
   m_health: {fileID: 971369539054672765}
-  m_stamina: {fileID: 8780740096348751557}
   m_animator: {fileID: 1537800206930250247}
-  m_settings: {fileID: 11400000, guid: c18fd890e7dc6ab42854abb4e3c2e1f1, type: 2}
   m_hitGroup: 1
 --- !u!1 &3805441978747365561 stripped
 GameObject:
@@ -4737,6 +4738,7 @@ MonoBehaviour:
   m_pole: 0
   m_isActive: 0
   m_initialMass: 9999
+  m_immovable: 0
   m_centerOffset: {x: 0, y: 0, z: 0}
   m_useEdgeDetectionOutline: 0
 --- !u!114 &7376478091582785942
@@ -5065,6 +5067,7 @@ MonoBehaviour:
   m_pole: 0
   m_isActive: 0
   m_initialMass: 9999
+  m_immovable: 0
   m_centerOffset: {x: 0, y: 0, z: 0}
   m_useEdgeDetectionOutline: 0
 --- !u!114 &6393997700562411918

@@ -150,6 +150,8 @@ public class EnemyAirKamikazeAi : MonoBehaviour
         return fallback;
     }
 
+    private readonly System.Collections.Generic.HashSet<Health> m_hitTargets = new System.Collections.Generic.HashSet<Health>();
+
     private void OnTriggerEnter(Collider other)
     {
         if (m_hasHit)
@@ -177,15 +179,7 @@ public class EnemyAirKamikazeAi : MonoBehaviour
         m_hasHit = true;
         ChannelLogger.Log("Enemy", $"[Kamikaze診断] AttackBox接触で自爆 vs {other.name}");
 
-        hittable.OnHit(new HitData
-        {
-            damage = m_enemyBase != null ? m_enemyBase.ImpactDamage : 1,
-            hitPoint = other.ClosestPoint(transform.position),
-            knockbackDir = (other.transform.position - transform.position).normalized,
-            source = gameObject
-        });
-
-        DestroySelf();
+        PerformExplosion(hittable, other.ClosestPoint(transform.position));
     }
 
     private void HandleEnvironmentContact(Collider other)
@@ -195,7 +189,7 @@ public class EnemyAirKamikazeAi : MonoBehaviour
 
         m_hasHit = true;
         ChannelLogger.Log("Enemy", $"[Kamikaze診断] 環境接触で自爆 vs {other.name}");
-        DestroySelf();
+        PerformExplosion(null, transform.position);
     }
 
     /// <summary>
@@ -238,17 +232,59 @@ public class EnemyAirKamikazeAi : MonoBehaviour
         m_hasHit = true;
         ChannelLogger.Log("Enemy", "[Kamikaze診断] 磁化衝突で自爆 (CheckMagnetizedContact)");
 
-        // 爆発は Physics ハザード。相手の HitGroup が異なるときだけ通す
-        // （Physics≠Player / Physics≠Enemy は通る、Physics同士は弾く）。
-        if (target.HitGroup != k_DetonationHitGroup)
+        PerformExplosion(target, point);
+    }
+
+    /// <summary>
+    /// 設定に基づき、単体または範囲爆発を実行する。
+    /// </summary>
+    private void PerformExplosion(IHittable primaryTarget, Vector3 point)
+    {
+        EnemyAirSettings data = m_enemyBase != null ? m_enemyBase.StatusData : null;
+        float radius = data != null ? data.explosionRadius : 0f;
+        int damage = m_enemyBase != null ? m_enemyBase.ExplosionDamage : 1;
+
+        if (radius > 0.01f)
         {
-            target.OnHit(new HitData
+            // 範囲爆発
+            m_hitTargets.Clear();
+            int count = Physics.OverlapSphereNonAlloc(transform.position, radius, m_overlapBuffer, m_enemyBase != null ? m_enemyBase.CollisionMask : -1);
+
+            ChannelLogger.Log("Enemy", $"[Kamikaze診断] 範囲爆発実行: radius={radius}, targets={count}");
+
+            for (int i = 0; i < count; i++)
             {
-                damage = m_enemyBase != null ? m_enemyBase.ExplosionDamage : 1,
-                hitPoint = point,
-                knockbackDir = (point - transform.position).normalized,
-                source = gameObject
-            });
+                Collider col = m_overlapBuffer[i];
+                if (col == null || col.transform.root == transform.root) continue;
+
+                var hittable = col.GetComponentInParent<IHittable>();
+                if (hittable == null || hittable.HitGroup == k_DetonationHitGroup) continue;
+
+                var health = col.GetComponentInParent<Health>();
+                if (health != null && !m_hitTargets.Add(health)) continue;
+
+                hittable.OnHit(new HitData
+                {
+                    damage = damage,
+                    hitPoint = col.ClosestPoint(transform.position),
+                    knockbackDir = (col.transform.position - transform.position).normalized,
+                    source = gameObject
+                });
+            }
+        }
+        else if (primaryTarget != null)
+        {
+            // 従来通りの単体ダメージ（爆発は Physics ハザード扱い）
+            if (primaryTarget.HitGroup != k_DetonationHitGroup)
+            {
+                primaryTarget.OnHit(new HitData
+                {
+                    damage = damage,
+                    hitPoint = point,
+                    knockbackDir = (point - transform.position).normalized,
+                    source = gameObject
+                });
+            }
         }
 
         DestroySelf();

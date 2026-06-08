@@ -14,6 +14,9 @@ public class Magnetizable : MonoBehaviour, IMagnetPoleProvider
     [SerializeField] private bool m_isActive;
     [SerializeField] private float m_initialMass = 1f;
 
+    [Tooltip("磁力を受けても動かさない（ボス等）。磁化・極性・接触判定・演出は通常どおりで、移動への力だけ無効化する。")]
+    [SerializeField] private bool m_immovable;
+
     [Tooltip("磁力中心をGOからローカル空間でずらす。Collider.centerと同じ感覚。回転は装着GOに追従。\n距離・力計算・PD保持などMagnetizable同士のやり取りはこの位置で行う。")]
     [SerializeField] private Vector3 m_centerOffset = Vector3.zero;
 
@@ -22,6 +25,9 @@ public class Magnetizable : MonoBehaviour, IMagnetPoleProvider
 
     public MagneticPole Pole => m_pole;
     public bool IsActive => m_isActive;
+
+    /// <summary>true なら磁力を受けても動かない（ボス等）。磁化・接触判定・演出は通常どおり。</summary>
+    public bool Immovable { get => m_immovable; set => m_immovable = value; }
 
     /// <summary>
     /// true のとき、同じく RepulsionDisabled が true な相手との同極反発を MagnetManager がスキップする。
@@ -134,6 +140,7 @@ public class Magnetizable : MonoBehaviour, IMagnetPoleProvider
     /// </summary>
     public void ApplyHoldForce(Vector3 force)
     {
+        if (m_immovable) { ChannelLogger.LogGuardReturn("Magnet", "Immovable: 保持力を無視（動かさない）"); return; }
         m_totalForceThisFrame += force.magnitude;
 
         if (m_cachedEntity != null)
@@ -236,6 +243,7 @@ public class Magnetizable : MonoBehaviour, IMagnetPoleProvider
     /// </summary>
     public void ApplyForce(Vector3 force, Vector3 sourcePosition)
     {
+        if (m_immovable) { ChannelLogger.LogGuardReturn("Magnet", "Immovable: 磁力を無視（動かさない）"); return; }
         m_totalForceThisFrame += force.magnitude;
         m_pendingForces.Add(new PendingForce(force, sourcePosition));
     }

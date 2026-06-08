@@ -92,8 +92,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: MagnetRush.UI::PlayerHealthGauge
   m_greenGauge: {fileID: 8392333701021892783}
   m_whiteGauge: {fileID: 7868100998934114429}
+  m_normalColor: {r: 1, g: 1, b: 1, a: 1}
+  m_blinkColor: {r: 1, g: 0, b: 0, a: 1}
   m_blinkCount: 4
   m_blinkInterval: 0.1
+  m_whiteShrinkDuration: 0.4
 --- !u!1 &756561965518099272
 GameObject:
   m_ObjectHideFlags: 0
@@ -651,7 +654,7 @@ MonoBehaviour:
   m_gaugeFillImage: {fileID: 4812207542185032416}
   m_gaugeBackgroundImage: {fileID: 6888211323341288964}
   m_gaugeContainer: {fileID: 3437399174579349591}
-  m_displayDistance: 15
+  m_displayDistance: 40
   m_colorHigh: {r: 0, g: 1, b: 0, a: 1}
   m_colorMid: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   m_colorLow: {r: 1, g: 0.5, b: 0, a: 1}
@@ -2091,6 +2094,7 @@ MonoBehaviour:
   m_trailSpeed: 0.5
   m_scanInterval: 1
   m_hideWhenFull: 0
+  m_displayRange: 30
 --- !u!1 &9047773285309579880
 GameObject:
   m_ObjectHideFlags: 0

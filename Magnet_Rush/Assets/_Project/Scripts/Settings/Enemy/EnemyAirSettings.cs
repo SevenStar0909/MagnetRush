@@ -48,6 +48,10 @@ public class EnemyAirSettings : ScriptableObject
     [Tooltip("磁力で引き寄せられた敵同士がぶつかって自爆した時、相手に与えるダメージ")]
     public int explosionDamage = 10;
 
+    [Label("爆発半径（m）")]
+    [Tooltip("自爆時のダメージ判定半径。0なら単体判定")]
+    public float explosionRadius = 3f;
+
     [Header("[リスポーン]")]
     [Label("リスポーン時間（秒）")]
     [Tooltip("倒されてから復活するまでの秒数。0なら復活せず消滅する")]
