@@ -159,7 +159,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &8424396201613565528
 RectTransform:
   m_ObjectHideFlags: 0
@@ -392,6 +392,8 @@ MonoBehaviour:
   m_fadeImage: {fileID: 2663568805810844277}
   m_fadeDuration: 0.5
   m_fadeTargetAlpha: 0.4
+  m_deathBeatDuration: 1.5
+  m_deathBeatTimeScale: 0.35
   m_arrowRetryPos: {x: -440, y: -185}
   m_arrowSelectPos: {x: -440, y: -262}
   m_retrySceneName: 

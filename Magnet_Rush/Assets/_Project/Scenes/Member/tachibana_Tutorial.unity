@@ -6007,11 +6007,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 548484120}
   m_Mesh: {fileID: 1352410488928797927, guid: 8155ec08cedd04f4b9f31583ff4c1978, type: 3}
---- !u!1 &560993647 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: e6b053fa867b5ac499eede9e9e2dbb59, type: 3}
-  m_PrefabInstance: {fileID: 1718402335}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &566176921
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -10721,38 +10716,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: e6b053fa867b5ac499eede9e9e2dbb59, type: 3}
   m_PrefabInstance: {fileID: 1718402335}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &939498275
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 560993647}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7a5ac11cc976e418e8d13136b07e1f52, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.AI.Navigation::Unity.AI.Navigation.NavMeshSurface
-  m_SerializedVersion: 0
-  m_AgentTypeID: 0
-  m_CollectObjects: 0
-  m_Size: {x: 10, y: 10, z: 10}
-  m_Center: {x: 0, y: 2, z: 0}
-  m_LayerMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_UseGeometry: 0
-  m_DefaultArea: 0
-  m_GenerateLinks: 0
-  m_IgnoreNavMeshAgent: 1
-  m_IgnoreNavMeshObstacle: 1
-  m_OverrideTileSize: 0
-  m_TileSize: 256
-  m_OverrideVoxelSize: 0
-  m_VoxelSize: 0.16666667
-  m_MinRegionArea: 2
-  m_NavMeshData: {fileID: 0}
-  m_BuildHeightMesh: 0
 --- !u!1 &940256672 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: bd503c4216af0d947bd13632b85470e4, type: 3}
@@ -17656,10 +17619,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: e6b053fa867b5ac499eede9e9e2dbb59, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 939498275}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: e6b053fa867b5ac499eede9e9e2dbb59, type: 3}
 --- !u!1001 &1730641825
 PrefabInstance:
