@@ -792,6 +792,50 @@ MonoBehaviour:
   m_EditorClassIdentifier: MagnetRush.UI::GraphyStagedToggle
   m_toggleKey: 95
   m_japaneseFont: {fileID: 12800000, guid: 80a98eb751d060845a93d115d7b5e0ab, type: 3}
+--- !u!1 &1972959371
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1972959373}
+  - component: {fileID: 1972959372}
+  m_Layer: 0
+  m_Name: _DebugMenu
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1972959372
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1972959371}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 26961e527f1879943914b6a5274ac5dd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.UI::DebugActionMenu
+--- !u!4 &1972959373
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1972959371}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2042524183
 GameObject:
   m_ObjectHideFlags: 0
@@ -821,7 +865,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4588b1d21764edf43aaab3b3d288fbe1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DebugBossStunButton
-  m_stunDuration: 30
   m_teleportDistance: 1
   m_restoreHpValue: 100
 --- !u!4 &2042524185
@@ -849,3 +892,4 @@ SceneRoots:
   - {fileID: 645861716}
   - {fileID: 1323587765}
   - {fileID: 2042524185}
+  - {fileID: 1972959373}
