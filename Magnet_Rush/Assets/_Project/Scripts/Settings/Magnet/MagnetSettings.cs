@@ -13,18 +13,18 @@ public class MagnetSettings : ScriptableObject
     [Label("反発（同極）の強さ")]
     [Tooltip("同極ペアを反発させる力。inner範囲内でこの値がフルで適用される。引き寄せより弱めにすると暴れにくい")]
     public float repelForce = 8f;
-    [Label("ペア検索カットオフ距離（m）")]
-    [Tooltip("ペア検索のハードカットオフ距離（m）。この距離以上のペアは力を計算しない（パフォーマンス用）")]
+    [Label("これより遠いと磁力を無視する距離（m）")]
+    [Tooltip("この距離より離れた相手には磁力を計算しない（処理を軽くするため）")]
     public float magnetRange = 10f;
 
     [Header("[制限]")]
-    [Label("1組の引き寄せ力の上限（0=制限なし）")]
-    [Tooltip("異極ペアの引き寄せ力の上限。強すぎる時の頭打ち。0で制限なし")]
+    [Label("引き寄せる力の上限（0=無制限）")]
+    [Tooltip("引き寄せる力が強すぎる時の頭打ち。0なら無制限")]
     [FormerlySerializedAs("maxForcePerObject")]
     [FormerlySerializedAs("maxForcePerPair")]
     public float attractMaxForcePerPair = 0f;
-    [Label("1組の反発力の上限（0=制限なし）")]
-    [Tooltip("同極ペアの反発力の上限。反発だけ頭打ちにしたい時に使う。0で制限なし")]
+    [Label("反発する力の上限（0=無制限）")]
+    [Tooltip("反発する力の頭打ち。反発だけ抑えたい時に使う。0なら無制限")]
     public float repelMaxForcePerPair = 0f;
 
     [Label("プレイヤーが磁場の中で鈍くなる強さの基準値")]
@@ -32,35 +32,35 @@ public class MagnetSettings : ScriptableObject
     public float influenceNormalizeForce = 300f;
 
     [Header("[接触]")]
-    [Label("FixedJoint発動距離")]
-    [Tooltip("Object×Object の FixedJoint 発動距離（Entity絡みは holdEngageDistance を使用）")]
+    [Label("物体同士がくっつく距離")]
+    [Tooltip("物（クレート等）同士がこの距離まで近づくとくっつく。敵が絡む時は『吸い付き始める距離』を使う")]
     public float snapDistance = 1.5f;
 
     [Header("[スナップ]")]
-    [Label("FixedJoint破壊力")]
-    [Tooltip("FixedJoint の破壊力（同極反発で分離）")]
+    [Label("くっついた物体が離れる力")]
+    [Tooltip("くっついた物どうしを引き剥がすのに要る力（同じ極で反発すると外れる）")]
     public float snapBreakForce = 100f;
 
     [Header("[PDホールド]")]
-    [Label("PDホールド開始距離")]
-    [Tooltip("この距離内に入ると PD 保持に切り替わる (Entity絡みペア専用)")]
+    [Label("吸い付き始める距離")]
+    [Tooltip("敵がこの距離まで近づくと吸い付きモードに入る（敵が絡むペア専用）")]
     public float holdEngageDistance = 1.5f;
 
-    [Label("バネ定数（追従の強さ）")]
-    [Tooltip("位置エラーに対するバネ定数。大きいほどガッチリ追従するが振動しやすい")]
+    [Label("吸い付く強さ")]
+    [Tooltip("大きいほどガッチリ追いかけてくっつく。上げすぎるとプルプル震えやすい")]
     public float holdStiffness = 80f;
 
-    [Label("ダンパ係数（振動抑制）")]
-    [Tooltip("速度に対するダンパ係数。大きいほど振動が収まるが追従が重くなる")]
+    [Label("吸い付いた時のブレの収まりやすさ")]
+    [Tooltip("大きいほど揺れずにピタッと止まる。上げすぎると追いかけが重くなる")]
     public float holdDamping = 15f;
 
-    [Label("吸着最大許容距離")]
-    [Tooltip("吸着中の最大許容距離。超過で吸着解除")]
+    [Label("離れすぎると吸い付きが外れる距離")]
+    [Tooltip("くっついた状態でこの距離より離れると吸い付きが外れる")]
     public float holdMaxDistance = 3f;
 
     [Header("[弾同士]")]
-    [Label("弾近接ダメージ範囲")]
-    [Tooltip("異極の弾が近接した時にダメージ蓄積が発生する距離")]
+    [Label("弾同士がダメージを出す距離")]
+    [Tooltip("違う極の弾どうしがこの距離まで近づくとダメージがたまる")]
     public float bulletProximityRange = 1f;
 
     [Header("[移動変調]")]
