@@ -5,13 +5,12 @@ public class SimpleTutorial : MonoBehaviour
 {
     public Text tutorialText;    // 画面の文字
     public GameObject gateWall_1; // 通せんぼしている壁
-    public GameObject checkPoint;
-    public GameObject goalPoint;
+    public GameObject checkPoint;   // プレイヤーが近づくと反応する目印（黄色いエリア）
+    public GameObject goalPoint;    // ゴールの目印（黄色いエリア）
     public Transform playerTransform; // プレイヤーのTransform
     public Transform boxTransform;    // 箱のTransform
-    public Transform targetArea;      // ①最初にプレイヤーが行く場所
-    public Transform goalArea;        // ②次にプレイヤー（と箱）が行く場所
     public Transform spawnArea;       // プレイヤーの初期位置（ワープ先）
+    [Header("反応する距離を設定")]
     public float detectDistance = 3.0f; // 反応する距離（3メートル）
 
     private int currentStep = 0;
@@ -23,8 +22,29 @@ public class SimpleTutorial : MonoBehaviour
             tutorialText.text = "【チュートリアル】\nBボタンで自分に磁極を付与し\n磁極を逆にしてRT長押しで箱に撃て！";
         }
         if (gateWall_1 != null) gateWall_1.SetActive(true);
-        if (goalPoint != null) goalPoint.SetActive(true);
-        if (checkPoint != null) checkPoint.SetActive(true);
+        if (goalPoint != null) 
+        {
+            goalPoint.transform.localScale = new Vector3(detectDistance * 2.0f, 1.0f, detectDistance * 2.0f);
+            goalPoint.SetActive(true);
+        }
+        if (checkPoint != null) 
+        {
+            checkPoint.transform.localScale = new Vector3(detectDistance * 2.0f, 1.0f, detectDistance * 2.0f);
+            checkPoint.SetActive(true);
+        }
+    }
+
+    private void OnValidate()
+    {
+        // ゲームを実行していなくても、エディタ上でリアルタイムに大きさが変わる！
+        if (goalPoint != null)
+        {
+            goalPoint.transform.localScale = new Vector3(detectDistance * 2.0f, 1.0f, detectDistance * 2.0f);
+        }
+        if (checkPoint != null)
+        {
+            checkPoint.transform.localScale = new Vector3(detectDistance * 2.0f, 1.0f, detectDistance * 2.0f);
+        }
     }
 
     void Update()
@@ -42,16 +62,16 @@ public class SimpleTutorial : MonoBehaviour
 
                 if (tutorialText != null)
                 {
-                    tutorialText.text = "【チュートリアル】\n磁力が繋がり、ゲートが開いた！\n先へ進もう。";
+                    tutorialText.text = "【チュートリアル】\n磁力が繋がりゲートが開いた！\n先へ進もう。";
                 }
             }
         }
         // 【ステップ1】プレイヤーが最初の目印（targetArea）に近づくのを待つ
         else if (currentStep == 1)
         {
-            if (playerTransform != null && targetArea != null)
+            if (playerTransform != null && checkPoint != null)
             {
-                float distance = Vector3.Distance(playerTransform.position, targetArea.position);
+                float distance = Vector3.Distance(playerTransform.position, checkPoint.transform.position);
 
                 if (distance < detectDistance)
                 {
@@ -60,7 +80,7 @@ public class SimpleTutorial : MonoBehaviour
 
                     if (tutorialText != null)
                     {
-                        tutorialText.text = "【チュートリアル】\n固定されている物は、逆に自身が引っ張られる。\n壁の上に見える物体に対して\n先ほどと同じようにやってみよう！";
+                        tutorialText.text = "【チュートリアル】\n固定されている物は\n逆に自身が引っ張られる。\n壁の上に見える物体に対して\n先ほどと同じようにやってみよう！";
                     }
                 }
             }
@@ -68,9 +88,9 @@ public class SimpleTutorial : MonoBehaviour
         // 【ステップ2】プレイヤーがゴール（goalArea）に近づいたら、説明してリセット（ワープ）
         else if (currentStep == 2)
         {
-            if (playerTransform != null && goalArea != null)
+            if (playerTransform != null && goalPoint != null)
             {
-                float goalDistance = Vector3.Distance(playerTransform.position, goalArea.position);
+                float goalDistance = Vector3.Distance(playerTransform.position, goalPoint.transform.position);
 
                 if (goalDistance < detectDistance)
                 {
@@ -78,7 +98,7 @@ public class SimpleTutorial : MonoBehaviour
 
                     if (tutorialText != null)
                     {
-                        tutorialText.text = "【チュートリアル】\nそれでは同じことをしながら、今度は箱も一緒にゴールまで持っていこう！\n最初はおさらい";
+                        tutorialText.text = "【チュートリアル】\nそれでは同じことをしながら\n今度は箱も一緒にゴールまで持っていこう！\n最初はおさらい";
                     }
 
                     // プレイヤーをスタート地点にワープさせる！
@@ -120,9 +140,9 @@ public class SimpleTutorial : MonoBehaviour
         // 【ステップ4】箱がtargetArea（黄色いエリアなど）に近づくのを待つ
         else if (currentStep == 4)
         {
-            if (boxTransform != null && targetArea != null)
+            if (boxTransform != null && checkPoint != null)
             {
-                float distance = Vector3.Distance(boxTransform.position, targetArea.position);
+                float distance = Vector3.Distance(boxTransform.position, checkPoint.transform.position);
 
                 if (distance < detectDistance)
                 {
@@ -132,7 +152,7 @@ public class SimpleTutorial : MonoBehaviour
 
                     if (tutorialText != null)
                     {
-                        tutorialText.text = "【チュートリアル】\n(TIPS)磁力の線は、間に壁とかの障害物があると切れてしまう";
+                        tutorialText.text = "【チュートリアル】\n(注意)磁力の線は\n間に壁とかの障害物があると切れてしまう";
                     }
                 }
             }
@@ -140,9 +160,9 @@ public class SimpleTutorial : MonoBehaviour
         // 【ステップ5】「箱」がゴール（goalArea）に近づくのを待つ
         else if (currentStep == 5)
         {
-            if (boxTransform != null && goalArea != null)
+            if (boxTransform != null && goalPoint != null)
             {
-                float boxDistance = Vector3.Distance(boxTransform.position, goalArea.position);
+                float boxDistance = Vector3.Distance(boxTransform.position, goalPoint.transform.position);
 
                 if (boxDistance < detectDistance)
                 {
