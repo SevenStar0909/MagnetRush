@@ -299,8 +299,21 @@ public class Player : Entity
     }
 
     /// <summary>
+    /// IMagnetTarget実装のoverride。プレイヤーは空中でのみ磁力を受ける。
+    /// </summary>
+    public override void ApplyMagnetForce(Vector3 force)
+    {
+        if (IsGrounded)
+        {
+            ChannelLogger.LogGuardReturn("Player", "接地中は磁力無効");
+            return;
+        }
+        base.ApplyMagnetForce(force);
+    }
+
+    /// <summary>
     /// 磁力場の影響度に応じてEntity multiplierを更新する。
-    /// 強い磁力を受けているほど移動が鈍くなる。
+    /// 強い磁力を受けているほど移動が鈍くなる（空中のみ。接地中は磁力の影響を受けない）。
     /// </summary>
     private void UpdateMagneticInfluence()
     {
@@ -310,6 +323,14 @@ public class Player : Entity
             topSpeedMultiplier = 1f;
             turningDragMultiplier = 1f;
             ChannelLogger.LogGuardReturn("Player", "Magnetizable/MagnetManager未取得");
+            return;
+        }
+
+        if (IsGrounded)
+        {
+            topSpeedMultiplier = 1f;
+            turningDragMultiplier = 1f;
+            ChannelLogger.LogGuardReturn("Player", "接地中は磁力鈍化なし");
             return;
         }
 
