@@ -521,9 +521,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9f3c41d16bdd0614385e9dfda20f2372, type: 3}
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Core::Magnetizable
-  m_pole: 0
-  m_isActive: 0
+  m_pole: 1
+  m_isActive: 1
   m_initialMass: 1
+  m_immovable: 1
   m_centerOffset: {x: 0, y: 0, z: 0}
   m_useEdgeDetectionOutline: 1
 --- !u!114 &5793265015369139466
@@ -557,6 +558,7 @@ MonoBehaviour:
   collisionLayer:
     serializedVersion: 2
     m_Bits: 65523
+  m_canPushPhysicsObjects: 0
 --- !u!114 &1675817586269981184
 MonoBehaviour:
   m_ObjectHideFlags: 0
