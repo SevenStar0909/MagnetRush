@@ -23,7 +23,7 @@ public class StabAbility : Ability
         { ChannelLogger.LogGuardReturn("Stab", "Boss未配置"); return; }
 
         if (m_bossReceiver != null && !m_bossReceiver.CanReceiveStab)
-        { ChannelLogger.LogGuardReturn("Stab", "ボスがスタンしていない"); return; }
+        { ChannelLogger.LogGuardReturn("Stab", "ボスが崩れていない（スタン/よろけでない）"); return; }
 
         if (Vector3.Distance(m_player.transform.position, m_bossTarget.position) > m_player.Settings.stabRange)
         { ChannelLogger.LogGuardReturn("Stab", "ボスの距離がスタブ攻撃の範囲外"); return; }

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 [DisallowMultipleComponent]
@@ -22,6 +23,28 @@ public class EnemyMissile : MonoBehaviour
 
     [Header("Combat")]
     [SerializeField] private int m_damage = 1;
+
+    [SerializeField]
+    [Tooltip("磁力で誘導してボス本体に当てたとき、ボスのスタンゲージが何％溜まるか。仕様＝30")]
+    [Range(0, 100)]
+    private int m_stunGaugePercent = 30;
+
+    /// <summary>
+    /// 誘導してボス本体に当てた時に与えるスタン値の蓄積率（％）。仕様＝30%/発。
+    /// 磁化中（プレイヤーが磁力で誘導した状態）に当たった時だけ有効。磁化せずに当たった場合は 0（ただ爆発するだけ）。
+    /// </summary>
+    public int StunGaugePercent => (m_selfMagnetizable != null && m_selfMagnetizable.IsActive) ? m_stunGaugePercent : 0;
+
+    [SerializeField]
+    [Tooltip("発射してからこの秒数は発射元（ボス）と当たらない（自爆防止）。経過後はボスにも当たる＝磁力で撃ち返せる")]
+    private float m_collisionRestoreDelay = 3f;
+
+    [SerializeField]
+    [Tooltip("ヒット解決上の所属グループ。誰にでも当たる物理ハザードなので Physics（Player/Enemy 両方にダメージが通る）")]
+    private HitGroup m_hitGroup = HitGroup.Physics;
+
+    /// <summary>所属グループ。被弾側と HitGroup が異なるときだけダメージを通す。Physics は Player/Enemy 両方に通る。</summary>
+    public HitGroup HitGroup => m_hitGroup;
     [SerializeField] private float m_lifetime = 6f;
 
     [Header("ExplosionEffects")]
@@ -35,11 +58,18 @@ public class EnemyMissile : MonoBehaviour
     private float m_seekTimer;
     private float m_refreshTimer;
     private bool m_initialized;
+    private Collider m_collider;
+    private bool m_exploded;
+
+    private readonly List<Collider> m_ignoredColliders = new List<Collider>();
+    private bool m_collisionRestored = true;
+    private float m_restoreTimer;
 
     private void Awake()
     {
         m_rb = GetComponent<Rigidbody>();
         m_selfMagnetizable = GetComponent<Magnetizable>();
+        m_collider = GetComponent<Collider>();
 
         if (m_explosionEffect == null)
             m_explosionEffect = Resources.Load<GameObject>("P_MS_ExplosionPS");
@@ -50,6 +80,18 @@ public class EnemyMissile : MonoBehaviour
             if (playerObj != null)
                 m_player = playerObj.transform;
         }
+    }
+
+    private void OnEnable()
+    {
+        if (m_selfMagnetizable != null)
+            m_selfMagnetizable.OnMagnetContact += HandleMagnetContact;
+    }
+
+    private void OnDisable()
+    {
+        if (m_selfMagnetizable != null)
+            m_selfMagnetizable.OnMagnetContact -= HandleMagnetContact;
     }
 
     private void Start()
@@ -82,6 +124,17 @@ public class EnemyMissile : MonoBehaviour
         transform.rotation = Quaternion.LookRotation(dir, Vector3.up);
     }
 
+    /// <summary>
+    /// seekDelay を上書きして初期化する。アーク弾（上げてから狙う）用に、ホーミング開始までの上昇時間を延ばす。
+    /// </summary>
+    /// <param name="seekDelayOverride">0以上で上書き。負値なら既定の m_seekDelay を使う</param>
+    public void Initialize(Transform target, Vector3 initialDirection, float seekDelayOverride)
+    {
+        Initialize(target, initialDirection);
+        if (seekDelayOverride >= 0f)
+            m_seekTimer = seekDelayOverride;
+    }
+
     public void SetPlayer(Transform player)
     {
         m_player = player;
@@ -91,9 +144,32 @@ public class EnemyMissile : MonoBehaviour
     {
         if (!m_initialized) { ChannelLogger.LogGuardReturn("Enemy", "Missile未初期化"); return; }
 
+        RestoreIgnoredCollisionsIfCleared();
+
         m_timer -= Time.deltaTime;
         if (m_timer <= 0f)
             Destroy(gameObject);
+    }
+
+    // 発射直後は発射元（ボス）との衝突を無効にしているが、ボスから十分離れたら再有効化する。
+    // これで「ボスのミサイルを磁力で誘導してボスに当てる」（仕様）が物理衝突でも成立し、スタン値が溜まる。
+    private void RestoreIgnoredCollisionsIfCleared()
+    {
+        if (m_collisionRestored) return;
+        if (m_collider == null) { m_collisionRestored = true; return; }
+
+        // 発射してから m_collisionRestoreDelay 秒の間は発射元（ボス）と当たらない＝自爆しない。
+        // 経過したらボスとの衝突を戻すので、磁力で撃ち返したミサイルがボスに当たって +30% が入る。
+        m_restoreTimer -= Time.deltaTime;
+        if (m_restoreTimer > 0f) return;
+
+        for (int i = 0; i < m_ignoredColliders.Count; i++)
+        {
+            var c = m_ignoredColliders[i];
+            if (c != null)
+                Physics.IgnoreCollision(m_collider, c, false);
+        }
+        m_collisionRestored = true;
     }
 
     private void FixedUpdate()
@@ -168,14 +244,18 @@ public class EnemyMissile : MonoBehaviour
         if (selfPole == MagneticPole.None)
             return null;
 
-        Magnetizable[] all = FindObjectsByType<Magnetizable>(FindObjectsSortMode.None);
+        // 全シーン走査(FindObjectsByType)は配列確保のGCゴミと全探索コストが重い。
+        // MagnetManager がキャッシュ済みの登録一覧を読む(結果は同一・ゴミゼロ)。
+        if (MagnetManager.Instance == null)
+            return null;
+        List<Magnetizable> all = MagnetManager.Instance.GetActiveMagnetizables();
 
         Magnetizable nearest = null;
         float detectionRange = ResolveDetectionRange();
         float nearestSqr = detectionRange * detectionRange;
         Vector3 origin = transform.position;
 
-        for (int i = 0; i < all.Length; i++)
+        for (int i = 0; i < all.Count; i++)
         {
             Magnetizable candidate = all[i];
             if (candidate == null) continue;
@@ -215,24 +295,116 @@ public class EnemyMissile : MonoBehaviour
             Destroy(effectInstance, m_explosionEffectLifetime);
     }
 
-    // Layer Matrix で「当たる相手」を一元管理する設計（原則1）。PlayerBullet × EnemyBullet は OFF。
-    // MagnetBullet は SphereCast で EnemyBullet レイヤを直接拾うので、Matrix OFF でも磁化検知は機能する。
-    // コリジョンコールバック内で相手の型/タグ判定はしない（原則4）。
-    private void OnTriggerEnter(Collider other)
+    // PhysicsObject レイヤーの物理ハザードとして、相手の Pushbox(EntityBody)/地面/壁/他物理オブジェクトと
+    // OnCollisionEnter で衝突する（Matrix で一元管理。原則1）。トリガー(MagnetField 等)では発火しないので誤爆しない。
+    // 相手の HitGroup が自分(Physics)と異なるときだけダメージを通す（Player/Enemy 両方に通る。物理同士は弾く。原則3）。
+    private void OnCollisionEnter(Collision collision)
     {
-        var hittable = other.GetComponentInParent<IHittable>();
-        if (hittable != null)
+        if (m_exploded) { ChannelLogger.LogGuardReturn("Enemy", "Missile既に爆発済み"); return; }
+
+        Vector3 point = collision.contactCount > 0 ? collision.GetContact(0).point : transform.position;
+        ResolveHitAndExplode(collision.collider != null ? collision.collider.gameObject : null, point);
+    }
+
+    // 磁化されると異極の磁化オブジェクト同士が FixedJoint で固定され、Joint は既定で enableCollision=false の
+    // ため OnCollisionEnter が発火しない。磁石に保持されて壁際で止まる弾も自由落下しなくなる。
+    // よって磁石の接触イベントでも爆発させる。これで磁化中でもミサイル同士・磁化物体への接触で確実に爆発する。
+    private void HandleMagnetContact(Magnetizable other)
+    {
+        if (m_exploded) { ChannelLogger.LogGuardReturn("Enemy", "Missile既に爆発済み"); return; }
+
+        Vector3 point = other != null ? Vector3.Lerp(transform.position, other.transform.position, 0.5f) : transform.position;
+        ResolveHitAndExplode(other != null ? other.gameObject : null, point);
+    }
+
+    // OnCollisionEnter（物理衝突）と HandleMagnetContact（磁石接触）の共通経路。
+    // 相手から IHittable を取り、HitGroup が自分(Physics)と異なるときだけダメージを通してから爆発する。
+    private void ResolveHitAndExplode(GameObject other, Vector3 point)
+    {
+        if (m_exploded) return;
+
+        if (other != null)
         {
-            hittable.OnHit(new HitData
+            var hittable = other.GetComponentInParent<IHittable>();
+            if (hittable != null && hittable.HitGroup != m_hitGroup)
             {
-                damage = m_damage,
-                hitPoint = other.ClosestPoint(transform.position),
-                knockbackDir = m_rb != null ? m_rb.linearVelocity.normalized : transform.forward,
-                source = gameObject
-            });
+                hittable.OnHit(new HitData
+                {
+                    damage = m_damage,
+                    hitPoint = point,
+                    knockbackDir = m_rb != null ? m_rb.linearVelocity.normalized : transform.forward,
+                    source = gameObject
+                });
+            }
         }
 
-        SpawnExplosionEffect(other.ClosestPoint(transform.position));
+        Explode(point);
+    }
+
+    /// <summary>爆発エフェクトを出して自身を破棄する。</summary>
+    private void Explode(Vector3 point)
+    {
+        m_exploded = true;
+        SpawnExplosionEffect(point);
         Destroy(gameObject);
+    }
+
+    /// <summary>
+    /// 発射元（ボス）との衝突無効時間を上書きして <see cref="IgnoreCollisionsWith(GameObject)"/> を呼ぶ。
+    /// ボス側 Inspector から発射ごとに猶予秒数を渡せるようにするためのオーバーロード。
+    /// </summary>
+    /// <param name="source">無視したい相手（発射元のルート GameObject）</param>
+    /// <param name="restoreDelay">0以上でこの秒数だけ衝突無効。負値なら既定の m_collisionRestoreDelay を使う</param>
+    public void IgnoreCollisionsWith(GameObject source, float restoreDelay)
+    {
+        if (restoreDelay >= 0f)
+            m_collisionRestoreDelay = restoreDelay;
+        IgnoreCollisionsWith(source);
+    }
+
+    /// <summary>
+    /// 発射元（ボス）等のコライダーとの衝突を無効化する。spawn 直後の自己衝突・自傷を防ぐ。
+    /// </summary>
+    /// <param name="source">無視したい相手（発射元のルート GameObject）</param>
+    public void IgnoreCollisionsWith(GameObject source)
+    {
+        if (source == null) { ChannelLogger.LogGuardReturn("Enemy", "Missile: ignore source なし"); return; }
+        if (m_collider == null) m_collider = GetComponent<Collider>();
+        if (m_collider == null) { ChannelLogger.LogGuardReturn("Enemy", "Missile: 自身のColliderなし"); return; }
+
+        m_ignoredColliders.Clear();
+        m_collisionRestored = false;
+        m_restoreTimer = m_collisionRestoreDelay;
+        foreach (var c in source.GetComponentsInChildren<Collider>(true))
+        {
+            if (c != null)
+            {
+                Physics.IgnoreCollision(m_collider, c, true);
+                m_ignoredColliders.Add(c);
+            }
+        }
+
+        IgnoreOtherMissilesDuringGrace();
+    }
+
+    // 1波4発が同時発射 → 密集や誘導での収束でミサイル同士がぶつかり、無条件 Explode で即自爆する
+    // （ログで 0.01s と 0.64s の PhysicsObject 同士衝突を確認）。ボスと同じ猶予時間(m_collisionRestoreDelay)の間だけ
+    // 生存中の他ミサイルとの衝突も無効化し、RestoreIgnoredCollisionsIfCleared で経過後に通常へ戻す。
+    private void IgnoreOtherMissilesDuringGrace()
+    {
+        if (m_collider == null) return;
+
+        EnemyMissile[] others = FindObjectsByType<EnemyMissile>(FindObjectsSortMode.None);
+        for (int i = 0; i < others.Length; i++)
+        {
+            EnemyMissile other = others[i];
+            if (other == null || other == this) continue;
+
+            Collider c = other.m_collider != null ? other.m_collider : other.GetComponent<Collider>();
+            if (c == null || m_ignoredColliders.Contains(c)) continue;
+
+            Physics.IgnoreCollision(m_collider, c, true);
+            m_ignoredColliders.Add(c);
+        }
     }
 }

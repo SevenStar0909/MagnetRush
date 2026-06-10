@@ -102,7 +102,9 @@ public class BossHandMagnetCaster : MonoBehaviour
 
         Vector3 bossPos = m_boss.transform.position;
         float groundY = bossPos.y;
-        if (Physics.Raycast(bossPos + Vector3.up * 1f, Vector3.down, out RaycastHit hit, 100f, PhysicsLayers.MaskGroundCheck, QueryTriggerInteraction.Ignore))
+        int groundMask = PhysicsLayers.Bit(PhysicsLayers.Default)
+            | PhysicsLayers.Bit(PhysicsLayers.Ground) | PhysicsLayers.Bit(PhysicsLayers.Wall);
+        if (Physics.Raycast(bossPos + Vector3.up * 1f, Vector3.down, out RaycastHit hit, 100f, groundMask, QueryTriggerInteraction.Ignore))
             groundY = hit.point.y;
 
         m_visualizerGO.transform.position = new Vector3(bossPos.x, groundY, bossPos.z);

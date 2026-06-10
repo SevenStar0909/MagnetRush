@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Unity.Cinemachine;
@@ -11,7 +12,16 @@ public class CameraSettingsApplier : MonoBehaviour
 {
     [SerializeField] private CinemachineCamera m_cinemachineCamera;
 
+    [Header("死亡演出")]
+    [Tooltip("死亡時にこのカメラ距離まで寄せてプレイヤーを大きく写す。0以下で寄り無効")]
+    [SerializeField] private float m_deathZoomDistance = 2f;
+    [Tooltip("死亡時の寄り・中央寄せにかける時間(秒・実時間)")]
+    [SerializeField] private float m_deathZoomDuration = 1.2f;
+    [Tooltip("死亡時に見る高さ(プレイヤー基準のローカルY)。倒れた体を画面中央に収めるため通常(1.2)より低くする")]
+    [SerializeField] private float m_deathCenterHeight = 0.5f;
+
     private PlayerSettings m_settings;
+    private Health m_health;
 
     private CinemachineThirdPersonFollow m_thirdPersonFollow;
     private float m_defaultFOV;
@@ -20,11 +30,20 @@ public class CameraSettingsApplier : MonoBehaviour
     private float m_yaw;
     private float m_pitch;
     private bool m_initialized;
+    private bool m_isFrozen;
+
+    private bool m_isDead;
+    private float m_deathBlend;
+    private float m_deathStartPivotY;
+    private float m_deathStartShoulderX;
+    private float m_deathStartDistance;
 
     void OnEnable()
     {
         AimAbility.OnAimChanged += SetAimMode;
         Player.OnPlayerReady += InitializeWithPlayer;
+        Player.OnFallRespawnStart += OnFallRespawnStart;
+        Player.OnFallRespawnEnd += OnFallRespawnEnd;
         if (Player.Current != null) InitializeWithPlayer(Player.Current);
     }
 
@@ -32,6 +51,9 @@ public class CameraSettingsApplier : MonoBehaviour
     {
         AimAbility.OnAimChanged -= SetAimMode;
         Player.OnPlayerReady -= InitializeWithPlayer;
+        Player.OnFallRespawnStart -= OnFallRespawnStart;
+        Player.OnFallRespawnEnd -= OnFallRespawnEnd;
+        if (m_health != null) m_health.OnDie -= HandlePlayerDeath;
     }
 
     private void InitializeWithPlayer(Player playerComponent)
@@ -42,6 +64,9 @@ public class CameraSettingsApplier : MonoBehaviour
 
         m_settings = playerComponent.Settings;
         var player = playerComponent.gameObject;
+
+        m_health = playerComponent.GetComponent<Health>();
+        if (m_health != null) m_health.OnDie += HandlePlayerDeath;
 
         // カメラ回転ピボットをプレイヤーの子に生成
         var pivotGO = new GameObject("CameraPivot");
@@ -96,6 +121,11 @@ public class CameraSettingsApplier : MonoBehaviour
 
     void LateUpdate()
     {
+        // 死亡中は寄せ＋中央寄せを毎フレーム適用（Play中にInspector値を変えると即反映＝ライブ調整可）
+        if (m_isDead && m_thirdPersonFollow != null) { UpdateDeathFraming(); return; }
+
+        // 凍結中は入力でピボットを回さない。落下→復帰の間カメラを静止させる
+        if (m_isFrozen) return;
         if (m_cameraPivot == null || m_settings == null) { ChannelLogger.LogGuardReturn("Player", "カメラピボットまたは設定なし"); return; }
 
         // マウス: ピクセル差分 (フレーム独立)。deltaTime を掛けない。
@@ -132,6 +162,72 @@ public class CameraSettingsApplier : MonoBehaviour
             var lens = m_cinemachineCamera.Lens;
             lens.FieldOfView = aiming ? m_settings.aimFOV : m_defaultFOV;
             m_cinemachineCamera.Lens = lens;
+        }
+    }
+
+    private void OnFallRespawnStart() => Freeze(true);
+    private void OnFallRespawnEnd() => Freeze(false);
+
+    /// <summary>
+    /// カメラを止める/再開する。止める間は追従対象を外して本体をその場に固定し、
+    /// 落下するプレイヤーを追わない。再開時は追従を戻し、ダンピングなしで新しい足場へカットする。
+    /// </summary>
+    /// <param name="value">true で凍結、false で解除</param>
+    private void Freeze(bool value)
+    {
+        m_isFrozen = value;
+
+        if (m_cinemachineCamera == null) { ChannelLogger.LogGuardReturn("Player", "CinemachineCamera未設定 — 凍結スキップ"); return; }
+
+        if (value)
+        {
+            m_cinemachineCamera.Follow = null;
+            m_cinemachineCamera.LookAt = null;
+        }
+        else
+        {
+            m_cinemachineCamera.Follow = m_cameraPivot;
+            m_cinemachineCamera.LookAt = m_cameraPivot;
+            // 前フレーム状態を破棄して、復帰先の足場へ補間なしで即カットさせる
+            m_cinemachineCamera.PreviousStateIsValid = false;
+        }
+    }
+
+    // 死亡時: 寄せ＋中央寄せの開始値を記録してフラグを立てる。実適用は LateUpdate の UpdateDeathFraming が毎フレーム行う。
+    private void HandlePlayerDeath()
+    {
+        if (m_thirdPersonFollow == null || m_deathZoomDistance <= 0f) { ChannelLogger.LogGuardReturn("Player", "死亡カメラ寄り: ThirdPersonFollowなしまたは無効"); return; }
+        if (m_isDead) { ChannelLogger.LogGuardReturn("Player", "既に死亡フレーミング中"); return; }
+
+        m_deathStartDistance = m_thirdPersonFollow.CameraDistance;
+        m_deathStartShoulderX = m_thirdPersonFollow.ShoulderOffset.x;
+        m_deathStartPivotY = m_cameraPivot != null ? m_cameraPivot.localPosition.y : m_deathCenterHeight;
+        m_deathBlend = 0f;
+        m_isDead = true;
+        m_isFrozen = true;
+    }
+
+    // 死亡中、毎フレーム「寄せ＋中央寄せ」を適用する。
+    // 通常は肩越し(オフセットX)＋胸の高さ(1.2)を見るので、倒れた体が画面中央下に映る。
+    // 死亡時は横=肩オフセットを0(真後ろ)、縦=見る高さ(m_deathCenterHeight)へ寄せてプレイヤーを画面中央に収める。
+    // 毎フレーム m_deathCenterHeight 等を読むので、Play中に Inspector でいじると即反映される（ライブ調整可）。
+    private void UpdateDeathFraming()
+    {
+        float dur = Mathf.Max(0.01f, m_deathZoomDuration);
+        m_deathBlend = Mathf.MoveTowards(m_deathBlend, 1f, Time.unscaledDeltaTime / dur);
+        float k = Mathf.SmoothStep(0f, 1f, m_deathBlend);
+
+        m_thirdPersonFollow.CameraDistance = Mathf.Lerp(m_deathStartDistance, m_deathZoomDistance, k);
+
+        Vector3 shoulder = m_thirdPersonFollow.ShoulderOffset;
+        shoulder.x = Mathf.Lerp(m_deathStartShoulderX, 0f, k);
+        m_thirdPersonFollow.ShoulderOffset = shoulder;
+
+        if (m_cameraPivot != null)
+        {
+            Vector3 lp = m_cameraPivot.localPosition;
+            lp.y = Mathf.Lerp(m_deathStartPivotY, m_deathCenterHeight, k);
+            m_cameraPivot.localPosition = lp;
         }
     }
 }

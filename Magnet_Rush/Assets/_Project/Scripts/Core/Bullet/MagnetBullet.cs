@@ -10,6 +10,13 @@ public class MagnetBullet : MonoBehaviour, IBulletProximity
 {
     [SerializeField] private BulletSettings m_settings;
 
+    [SerializeField]
+    [Tooltip("ヒット解決上の所属グループ。プレイヤーの弾なので Player")]
+    private HitGroup m_hitGroup = HitGroup.Player;
+
+    /// <summary>所属グループ。被弾側との比較で自傷・同士討ちを弾く（強制は段階2c以降）。</summary>
+    public HitGroup HitGroup => m_hitGroup;
+
     public MagneticPole Pole { get; private set; }
     public bool IsStuck { get; private set; }
 
@@ -112,8 +119,17 @@ public class MagnetBullet : MonoBehaviour, IBulletProximity
         if (IsStuck || m_rb == null || m_settings == null) { ChannelLogger.LogGuardReturn("Bullet", "着弾済みまたはRigidbody/Settings未設定"); return; }
         if (MagnetManager.Instance == null) { ChannelLogger.LogGuardReturn("Bullet", "MagnetManager未初期化"); return; }
 
-        // 磁場で速度を曲げる（既存挙動）。Kinematic だが velocity は自前変数なのでそのまま加算
+        // 磁場で速度を曲げる。Kinematic だが velocity は自前変数なのでそのまま加算。
+        // 磁場が重なった所では、一番強い1個はフル、残りは重なり係数で減衰して足す（重ねても曲がりすぎない）
         var fields = MagnetManager.Instance.GetActiveFields();
+        var magnetSettings = MagnetManager.Instance.Settings;
+        float overlapWeight = magnetSettings != null ? magnetSettings.overlapForceWeight : 1f;
+
+        int strongestIndex = -1;
+        float strongestPull = 0f;
+        Vector3 strongestDelta = Vector3.zero;
+        Vector3 weightedRestDelta = Vector3.zero;
+
         for (int i = 0; i < fields.Count; i++)
         {
             var field = fields[i];
@@ -126,9 +142,24 @@ public class MagnetBullet : MonoBehaviour, IBulletProximity
             bool attract = Pole != field.Pole && field.Pole != MagneticPole.None && Pole != MagneticPole.None;
             Vector3 toCenter = (field.Center - transform.position).normalized;
             float pull = strength * m_settings.fieldAttractionFactor;
+            Vector3 delta = (attract ? toCenter : -toCenter) * pull * Time.fixedDeltaTime;
 
-            m_velocity += (attract ? toCenter : -toCenter) * pull * Time.fixedDeltaTime;
+            if (pull > strongestPull)
+            {
+                // これまでの最強は「残り」へ回して係数を掛ける
+                if (strongestIndex >= 0) weightedRestDelta += strongestDelta * overlapWeight;
+                strongestPull = pull;
+                strongestDelta = delta;
+                strongestIndex = i;
+            }
+            else
+            {
+                weightedRestDelta += delta * overlapWeight;
+            }
         }
+
+        if (strongestIndex >= 0)
+            m_velocity += strongestDelta + weightedRestDelta;
 
         // 自前 SphereCast による衝突検出。物理エンジンの CCD に頼らないので
         // 厚み0の MeshCollider でも確実に検知できる
@@ -141,9 +172,10 @@ public class MagnetBullet : MonoBehaviour, IBulletProximity
 
         if (Physics.SphereCast(transform.position, radius, dir, out RaycastHit hit, dist, GetCollisionMask(), QueryTriggerInteraction.Collide))
         {
-            // ヒット位置の少し手前に止める（めり込み防止）
-            m_rb.MovePosition(hit.point - dir * radius);
-            ResolveHit(hit.collider, hit.normal);
+            // 着弾で停止するので MovePosition の1フレーム遅延を避け、表面の手前へ直接スナップ。
+            // この位置がそのまま磁場の中心（＝着弾点）になる。
+            transform.position = hit.point - dir * radius;
+            ResolveHit(hit.collider);
         }
         else
         {
@@ -152,7 +184,7 @@ public class MagnetBullet : MonoBehaviour, IBulletProximity
     }
 
     /// <summary>SphereCast でヒットした collider に対する処理。</summary>
-    private void ResolveHit(Collider other, Vector3 surfaceNormal)
+    private void ResolveHit(Collider other)
     {
         if (IsStuck) return;
 
@@ -160,7 +192,7 @@ public class MagnetBullet : MonoBehaviour, IBulletProximity
         if (targetMag != null)
             MagnetizeTarget(other, targetMag);
         else
-            StickToSurface(other, surfaceNormal);
+            StickToSurface(other);
     }
 
     /// <summary>
@@ -209,32 +241,19 @@ public class MagnetBullet : MonoBehaviour, IBulletProximity
     /// パターン1: 弾がくっつき、弾自身が磁力源。壁/天井/タレット用。
     /// フィールド期限切れで弾ごと消える。
     /// </summary>
-    private void StickToSurface(Collider surface, Vector3 surfaceNormal)
+    private void StickToSurface(Collider surface)
     {
         IsStuck = true;
         m_velocity = Vector3.zero;
         m_rb.isKinematic = true;
 
-        // CCD で薄い MeshCollider に高速ヒットすると、衝突検出時の transform.position が
-        // 既に surface を貫通した位置になっていることがある。bounds の最近点に補正して
-        // 「表側」に貼り付けないと、裏面のみ描画される平面の裏に潜って見えなくなる。
-        Vector3 corrected = surface.bounds.ClosestPoint(transform.position);
-        if (corrected != transform.position)
-            transform.position = corrected;
-
-        // 弾の up を着弾面の法線に揃える。VFX/MagnetFieldVisualizer (Cylinder等) が
-        // 着弾面に対し常に垂直になり、斜め発射時に磁場が斜め描画される問題を解消
-        if (surfaceNormal.sqrMagnitude > 0.0001f)
-            transform.up = surfaceNormal;
-
-        // 親 lossyScale が非均一だと子 VFX/Visualizer が楕円化する（Plane の (2.4,1.2,2.1) 等）。
-        // MagnetField.CylinderHeight も lossyScale.y を掛けて算出するため磁場の形も歪む。
-        // 静的地面は動かない前提で、非均一スケール親への SetParent はスキップする。
-        Vector3 ps = surface.transform.lossyScale;
-        const float scaleEpsilon = 0.001f;
-        bool uniformScale = Mathf.Abs(ps.x - ps.y) < scaleEpsilon && Mathf.Abs(ps.y - ps.z) < scaleEpsilon;
-        if (uniformScale)
-            transform.SetParent(surface.transform, true);
+        // 着弾点（FixedUpdate で transform.position に確定済み）を中心に正球形の磁場を出す。
+        // 着弾オブジェクト（壁/地面/メッシュコライダー）へ parent すると、そのスケール・回転を
+        // 磁場の球コライダーとビジュアライザが引き継いで楕円化・サイズ変化していた。
+        // 環境は静的前提なので parent せず、回転・スケールを正規化したルートに固定する。
+        transform.SetParent(null, true);
+        transform.rotation = Quaternion.identity;
+        transform.localScale = Vector3.one;
 
         var mag = GetComponent<Magnetizable>();
         if (mag != null)

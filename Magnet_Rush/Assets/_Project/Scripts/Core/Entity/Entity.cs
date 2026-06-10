@@ -100,10 +100,19 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
     protected virtual float ExternalDrag => 3f;
 
     /// <summary>接地判定対象レイヤー。</summary>
-    protected virtual LayerMask GroundLayer => -1;
+    // 接地判定の既定マスクは環境(Default/Ground/Wall)に絞る。
+    // -1(Everything)だと地面より手前の他コライダー(他Entity/物理オブジェクト/自Pushbox)を拾って接地点がズレ、埋まり・すり抜けの原因になる。
+    protected virtual LayerMask GroundLayer => PhysicsLayers.Bit(PhysicsLayers.Default)
+        | PhysicsLayers.Bit(PhysicsLayers.Ground) | PhysicsLayers.Bit(PhysicsLayers.Wall);
 
     /// <summary>接地判定の追加レイ距離。</summary>
     protected virtual float GroundCheckDistance => 0.3f;
+
+    /// <summary>接地が一瞬切れても非接地と判定するまでの猶予フレーム数。0で即時(プレイヤー等は0=従来通り)。</summary>
+    protected virtual int GroundGraceFrames => 0;
+
+    // 接地が単発で切れたフレームを数える。GroundGraceFrames を超えたら本当に非接地にする。
+    private int m_groundGraceCounter;
 
     /// <summary>磁力で引かれているとき向き直す速度の閾値。</summary>
     protected virtual float PullOrientationThreshold => 5f;
@@ -155,17 +164,29 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
     private readonly List<IEntityContact> m_listenerCache = new();
 
     /// <summary>Entity形状でCapsuleCast。hitが不要な場合用。</summary>
+    [SerializeField]
+    [Tooltip("移動の衝突判定レイヤー。空(Nothing)なら 環境+物理体(Default/Ground/Wall/PhysicsObject/EntityBody) を自動で使う")]
+    private LayerMask m_collisionMask;
+
+    /// <summary>
+    /// 移動衝突マスク。Inspector で設定可。未設定(0)なら 環境+物理体 の既定値にフォールバックする（床抜け防止）。
+    /// </summary>
+    public int CollisionMask => m_collisionMask.value != 0 ? m_collisionMask.value
+        : PhysicsLayers.Bit(PhysicsLayers.Default) | PhysicsLayers.Bit(PhysicsLayers.Ground)
+        | PhysicsLayers.Bit(PhysicsLayers.Wall) | PhysicsLayers.Bit(PhysicsLayers.PhysicsObject)
+        | PhysicsLayers.Bit(PhysicsLayers.EntityBody);
+
     public virtual bool CapsuleCast(Vector3 direction, float distance,
         int layer = 0, QueryTriggerInteraction trigger = QueryTriggerInteraction.Ignore)
     {
         return CapsuleCast(direction, distance, out _, layer, trigger);
     }
 
-    /// <summary>Entity形状でCapsuleCast。layer=0は未指定（PhysicsLayers.MaskEntityCollisionを使用）。</summary>
+    /// <summary>Entity形状でCapsuleCast。layer=0は未指定（CollisionMaskを使用）。</summary>
     public virtual bool CapsuleCast(Vector3 direction, float distance, out RaycastHit hit,
         int layer = 0, QueryTriggerInteraction trigger = QueryTriggerInteraction.Ignore)
     {
-        if (layer == 0) layer = PhysicsLayers.MaskEntityCollision;
+        if (layer == 0) layer = CollisionMask;
         var origin = centerPosition - direction * radius;
         var offset = transform.up * (height * 0.5f - radius);
         return Physics.CapsuleCast(origin + offset, origin - offset, radius,
@@ -180,7 +201,7 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
         var top = centerPosition + transform.up * offset;
         var bottom = centerPosition - transform.up * offset;
         return Physics.OverlapCapsuleNonAlloc(top, bottom, overlapRadius,
-            result, PhysicsLayers.MaskEntityCollision, QueryTriggerInteraction.Ignore);
+            result, CollisionMask, QueryTriggerInteraction.Ignore);
     }
 
     protected virtual void Awake()
@@ -244,8 +265,11 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
         if (m_controller != null) { ChannelLogger.LogGuardReturn("Entity", "EntityController有り(MoveAndSlideが処理)"); return; }
         if (verticalVelocity <= 0f) { ChannelLogger.LogGuardReturn("Entity", "上昇していない"); return; }
 
+        // 天井判定は接地と同じ 環境(Default/Ground/Wall) を見る
+        int ceilingMask = PhysicsLayers.Bit(PhysicsLayers.Default)
+            | PhysicsLayers.Bit(PhysicsLayers.Ground) | PhysicsLayers.Bit(PhysicsLayers.Wall);
         float maxCeilingDist = height * 0.5f + 0.1f;
-        if (CapsuleCast(transform.up, maxCeilingDist, out _, PhysicsLayers.MaskGroundCheck))
+        if (CapsuleCast(transform.up, maxCeilingDist, out _, ceilingMask))
         {
             verticalVelocity = 0f;
         }
@@ -337,19 +361,34 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
         bool wasGrounded = IsGrounded;
         float groundCheckDist = height * 0.5f + GroundCheckDistance;
 
+        bool rawGrounded = false;
         if (Physics.Raycast(transform.position, -transform.up, out var hit, groundCheckDist,
             GroundLayer, QueryTriggerInteraction.Ignore))
         {
             float footDist = hit.distance - height * 0.5f;
-            IsGrounded = footDist < 0.1f;
+            rawGrounded = footDist < 0.1f;
 
-            if (IsGrounded)
+            if (rawGrounded)
             {
                 groundHit = hit;
                 groundNormal = hit.normal;
                 groundAngle = Vector3.Angle(Vector3.up, hit.normal);
                 localSlopeDirection = new Vector3(groundNormal.x, 0f, groundNormal.z).normalized;
             }
+        }
+
+        // 接地→空中の単発切れを猶予フレーム分だけ吸収する(接地復帰は即時)。直前の接地情報を保持したまま
+        // 接地扱いを維持するので、めり込み押し出しや床の継ぎ目で1フレーム接地が外れても重力でガクッと沈まない。
+        // GroundGraceFrames=0 のプレイヤー等は従来どおり即時で非接地になる。
+        if (rawGrounded)
+        {
+            m_groundGraceCounter = 0;
+            IsGrounded = true;
+        }
+        else if (wasGrounded && m_groundGraceCounter < GroundGraceFrames)
+        {
+            m_groundGraceCounter++;
+            IsGrounded = true;
         }
         else
         {

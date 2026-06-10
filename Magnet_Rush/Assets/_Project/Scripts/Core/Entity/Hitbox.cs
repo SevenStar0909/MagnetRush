@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using UnityEngine;
 
 /// <summary>
@@ -10,6 +10,13 @@ using UnityEngine;
 public class Hitbox : MonoBehaviour, IHittable
 {
     [SerializeField] private Health m_health;
+
+    [SerializeField]
+    [Tooltip("ヒット解決上の所属グループ。Player/Enemy/Physics。攻撃側と同グループならダメージを弾く")]
+    private HitGroup m_hitGroup = HitGroup.Enemy;
+
+    /// <summary>所属グループ。Inspector で設定（プレイヤーは Player、敵は Enemy）。</summary>
+    public HitGroup HitGroup => m_hitGroup;
 
     public event Action<HitData> OnHitEvent;
 

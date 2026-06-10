@@ -1,5 +1,6 @@
 using UnityEngine;
 using System;
+using System.Collections.Generic;
 
 /// <summary>
 /// 磁力の影響を受けることを示すコンポーネント。
@@ -13,6 +14,9 @@ public class Magnetizable : MonoBehaviour, IMagnetPoleProvider
     [SerializeField] private bool m_isActive;
     [SerializeField] private float m_initialMass = 1f;
 
+    [Tooltip("磁力を受けても動かさない（ボス等）。磁化・極性・接触判定・演出は通常どおりで、移動への力だけ無効化する。")]
+    [SerializeField] private bool m_immovable;
+
     [Tooltip("磁力中心をGOからローカル空間でずらす。Collider.centerと同じ感覚。回転は装着GOに追従。\n距離・力計算・PD保持などMagnetizable同士のやり取りはこの位置で行う。")]
     [SerializeField] private Vector3 m_centerOffset = Vector3.zero;
 
@@ -21,6 +25,9 @@ public class Magnetizable : MonoBehaviour, IMagnetPoleProvider
 
     public MagneticPole Pole => m_pole;
     public bool IsActive => m_isActive;
+
+    /// <summary>true なら磁力を受けても動かない（ボス等）。磁化・接触判定・演出は通常どおり。</summary>
+    public bool Immovable { get => m_immovable; set => m_immovable = value; }
 
     /// <summary>
     /// true のとき、同じく RepulsionDisabled が true な相手との同極反発を MagnetManager がスキップする。
@@ -60,6 +67,8 @@ public class Magnetizable : MonoBehaviour, IMagnetPoleProvider
     private IMagneticResponse m_magneticResponse;
     private Entity m_cachedEntity;
     private float m_totalForceThisFrame;
+    // 今フレームに受けた磁力を一旦溜める。ResolveMagneticForces で最強1件＋残りを重なり係数で合成して適用する
+    private readonly List<PendingForce> m_pendingForces = new();
     private Renderer[] m_renderers;
     private MaterialPropertyBlock m_mpb;
     private Collider m_collider;
@@ -131,6 +140,7 @@ public class Magnetizable : MonoBehaviour, IMagnetPoleProvider
     /// </summary>
     public void ApplyHoldForce(Vector3 force)
     {
+        if (m_immovable) { ChannelLogger.LogGuardReturn("Magnet", "Immovable: 保持力を無視（動かさない）"); return; }
         m_totalForceThisFrame += force.magnitude;
 
         if (m_cachedEntity != null)
@@ -228,13 +238,54 @@ public class Magnetizable : MonoBehaviour, IMagnetPoleProvider
     }
 
     /// <summary>
-    /// 力を適用する。IMagneticResponse → IMagnetTarget → Rigidbody の優先順で判別。
-    /// 同時にm_totalForceThisFrameに蓄積する。
+    /// 磁力を1件バッファに溜める。実際の物理適用は ResolveMagneticForces でまとめて行う。
+    /// 鈍化用の合計(m_totalForceThisFrame)はここで全件加算する（重なり係数の影響を受けない）。
     /// </summary>
     public void ApplyForce(Vector3 force, Vector3 sourcePosition)
     {
+        if (m_immovable) { ChannelLogger.LogGuardReturn("Magnet", "Immovable: 磁力を無視（動かさない）"); return; }
         m_totalForceThisFrame += force.magnitude;
+        m_pendingForces.Add(new PendingForce(force, sourcePosition));
+    }
 
+    /// <summary>
+    /// 溜めた磁力を合成して適用する。一番強い1件はフル、残りは overlapWeight 倍で適用する。
+    /// 磁場が重なって複数の磁力源から引かれた時、overlapWeight=0 なら最強1件だけ効き重なりの加算が消える。
+    /// 1 なら全件フル加算（従来挙動）。MagnetManager がペア計算後に毎フレーム呼ぶ。
+    /// </summary>
+    public void ResolveMagneticForces(float overlapWeight)
+    {
+        int count = m_pendingForces.Count;
+        if (count == 0) { ChannelLogger.LogGuardReturn("Magnet", "適用待ちの磁力なし"); return; }
+
+        // 力の大きさが最大の1件を最強として全適用、それ以外を係数で減衰（引き寄せ/反発は区別しない）
+        int strongestIndex = 0;
+        float strongestSqr = m_pendingForces[0].force.sqrMagnitude;
+        for (int i = 1; i < count; i++)
+        {
+            float sqr = m_pendingForces[i].force.sqrMagnitude;
+            if (sqr > strongestSqr)
+            {
+                strongestSqr = sqr;
+                strongestIndex = i;
+            }
+        }
+
+        for (int i = 0; i < count; i++)
+        {
+            float scale = i == strongestIndex ? 1f : overlapWeight;
+            if (scale <= 0f) continue;
+            ApplyForceImmediate(m_pendingForces[i].force * scale, m_pendingForces[i].sourcePosition);
+        }
+
+        m_pendingForces.Clear();
+    }
+
+    /// <summary>
+    /// 力を即座に適用する。IMagneticResponse → IMagnetTarget → Rigidbody の優先順で判別。
+    /// </summary>
+    private void ApplyForceImmediate(Vector3 force, Vector3 sourcePosition)
+    {
         if (m_magneticResponse != null && m_magneticResponse.IsResponseActive)
         {
             m_magneticResponse.OnMagnetForce(force, sourcePosition);
@@ -260,6 +311,17 @@ public class Magnetizable : MonoBehaviour, IMagnetPoleProvider
             Vector3 contactPoint = m_collider != null ? m_collider.ClosestPoint(sourcePosition) : Position;
             m_rb.AddForceAtPosition(force * m_rb.mass, contactPoint, ForceMode.Force);
             return;
+        }
+    }
+
+    private readonly struct PendingForce
+    {
+        public readonly Vector3 force;
+        public readonly Vector3 sourcePosition;
+        public PendingForce(Vector3 force, Vector3 sourcePosition)
+        {
+            this.force = force;
+            this.sourcePosition = sourcePosition;
         }
     }
 
@@ -301,6 +363,8 @@ public class Magnetizable : MonoBehaviour, IMagnetPoleProvider
     void LateUpdate()
     {
         m_totalForceThisFrame = 0f;
+        // Resolve が呼ばれ損ねた場合の次フレーム持ち越しを防ぐ保険（通常は Resolve 内でクリア済み）
+        m_pendingForces.Clear();
     }
 
 #if UNITY_EDITOR

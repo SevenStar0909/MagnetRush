@@ -22,8 +22,11 @@ public class EntityController : MonoBehaviour
     [Tooltip("壁との間に保つスキン幅。ジッター防止。")]
     public float skinWidth = 0.01f;
 
-    [Tooltip("衝突判定のレイヤーマスク。Awakeで未設定なら自動でPhysicsLayers.MaskEntityCollisionを適用。")]
+    [Tooltip("衝突判定のレイヤーマスク。Awakeで未設定なら 環境+物理体(Default/Ground/Wall/PhysicsObject/EntityBody) を適用。")]
     public LayerMask collisionLayer = -5;
+
+    [Tooltip("動的な PhysicsObject を押せるか。既定 OFF（プレイヤー・雑魚は押さず壁扱い）。ボスだけ ON にする。")]
+    [SerializeField] private bool m_canPushPhysicsObjects = false;
 
     private const int k_MaxCollisionSteps = 3;
 
@@ -63,9 +66,11 @@ public class EntityController : MonoBehaviour
 
     void Awake()
     {
-        // collisionLayerが未設定(0)または旧デフォルト(-5)の場合はPhysicsLayers値で上書き
+        // collisionLayerが未設定(0)または旧デフォルト(-5)の場合は 環境+物理体 の既定マスクを適用
         if (collisionLayer == 0 || collisionLayer == -5)
-            collisionLayer = PhysicsLayers.MaskEntityCollision;
+            collisionLayer = PhysicsLayers.Bit(PhysicsLayers.Default)
+                | PhysicsLayers.Bit(PhysicsLayers.Ground) | PhysicsLayers.Bit(PhysicsLayers.Wall)
+                | PhysicsLayers.Bit(PhysicsLayers.PhysicsObject) | PhysicsLayers.Bit(PhysicsLayers.EntityBody);
 
         InitializeRigidbody();
         CreateHitboxContainer();
@@ -255,6 +260,9 @@ public class EntityController : MonoBehaviour
                     var checkRb = hit.collider.attachedRigidbody;
                     if (checkRb != null && !checkRb.isKinematic)
                     {
+                        // 押せないエンティティ（プレイヤー・雑魚）は動的オブジェクトを壁扱い（押さない・通さない）。ボスのみ ON。
+                        if (!m_canPushPhysicsObjects) goto wallHandling;
+
                         // 磁気吸着中の Object は通過させずに壁扱い（PDホルダーが位置を制御する）
                         if (IsMagneticallyHeld(checkRb)) goto wallHandling;
 
@@ -273,6 +281,9 @@ public class EntityController : MonoBehaviour
                     var hitRb = hit.collider.attachedRigidbody;
                     if (hitRb != null && !hitRb.isKinematic)
                     {
+                        // 押せないエンティティ（プレイヤー・雑魚）は push せず壁扱い。ボスだけ m_canPushPhysicsObjects=true で押す。
+                        if (!m_canPushPhysicsObjects) goto wallHandling;
+
                         // 磁気吸着中の Object は push しない（PD ホルダーが位置を制御する、箱が無限に押されるバグ源）
                         if (IsMagneticallyHeld(hitRb)) goto wallHandling;
 

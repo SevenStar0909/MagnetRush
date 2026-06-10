@@ -5,17 +5,17 @@ using UnityEngine;
 public class MagneticMoverSettings : ScriptableObject
 {
     [Header("[移動]")]
-    [Label("磁力倍率")]
-    [Tooltip("磁力の倍率。Playerとは独立してエネミーの磁力感度を調整する")]
+    [Label("敵の引き寄せられやすさ倍率")]
+    [Tooltip("敵が磁力でどれだけ動きやすいかの倍率。プレイヤーとは別に調整できる")]
     public float forceMultiplier = 3f;
-    [Label("最大速度（m/s）")]
-    [Tooltip("磁力移動時の最大速度（m/s）")]
+    [Label("敵が磁力で動ける最大速度（m/s）")]
+    [Tooltip("敵が磁力で引っ張られる時の最高速度（m/s）。ここで頭打ちになる")]
     public float maxSpeed = 15f;
-    [Label("NavMesh復帰待ち時間（秒）")]
-    [Tooltip("磁力停止後の NavMesh 復帰待ち時間（秒）")]
+    [Label("動きが止まってから歩行に戻るまでの時間（秒）")]
+    [Tooltip("磁力で動かされた後、通常の歩行に戻るまでの待ち時間（秒）")]
     public float recoveryDelay = 1f;
     [Header("[復帰]")]
-    [Label("NavMesh復帰最大リトライ回数")]
-    [Tooltip("NavMesh 復帰の最大リトライ回数")]
+    [Label("歩行に戻すのを試す最大回数")]
+    [Tooltip("通常の歩行に戻すのを何回まで試すか")]
     public int maxRecoveryAttempts = 10;
 }

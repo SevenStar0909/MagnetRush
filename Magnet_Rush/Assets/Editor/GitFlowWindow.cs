@@ -184,10 +184,17 @@ public class GitFlowWindow : EditorWindow
         // Note: ドメインリロードでUnity内部のAutoRefreshカウンタはリセットされるため、
         // ここで AllowAutoRefresh を呼ぶとカウンタが負になり Assertion エラーが出る。
         // isAssemblyReloadLocked のリセットのみ行う。
-        if (TryRestorePipelineState())
+        bool pipelineRestored = TryRestorePipelineState();
+        if (pipelineRestored)
         {
             isAssemblyReloadLocked = false;
             Log("情報", "パイプラインを復元しました。処理を継続します...");
+        }
+        else if (hasGitRepo && hasRemote)
+        {
+            // パイプライン処理中でなければ、保留中の stash 復元を提案
+            // （Unity を閉じている間に貯まったケースを救済）
+            TryRestorePendingStash();
         }
     }
 
@@ -434,6 +441,24 @@ public class GitFlowWindow : EditorWindow
         if (GUILayout.Button("更新"))
         {
             CheckEnvironment();
+            if (hasGitRepo && hasRemote)
+            {
+                // リモート参照を取得して prune（他メンバーの新規/削除ブランチを反映）
+                // 同期実行: 小規模リポなら数秒で済む。重い場合は「最新を取得 (Fetch)」を使う
+                EditorUtility.DisplayProgressBar("リモート参照を更新中", $"git fetch --prune {m_remoteName}", 0.5f);
+                try
+                {
+                    var (fetchCode, fetchOutput) = RunGit($"fetch --prune {m_remoteName}");
+                    if (fetchCode != 0)
+                    {
+                        Log("警告", $"リモート参照の更新に失敗しました（ローカルキャッシュのみ表示します）: {fetchOutput}");
+                    }
+                }
+                finally
+                {
+                    EditorUtility.ClearProgressBar();
+                }
+            }
             RefreshStatus();
             RefreshBranches();
         }
@@ -734,6 +759,11 @@ public class GitFlowWindow : EditorWindow
             }
         }
 
+        // ソート前に名前 → リモートのみフラグの対応を退避（ソートで対応関係が崩れるため）
+        var remoteMap = new System.Collections.Generic.Dictionary<string, bool>();
+        for (int i = 0; i < branches.Count; i++)
+            remoteMap[branches[i]] = branchIsRemoteOnly[i];
+
         // main → develop → feature/ の順に並び替え
         branches.Sort((a, b) =>
         {
@@ -746,10 +776,8 @@ public class GitFlowWindow : EditorWindow
             int cmp = OrderOf(a).CompareTo(OrderOf(b));
             return cmp != 0 ? cmp : string.Compare(a, b, StringComparison.Ordinal);
         });
-        // branchIsRemoteOnly も同じ順序に並び替え
-        var remoteMap = new System.Collections.Generic.Dictionary<string, bool>();
-        for (int i = 0; i < branches.Count; i++)
-            remoteMap[branches[i]] = branchIsRemoteOnly[i];
+
+        // 退避した remoteMap を使ってソート後の順序に再構築
         branchIsRemoteOnly.Clear();
         foreach (string b in branches)
             branchIsRemoteOnly.Add(remoteMap[b]);
@@ -1238,6 +1266,9 @@ public class GitFlowWindow : EditorWindow
 
             // 8. 保護ブランチ警告
             WarnIfProtectedBranch();
+
+            // 9. 保護ブランチ復帰時に退避していた変更があれば復元提案
+            TryRestorePendingStash();
         }
         catch (Exception ex)
         {
@@ -1551,13 +1582,22 @@ public class GitFlowWindow : EditorWindow
                     Log("情報", "未コミット変更があるため操作をキャンセルしました。");
                     return false;
                 }
-                var (stashCode, stashOutput) = RunGit("stash push --include-untracked -m \"GitFlow auto-stash\"");
+                // stash メッセージにブランチ名を埋め込んでおく（手動 stash と区別 + ブランチ照合）
+                string stashLabel = $"GitFlow auto-stash: {currentBranch}";
+                var (stashCode, stashOutput) = RunGit($"stash push --include-untracked -m \"{stashLabel}\"");
                 if (stashCode != 0)
                 {
                     Log("エラー", $"変更の退避に失敗しました: {stashOutput}");
                     return false;
                 }
-                Log("警告", $"{currentBranch} ブランチの未コミット変更を退避しました。git stash pop で復元できます。");
+                // stash の SHA を取得して EditorPrefs に保存（後でブランチ復帰時に自動復元する）
+                var (shaCode, shaOutput) = RunGit("rev-parse refs/stash");
+                if (shaCode == 0 && !string.IsNullOrEmpty(shaOutput))
+                {
+                    string key = GetPendingStashKey(currentBranch);
+                    EditorPrefs.SetString(key, shaOutput.Trim());
+                }
+                Log("警告", $"{currentBranch} ブランチの未コミット変更を退避しました。同じブランチに戻ると復元ダイアログが出ます。");
             }
             return true;
         }
@@ -1604,6 +1644,84 @@ public class GitFlowWindow : EditorWindow
             Log("成功", "変更を自動コミットしました。");
         }
         return true;
+    }
+
+    // ========================================
+    // 保留 stash 管理（保護ブランチで stash した変更を元ブランチ復帰時に自動復元）
+    // ========================================
+
+    /// <summary>
+    /// EditorPrefs キー: プロジェクトパス + ブランチ名でユニーク化（複数プロジェクト混在対応）
+    /// </summary>
+    private string GetPendingStashKey(string branchName)
+    {
+        return $"GitFlowWindow.PendingStash::{repoRoot}::{branchName}";
+    }
+
+    /// <summary>
+    /// 現在のブランチに対応する保留 stash があれば、ダイアログで確認して pop する。
+    /// FinalizeOperation の最後（ブランチ切り替え完了後）から呼ぶ。
+    /// </summary>
+    private void TryRestorePendingStash()
+    {
+        string key = GetPendingStashKey(currentBranch);
+        string stashSha = EditorPrefs.GetString(key, "");
+        if (string.IsNullOrEmpty(stashSha)) return;
+
+        // stash がまだ存在するか確認（既に手動で pop / drop されている可能性）
+        var (verifyCode, _) = RunGit($"rev-parse --verify {stashSha}^{{commit}}");
+        if (verifyCode != 0)
+        {
+            EditorPrefs.DeleteKey(key);
+            return;
+        }
+
+        // stash list から該当 stash のインデックスを取得（stash@{N} 指定用）
+        var (listCode, listOutput) = RunGit("stash list --format=%H");
+        if (listCode != 0)
+        {
+            Log("警告", "stash list の取得に失敗しました。手動で git stash pop してください。");
+            return;
+        }
+        int index = -1;
+        string[] lines = listOutput.Split('\n');
+        for (int i = 0; i < lines.Length; i++)
+        {
+            if (lines[i].Trim() == stashSha)
+            {
+                index = i;
+                break;
+            }
+        }
+        if (index < 0)
+        {
+            // SHA が一致する stash が見つからない（rebase等で書き換わった?）→ キーだけクリア
+            EditorPrefs.DeleteKey(key);
+            return;
+        }
+
+        bool restore = EditorUtility.DisplayDialog(
+            "退避していた変更を復元",
+            $"{currentBranch} ブランチに切り替え前に退避していた変更があります。\n復元しますか？\n\n" +
+            "「あとで」を選んだ場合、次回このブランチを開いたとき再度確認されます。",
+            "復元する", "あとで");
+        if (!restore)
+        {
+            Log("情報", $"stash の復元を保留しました（次回 {currentBranch} に戻ったときに再確認）。");
+            return;
+        }
+
+        var (popCode, popOutput) = RunGit($"stash pop \"stash@{{{index}}}\"");
+        if (popCode != 0)
+        {
+            Log("エラー", $"stash の復元に失敗しました（コンフリクトの可能性）: {popOutput}");
+            Log("エラー", "手動で解決してから git stash drop してください。");
+            return;
+        }
+
+        EditorPrefs.DeleteKey(key);
+        Log("成功", $"{currentBranch} に退避していた変更を復元しました。");
+        RefreshStatus();
     }
 
     // ========================================
@@ -1655,7 +1773,7 @@ public class GitFlowWindow : EditorWindow
             ctx.Stage = OperationStage.GitRunning;
     
 
-            RunStepAsync(title, "リモート取得", 2, 4, $"fetch {m_remoteName}", (code, output) =>
+            RunStepAsync(title, "リモート取得", 2, 4, $"fetch --prune {m_remoteName}", (code, output) =>
             {
                 if (code != 0)
                 {

@@ -2,18 +2,24 @@ using System;
 using UnityEngine;
 
 /// <summary>
-/// ボス右手専用の被弾判定。AttackStance中のみ Stamina も削る。
-/// それ以外（非AttackStance）は通常の Health ダメージのみ。
+/// ボス右手専用の被弾判定（振り上げカウンター）。
+/// 振り上げ攻撃中（AttackStance/AttackMotion）に手へ当たった時だけ Stun を発火する（スタブ可）。
+/// それ以外は通常の Health ダメージのみ。
 /// IHittable を実装し、GetComponentInParent&lt;IHittable&gt; で右手子コライダー側から最近祖として捕捉される。
-/// Stamina が 0 になると Stamina.OnBreak 経由で EnemyBossAI が Stun ステートに遷移させる。
-/// 依存: Health, Stamina, EnemyBossBaseA_Animator, EnemyBossSettings
+/// スタンゲージ（よろけ）の蓄積はボス本体ヒット側（EnemyBossAI.OnBodyHit）が担当する。
+/// 依存: Health, EnemyBossBaseA_Animator
 /// </summary>
 public sealed class ArmStunHitbox : MonoBehaviour, IHittable
 {
     [SerializeField] private Health m_health;
-    [SerializeField] private Stamina m_stamina;
     [SerializeField] private EnemyBossBaseA_Animator m_animator;
-    [SerializeField] private EnemyBossSettings m_settings;
+
+    [SerializeField]
+    [Tooltip("ヒット解決上の所属グループ。ボスなので通常 Enemy")]
+    private HitGroup m_hitGroup = HitGroup.Enemy;
+
+    /// <summary>所属グループ。攻撃側との比較で自傷・同士討ちを弾く。</summary>
+    public HitGroup HitGroup => m_hitGroup;
 
     public event Action<HitData> OnHitEvent;
 
@@ -22,27 +28,13 @@ public sealed class ArmStunHitbox : MonoBehaviour, IHittable
         if (m_health == null)
             m_health = GetComponentInParent<Health>();
 
-        if (m_stamina == null)
-            m_stamina = GetComponentInParent<Stamina>();
-
         if (m_animator == null)
             m_animator = GetComponentInParent<EnemyBossBaseA_Animator>();
 
-        if (m_settings == null)
-        {
-            // EnemyBossSettings は SO のため GetComponentInParent 不可。EnemyBossBase 経由で取得する
-            var boss = GetComponentInParent<EnemyBossBase>();
-            if (boss != null) m_settings = boss.StatusData;
-        }
-
         if (m_health == null)
             ChannelLogger.LogError("EnemyBossA", $"[ArmStunHitbox] {name}: Health 未取得");
-        if (m_stamina == null)
-            ChannelLogger.LogError("EnemyBossA", $"[ArmStunHitbox] {name}: Stamina 未取得");
         if (m_animator == null)
             ChannelLogger.LogError("EnemyBossA", $"[ArmStunHitbox] {name}: EnemyBossBaseA_Animator 未取得");
-        if (m_settings == null)
-            ChannelLogger.LogError("EnemyBossA", $"[ArmStunHitbox] {name}: EnemyBossSettings 未取得");
     }
 
     public void OnHit(HitData hit)
@@ -56,31 +48,16 @@ public sealed class ArmStunHitbox : MonoBehaviour, IHittable
         // HPダメージは全状態で適用
         m_health.Damage(hit.damage);
 
-        // 既にStamina切れの間は追加効果なし（HPダメージのみ）
-        if (m_stamina != null && m_stamina.IsBroken)
-        {
-            OnHitEvent?.Invoke(hit);
-            return;
-        }
-
-        // AttackStance / AttackMotion 中のみ: スタミナ消費 + Stagger 発火
-        // 中立・Rush・Missile・Stunned・Stagger 中は HPダメージのみ
+        // 振り上げ攻撃中（AttackStance/AttackMotion）に手へ当たった＝逆極カウンター成立。
+        // この時だけスタン（Stunned）を発火する。スタン中はプレイヤーがスタブを決められる。
+        // IsStunned は bool なので連打されても入り直さない（旧 BeInterrupted 連打のループは起きない）。
+        // スタンゲージ（よろけ）の蓄積はボス本体ヒット側（EnemyBossAI.OnBodyHit）が担当するので、ここでは触らない。
         if (m_animator != null && (m_animator.IsInAttackStance || m_animator.IsInAttackMotion))
         {
-            if (m_stamina != null && m_settings != null)
-            {
-                int dmg = m_settings.armStunStaminaDamage;
-                if (dmg > 0)
-                {
-                    m_stamina.Consume(dmg);
-                    ChannelLogger.Log("EnemyBossA",
-                        $"[ArmStunHitbox] AttackState hit src={(hit.source != null ? hit.source.name : "null")} " +
-                        $"staminaDmg={dmg} remain={m_stamina.CurrentStamina}/{m_stamina.MaxStamina}");
-                }
-            }
-
-            m_animator.SetIsStaggerTrue();
-            m_animator.TriggerBeInterrupted();
+            m_animator.SetIsStunnedTrue();
+            m_animator.SetIsStaggerFalse();
+            ChannelLogger.Log("EnemyBossA",
+                $"[ArmStunHitbox] 振り上げカウンター成立 → Stun src={(hit.source != null ? hit.source.name : "null")}");
         }
 
         OnHitEvent?.Invoke(hit);
