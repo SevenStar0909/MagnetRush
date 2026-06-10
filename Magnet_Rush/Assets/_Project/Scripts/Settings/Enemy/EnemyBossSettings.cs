@@ -14,22 +14,21 @@ public class EnemyBossSettings : ScriptableObject
     [Min(1)]
     public int healthBarSegments = 3;
 
-    [Label("最大スタンゲージ")]
-    [Tooltip("満タンになるとよろけ（Stagger）が発生する。物理オブジェクトをボス本体に当てると溜まる")]
-    public int maxStamina = 10;
-    [Label("スタンゲージ減衰（/s）")]
-    [Tooltip("当てるのをやめると、1秒あたりこの量だけスタンゲージが戻る")]
+    [Label("最大体幹ゲージ")]
+    [Tooltip("最大体幹ゲージ")]
+    public int maxStamina = 10; 
+    [Label("体幹ゲージ回復（/s）")]
+    [Tooltip("体幹ゲージ回復量")]
     public int staminaRecovery = 5;
-    [Label("スタンゲージ減衰の待ち時間（秒）")]
-    [Tooltip("最後に当ててからこの秒数たつと、スタンゲージが戻り始める")]
+    [Label("体幹ゲージ回復クールダウン（秒）")]
+    [Tooltip("攻撃を受けた後の体幹ゲージ回復クールダウン（秒）")]
     public int staminaRecoveryCooldown = 5;
-    [Label("スタン状態の継続時間（秒）")]
-    [Tooltip("振り上げカウンターでスタンしたとき動けない時間。仕様＝5秒")]
-    public float staminaBreakDuration = 5.0f;
-    [Label("本体に1発当てたときのスタンゲージ蓄積率（％）")]
-    [Tooltip("磁力で飛ばした物理オブジェクトがボス本体に当たるたび、スタンゲージが何％溜まるか。10なら10発で満タン→よろけ")]
-    [Range(1, 100)]
-    public int stunGaugePercentPerBodyHit = 10;
+    [Label("体幹崩れ(スタン)時間（秒）")]
+    [Tooltip("体幹ゲージが0になりる行動不能時間")]
+    public float staminaBreakDuration = 3.0f;
+    [Label("右手スタンStamina消費量")]
+    [Tooltip("AttackStance中に右手×PhysicsObjectが当たった時のStamina消費量。0でブレイク→スタン")]
+    public int armStunStaminaDamage = 5;
 
     [Header("[移動]")]
     [Label("移動速度（m/s）")]
@@ -64,7 +63,7 @@ public class EnemyBossSettings : ScriptableObject
     [Tooltip("接地判定の追加距離")]
     public float groundCheckDistance = 0.3f;
     [Label("接地判定レイヤー")]
-    [Tooltip("接地判定レイヤー（0=環境(Default/Ground/Wall)の既定マスク）")]
+    [Tooltip("接地判定レイヤー（0=PhysicsLayers.MaskGroundCheck）")]
     public LayerMask groundLayer;
     [Label("外部力減衰率")]
     [Tooltip("外部力（磁力等）の指数減衰率。大きいほど早く減速する")]
@@ -74,11 +73,6 @@ public class EnemyBossSettings : ScriptableObject
     [Label("攻撃ダメージ")]
     [Tooltip("1回の攻撃ダメージ")]
     public int attackDamage = 1;
-
-    [Label("起動範囲（m）")]
-    [Tooltip("プレイヤーがこの距離より遠いと、攻撃も向き直りもせず Idle のまま待機する（戦闘を始める半径）")]
-    public float activationRange = 30.0f;
-
     [Label("近接攻撃の射程（m）")]
     [Tooltip("プレイヤーがこの距離より近くにいるとき、近接攻撃を行う")]
     public float attackRange = 20.0f;
@@ -117,10 +111,9 @@ public class EnemyBossSettings : ScriptableObject
     public float attackMotionFaceDeadZoneDeg = 180f;
 
     [Header("スタッガー")]
-    [Label("よろけ状態の継続時間（秒）")]
-    [Tooltip("スタンゲージ満タンでよろけたとき動けない時間。仕様＝10秒")]
-    public float staggerDuration = 10f;
-    [Tooltip("スタッガー中の移動速度倍率（未使用）")]
+    [Tooltip("スタンorAttack終了後の隙時間（秒）")]
+    public float staggerDuration = 1.5f;
+    [Tooltip("スタッガー中の移動速度倍率")]
     [Range(0f, 1f)]
     public float staggerMoveMultiplier = 0.5f;
 

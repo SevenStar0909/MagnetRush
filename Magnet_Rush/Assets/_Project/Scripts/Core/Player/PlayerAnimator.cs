@@ -32,9 +32,6 @@ public class PlayerAnimator : MonoBehaviour
     [Tooltip("スタブ Ability。未設定なら親の GetComponentInParent<StabAbility>()")]
     [SerializeField] private StabAbility m_stab;
 
-    [Tooltip("体力。被弾アニメのトリガーに使う。未設定なら親の GetComponentInParent<Health>()")]
-    [SerializeField] private Health m_health;
-
     [Header("Animator Parameter Names (Inspector 単一箇所管理)")]
     [SerializeField] private string m_stateName = "State";
     [SerializeField] private string m_lastStateName = "LastState";
@@ -48,7 +45,6 @@ public class PlayerAnimator : MonoBehaviour
     [SerializeField] private string m_reloadName = "Reload";
     [SerializeField] private string m_verticalSpeedName = "VerticalSpeed";
     [SerializeField] private string m_stabName = "Stab";
-    [SerializeField] private string m_hitName = "Hit";
 
     [Header("Layer Names (Inspector 単一箇所管理)")]
     [Tooltip("エイム時に有効化する上半身 Layer 名。Animator Controller のレイヤー名と一致させる。")]
@@ -56,10 +52,6 @@ public class PlayerAnimator : MonoBehaviour
     [Tooltip("Aim 切替の補間時間 (秒)。短いほどパッと、長いほど滑らかに切り替わる。")]
     [SerializeField] private float m_aimLayerFadeTime = 0.15f;
     private int m_aimLayerIndex = -1;
-
-    [Tooltip("射撃時に上半身レイヤーを上げ続ける時間 (秒)。移動しながら撃つとき、下半身は歩いたまま上半身だけ撃たせるため。")]
-    [SerializeField] private float m_shootUpperBodyHold = 0.6f;
-    private float m_shootHoldTimer;
 
     /// <summary>
     /// State 型 → Animator の State Int 値への固定マッピング。
@@ -95,7 +87,6 @@ public class PlayerAnimator : MonoBehaviour
     private int m_hReload;
     private int m_hVerticalSpeed;
     private int m_hStab;
-    private int m_hHit;
 
     void Awake()
     {
@@ -105,7 +96,6 @@ public class PlayerAnimator : MonoBehaviour
         if (m_player   == null) m_player   = GetComponentInParent<Player>();
         if (m_aim      == null) m_aim      = GetComponentInParent<AimAbility>();
         if (m_stab     == null) m_stab     = GetComponentInParent<StabAbility>();
-        if (m_health   == null) m_health   = GetComponentInParent<Health>();
 
         if (m_animator == null)
         {
@@ -128,7 +118,6 @@ public class PlayerAnimator : MonoBehaviour
         m_hReload          = Animator.StringToHash(m_reloadName);
         m_hVerticalSpeed   = Animator.StringToHash(m_verticalSpeedName);
         m_hStab            = Animator.StringToHash(m_stabName);
-        m_hHit             = Animator.StringToHash(m_hitName);
 
         ValidateAnimatorParameters();
         StartCoroutine(ValidateStateOrderDelayed());
@@ -168,7 +157,6 @@ public class PlayerAnimator : MonoBehaviour
             (m_reloadName,          "Reload (Trigger)"),
             (m_verticalSpeedName,   "VerticalSpeed (Float)"),
             (m_stabName,            "Stab (Trigger)"),
-            (m_hitName,             "Hit (Trigger)"),
         };
 
         var existing = new System.Collections.Generic.HashSet<string>();
@@ -217,10 +205,6 @@ public class PlayerAnimator : MonoBehaviour
         {
             m_states.OnStateChanged += HandleStateChange;
         }
-        if (m_health != null)
-        {
-            m_health.OnDamage += HandleDamage;
-        }
     }
 
     void OnDisable()
@@ -234,10 +218,6 @@ public class PlayerAnimator : MonoBehaviour
         if (m_states != null)
         {
             m_states.OnStateChanged -= HandleStateChange;
-        }
-        if (m_health != null)
-        {
-            m_health.OnDamage -= HandleDamage;
         }
     }
 
@@ -266,21 +246,18 @@ public class PlayerAnimator : MonoBehaviour
             m_animator.SetFloat(m_hVerticalSpeed, m_player.velocity.y + m_player.externalVelocity.y);
         }
 
-        bool aiming = m_aim != null && m_aim.IsAiming;
         if (m_aim != null)
-            m_animator.SetBool(m_hIsAiming, aiming);
-
-        // 射撃直後は一定時間だけ上半身レイヤーを上げてホールドする。
-        // これで移動中に撃っても下半身は歩いたまま、上半身だけ射撃モーションを重ねられる。
-        if (m_shootHoldTimer > 0f) m_shootHoldTimer -= Time.deltaTime;
-
-        // 上半身 Aim Layer の重みを補間切替（エイム中 or 射撃直後は上半身だけポーズを重ねる）
-        if (m_aimLayerIndex >= 0)
         {
-            float current = m_animator.GetLayerWeight(m_aimLayerIndex);
-            float target = (aiming || m_shootHoldTimer > 0f) ? 1f : 0f;
-            float maxDelta = (m_aimLayerFadeTime > 0f) ? (Time.deltaTime / m_aimLayerFadeTime) : 1f;
-            m_animator.SetLayerWeight(m_aimLayerIndex, Mathf.MoveTowards(current, target, maxDelta));
+            m_animator.SetBool(m_hIsAiming, m_aim.IsAiming);
+
+            // 上半身 Aim Layer の重みを補間切替（Idle 等を Aim ポーズとして上半身だけ重ねる）
+            if (m_aimLayerIndex >= 0)
+            {
+                float current = m_animator.GetLayerWeight(m_aimLayerIndex);
+                float target = m_aim.IsAiming ? 1f : 0f;
+                float maxDelta = (m_aimLayerFadeTime > 0f) ? (Time.deltaTime / m_aimLayerFadeTime) : 1f;
+                m_animator.SetLayerWeight(m_aimLayerIndex, Mathf.MoveTowards(current, target, maxDelta));
+            }
         }
     }
 
@@ -297,17 +274,9 @@ public class PlayerAnimator : MonoBehaviour
         m_animator.SetTrigger(m_hOnStateChanged);
     }
 
-    private void HandleShoot()  { if (m_animator != null) { m_animator.SetTrigger(m_hShoot); m_shootHoldTimer = m_shootUpperBodyHold; } }
+    private void HandleShoot()  { if (m_animator != null) m_animator.SetTrigger(m_hShoot); }
     private void HandleReload() { if (m_animator != null) m_animator.SetTrigger(m_hReload); }
     private void HandleStab()   { if (m_animator != null) m_animator.SetTrigger(m_hStab); }
-
-    // 被弾アニメ。Health.OnDamage は実ダメージが通った時だけ発火する（無敵時間中は鳴らない）。
-    // 致死ダメージ時は死亡アニメを優先したいので IsDead ならスキップ。
-    private void HandleDamage(int amount)
-    {
-        if (m_animator == null || m_health == null || m_health.IsDead) return;
-        m_animator.SetTrigger(m_hHit);
-    }
 
     // Stab はステート遷移と同時に FireStab → SetTrigger(Stab) するため、ここでリセットすると直後に消える。
     // 1フレーム内で State 変化 → ResetTriggers → Enter → SetTrigger(Stab) の順なら問題ないが、

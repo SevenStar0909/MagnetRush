@@ -20,7 +20,6 @@ public class Health : MonoBehaviour
     public event Action<int> OnDamage;
     public event Action OnDie;
     public event Action<int> OnHeal;
-    public event Action OnHealthReset;
 
     void Awake()
     {
@@ -44,8 +43,6 @@ public class Health : MonoBehaviour
             CurrentHealth = m_maxHealth;
         else
             CurrentHealth = Mathf.Min(CurrentHealth, m_maxHealth);
-
-        OnHealthReset?.Invoke();
     }
 
     /// <summary>
@@ -104,7 +101,5 @@ public class Health : MonoBehaviour
     {
         CurrentHealth = m_maxHealth;
         m_lastDamageTime = -999f;
-
-        OnHealthReset?.Invoke();
     }
 }

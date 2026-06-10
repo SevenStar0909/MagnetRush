@@ -32,11 +32,9 @@ public class MagnetFieldVisualizer : MonoBehaviour
 
         var containerGO = new GameObject("MagnetFieldContainer");
         m_fieldContainer = containerGO.transform;
-        m_fieldContainer.SetParent(transform, false);
+        m_fieldContainer.SetParent(transform);
         m_fieldContainer.localPosition = Vector3.zero;
         m_fieldContainer.localRotation = Quaternion.identity;
-        // 親（弾/磁化対象）の lossyScale を打ち消し、磁場リングをワールド等倍の正球で描く
-        m_fieldContainer.localScale = InverseLossyScale(transform);
 
         float outer = settings.EffectiveOuterRadius;
 
@@ -67,16 +65,6 @@ public class MagnetFieldVisualizer : MonoBehaviour
             Destroy(m_fieldContainer.gameObject);
             m_fieldContainer = null;
         }
-    }
-
-    /// <summary>親の lossyScale を打ち消す localScale。リングをワールド等倍に保つ。</summary>
-    private static Vector3 InverseLossyScale(Transform parent)
-    {
-        Vector3 s = parent.lossyScale;
-        return new Vector3(
-            Mathf.Abs(s.x) > 1e-4f ? 1f / s.x : 1f,
-            Mathf.Abs(s.y) > 1e-4f ? 1f / s.y : 1f,
-            Mathf.Abs(s.z) > 1e-4f ? 1f / s.z : 1f);
     }
 
     // --- Sphere ---

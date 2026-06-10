@@ -129,10 +129,6 @@ public class PlayerSettings : ScriptableObject
     [Tooltip("死亡からリスポーンまでの待機時間（秒）。PlayerRespawner が WaitForSeconds に渡す")]
     public float respawnDelay = 3f;
 
-    [Label("落下リスポーン待機時間（秒）")]
-    [Tooltip("奈落に落ちてから足場に戻されるまでの待機時間（秒）。この間カメラが止まる。Player.FallRespawn が使う")]
-    public float fallRespawnDelay = 0.5f;
-
     [Header("[斜面]")]
     [Label("上り坂減速力")]
     [Tooltip("上り坂での減速力")]

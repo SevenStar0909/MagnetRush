@@ -94,13 +94,6 @@ public class MagnetManager : Singleton<MagnetManager>
     /// <summary>弾道吸引用。アクティブなフィールド一覧を返す。</summary>
     public List<MagnetField> GetActiveFields() => m_cachedFields;
 
-    /// <summary>
-    /// 登録済み全 Magnetizable のキャッシュ一覧を返す。
-    /// FindObjectsByType の代替: 毎フレーム呼んでも配列確保(GCゴミ)も全シーン走査も発生しない。
-    /// 返り値は内部リストの参照なので呼び出し側で変更しないこと(読み取り専用)。
-    /// </summary>
-    public List<Magnetizable> GetActiveMagnetizables() => m_cachedList;
-
     void FixedUpdate()
     {
         // ① 全磁化 Entity の holdVelocity を毎フレームゼロリセット（ProcessHold が再計算で上書き）
@@ -149,14 +142,6 @@ public class MagnetManager : Singleton<MagnetManager>
 
                 ProcessPair(m_cachedList[i], m_cachedList[j], contactsThisFrame);
             }
-        }
-
-        // 溜めた磁力を集約して適用。加算0で一番強い磁力源1件だけ、1で全件加算（重なりの加算量を調整）
-        float overlapWeight = m_settings != null ? m_settings.overlapForceWeight : 1f;
-        for (int i = 0; i < m_cachedList.Count; i++)
-        {
-            if (!m_cachedList[i].IsActive) continue;
-            m_cachedList[i].ResolveMagneticForces(overlapWeight);
         }
 
         // Entity ↔ Field 割り当て（nearest-wins）

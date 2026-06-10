@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -27,21 +26,6 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     [Tooltip("各生成位置のローカルオフセット。m_missileSpawnPoints と同じ順番で指定")]
     [SerializeField] private Vector3[] m_missileSpawnOffsets;
 
-    [Tooltip("ONで2発目のアニメイベントをアーク弾(上げてから狙う)にする。OFFで両方とも通常弾。発射数は変わらない(計4発)")]
-    [SerializeField] private bool m_fireLobMissiles = true;
-
-    [Tooltip("アーク弾の打ち上げ角度(度)。前方から上へ傾ける。大きいほど高く上がる")]
-    [SerializeField] private float m_missileLobAngle = 45f;
-
-    [Tooltip("アーク弾が上昇してからプレイヤーへ向き直すまでの時間(秒)。長いほど高く上げてから落ちる")]
-    [SerializeField] private float m_missileLobRiseTime = 0.45f;
-
-    [Tooltip("発射してからこの秒数はミサイルがボス本体に当たらない(発射直後の自爆防止)。経過後はボスにも当たる=磁力で撃ち返せる。0で即当たる")]
-    [SerializeField] private float m_missileCollisionGrace = 3f;
-
-    // 次の OnMissileFireEvent でアーク弾を撃つか。アニメの2イベントで 通常→アーク と交互に切り替える
-    private bool m_nextMissileIsLob;
-
     [Header("Debug")]
     [SerializeField] private bool m_logStateChange = true;
 
@@ -51,9 +35,6 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     private EnemyBossSettings m_settings;
     private Stamina m_stamina;
     private Health m_health;
-
-    // ボス本体（各ボーン）の Hitbox。物理オブジェクト接触でスタンゲージを溜める（機構1）。
-    private Hitbox[] m_bodyHitboxes;
 
     private BossState m_state = BossState.Idle;
     private float m_cooldownTimer;
@@ -71,17 +52,14 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     private bool m_wasInStaggerAnim;
     private bool m_staminaBreakEndRequested;
 
+    private bool m_resetStunEndTrigger;
+    private bool m_resetStaggerEndTrigger;
+
     // Rush 中に Animator が一度でも IsInRush=true になったか。
     // 入り transition と exit transition を区別し、exit 時の player 追尾回転を抑制する。
     private bool m_rushHasStarted;
 
-    public event Action OnStabHitSucceeded;   // スタブが成功したときに発火
-
     public BossState State => m_state;
-
-    public EnemyBossSettings Settings => m_settings;
-
-    public Stamina Stamina => m_stamina;
 
     void Awake()
     {
@@ -89,9 +67,6 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         m_agent = GetComponent<NavMeshAgent>();
         m_stamina = GetComponent<Stamina>();
         m_health = GetComponent<Health>();
-
-        // 右手の ArmStunHitbox は Hitbox 派生ではないので含まれない（＝カウンター経路と分離される）。
-        m_bodyHitboxes = GetComponentsInChildren<Hitbox>(true);
 
         if (m_animator == null)
             m_animator = GetComponentInChildren<EnemyBossBaseA_Animator>();
@@ -107,20 +82,12 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     {
         if (m_stamina != null)
             m_stamina.OnBreak += HandleStaminaBreak;
-
-        if (m_bodyHitboxes != null)
-            foreach (var hb in m_bodyHitboxes)
-                if (hb != null) hb.OnHitEvent += OnBodyHit;
     }
 
     void OnDisable()
     {
         if (m_stamina != null)
             m_stamina.OnBreak -= HandleStaminaBreak;
-
-        if (m_bodyHitboxes != null)
-            foreach (var hb in m_bodyHitboxes)
-                if (hb != null) hb.OnHitEvent -= OnBodyHit;
     }
 
     void Start()
@@ -167,52 +134,12 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         }
     }
 
-    // スタンゲージが満タン（＝Stamina 0）になった時に Stamina.OnBreak から呼ばれる。
-    // よろけ（Stagger）を1回だけ発火する。OnBreak はゲージが 0 に落ちた瞬間に1度だけ発火するのでループしない。
-    // よろけ中もスタブ可（CanReceiveStab が Stagger を含む）。スタン（振り上げカウンター=ArmStunHitbox）でも同様にスタブできる。
     private void HandleStaminaBreak()
     {
         if (m_animator == null) return;
 
-        m_animator.SetIsStaggerTrue();
-        m_animator.TriggerBeInterrupted();
-    }
-
-    // ボス本体（ボーンの Hitbox）に物理オブジェクトが当たった時に呼ばれる。スタンゲージを蓄積する（機構1）。
-    // 弾など磁化体でないものは無視。満タンになると Stamina.OnBreak → HandleStaminaBreak でよろけが発火する。
-    private void OnBodyHit(HitData hit)
-    {
-        if (m_stamina == null) return;
-        if (m_state == BossState.Stunned || m_state == BossState.Stagger) return; // 崩れ中は無視
-        if (m_stamina.IsBroken) return;                                      // 満タン到達済み（崩れ処理中）。崩れ終了時にリセットされる
-        if (hit.source == null) return;
-        if (hit.source.transform.IsChildOf(transform)) return;               // 自分由来は無視
-
-        int percent = ResolveStunPercent(hit.source);
-        if (percent <= 0) return;                                            // スタン値を持たない物（弾など）は無視
-
-        int max = m_stamina.MaxStamina;
-        int amount = Mathf.Max(1, Mathf.RoundToInt(max * percent / 100f));
-        m_stamina.Consume(amount);
-
-        ChannelLogger.Log("EnemyBossA",
-            $"[StunGauge] 本体ヒット +{percent}% (+{amount}) 蓄積={max - m_stamina.CurrentStamina}/{max} src={hit.source.name}");
-    }
-
-    // ぶつかった物のスタン値蓄積率（％）を返す。箱=MagneticContactDamage（小10/大30）、誘導ミサイル=EnemyMissile（30）、
-    // その他の磁化体は既定値、磁化体でなければ（弾など）0。
-    private int ResolveStunPercent(GameObject source)
-    {
-        var contact = source.GetComponentInParent<MagneticContactDamage>();
-        if (contact != null) return contact.StunGaugePercent;
-
-        var missile = source.GetComponentInParent<EnemyMissile>();
-        if (missile != null) return missile.StunGaugePercent;
-
-        if (source.GetComponentInParent<Magnetizable>() != null)
-            return m_settings != null ? m_settings.stunGaugePercentPerBodyHit : 10;
-
-        return 0;
+        m_animator.SetIsStunnedTrue();
+        m_animator.SetIsStaggerFalse();
     }
 
     private void TickStunEntry()
@@ -224,24 +151,9 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
 
         if (!alreadyInBreak && inStunAnim && !m_wasInStunAnim)
         {
-            // 入場時に前サイクルの未消費な退場トリガーを掃除する。退場トリガーは「出した側」では即 Reset せず
-            // 消費されるまで保持する方針なので、入場側でここで一度クリアして即抜けを防ぐ。
-            m_animator.ResetStunEnd();
-            m_animator.ResetStaggerEnd();
-
             m_staminaBreakTimer = Mathf.Max(0f, m_settings.staminaBreakDuration);
             m_staminaBreakEndRequested = false;
             ChangeState(BossState.Stunned);
-            // StunAnim に入ったら IsStunned bool を即落とす。AnyState→StunAnim は IsStunned==true で遷移するため、
-            // true のままだと StunkeepAnim から AnyState 経由で StunAnim へ戻り続けてループする。
-            // 状態保持は StunAnim→StunkeepAnim→(StunEnd)→Idle が担うので、bool は入場トリガーとして1回使えば十分。
-            m_animator.SetIsStunnedFalse();
-        }
-        else if (alreadyInBreak && inStunAnim)
-        {
-            // 既に崩れ中に IsStunned bool が立つ（崩れ中の腕カウンター等）と、AnyState→StunAnim が
-            // 引き続けて StunAnim↔StunkeepAnim で永久ループする。入場はブロックしつつ bool は消費して止める。
-            m_animator.SetIsStunnedFalse();
         }
 
         m_wasInStunAnim = inStunAnim;
@@ -255,11 +167,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
 
         if (!alreadyInBreak && inStaggerAnim && !m_wasInStaggerAnim && !m_animator.IsStunned)
         {
-            m_animator.ResetStunEnd();
-            m_animator.ResetStaggerEnd();
-
-            // よろけ（蓄積ルート）は専用の継続時間を使う。仕様＝10秒。スタン（カウンタールート）は staminaBreakDuration＝5秒。
-            m_staminaBreakTimer = Mathf.Max(0f, m_settings.staggerDuration);
+            m_staminaBreakTimer = Mathf.Max(0f, m_settings.staminaBreakDuration);
             m_staminaBreakEndRequested = false;
             ChangeState(BossState.Stagger);
         }
@@ -276,32 +184,21 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         if (m_staminaBreakTimer > 0f) return;
 
         m_staminaBreakEndRequested = true;
-        EndBreakAnimations();
-        ChangeState(BossState.Idle);
-    }
 
-    // 崩れ（Stun/Stagger）を終了させる退場トリガーを出す。m_state ではなく「実際に再生中のアニメ状態」を見て
-    // 一致する退場トリガーを出すので、再トリガーで m_state とアニメがズレていても確実に keep ループから抜ける。
-    // トリガーはここで Reset しない（消費されるまで保持）。Reset は次の崩れ入場時に行う＝即抜け事故と取り逃し事故の両方を防ぐ。
-    private void EndBreakAnimations()
-    {
-        if (m_animator == null) return;
-
-        bool inStunAnim = m_animator.IsStunned;
-        bool inStaggerAnim = m_animator.IsInStagger;
-
-        if (inStunAnim) m_animator.TriggerStunEnd();
-        if (inStaggerAnim) m_animator.TriggerStaggerEnd();
-
-        // どちらのアニメ状態でもない（遷移中など）場合の保険として両方出す
-        if (!inStunAnim && !inStaggerAnim)
+        if (m_state == BossState.Stunned)
         {
             m_animator.TriggerStunEnd();
+            m_animator.SetIsStunnedFalse();
+            m_resetStunEndTrigger = true;
+        }
+        else
+        {
             m_animator.TriggerStaggerEnd();
+            m_animator.SetIsStaggerFalse();
+            m_resetStaggerEndTrigger = true;
         }
 
-        m_animator.SetIsStunnedFalse();
-        m_animator.SetIsStaggerFalse();
+        ChangeState(BossState.Idle);
     }
 
     // === 状態遷移 ===
@@ -323,24 +220,10 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         }
 
         if (next == BossState.Idle)
-        {
             ClearStaminaFlags();
-            // Idle に戻る時は Wind/Dust を必ず止める。Rush の DisableWindEffectEvent が
-            // 中断（被弾→Stagger 等）で発火しないまま Idle へ戻ると Wind が出続けるため、保険として停止する。
-            // Wind/Dust は Rush/Stun 中しか点かないので Idle で消すのは常に正しい。
-            if (m_animator != null)
-            {
-                m_animator.DisableWindEffectEvent();
-                m_animator.DisableDustEffectEvent();
-            }
-        }
-
-        // ミサイル攻撃の入り口でトグルをリセット（必ず 1発目=通常波 から始める）
-        if (next == BossState.Missile)
-            m_nextMissileIsLob = false;
 
         // Rush 中に Stun/Stagger で割り込まれると Rush 側の Disable AnimEvent が発火せず
-        // Wind/Dust が出続けるので、ブレイク入り口でも明示停止する
+        // Wind/Dust が出続けるので、ブレイク入り口で明示停止する
         if (next == BossState.Stunned || next == BossState.Stagger)
         {
             if (m_animator != null)
@@ -348,6 +231,14 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
                 m_animator.DisableWindEffectEvent();
                 m_animator.DisableDustEffectEvent();
             }
+        }
+
+        // Stun/Stagger から抜ける時に Dust を止める。
+        // BossStunAnim は EnableDustEffectEvent (t=1.833s) のみで Disable イベントが無いため、ここで停止
+        if ((prev == BossState.Stunned || prev == BossState.Stagger) && next == BossState.Idle)
+        {
+            if (m_animator != null)
+                m_animator.DisableDustEffectEvent();
         }
 
         if (prev == BossState.AttackMotion || prev == BossState.Rush || prev == BossState.Missile)
@@ -360,15 +251,9 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
 
         m_animator.SetIsStaggerFalse();
         m_animator.SetIsStunnedFalse();
-        // Animator のトランジション遅延中はまだ Stun/Stagger ステートに残っている。
-        // ここで false 固定すると、次フレームで TickStunEntry/TickStaggerEntry が立ち上がりエッジを
-        // 誤検出して再入場し、Stagger(Stun) がループする。実ステートに同期させてエッジ誤検出を防ぐ。
-        m_wasInStunAnim = m_animator.IsStunned;
-        m_wasInStaggerAnim = m_animator.IsInStagger;
+        m_wasInStunAnim = false;
+        m_wasInStaggerAnim = false;
         m_staminaBreakEndRequested = false;
-
-        // ここではスタン値（Stamina）をリセットしない。スタン値はスタブを当てるまで減らない仕様。
-        // リセットは OnStabHit（スタブ成功時）の EndBreakAfterStab でのみ行う。
     }
 
     // === 各状態の Tick ===
@@ -379,17 +264,13 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         // ここで再検出すると Animator のトランジション遅延中に二重発火してループする
 
         m_boss.SlowDown(dt);
-
-        float distance = DistanceToPlayer();
-
-        // プレイヤーが起動範囲の外なら、向き直りも攻撃もせず Idle のまま待機する
-        if (distance > m_settings.activationRange)
-            return;
-
         FacePlayer(dt, m_settings.faceDeadZoneDeg);
 
         if (m_cooldownTimer > 0f)
             return;
+
+        float distance = DistanceToPlayer();
+        ChannelLogger.Log("EnemyBossA", $"distanceToPlayer = {distance}");
 
         if (distance <= m_settings.attackRange)
         {
@@ -541,23 +422,9 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
             return;
         }
 
-        // アニメの2イベントで 1発目=通常波 / 2発目=アーク波 と交互に撃つ（発射数は元のまま 計4発）
-        bool lob = m_fireLobMissiles && m_nextMissileIsLob;
-        FireMissileWave(lob);
-        m_nextMissileIsLob = !m_nextMissileIsLob;
-    }
-
-    /// <summary>1波分。全発射点から通常弾 or アーク弾を1発ずつ撃つ。</summary>
-    private void FireMissileWave(bool lob)
-    {
-        if (m_missilePrefab == null) return;
-
-        Vector3 direction = lob ? ComputeLobDirection() : transform.forward;
-        float seekDelay = lob ? m_missileLobRiseTime : -1f;
-
         if (m_missileSpawnPoints == null || m_missileSpawnPoints.Length == 0)
         {
-            SpawnMissileAt(this.transform, Vector3.zero, direction, seekDelay);
+            SpawnMissileAt(this.transform);
             return;
         }
 
@@ -570,42 +437,34 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
             if (m_missileSpawnOffsets != null && i < m_missileSpawnOffsets.Length)
                 offset = m_missileSpawnOffsets[i];
 
-            SpawnMissileAt(spawnPoint, offset, direction, seekDelay);
+            SpawnMissileAt(spawnPoint, offset);
         }
     }
 
-    /// <summary>アーク弾の初期方向。ボス正面を上へ m_missileLobAngle 度だけ傾ける。</summary>
-    private Vector3 ComputeLobDirection()
-    {
-        Vector3 fwd = transform.forward;
-        if (fwd.sqrMagnitude <= 0.0001f) fwd = Vector3.forward;
-        return Vector3.RotateTowards(fwd, Vector3.up, m_missileLobAngle * Mathf.Deg2Rad, 0f).normalized;
-    }
-
-    private void SpawnMissileAt(Transform spawnPoint, Vector3 localOffset, Vector3 direction, float seekDelayOverride)
+    private void SpawnMissileAt(Transform spawnPoint, Vector3 localOffset)
     {
         Vector3 spawnPos = spawnPoint.position + spawnPoint.TransformDirection(localOffset);
 
+        Vector3 direction = transform.forward;
         if (direction.sqrMagnitude <= 0.0001f)
             direction = spawnPoint.forward;
-        direction = direction.normalized;
 
+        direction = direction.normalized;
         Quaternion rotation = Quaternion.LookRotation(direction, Vector3.up);
+
         EnemyMissile missile = Instantiate(m_missilePrefab, spawnPos, rotation);
-        missile.Initialize(m_player, direction, seekDelayOverride);
-        // ミサイルは PhysicsObject なので発射元ボスの Pushbox 等と衝突してしまう。spawn 即爆発・自傷を防ぐ。
-        missile.IgnoreCollisionsWith(gameObject, m_missileCollisionGrace);
+        missile.Initialize(m_player, direction);
+    }
+
+    private void SpawnMissileAt(Transform spawnPoint)
+    {
+        SpawnMissileAt(spawnPoint, Vector3.zero);
     }
 
     // === IStabReceiver 実装 (Player → Boss スタブ受信) ===
 
-    /// <summary>
-    /// スタブを受け付ける条件。崩れ中 (Stunned=振り上げカウンター / Stagger=スタンゲージ満タン) に加え、
-    /// スタン値が満タン (Stamina.IsBroken) の間も true。満タンはスタブを当てるまで維持されるので、
-    /// 崩れアニメが終わって取り逃しても、近づいてスタブを決めれば成立する（ソフトロック防止）。
-    /// </summary>
-    public bool CanReceiveStab => m_state == BossState.Stunned || m_state == BossState.Stagger
-        || (m_stamina != null && m_stamina.IsBroken);
+    /// <summary>体幹ブレイク (Stunned) 中のみ true。</summary>
+    public bool CanReceiveStab => m_state == BossState.Stunned;
 
     /// <summary>
     /// プレイヤーのスタブAnimEventから呼ばれる。HPバー1本分を一気に削る（クールダウン無視）。
@@ -615,7 +474,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     public void OnStabHit(StabHitData data)
     {
         if (!CanReceiveStab)
-        { ChannelLogger.LogGuardReturn("EnemyBossA", "Stunned/Stagger 以外のため Stab 無効"); return; }
+        { ChannelLogger.LogGuardReturn("EnemyBossA", "Stunned 以外のため Stab 無効"); return; }
 
         if (m_health == null)
         { ChannelLogger.LogGuardReturn("EnemyBossA", "Health 未取得"); return; }
@@ -637,23 +496,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         { ChannelLogger.LogGuardReturn("EnemyBossA", "Stab 算出ダメージ0"); return; }
 
         m_health.DamageIgnoreCooldown(damage);
-        OnStabHitSucceeded?.Invoke();
         ChannelLogger.Log("EnemyBossA", $"[Stab] bar {currentBarsRemaining}→{targetBarsRemaining} dmg={damage} src={(data.source != null ? data.source.name : "null")} hp={m_health.CurrentHealth}/{maxHp}");
-
-        // スタブを当てたらスタン値を0にリセットし、崩れを終了させる（1回のスタンにつきスタブ1回）。
-        EndBreakAfterStab();
-    }
-
-    // スタブ成功時：スタン値を0に戻し、スタン/よろけを終了して Idle へ。これ以上スタブできない＝1回のスタンにつき1回。
-    private void EndBreakAfterStab()
-    {
-        if (m_stamina != null)
-            m_stamina.ResetStamina();
-
-        EndBreakAnimations();
-
-        m_staminaBreakEndRequested = true;
-        ChangeState(BossState.Idle);
     }
 
     // === ヘルパ ===
@@ -762,10 +605,6 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
             }
         }
 
-        // 突進終了地点。Agent は NavMesh 上でないと有効化できないので一旦サンプル点へ移すが、
-        // 最後にここへ戻す。これをしないとボスが NavMesh 最寄り点へ瞬間移動する（突進終了時のワープの原因）。
-        Vector3 endPosition = transform.position;
-
         if (m_agent.enabled)
             m_agent.enabled = false;
 
@@ -778,19 +617,28 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
             m_agent.updateRotation = false;
             m_agent.velocity = Vector3.zero;
 
-            // updatePosition=false なので Agent は内部位置(NavMesh上)を保ったまま、ボスの transform だけ
-            // 突進終了地点へ戻す。以降は通常の追従移動で滑らかに NavMesh 上へ戻る（瞬間移動しない）。
-            transform.position = endPosition;
-            m_agent.nextPosition = endPosition;
-
             ChannelLogger.Log("EnemyBossA", $"Agent復帰成功 pos={transform.position} hit={hit.position}");
         }
         else
         {
-            // 復帰できなかった場合もボスは飛ばさず元の位置へ戻す
-            transform.position = endPosition;
             ChannelLogger.LogWarning("EnemyBossA", $"Agent復帰失敗 pos={transform.position}");
         }
     }
 
+    void LateUpdate()
+    {
+        if (m_animator == null) return;
+
+        if (m_resetStunEndTrigger)
+        {
+            m_animator.ResetStunEnd();
+            m_resetStunEndTrigger = false;
+        }
+
+        if (m_resetStaggerEndTrigger)
+        {
+            m_animator.ResetStaggerEnd();
+            m_resetStaggerEndTrigger = false;
+        }
+    }
 }

@@ -10,9 +10,6 @@ public class MagneticContactDamage : MonoBehaviour
 {
     [SerializeField] private ContactDamageSettings m_settings;
 
-    /// <summary>この物理オブジェクトがボス本体に当たった時に与えるスタン値の蓄積率（％）。設定SOから取得。</summary>
-    public int StunGaugePercent => m_settings != null ? m_settings.stunGaugePercent : 0;
-
     private Magnetizable m_magnetizable;
     private Rigidbody m_rb;
     private readonly HashSet<IHittable> m_hitTargets = new HashSet<IHittable>();
@@ -54,9 +51,6 @@ public class MagneticContactDamage : MonoBehaviour
         if (hittable == null && collision.rigidbody != null)
             hittable = collision.rigidbody.GetComponentInChildren<IHittable>();
         if (hittable == null) { ChannelLogger.LogGuardReturn("ContactDmg", $"IHittable なし: {collision.collider.name}"); return; }
-
-        // プレイヤーには物理オブジェクトの接触ダメージを与えない（ボスのスタン蓄積・敵への加害は維持）
-        if (hittable.HitGroup == HitGroup.Player) { ChannelLogger.LogGuardReturn("ContactDmg", "プレイヤーへの接触ダメージは無効"); return; }
 
         // HIT のみ目立つログで残す
         Debug.Log($"<color=#FF5722>[ContactDmg]</color> {name} → {((MonoBehaviour)hittable).name} dmg={m_settings.damage} vel={vel:F1}");

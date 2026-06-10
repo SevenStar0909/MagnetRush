@@ -10,13 +10,6 @@ public class EnemyBullet : MonoBehaviour
     [SerializeField] private float m_lifetime = 4f;
     [SerializeField] private int m_damage = 1;
 
-    [SerializeField]
-    [Tooltip("ヒット解決上の所属グループ。敵の弾なので Enemy")]
-    private HitGroup m_hitGroup = HitGroup.Enemy;
-
-    /// <summary>所属グループ。被弾側との比較で自傷・同士討ちを弾く（強制は段階2c以降）。</summary>
-    public HitGroup HitGroup => m_hitGroup;
-
     private Rigidbody m_rb;
     private float m_timer;
 

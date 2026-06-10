@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 [DisallowMultipleComponent]
@@ -144,18 +143,14 @@ public class EnemyTurretMagneticAim : MonoBehaviour, IMagneticResponse
         if (m_selfMagnetizable == null)
             return null;
 
-        // 全シーン走査(FindObjectsByType)は配列確保のGCゴミと全探索コストが重い。
-        // MagnetManager がキャッシュ済みの登録一覧を読む(結果は同一・ゴミゼロ)。
-        if (MagnetManager.Instance == null)
-            return null;
-        List<Magnetizable> all = MagnetManager.Instance.GetActiveMagnetizables();
+        Magnetizable[] all = FindObjectsByType<Magnetizable>(FindObjectsSortMode.None);
 
         Magnetizable nearest = null;
         float detectionRange = ResolveDetectionRange();
         float nearestSqr = detectionRange * detectionRange;
         Vector3 origin = m_yawPivot.position;
 
-        for (int i = 0; i < all.Count; i++)
+        for (int i = 0; i < all.Length; i++)
         {
             Magnetizable candidate = all[i];
             if (candidate == null) continue;

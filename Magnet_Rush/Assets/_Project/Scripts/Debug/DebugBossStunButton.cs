@@ -8,10 +8,12 @@ using UnityEngine.InputSystem;
 /// </summary>
 public class DebugBossStunButton : MonoBehaviour
 {
+    [SerializeField] private float m_stunDuration = 30f;
     [SerializeField] private float m_teleportDistance = 1.0f;
     [SerializeField] private int m_restoreHpValue = 100;
 
     private EnemyBossAI m_bossAI;
+    private EnemyBossBase m_bossBase;
     private Stamina m_bossStamina;
     private Health m_bossHealth;
     private EnemyBossBaseA_Animator m_bossAnimator;
@@ -43,6 +45,7 @@ public class DebugBossStunButton : MonoBehaviour
         m_bossAI = FindFirstObjectByType<EnemyBossAI>();
         if (m_bossAI != null)
         {
+            m_bossBase = m_bossAI.GetComponent<EnemyBossBase>();
             m_bossStamina = m_bossAI.GetComponent<Stamina>();
             m_bossHealth = m_bossAI.GetComponent<Health>();
             m_bossAnimator = m_bossAI.GetComponentInChildren<EnemyBossBaseA_Animator>(true);
@@ -126,20 +129,26 @@ public class DebugBossStunButton : MonoBehaviour
         }
     }
 
-    // スタン（振り上げカウンター）ルートの確認用。腕カウンターと同じく IsStunned を立てて StunAnim へ入れる。
-    // ※SO(StatusData)の値は実行時に書き換えない（アセットに焼き付いてチューニング値が壊れるため）。継続時間は SO の値をそのまま使う。
     void ForceStun()
     {
-        if (m_bossAnimator == null) return;
-        m_bossAnimator.SetIsStunnedTrue();
-    }
+        if (m_bossBase != null && m_bossBase.StatusData != null)
+            m_bossBase.StatusData.staminaBreakDuration = m_stunDuration;
 
-    // よろけ（蓄積ゲージ満タン）ルートの確認用。ゲージを満タン消費して OnBreak→Stagger を正規ルートで発火する。
-    void ForceStagger()
-    {
         if (m_bossStamina == null) return;
         m_bossStamina.ResetStamina();
         m_bossStamina.Consume(m_bossStamina.MaxStamina);
+    }
+
+    void ForceStagger()
+    {
+        if (m_bossBase != null && m_bossBase.StatusData != null)
+            m_bossBase.StatusData.staminaBreakDuration = m_stunDuration;
+
+        if (m_bossAnimator == null) return;
+
+        // ArmStunHitbox 経由の通常Stagger発火と同じ。AnyState→StaggerAnim transition がトリガーで発火する
+        m_bossAnimator.SetIsStaggerTrue();
+        m_bossAnimator.TriggerBeInterrupted();
     }
 
     void RestoreHp()
