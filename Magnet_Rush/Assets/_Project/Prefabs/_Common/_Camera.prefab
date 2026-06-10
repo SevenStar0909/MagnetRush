@@ -318,6 +318,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MagnetRush.Player.CameraSettingsApplier
   m_cinemachineCamera: {fileID: 5554608176706901386}
+  m_deathZoomDistance: 2
+  m_deathZoomDuration: 1.2
+  m_deathCenterHeight: 0.5
+  m_cameraSettings: {fileID: 11400000, guid: d58e5d3af54ef174b9943adaef97a44a, type: 2}
 --- !u!1 &6460251228098847872
 GameObject:
   m_ObjectHideFlags: 0

@@ -10,8 +10,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 732ae5dc7112481419d76a24b7aacd1a, type: 3}
-  m_Name: ContactDamageSettings_Missile
+  m_Name: ContactDamage_Axe
   m_EditorClassIdentifier: MagnetRush.Data::ContactDamageSettings
-  damage: 1
+  damage: 3
+  stunGaugePercent: 30
   minVelocity: 2
-  overlapRadius: 0.5

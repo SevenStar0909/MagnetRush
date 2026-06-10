@@ -47,6 +47,7 @@ public class MagneticContactDamage : MonoBehaviour
 
         float vel = collision.relativeVelocity.magnitude;
         if (vel < m_settings.minVelocity) { ChannelLogger.LogGuardReturn("ContactDmg", $"速度不足 {vel:F1}<{m_settings.minVelocity}"); return; }
+        if (m_settings.damage <= 0) { ChannelLogger.LogGuardReturn("ContactDmg", "ダメージ0設定"); return; }
 
         if (collision.collider.transform.IsChildOf(m_magnetizable.transform)) { ChannelLogger.LogGuardReturn("ContactDmg", "自己衝突"); return; }
 

@@ -526,6 +526,7 @@ MonoBehaviour:
   m_pole: 0
   m_isActive: 0
   m_initialMass: 1
+  m_immovable: 0
   m_centerOffset: {x: 0, y: 0, z: 0}
   m_useEdgeDetectionOutline: 1
 --- !u!54 &7730523117461317999
@@ -580,7 +581,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1dddde946f822994e8a99a48b20b3df3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Magnet::MagneticContactDamage
-  m_settings: {fileID: 11400000, guid: e1513859b505ebb43aae138ee58fa533, type: 2}
+  m_settings: {fileID: 11400000, guid: 9f01ed40bc61deb4b9bf10679226afbc, type: 2}
 --- !u!1001 &3919647067567928831
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -20,6 +20,10 @@ public class CameraSettingsApplier : MonoBehaviour
     [Tooltip("死亡時に見る高さ(プレイヤー基準のローカルY)。倒れた体を画面中央に収めるため通常(1.2)より低くする")]
     [SerializeField] private float m_deathCenterHeight = 0.5f;
 
+    [Header("カメラ演出設定")]
+    [Tooltip("反発ジャンプ演出などカメラ演出のパラメータ（SO）")]
+    [SerializeField] private PlayerCameraSettings m_cameraSettings;
+
     private PlayerSettings m_settings;
     private Health m_health;
 
@@ -38,6 +42,12 @@ public class CameraSettingsApplier : MonoBehaviour
     private float m_deathStartShoulderX;
     private float m_deathStartDistance;
 
+    private Player m_player;
+    private Magnetizable m_playerMagnetizable;
+    private bool m_isAiming;
+    private float m_repulsePullCurrent;
+    private float m_repulseActiveTimer;
+
     void OnEnable()
     {
         AimAbility.OnAimChanged += SetAimMode;
@@ -54,6 +64,7 @@ public class CameraSettingsApplier : MonoBehaviour
         Player.OnFallRespawnStart -= OnFallRespawnStart;
         Player.OnFallRespawnEnd -= OnFallRespawnEnd;
         if (m_health != null) m_health.OnDie -= HandlePlayerDeath;
+        if (m_playerMagnetizable != null) m_playerMagnetizable.OnRepulsionForce -= HandleRepulsionForce;
     }
 
     private void InitializeWithPlayer(Player playerComponent)
@@ -67,6 +78,10 @@ public class CameraSettingsApplier : MonoBehaviour
 
         m_health = playerComponent.GetComponent<Health>();
         if (m_health != null) m_health.OnDie += HandlePlayerDeath;
+
+        m_player = playerComponent;
+        m_playerMagnetizable = playerComponent.magnetizable;
+        if (m_playerMagnetizable != null) m_playerMagnetizable.OnRepulsionForce += HandleRepulsionForce;
 
         // カメラ回転ピボットをプレイヤーの子に生成
         var pivotGO = new GameObject("CameraPivot");
@@ -146,6 +161,51 @@ public class CameraSettingsApplier : MonoBehaviour
 
         m_pitch = Mathf.Clamp(m_pitch, m_settings.cameraPitchMin, m_settings.cameraPitchMax);
         m_cameraPivot.rotation = Quaternion.Euler(m_pitch, m_yaw, 0f);
+
+        UpdateRepulsePull();
+    }
+
+    /// <summary>
+    /// 反発力を受けた時のコールバック。空中でしきい値以上の反発を受けている間だけ
+    /// 引き演出のタイマーを更新する（反発中は毎FixedUpdate呼ばれる）。
+    /// </summary>
+    private void HandleRepulsionForce(Vector3 force)
+    {
+        if (m_cameraSettings == null || m_cameraSettings.repulsePullDistance <= 0f) return;
+        if (m_player == null || m_player.IsGrounded)
+        {
+            ChannelLogger.LogGuardReturn("Player", "接地中は反発カメラ演出なし");
+            return;
+        }
+        if (force.sqrMagnitude < m_cameraSettings.repulseForceThreshold * m_cameraSettings.repulseForceThreshold)
+        {
+            ChannelLogger.LogGuardReturn("Player", "反発が弱いためカメラ演出なし");
+            return;
+        }
+
+        // 反発が続く間は毎FixedUpdate届くので、短い猶予で更新し続ける
+        m_repulseActiveTimer = 0.15f;
+    }
+
+    /// <summary>
+    /// 反発ジャンプ中のカメラ引きを毎フレームブレンドする。
+    /// エイム距離への加算方式なので、エイム切替・通常距離のどちらとも干渉しない。
+    /// </summary>
+    private void UpdateRepulsePull()
+    {
+        if (m_thirdPersonFollow == null || m_settings == null || m_cameraSettings == null) return;
+        if (m_cameraSettings.repulsePullDistance <= 0f && m_repulsePullCurrent <= 0f) return;
+
+        m_repulseActiveTimer -= Time.deltaTime;
+        bool active = m_repulseActiveTimer > 0f;
+
+        float target = active ? m_cameraSettings.repulsePullDistance : 0f;
+        float duration = Mathf.Max(0.01f, active ? m_cameraSettings.repulsePullInDuration : m_cameraSettings.repulsePullOutDuration);
+        float speed = Mathf.Max(0.01f, m_cameraSettings.repulsePullDistance) / duration;
+        m_repulsePullCurrent = Mathf.MoveTowards(m_repulsePullCurrent, target, speed * Time.deltaTime);
+
+        float baseDistance = m_isAiming ? m_settings.aimCameraDistance : m_defaultCameraDistance;
+        m_thirdPersonFollow.CameraDistance = baseDistance + m_repulsePullCurrent;
     }
 
     /// <summary>
@@ -155,7 +215,8 @@ public class CameraSettingsApplier : MonoBehaviour
     {
         if (m_thirdPersonFollow == null || m_settings == null) { ChannelLogger.LogGuardReturn("Player", "ThirdPersonFollowまたは設定なし"); return; }
 
-        m_thirdPersonFollow.CameraDistance = aiming ? m_settings.aimCameraDistance : m_defaultCameraDistance;
+        m_isAiming = aiming;
+        m_thirdPersonFollow.CameraDistance = (aiming ? m_settings.aimCameraDistance : m_defaultCameraDistance) + m_repulsePullCurrent;
 
         if (m_cinemachineCamera != null)
         {

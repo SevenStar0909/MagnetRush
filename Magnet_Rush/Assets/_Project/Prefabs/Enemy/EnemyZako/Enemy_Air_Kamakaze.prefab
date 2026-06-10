@@ -513,6 +513,7 @@ MonoBehaviour:
   m_pole: 0
   m_isActive: 0
   m_initialMass: 1
+  m_immovable: 0
   m_centerOffset: {x: 0, y: 0, z: 0}
   m_useEdgeDetectionOutline: 1
 --- !u!114 &5793265015369139466
@@ -546,6 +547,7 @@ MonoBehaviour:
   collisionLayer:
     serializedVersion: 2
     m_Bits: 65523
+  m_canPushPhysicsObjects: 0
 --- !u!114 &1675817586269981184
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -571,7 +573,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1dddde946f822994e8a99a48b20b3df3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Core::MagneticContactDamage
-  m_settings: {fileID: 11400000, guid: e1513859b505ebb43aae138ee58fa533, type: 2}
+  m_settings: {fileID: 11400000, guid: 9f01ed40bc61deb4b9bf10679226afbc, type: 2}
 --- !u!1 &8029942397825399512
 GameObject:
   m_ObjectHideFlags: 0

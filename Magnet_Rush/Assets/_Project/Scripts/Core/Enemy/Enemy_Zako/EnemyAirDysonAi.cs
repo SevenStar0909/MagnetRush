@@ -70,6 +70,16 @@ public class EnemyAirDysonAi : MonoBehaviour
         if (m_enemyBase == null)
             return;
 
+        // ソフト死中（リスポーン待ち）はrootがactiveのままUpdateが回り続けるので、
+        // 引き寄せ含む全AIを止める。Approachに戻して吸引アニメ・引き寄せ速度もリセットする
+        if (m_enemyBase.IsDead)
+        {
+            if (m_state != DysonState.Approach)
+                ChangeState(DysonState.Approach);
+            ChannelLogger.LogGuardReturn("Enemy", "死亡中はDyson AI停止");
+            return;
+        }
+
         if (m_enemyBase.IsMagnetControlled)
         {
             m_currentPullSpeed = 0f;

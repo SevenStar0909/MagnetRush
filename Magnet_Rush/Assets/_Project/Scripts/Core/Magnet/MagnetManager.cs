@@ -350,8 +350,12 @@ public class MagnetManager : Singleton<MagnetManager>
         }
         else if (isSame)
         {
-            a.ApplyForce(-dirAtoB * forceMagnitude * ratioA, b.Position);
-            b.ApplyForce(dirAtoB * forceMagnitude * ratioB, a.Position);
+            Vector3 repelForceA = -dirAtoB * forceMagnitude * ratioA;
+            Vector3 repelForceB = dirAtoB * forceMagnitude * ratioB;
+            a.ApplyForce(repelForceA, b.Position);
+            b.ApplyForce(repelForceB, a.Position);
+            a.NotifyRepulsionForce(repelForceA);
+            b.NotifyRepulsionForce(repelForceB);
         }
 
         // 接触判定 / FixedJoint スナップ（Object×Object 専用。Entity絡みは上の PD 分岐で処理済み）

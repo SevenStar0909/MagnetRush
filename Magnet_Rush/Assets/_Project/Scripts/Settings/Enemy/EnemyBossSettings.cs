@@ -120,9 +120,6 @@ public class EnemyBossSettings : ScriptableObject
     [Label("よろけ状態の継続時間（秒）")]
     [Tooltip("スタンゲージ満タンでよろけたとき動けない時間。仕様＝10秒")]
     public float staggerDuration = 10f;
-    [Tooltip("スタッガー中の移動速度倍率（未使用）")]
-    [Range(0f, 1f)]
-    public float staggerMoveMultiplier = 0.5f;
 
     [Header("[手の磁力範囲キャスト]")]
     [Label("手の磁力範囲半径（m）")]
