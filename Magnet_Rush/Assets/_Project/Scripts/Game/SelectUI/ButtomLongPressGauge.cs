@@ -1,11 +1,17 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using System.Collections;
 
+/// <summary>
+/// ãƒœã‚¿ãƒ³ã®é•·æŠ¼ã—ã§ã‚²ãƒ¼ã‚¸ã‚’æºœã‚ã€æº€ã‚¿ãƒ³ã§ã‚·ãƒ¼ãƒ³é·ç§»ã™ã‚‹ã€‚
+/// ãƒã‚¦ã‚¹æŠ¼ä¸‹ï¼ˆIPointerDownç³»ï¼‰ã¨ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ãƒ¼ã®Submité•·æŠ¼ã—ï¼ˆé¸æŠä¸­ã®Aãƒœã‚¿ãƒ³/Enterï¼‰ã®ä¸¡æ–¹ã«å¯¾å¿œã€‚
+/// ä¾å­˜: EventSystem, Image
+/// </summary>
 public class LongPressGauge : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IPointerExitHandler
 {
-    [Header("ƒQ[ƒWİ’è")]
+    [Header("ã‚²ãƒ¼ã‚¸è¨­å®š")]
     [SerializeField] private float m_requiredPressDuration = 2f;
     [SerializeField] private Image m_gaugeImage;
     [SerializeField] private float m_transitionDelay = 0.1f;
@@ -15,6 +21,7 @@ public class LongPressGauge : MonoBehaviour, IPointerDownHandler, IPointerUpHand
     private Coroutine m_transitionCoroutine;
     private float m_currentPressTime = 0f;
     private bool m_isPressed = false;
+    private bool m_submitHeld = false;
 
     private void Start()
     {
@@ -22,94 +29,86 @@ public class LongPressGauge : MonoBehaviour, IPointerDownHandler, IPointerUpHand
         {
             m_gaugeImage.fillAmount = 0f;
         }
-        Debug.Log("[LongPressGauge] ‰Šú‰»Š®—¹");
+    }
+
+    private void Update()
+    {
+        // ãƒ‘ãƒƒãƒ‰/ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰ã®Submité•·æŠ¼ã—ã€‚è‡ªåˆ†ãŒé¸æŠä¸­ã®é–“ã ã‘å—ã‘ä»˜ã‘ã‚‹
+        bool isSelected = EventSystem.current != null
+            && EventSystem.current.currentSelectedGameObject == gameObject;
+        bool held = isSelected && IsSubmitHeld();
+
+        if (held && !m_submitHeld)
+        {
+            BeginPress();
+        }
+        else if (!held && m_submitHeld)
+        {
+            EndPress();
+        }
+        m_submitHeld = held;
+    }
+
+    /// <summary>ãƒ‘ãƒƒãƒ‰ã®Aãƒœã‚¿ãƒ³ã¾ãŸã¯ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰ã®Enter/SpaceãŒæŠ¼ä¸‹ä¸­ã‹</summary>
+    private static bool IsSubmitHeld()
+    {
+        var gamepad = Gamepad.current;
+        if (gamepad != null && gamepad.buttonSouth.isPressed) return true;
+
+        var keyboard = Keyboard.current;
+        if (keyboard != null && (keyboard.enterKey.isPressed || keyboard.spaceKey.isPressed)) return true;
+
+        return false;
     }
 
     public void OnPointerDown(PointerEventData eventData)
     {
-        Debug.Log("[LongPressGauge] OnPointerDown Às");
-
-        m_isPressed = true;
-        m_currentPressTime = 0f;
-
-        if (m_pressCoroutine != null)
-        {
-            StopCoroutine(m_pressCoroutine);
-            Debug.Log("[LongPressGauge] Šù‘¶‚Ì m_pressCoroutine ‚ğ’â~");
-        }
-
-        if (m_transitionCoroutine != null)
-        {
-            StopCoroutine(m_transitionCoroutine);
-            Debug.Log("[LongPressGauge] Šù‘¶‚Ì m_transitionCoroutine ‚ğ’â~");
-        }
-
-        m_pressCoroutine = StartCoroutine(PressGaugeCoroutine());
-        Debug.Log("[LongPressGauge] PressGaugeCoroutine ‚ğŠJn");
+        BeginPress();
     }
 
     public void OnPointerUp(PointerEventData eventData)
     {
-        Debug.Log($"[LongPressGauge] OnPointerUp Às - Œ»İŠÔ: {m_currentPressTime:F2}•b, m_isPressed: {m_isPressed}");
-
-        m_isPressed = false;
-
-        if (m_pressCoroutine != null)
-        {
-            StopCoroutine(m_pressCoroutine);
-            Debug.Log("[LongPressGauge] m_pressCoroutine ‚ğ’â~");
-        }
-
-        if (m_currentPressTime < m_requiredPressDuration)
-        {
-            Debug.Log($"[LongPressGauge] ƒQ[ƒW•sŠ®‘S ({m_currentPressTime:F2}•b < {m_requiredPressDuration}•b) - ƒŠƒZƒbƒg");
-            ResetGauge();
-
-            if (m_transitionCoroutine != null)
-            {
-                StopCoroutine(m_transitionCoroutine);
-                Debug.Log("[LongPressGauge] m_transitionCoroutine ‚ğ’â~");
-            }
-        }
-        else
-        {
-            Debug.Log($"[LongPressGauge] OnPointerUp: ƒQ[ƒW–ƒ^ƒ“ó‘Ô ({m_currentPressTime:F2}•b >= {m_requiredPressDuration}•b)");
-        }
+        EndPress();
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        Debug.Log($"[LongPressGauge] OnPointerExit Às - Œ»İŠÔ: {m_currentPressTime:F2}•b, m_isPressed: {m_isPressed}");
+        EndPress();
+    }
 
+    /// <summary>æŠ¼ä¸‹é–‹å§‹ã€‚ã‚²ãƒ¼ã‚¸ã®è¨ˆæ¸¬ã‚³ãƒ«ãƒ¼ãƒãƒ³ã‚’èµ·å‹•ã™ã‚‹</summary>
+    private void BeginPress()
+    {
+        m_isPressed = true;
+        m_currentPressTime = 0f;
+
+        if (m_pressCoroutine != null)
+            StopCoroutine(m_pressCoroutine);
+        if (m_transitionCoroutine != null)
+            StopCoroutine(m_transitionCoroutine);
+
+        m_pressCoroutine = StartCoroutine(PressGaugeCoroutine());
+    }
+
+    /// <summary>æŠ¼ä¸‹çµ‚äº†ã€‚æº€ã‚¿ãƒ³å‰ãªã‚‰ã‚²ãƒ¼ã‚¸ã‚’ãƒªã‚»ãƒƒãƒˆã™ã‚‹</summary>
+    private void EndPress()
+    {
         m_isPressed = false;
 
         if (m_pressCoroutine != null)
-        {
             StopCoroutine(m_pressCoroutine);
-            Debug.Log("[LongPressGauge] m_pressCoroutine ‚ğ’â~");
-        }
 
         if (m_currentPressTime < m_requiredPressDuration)
         {
-            Debug.Log($"[LongPressGauge] ƒQ[ƒW•sŠ®‘S ({m_currentPressTime:F2}•b < {m_requiredPressDuration}•b) - ƒŠƒZƒbƒg");
             ResetGauge();
 
             if (m_transitionCoroutine != null)
-            {
                 StopCoroutine(m_transitionCoroutine);
-                Debug.Log("[LongPressGauge] m_transitionCoroutine ‚ğ’â~");
-            }
-        }
-        else
-        {
-            Debug.Log($"[LongPressGauge] OnPointerExit: ƒQ[ƒW–ƒ^ƒ“ó‘Ô ({m_currentPressTime:F2}•b >= {m_requiredPressDuration}•b)");
         }
     }
 
     private IEnumerator PressGaugeCoroutine()
     {
-        Debug.Log("[PressGaugeCoroutine] ŠJn");
-
         while (m_currentPressTime < m_requiredPressDuration)
         {
             m_currentPressTime += Time.deltaTime;
@@ -122,45 +121,27 @@ public class LongPressGauge : MonoBehaviour, IPointerDownHandler, IPointerUpHand
             yield return null;
         }
 
-        Debug.Log($"[PressGaugeCoroutine] ƒ‹[ƒvI—¹ - m_isPressed: {m_isPressed}, ŠÔ: {m_currentPressTime:F2}•b");
-
         if (m_isPressed && m_currentPressTime >= m_requiredPressDuration)
         {
-            Debug.Log("[PressGaugeCoroutine] ƒQ[ƒW–ƒ^ƒ“ğŒ¬—§ - WaitForTransition ŠJn");
-
             if (m_transitionCoroutine != null)
                 StopCoroutine(m_transitionCoroutine);
 
             m_transitionCoroutine = StartCoroutine(WaitForTransition());
         }
-        else
-        {
-            Debug.Log($"[PressGaugeCoroutine] ‘JˆÚğŒ•s¬—§ - m_isPressed: {m_isPressed}, ŠÔ: {m_currentPressTime:F2}•b");
-        }
     }
 
     private IEnumerator WaitForTransition()
     {
-        Debug.Log($"[WaitForTransition] ŠJn - {m_transitionDelay}•b‘Ò‹@");
-
         yield return new WaitForSeconds(m_transitionDelay);
-
-        Debug.Log($"[WaitForTransition] ‘Ò‹@I—¹ - m_isPressed: {m_isPressed}, ŠÔ: {m_currentPressTime:F2}•b");
 
         if (m_currentPressTime >= m_requiredPressDuration)
         {
-            Debug.Log("[WaitForTransition] ‘JˆÚğŒŠm”F - ƒ^ƒCƒgƒ‹‚É‘JˆÚ");
             OnLongPressComplete();
-        }
-        else
-        {
-            Debug.Log($"[WaitForTransition] ‘JˆÚƒLƒƒƒ“ƒZƒ‹ - m_isPressed: {m_isPressed}, ŠÔ: {m_currentPressTime:F2}•b");
         }
     }
 
     private void OnLongPressComplete()
     {
-        Debug.Log("[OnLongPressComplete] Às");
         m_isPressed = false;
         if (string.IsNullOrEmpty(m_targetMapName))
             SceneLoader.Instance.LoadScene(SceneLoader.SceneType.TitleScene);
@@ -170,7 +151,6 @@ public class LongPressGauge : MonoBehaviour, IPointerDownHandler, IPointerUpHand
 
     private void ResetGauge()
     {
-        Debug.Log("[ResetGauge] ƒQ[ƒW‚ğƒŠƒZƒbƒg");
         m_currentPressTime = 0f;
 
         if (m_gaugeImage != null)

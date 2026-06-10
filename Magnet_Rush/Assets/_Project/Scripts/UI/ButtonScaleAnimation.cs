@@ -1,58 +1,76 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEngine.EventSystems;
 using System.Collections;
 
-public class ButtonScaleAnimation : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+public class ButtonScaleAnimation : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, ISelectHandler, IDeselectHandler
 {
     private Vector3 m_normalScale = Vector3.one;
     [SerializeField] private Vector3 m_highlightedScale = new Vector3(1.1f, 1.1f, 1f);
 
-    [SerializeField] private float m_scaleDuration = 0.2f;  // ƒAƒjƒ[ƒVƒ‡ƒ“ŠÔ
+    [SerializeField] private float m_scaleDuration = 0.2f;  // ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³æ™‚é–“
 
     private Coroutine m_scaleCoroutine;
 
-    /// <summary>ƒ}ƒEƒXƒI[ƒo[</summary>
+    /// <summary>ãƒã‚¦ã‚¹ã‚ªãƒ¼ãƒãƒ¼æ™‚</summary>
     public void OnPointerEnter(PointerEventData eventData)
     {
-        ChannelLogger.LogGuardReturn("UI", "ƒ{ƒ^ƒ“ƒ}ƒEƒXƒI[ƒo[");
+        ChannelLogger.LogGuardReturn("UI", "ãƒœã‚¿ãƒ³ãƒã‚¦ã‚¹ã‚ªãƒ¼ãƒãƒ¼");
 
-        // Šù‘¶‚ÌƒRƒ‹[ƒ`ƒ“‚ğƒLƒƒƒ“ƒZƒ‹
+        // æ—¢å­˜ã®ã‚³ãƒ«ãƒ¼ãƒãƒ³ã‚’ã‚­ãƒ£ãƒ³ã‚»ãƒ«
         if (m_scaleCoroutine != null)
             StopCoroutine(m_scaleCoroutine);
 
-        // Šg‘åƒAƒjƒ[ƒVƒ‡ƒ“ŠJn
+        // æ‹¡å¤§ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³é–‹å§‹
         m_scaleCoroutine = StartCoroutine(ScaleTo(m_highlightedScale));
     }
 
-    /// <summary>ƒ}ƒEƒX—£’E</summary>
+    /// <summary>ãƒã‚¦ã‚¹é›¢è„±æ™‚</summary>
     public void OnPointerExit(PointerEventData eventData)
     {
-        ChannelLogger.LogGuardReturn("UI", "ƒ{ƒ^ƒ“ƒ}ƒEƒX—£’E");
+        ChannelLogger.LogGuardReturn("UI", "ãƒœã‚¿ãƒ³ãƒã‚¦ã‚¹é›¢è„±");
 
-        // Šù‘¶‚ÌƒRƒ‹[ƒ`ƒ“‚ğƒLƒƒƒ“ƒZƒ‹
+        // æ—¢å­˜ã®ã‚³ãƒ«ãƒ¼ãƒãƒ³ã‚’ã‚­ãƒ£ãƒ³ã‚»ãƒ«
         if (m_scaleCoroutine != null)
             StopCoroutine(m_scaleCoroutine);
 
-        // ’ÊíƒTƒCƒY‚É–ß‚·ƒAƒjƒ[ƒVƒ‡ƒ“ŠJn
+        // é€šå¸¸ã‚µã‚¤ã‚ºã«æˆ»ã™ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³é–‹å§‹
         m_scaleCoroutine = StartCoroutine(ScaleTo(m_normalScale));
     }
 
-    /// <summary>w’è‚³‚ê‚½ƒXƒP[ƒ‹‚Ü‚ÅƒXƒ€[ƒY‚É•Ï‰»‚³‚¹‚éƒRƒ‹[ƒ`ƒ“</summary>
+    /// <summary>ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ãƒ¼ã§é¸æŠã•ã‚ŒãŸæ™‚ï¼ˆãƒã‚¦ã‚¹ã‚ªãƒ¼ãƒãƒ¼ã¨åŒã˜æ‹¡å¤§æ¼”å‡ºï¼‰</summary>
+    public void OnSelect(BaseEventData eventData)
+    {
+        if (m_scaleCoroutine != null)
+            StopCoroutine(m_scaleCoroutine);
+
+        m_scaleCoroutine = StartCoroutine(ScaleTo(m_highlightedScale));
+    }
+
+    /// <summary>ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ãƒ¼ã§é¸æŠãŒå¤–ã‚ŒãŸæ™‚</summary>
+    public void OnDeselect(BaseEventData eventData)
+    {
+        if (m_scaleCoroutine != null)
+            StopCoroutine(m_scaleCoroutine);
+
+        m_scaleCoroutine = StartCoroutine(ScaleTo(m_normalScale));
+    }
+
+    /// <summary>æŒ‡å®šã•ã‚ŒãŸã‚¹ã‚±ãƒ¼ãƒ«ã¾ã§ã‚¹ãƒ ãƒ¼ã‚ºã«å¤‰åŒ–ã•ã›ã‚‹ã‚³ãƒ«ãƒ¼ãƒãƒ³</summary>
     private IEnumerator ScaleTo(Vector3 targetScale)
     {
         Vector3 startScale = transform.localScale;
         float elapsed = 0f;
 
-        // w’èŠÔ‚©‚¯‚ÄƒXƒP[ƒ‹‚ğ•ÏX
+        // æŒ‡å®šæ™‚é–“ã‹ã‘ã¦ã‚¹ã‚±ãƒ¼ãƒ«ã‚’å¤‰æ›´
         while (elapsed < m_scaleDuration)
         {
             elapsed += Time.deltaTime;
-            float t = elapsed / m_scaleDuration;  // 0 ¨ 1 ‚É•Ï‰»
+            float t = elapsed / m_scaleDuration;  // 0 â†’ 1 ã«å¤‰åŒ–
             transform.localScale = Vector3.Lerp(startScale, targetScale, t);
             yield return null;
         }
 
-        // ÅI’l‚ğŠmÀ‚Éİ’è
+        // æœ€çµ‚å€¤ã‚’ç¢ºå®Ÿã«è¨­å®š
         transform.localScale = targetScale;
     }
 }
