@@ -127,6 +127,7 @@ MonoBehaviour:
   - FallPlayerState, MagnetRush.Player, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - StabPlayerState, MagnetRush.Player, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - StabPlayerState, MagnetRush.Player, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  - BossStabFinisherState, MagnetRush.Player, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
 --- !u!114 &8415192833665430904
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -155,6 +156,7 @@ MonoBehaviour:
   m_pole: 0
   m_isActive: 0
   m_initialMass: 1
+  m_immovable: 0
   m_centerOffset: {x: 0, y: 0, z: 0}
   m_useEdgeDetectionOutline: 1
 --- !u!54 &4320032113719753399
@@ -215,6 +217,7 @@ MonoBehaviour:
   collisionLayer:
     serializedVersion: 2
     m_Bits: 65523
+  m_canPushPhysicsObjects: 0
 --- !u!114 &5883000521983637742
 MonoBehaviour:
   m_ObjectHideFlags: 0

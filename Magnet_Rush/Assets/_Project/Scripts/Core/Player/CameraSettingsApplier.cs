@@ -44,6 +44,8 @@ public class CameraSettingsApplier : MonoBehaviour
         Player.OnPlayerReady += InitializeWithPlayer;
         Player.OnFallRespawnStart += OnFallRespawnStart;
         Player.OnFallRespawnEnd += OnFallRespawnEnd;
+        Player.OnStabFinisherStart += OnStabFinisherStart;
+        Player.OnStabFinisherEnd += OnStabFinisherEnd;
         if (Player.Current != null) InitializeWithPlayer(Player.Current);
     }
 
@@ -53,6 +55,8 @@ public class CameraSettingsApplier : MonoBehaviour
         Player.OnPlayerReady -= InitializeWithPlayer;
         Player.OnFallRespawnStart -= OnFallRespawnStart;
         Player.OnFallRespawnEnd -= OnFallRespawnEnd;
+        Player.OnStabFinisherStart -= OnStabFinisherStart;
+        Player.OnStabFinisherEnd -= OnStabFinisherEnd;
         if (m_health != null) m_health.OnDie -= HandlePlayerDeath;
     }
 
@@ -124,6 +128,9 @@ public class CameraSettingsApplier : MonoBehaviour
         // 死亡中は寄せ＋中央寄せを毎フレーム適用（Play中にInspector値を変えると即反映＝ライブ調整可）
         if (m_isDead && m_thirdPersonFollow != null) { UpdateDeathFraming(); return; }
 
+        // スタブ演出中は入力でカメラを回さない（追従＝ボス頭固定のカットを維持）
+        if (m_inFinisher) return;
+
         // 凍結中は入力でピボットを回さない。落下→復帰の間カメラを静止させる
         if (m_isFrozen) return;
         if (m_cameraPivot == null || m_settings == null) { ChannelLogger.LogGuardReturn("Player", "カメラピボットまたは設定なし"); return; }
@@ -167,6 +174,37 @@ public class CameraSettingsApplier : MonoBehaviour
 
     private void OnFallRespawnStart() => Freeze(true);
     private void OnFallRespawnEnd() => Freeze(false);
+
+    private bool m_inFinisher;
+
+    // スタブ演出開始: カメラを止めてボス頭を見るカットに切り替え、SO のプロファイル距離まで寄せる。死亡フレーミングと同じ手口。
+    private void OnStabFinisherStart(Transform target, int variant)
+    {
+        m_inFinisher = true;
+        if (m_cinemachineCamera != null)
+        {
+            m_cinemachineCamera.LookAt = target;
+            m_cinemachineCamera.PreviousStateIsValid = false;
+        }
+        if (m_thirdPersonFollow != null && m_settings != null && m_settings.stabFinisherSettings != null)
+        {
+            var prof = m_settings.stabFinisherSettings.GetProfile(variant);
+            m_thirdPersonFollow.CameraDistance = prof.cameraDistance;
+        }
+    }
+
+    // スタブ演出終了: 通常追従（プレイヤーのピボット）へ戻し、カメラ距離も既定へ。
+    private void OnStabFinisherEnd()
+    {
+        m_inFinisher = false;
+        if (m_cinemachineCamera != null)
+        {
+            m_cinemachineCamera.LookAt = m_cameraPivot;
+            m_cinemachineCamera.PreviousStateIsValid = false;
+        }
+        if (m_thirdPersonFollow != null)
+            m_thirdPersonFollow.CameraDistance = m_defaultCameraDistance;
+    }
 
     /// <summary>
     /// カメラを止める/再開する。止める間は追従対象を外して本体をその場に固定し、

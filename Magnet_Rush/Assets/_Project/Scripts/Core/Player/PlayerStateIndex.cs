@@ -11,4 +11,5 @@ public enum PlayerStateIndex
     Aim        = 3,
     Fall       = 4,
     StabAttack = 5,
+    BossStabFinisher = 6,
 }

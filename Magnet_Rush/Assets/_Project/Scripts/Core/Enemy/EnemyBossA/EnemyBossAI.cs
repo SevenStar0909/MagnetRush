@@ -17,6 +17,9 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     [Header("References")]
     [SerializeField] private EnemyBossBaseA_Animator m_animator;
 
+    [Tooltip("スタブの突き刺し目標。頭ボーン下に置いた空オブジェクト（StabAnchor）をアサインする")]
+    [SerializeField] private Transform m_stabAnchor;
+
     [Header("Missile")]
     [Tooltip("生成するミサイルPrefab")]
     [SerializeField] private EnemyMissile m_missilePrefab;
@@ -70,6 +73,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     private bool m_wasInStunAnim;
     private bool m_wasInStaggerAnim;
     private bool m_staminaBreakEndRequested;
+    private bool m_stabFinisherActive;
 
     // Rush 中に Animator が一度でも IsInRush=true になったか。
     // 入り transition と exit transition を区別し、exit 時の player 追尾回転を抑制する。
@@ -269,6 +273,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
 
     private void TickStaminaBreakTimer(float dt)
     {
+        if (m_stabFinisherActive) return; // 演出中は崩れ回復を止める（途中で立ち上がらせない）
         if (m_state != BossState.Stunned && m_state != BossState.Stagger) return;
         if (m_staminaBreakEndRequested) return;
 
@@ -607,6 +612,12 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     public bool CanReceiveStab => m_state == BossState.Stunned || m_state == BossState.Stagger
         || (m_stamina != null && m_stamina.IsBroken);
 
+    /// <summary>突き刺し目標。頭ボーン下の StabAnchor（Inspectorアサイン）。未設定なら本体 transform。</summary>
+    public Transform StabAnchor => m_stabAnchor != null ? m_stabAnchor : transform;
+
+    /// <summary>演出プロファイル選択。Stagger=0 / Stun=1。崩れでなければ 0。</summary>
+    public int StabChoreographyIndex => m_state == BossState.Stunned ? 1 : 0;
+
     /// <summary>
     /// プレイヤーのスタブAnimEventから呼ばれる。HPバー1本分を一気に削る（クールダウン無視）。
     /// data.damage は無視し、EnemyBossSettings.healthBarSegments と MaxHealth からバー境界HPを算出する。
@@ -644,6 +655,10 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         EndBreakAfterStab();
     }
 
+    /// <summary>フィニッシャー演出の開始/終了を受け取り、演出中の崩れ回復を止める。</summary>
+    public void BeginStabFinisher() => m_stabFinisherActive = true;
+    public void EndStabFinisher() => m_stabFinisherActive = false;
+
     // スタブ成功時：スタン値を0に戻し、スタン/よろけを終了して Idle へ。これ以上スタブできない＝1回のスタンにつき1回。
     private void EndBreakAfterStab()
     {
@@ -653,6 +668,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         EndBreakAnimations();
 
         m_staminaBreakEndRequested = true;
+        m_stabFinisherActive = false; // 命中したので演出ロック解除
         ChangeState(BossState.Idle);
     }
 

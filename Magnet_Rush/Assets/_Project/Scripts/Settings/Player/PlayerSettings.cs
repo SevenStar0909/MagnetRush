@@ -97,6 +97,9 @@ public class PlayerSettings : ScriptableObject
     [Label("モーションタイムアウト（秒）")]
     [Tooltip("スタブモーションの強制復帰時間（秒）。AnimEvent OnStabMotionFinishedEvent の配線漏れ保険")]
     public float stabMotionMaxDuration = 1.5f;
+    [Label("スタブ演出設定")]
+    [Tooltip("ボススタブ・フィニッシャー演出の調整SO。未設定だと演出は使わず旧その場スタブにフォールバック")]
+    public StabFinisherSettings stabFinisherSettings;
 
     [Header("[エイム]")]
     [Label("解除猶予時間（秒）")]

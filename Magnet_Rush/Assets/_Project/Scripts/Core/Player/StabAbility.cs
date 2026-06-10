@@ -29,7 +29,25 @@ public class StabAbility : Ability
         { ChannelLogger.LogGuardReturn("Stab", "ボスの距離がスタブ攻撃の範囲外"); return; }
 
         m_input.ConsumeStab();
-        m_states.Change<StabPlayerState>();
+
+        var finisherSettings = m_player.Settings.stabFinisherSettings;
+        if (finisherSettings == null || m_bossReceiver == null)
+        {
+            ChannelLogger.LogGuardReturn("Stab", "StabFinisherSettings未設定 or Receiver無し — 旧その場スタブにフォールバック");
+            m_states.Change<StabPlayerState>();
+            return;
+        }
+
+        var profile = finisherSettings.GetProfile(m_bossReceiver.StabChoreographyIndex);
+        var finisher = m_states.Get<BossStabFinisherState>();
+        if (finisher == null)
+        {
+            ChannelLogger.LogGuardReturn("Stab", "BossStabFinisherState未登録 — 旧その場スタブにフォールバック");
+            m_states.Change<StabPlayerState>();
+            return;
+        }
+        finisher.Setup(profile, m_bossReceiver);
+        m_states.Change<BossStabFinisherState>();
     }
 
     /// <summary>AnimEvent から呼ばれるヒット通知。突き刺しの瞬間に発火。</summary>
