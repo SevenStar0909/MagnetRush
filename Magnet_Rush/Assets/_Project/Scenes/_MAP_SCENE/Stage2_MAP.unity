@@ -2450,7 +2450,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -70.1, y: -17.1, z: -91.4}
-  m_LocalScale: {x: 0.67088, y: 2.3969, z: 0.54}
+  m_LocalScale: {x: 0.66, y: 4.381054, z: 0.53}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -3496,8 +3496,8 @@ Transform:
   m_GameObject: {fileID: 786537541}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 8.1, y: -31, z: -6.9}
-  m_LocalScale: {x: 0.4, y: 2.7386, z: 0.4}
+  m_LocalPosition: {x: 8.1084, y: -31, z: -6.905}
+  m_LocalScale: {x: 0.388216, y: 3.8359113, z: 0.388216}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -5828,7 +5828,7 @@ Transform:
   m_GameObject: {fileID: 1312588888}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: -20.55, y: -7.46, z: 3.29}
+  m_LocalPosition: {x: -44.84, y: 0.12, z: -30.29}
   m_LocalScale: {x: 1.88631, y: 1.88631, z: 1.88631}
   m_ConstrainProportionsScale: 1
   m_Children:
@@ -6768,7 +6768,7 @@ MonoBehaviour:
   m_OverrideVoxelSize: 0
   m_VoxelSize: 0.33333334
   m_MinRegionArea: 2
-  m_NavMeshData: {fileID: 23800000, guid: 134e9c9154b4d7d44949bd88e1119500, type: 2}
+  m_NavMeshData: {fileID: 23800000, guid: a4e88b4b9f2273c4fad51fee4a3b2529, type: 2}
   m_BuildHeightMesh: 0
 --- !u!1 &1479419566 stripped
 GameObject:
@@ -10643,6 +10643,18 @@ PrefabInstance:
       propertyPath: m_Name
       value: Enemy_Boss_test
       objectReference: {fileID: 0}
+    - target: {fileID: 1401308053947575685, guid: 595708abaf7beee438dc7b5e80cbc9d0, type: 3}
+      propertyPath: InitialModule.startSizeY.minMaxState
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1401308053947575685, guid: 595708abaf7beee438dc7b5e80cbc9d0, type: 3}
+      propertyPath: InitialModule.startSizeZ.minMaxState
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2001584248082949723, guid: 595708abaf7beee438dc7b5e80cbc9d0, type: 3}
+      propertyPath: m_Materials.Array.size
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2117485147018455599, guid: 595708abaf7beee438dc7b5e80cbc9d0, type: 3}
       propertyPath: m_LocalScale.x
       value: 1.91
@@ -10665,6 +10677,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2117485147018455599, guid: 595708abaf7beee438dc7b5e80cbc9d0, type: 3}
       propertyPath: m_ConstrainProportionsScale
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2118324300570364758, guid: 595708abaf7beee438dc7b5e80cbc9d0, type: 3}
+      propertyPath: m_Materials.Array.size
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6652155985440203101, guid: 595708abaf7beee438dc7b5e80cbc9d0, type: 3}
