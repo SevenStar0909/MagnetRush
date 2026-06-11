@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -39,6 +40,25 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     [Tooltip("発射してからこの秒数はミサイルがボス本体に当たらない(発射直後の自爆防止)。経過後はボスにも当たる=磁力で撃ち返せる。0で即当たる")]
     [SerializeField] private float m_missileCollisionGrace = 3f;
 
+    [Header("Shock Wave After Arm Attack Interrupted")]
+    [Tooltip("AttackStance から Stunned / Stagger に入った時、周囲の PhysicsObject を押し出す")]
+    [SerializeField] private bool m_shockAfterAttackStance = true;
+
+    [Tooltip("AttackMotion から Stunned / Stagger に入った時、周囲の PhysicsObject を押し出す")]
+    [SerializeField] private bool m_shockAfterAttackMotion = true;
+
+    [Tooltip("衝撃波が PhysicsObject を押し出す範囲")]
+    [Min(0f)]
+    [SerializeField] private float m_shockRadius = 8f;
+
+    [Tooltip("ボス中心から外側へ押し出す水平方向の力")]
+    [Min(0f)]
+    [SerializeField] private float m_shockHorizontalForce = 12f;
+
+    [Tooltip("PhysicsObject を上へ持ち上げる力")]
+    [Min(0f)]
+    [SerializeField] private float m_shockUpwardlForce = 3f;
+
     // 次の OnMissileFireEvent でアーク弾を撃つか。アニメの2イベントで 通常→アーク と交互に切り替える
     private bool m_nextMissileIsLob;
 
@@ -54,6 +74,8 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
 
     // ボス本体（各ボーン）の Hitbox。物理オブジェクト接触でスタンゲージを溜める（機構1）。
     private Hitbox[] m_bodyHitboxes;
+    private readonly Collider[] m_interruptShockWaveBuffer = new Collider[64];
+    private readonly HashSet<Rigidbody> m_interruptShockWaveBodies = new HashSet<Rigidbody>();
 
     private BossState m_state = BossState.Idle;
     private float m_cooldownTimer;
@@ -312,6 +334,8 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         var prev = m_state;
         m_state = next;
 
+        TryEmitInterruptShockWave(prev, next);
+
         if (next == BossState.Rush)
         {
             m_rushTargetPosition = m_player.position;
@@ -350,6 +374,63 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
 
         if (prev == BossState.AttackMotion || prev == BossState.Rush || prev == BossState.Missile)
             m_cooldownTimer = m_settings.attackInterval;
+    }
+
+    private void TryEmitInterruptShockWave(BossState previous, BossState next)
+    {
+        bool enteredBreak = next == BossState.Stunned || next == BossState.Stagger;
+        if (!enteredBreak)
+            return;
+
+        bool enabledForPreviousState =
+            (previous == BossState.AttackStance && m_shockAfterAttackStance)
+            || (previous == BossState.AttackMotion && m_shockAfterAttackMotion);
+        if (!enabledForPreviousState)
+            return;
+
+        float radius = Mathf.Max(0f, m_shockRadius);
+        if (radius <= 0f)
+            return;
+
+        int physicsObjectLayer = PhysicsLayers.PhysicsObject;
+        if (physicsObjectLayer < 0)
+            return;
+
+        Vector3 center = transform.position;
+        int count = Physics.OverlapSphereNonAlloc(
+            center,
+            radius,
+            m_interruptShockWaveBuffer,
+            1 << physicsObjectLayer,
+            QueryTriggerInteraction.Ignore);
+
+        m_interruptShockWaveBodies.Clear();
+        for (int i = 0; i < count; i++)
+        {
+            Collider col = m_interruptShockWaveBuffer[i];
+            m_interruptShockWaveBuffer[i] = null;
+            if (col == null)
+                continue;
+
+            Rigidbody body = col.attachedRigidbody;
+            if (body == null)
+                body = col.GetComponentInParent<Rigidbody>();
+            if (body == null || body.isKinematic || !m_interruptShockWaveBodies.Add(body))
+                continue;
+
+            Vector3 horizontalDirection = body.worldCenterOfMass - center;
+            horizontalDirection.y = 0f;
+            if (horizontalDirection.sqrMagnitude <= 0.0001f)
+                horizontalDirection = transform.forward;
+            else
+                horizontalDirection.Normalize();
+
+            Vector3 impulse =
+                horizontalDirection * Mathf.Max(0f, m_shockHorizontalForce)
+                + Vector3.up * Mathf.Max(0f, m_shockUpwardlForce);
+            body.AddForce(impulse, ForceMode.Impulse);
+        }
+        m_interruptShockWaveBodies.Clear();
     }
 
     private void ClearStaminaFlags()
