@@ -10,17 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8670dd453f8699c4283b65ae8f36ee08, type: 3}
-  m_Name: EnemyAirSettings
+  m_Name: EnemyAirSettings_Dyson
   m_EditorClassIdentifier: MagnetRush.Data::EnemyAirSettings
   maxHp: 10
   moveSpeed: 5
-  acceleration: 25
+  acceleration: 18
   chaseRange: 40
+  stopDistance: 0
   turningDrag: 36
   deceleration: 20
   rotationSpeed: 18
   impactDamage: 1
-  explosionDamage: 4
-  explosionRadius: 4
-  respawnDelay: 12
+  explosionDamage: 8
+  explosionRadius: 3
+  respawnDelay: 0
   externalDrag: 3

@@ -61,6 +61,12 @@ public class Magnetizable : MonoBehaviour, IMagnetPoleProvider
     /// <summary>磁化オブジェクト同士が接触距離に入った時に発火。</summary>
     public event Action<Magnetizable> OnMagnetContact;
 
+    /// <summary>同極反発の力を受けた時に発火（反発中は毎FixedUpdate）。カメラ演出等が購読する。</summary>
+    public event Action<Vector3> OnRepulsionForce;
+
+    /// <summary>MagnetManagerが同極反発を適用した時に呼ぶ。購読者へ力を通知する。</summary>
+    public void NotifyRepulsionForce(Vector3 force) => OnRepulsionForce?.Invoke(force);
+
     // キャッシュ
     private Rigidbody m_rb;
     private IMagnetTarget m_magnetTarget;
@@ -82,6 +88,9 @@ public class Magnetizable : MonoBehaviour, IMagnetPoleProvider
 
     /// <summary>同一GOのEntityキャッシュ。MagnetManagerのフィールド割り当てで使用。</summary>
     public Entity CachedEntity => m_cachedEntity;
+
+    /// <summary>このフレームに受けた磁力の合計。0なら今フレームは引っ張られていない（引っ張り距離の加算判定に使う）。LateUpdateでリセット。</summary>
+    public float ForceThisFrame => m_totalForceThisFrame;
 
     /// <summary>フィールドのinnerRadius。フィールドがなければ0を返す。</summary>
     public float FieldInnerRadius => m_cachedField != null ? m_cachedField.InnerRadius : 0f;
