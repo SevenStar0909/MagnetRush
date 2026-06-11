@@ -281,6 +281,14 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
         }
 
     }
+
+    public void DisableWindEffectAnimationEvent()
+    {
+        DisableWindEffectEvent();
+        // Wind 終了後は回復姿勢。残りの Rush アニメーションの Root Motion で本体を動かさない。
+        if (m_animator != null) m_animator.applyRootMotion = false;
+        if (m_ai != null) m_ai.StopRushMovement();
+    }
     public void EnableDustEffectEvent()
     {
         if (m_dustEffect != null)

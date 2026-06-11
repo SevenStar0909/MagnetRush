@@ -47,7 +47,7 @@ public class EnemyBossBaseA_AnimationEventForwarder : MonoBehaviour
 
     public void DisableWindEffectEvent()
     {
-        if (m_target != null) m_target.DisableWindEffectEvent();
+        if (m_target != null) m_target.DisableWindEffectAnimationEvent();
     }
 
     public void EnableDustEffectEvent()

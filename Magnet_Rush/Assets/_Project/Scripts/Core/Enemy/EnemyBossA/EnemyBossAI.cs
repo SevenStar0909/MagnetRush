@@ -59,7 +59,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     private float m_cooldownTimer;
     private float m_staminaBreakTimer;
     private Vector3 m_rushTargetPosition;
-    // Rush 突入時に確定する固定方向。direction を毎フレーム再計算するとターゲット通過時に 180°反転して回転が暴れるため
+    // Rush 突入時の進行方向。Rush 中は turningDrag の範囲でプレイヤー方向へ少しずつ補正する。
     private Vector3 m_rushDirection;
 
     [Header("Rush or missile")]
@@ -72,6 +72,8 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     // Rush 中に Animator が一度でも IsInRush=true になったか。
     // 入り transition と exit transition を区別し、exit 時の player 追尾回転を抑制する。
     private bool m_rushHasStarted;
+    // DisableWindEffectEvent 後は回復姿勢に入るため、Rush 移動を停止する。
+    private bool m_rushMovementStopped;
 
     public event Action OnStabHitSucceeded;   // スタブが成功したときに発火
 
@@ -315,6 +317,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
             m_rushTargetPosition = m_player.position;
             m_boss.lateralVelocity = Vector3.zero;
             m_rushHasStarted = false; // 入り transition フェーズへ。Animator が IsInRush=true に入った時点で true 化
+            m_rushMovementStopped = false;
         }
 
         if (next == BossState.Idle)
@@ -445,7 +448,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
 
         if (!m_rushHasStarted)
         {
-            // Rush 突入の瞬間に方向を確定（以降このまま直進、毎フレーム再計算しない）
+            // Rush 突入の瞬間に初期方向を確定する。
             Vector3 toTarget = m_rushTargetPosition - transform.position;
             toTarget.y = 0f;
             m_rushDirection = toTarget.sqrMagnitude > 0.0001f
@@ -454,8 +457,37 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
             m_rushHasStarted = true;
         }
 
-        // 固定方向に直進。NavMesh path や targetPosition との距離は参照しない（オーバーシュート時の180°反転を防ぐ）
+        // Wind 終了後は回復姿勢中。慣性で滑らないよう、Rush の水平移動を停止する。
+        if (m_rushMovementStopped)
+        {
+            m_boss.lateralVelocity = Vector3.zero;
+            return;
+        }
+
+        // Kamikaze と同様に現在のプレイヤー位置を追うが、turningDrag で旋回量を制限して急旋回を防ぐ。
+        Vector3 toPlayer = m_player.position - transform.position;
+        toPlayer.y = 0f;
+        if (toPlayer.sqrMagnitude > 0.0001f)
+        {
+            float turnRadians = Mathf.Max(0f, m_settings.turningDrag) * Mathf.Deg2Rad * dt;
+            m_rushDirection = Vector3.RotateTowards(
+                m_rushDirection,
+                toPlayer.normalized,
+                turnRadians,
+                0f
+            ).normalized;
+        }
+
         m_boss.AccelerateToward(m_rushDirection, dt, m_settings.rushSpeedMultiplier);
+    }
+
+    public void StopRushMovement()
+    {
+        if (m_state == BossState.Rush && m_rushHasStarted)
+        {
+            m_rushMovementStopped = true;
+            m_boss.lateralVelocity = Vector3.zero;
+        }
     }
 
     private void TickMissile(float dt)
