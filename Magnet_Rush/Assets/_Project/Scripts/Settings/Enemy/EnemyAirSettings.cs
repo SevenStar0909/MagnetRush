@@ -22,10 +22,6 @@ public class EnemyAirSettings : ScriptableObject
     [Tooltip("プレイヤーを追跡する範囲（m）")]
     public float chaseRange = 25f;
 
-    [Label("停止距離（m）")]
-    [Tooltip("プレイヤーに近づきすぎない距離")]
-    public float stopDistance = 1.5f;
-
     [Header("[Entity移動]")]
     [Label("方向転換減衰")]
     [Tooltip("方向転換時の減衰（大きいほど素早く曲がる）")]

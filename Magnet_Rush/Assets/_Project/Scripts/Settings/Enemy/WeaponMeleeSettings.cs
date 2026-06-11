@@ -4,12 +4,6 @@
 [ClassLabelSO("近接武器設定")]
 public class WeaponMeleeSettings : ScriptableObject
 {
-    [Header("[攻撃]")]
-    [Label("ダメージ")]
-    [Tooltip("武器の基本ダメージ量")]
-    public int damage = 10;
-
-
     [Header("[拾得]")]
     [Label("磁化中は拾得不可")]
     [Tooltip("磁化中は拾えないようにするかどうか")]

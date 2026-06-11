@@ -467,7 +467,7 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
     /// IMagnetTarget���装。磁力を加速度として蓄積する（AddForce相当）。
     /// 実際の減衰はApplyMovement内のm_externalDragが処理する。
     /// </summary>
-    public void ApplyMagnetForce(Vector3 force)
+    public virtual void ApplyMagnetForce(Vector3 force)
     {
         externalVelocity += force * Time.deltaTime;
     }
