@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -216,11 +216,15 @@ public class EnemyWalkAxeAi : MonoBehaviour
 
     private void CheckAttackBoxOverlapAndDamage()
     {
+        // 攻撃判定を有効にした時点で、すでにPlayerが範囲内にいる場合、
+        // OnTriggerEnterだけでは検知できないことがあるため、手動で重なりを確認する
         if (m_attackBox == null || !m_attackBox.enabled)
             return;
 
+        // CapsuleColliderの現在の範囲をOverlapCapsule用のワールド座標に変換する
         GetCapsuleWorldPoints(m_attackBox, out Vector3 p0, out Vector3 p1, out float radius);
 
+        // 攻撃範囲内にいるPlayerを直接検索する
         int hitCount = Physics.OverlapCapsuleNonAlloc(
             p0,
             p1,
@@ -230,6 +234,7 @@ public class EnemyWalkAxeAi : MonoBehaviour
             QueryTriggerInteraction.Collide
         );
 
+        // 範囲内にいたPlayerへダメージ処理を行う
         for (int i = 0; i < hitCount; i++)
         {
             Collider col = m_overlapResults[i];
@@ -243,6 +248,9 @@ public class EnemyWalkAxeAi : MonoBehaviour
     private static void GetCapsuleWorldPoints(CapsuleCollider capsule, out Vector3 p0, out Vector3 p1, out float radius)
     {
         Transform t = capsule.transform;
+
+        // OverlapCapsuleはワールド座標の2点と半径が必要なため、
+        // CapsuleColliderの現在の位置・向き・スケールからそれらを計算する
         Vector3 center = t.TransformPoint(capsule.center);
         Vector3 scale = t.lossyScale;
         float sx = Mathf.Abs(scale.x);
@@ -260,11 +268,13 @@ public class EnemyWalkAxeAi : MonoBehaviour
                 axisScale = sx;
                 radiusScale = Mathf.Max(sy, sz);
                 break;
+
             case 2:
                 axis = t.forward;
                 axisScale = sz;
                 radiusScale = Mathf.Max(sx, sy);
                 break;
+
             default:
                 axis = t.up;
                 axisScale = sy;

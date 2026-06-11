@@ -13,8 +13,8 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
     [Tooltip("AI(EnemyBossAI)。AnimationEvent で OnAttackFinished/OnStunEnd/OnRushFinished/OnMissileFinished を転送する")]
     [SerializeField] private EnemyBossAI m_ai;
 
-    [Tooltip("腕の近接Hitbox。AnimationEvent で Enable/Disable を転送する")]
-    [SerializeField] private BossArmHitbox m_armHitbox;
+    [Tooltip("右手攻撃と Rush 攻撃の Hitbox 管理")]
+    [SerializeField] private BossAttackHitboxes m_attackHitboxes;
 
     /// <summary>
     /// ミサイル生成用
@@ -40,13 +40,10 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
     [SerializeField] private string m_fireMissileFinishedName = "FireMissileFinished";  //ミサイル発射終了トリガー（idleへの遷移タイミング）
     [SerializeField] private string m_attackRushName = "AttackRush";           //ラッシュ攻撃トリガー
     [SerializeField] private string m_attackRushFinishedName = "AttackRushFinished";   //ラッシュ攻撃終了トリガー（idleへの遷移タイミング）
-    [SerializeField] private string m_canInterruptName = "CanInterrupt";         //中断可能フラグ
-    [SerializeField] private string m_canNotInterruptName = "CanNotInterrupt";   //中断不可フラグ
     [SerializeField] private string m_beInterruptedName = "BeInterrupted";        //被弾中断トリガー
 
     [SerializeField] private string m_isStunnedName = "IsStunned";            //スタン中フラグ
     [SerializeField] private string m_stunEndName = "StunEnd";              //スタン終了トリガー（idleへの遷移タイミング）
-    [SerializeField] private string m_isStaggerName = "IsStagger";            //スタガー中フラグ
     [SerializeField] private string m_staggerEndName = "StaggerEnd";              //スタガー終了トリガー（idleへの遷移タイミング）
 
     private int m_hAttack;
@@ -56,13 +53,10 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
     private int m_hAttackRush;
     private int m_hAttackRushFinished;
     private int m_hBeInterrupted;
-    private int m_hCanInterrupt;
-    private int m_hCanNotInterrupt;
 
     private int m_hStunEnd;
     private int m_hIsStunned;
     private int m_hStaggerEnd;
-    private int m_hIsStagger;
 
     void Awake()
     {
@@ -72,11 +66,11 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
         if (m_ai == null)
             m_ai = transform.root.GetComponentInChildren<EnemyBossAI>();
 
-        if (m_armHitbox == null)
-            m_armHitbox = transform.root.GetComponentInChildren<BossArmHitbox>(true);
-
         if (m_boss == null)
             m_boss = transform.root.GetComponentInChildren<EnemyBossBase>();
+
+        if (m_attackHitboxes == null)
+            m_attackHitboxes = transform.root.GetComponentInChildren<BossAttackHitboxes>(true);
 
         m_hAttack = Animator.StringToHash(m_attackName);
         m_hAttackFinished = Animator.StringToHash(m_attackFinishedName);
@@ -86,13 +80,10 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
         m_hAttackRushFinished = Animator.StringToHash(m_attackRushFinishedName);
 
         m_hBeInterrupted = Animator.StringToHash(m_beInterruptedName);
-        m_hCanInterrupt = Animator.StringToHash(m_canInterruptName);
-        m_hCanNotInterrupt = Animator.StringToHash(m_canNotInterruptName);
 
         m_hStunEnd = Animator.StringToHash(m_stunEndName);
         m_hIsStunned = Animator.StringToHash(m_isStunnedName);
         m_hStaggerEnd = Animator.StringToHash(m_staggerEndName);
-        m_hIsStagger = Animator.StringToHash(m_isStaggerName);
 
         if (m_animator == null)
         {
@@ -148,12 +139,9 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
 
     // staggerにいく
     // 仕様: AttackStance/AttackMotion 中は常に中断可能（手を叩けば Stagger 発火）。
-    // CanInterrupt フラグは廃止（commit phase なし）。CanNotInterrupt は強制中断不可の保険として残す。
     public void TriggerBeInterrupted()
     {
         if (m_animator == null) return;
-        if (m_animator.GetBool(m_hCanNotInterrupt)) return;
-
         m_animator.SetTrigger(m_hBeInterrupted);
     }
 
@@ -169,51 +157,12 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
 
     // setとは
     // Animator Controller のパラメータの一種で、SetBool() で true/false を設定する。Animator内の遷移条件や、Isプロパティの判定に使用できる。
-    public void SetCanInterrupt(bool value)
-    {
-        if (m_animator != null) m_animator.SetBool(m_hCanInterrupt, value);
-    }
-
-    public void SetCanNotInterrupt(bool value)
-    {
-        if (m_animator != null) m_animator.SetBool(m_hCanNotInterrupt, value);
-    }
-
     public void SetIsStunned(bool value)
     {
         if (m_animator != null) m_animator.SetBool(m_hIsStunned, value);
     }
-    public void SetIsStagger(bool value)
-    {
-        if (m_animator != null) m_animator.SetBool(m_hIsStagger, value);
-    }
-
-    public void SetCanInterruptTrue() => SetCanInterrupt(true);
-    public void SetCanInterruptFalse() => SetCanInterrupt(false);
-    public void SetCanNotInterruptTrue() => SetCanNotInterrupt(true);
-    public void SetCanNotInterruptFalse() => SetCanNotInterrupt(false);
     public void SetIsStunnedTrue() => SetIsStunned(true);
     public void SetIsStunnedFalse() => SetIsStunned(false);
-    public void SetIsStaggerTrue() => SetIsStagger(true);
-    public void SetIsStaggerFalse() => SetIsStagger(false);
-
-    public bool CanInterrupt
-    {
-        get
-        {
-            if (m_animator == null) return false;
-            return m_animator.GetBool(m_hCanInterrupt);
-        }
-    }
-
-    public bool CanNotInterrupt
-    {
-        get
-        {
-            if (m_animator == null) return false;
-            return m_animator.GetBool(m_hCanNotInterrupt);
-        }
-    }
 
     // Isとは
     // Animatorの現在の状態を取得するためのプロパティ。Animator内のステート名をハッシュ化して比較する。
@@ -296,12 +245,24 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
     // AnimationEvent で呼び出す関数群。攻撃の当たり判定の有効化/無効化や、AIへの通知を行う。
     public void EnableArmHitboxEvent()
     {
-        if (m_armHitbox != null) m_armHitbox.EnableHitbox();
+        if (m_attackHitboxes != null) m_attackHitboxes.EnableArmHitbox();
+        ChannelLogger.Log("EnemyBoss", $"BossArmEvent step2 is Triggered ");
     }
 
     public void DisableArmHitboxEvent()
     {
-        if (m_armHitbox != null) m_armHitbox.DisableHitbox();
+        if (m_attackHitboxes != null) m_attackHitboxes.DisableArmHitbox();
+    }
+
+    public void EnableRushHitboxEvent()
+    {
+        if (m_attackHitboxes != null) m_attackHitboxes.EnableRushHitbox();
+        ChannelLogger.Log("EnemyBoss", $"BossRushEvent step2 is Triggered ");
+    }
+
+    public void DisableRushHitboxEvent()
+    {
+        if (m_attackHitboxes != null) m_attackHitboxes.DisableRushHitbox();
     }
 
     public void EnableWindEffectEvent()
@@ -343,21 +304,9 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
         if (m_ai != null) m_ai.OnAttackFinished();
     }
 
-    public void OnStunEndEvent()
-    {
-        // 計時器控制中，暫時不使用動畫事件
-        // TriggerStunEnd(); // ★追加
-        // if (m_ai != null) m_ai.OnStunEnd();
-    }
-
     public void OnRushFinishedEvent()
     {
         TriggerAttackRushFinished(); // ★追加：RushAnim -> Idle の条件を満たす
-        if (m_ai != null) m_ai.OnRushFinished();
-    }
-
-    public void OnRushFinished()
-    {
         if (m_ai != null) m_ai.OnRushFinished();
     }
 
@@ -407,12 +356,9 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
                 (m_fireMissileFinishedName, "FireMissileFinished (Trigger)"),
                 (m_attackRushName, "AttackRush (Trigger)"),
                 (m_attackRushFinishedName,"AttackRushFinished (Trigger)"),
-                (m_canInterruptName, "CanInterrupt (Bool)"),
-                (m_canNotInterruptName, "CanNotInterrupt (Bool)"),
                 (m_beInterruptedName, "BeInterrupted (Trigger)"),
                 (m_isStunnedName, "IsStunned (Bool)"),
                 (m_stunEndName, "StunEnd (Trigger)"),
-                (m_isStaggerName, "IsStagger (Bool)"),
                 (m_staggerEndName, "StaggerEnd (Trigger)"),
         };
 

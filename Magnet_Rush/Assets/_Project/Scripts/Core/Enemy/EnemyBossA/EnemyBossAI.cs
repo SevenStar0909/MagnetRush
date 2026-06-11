@@ -12,7 +12,7 @@ using UnityEngine.AI;
 [RequireComponent(typeof(EnemyBossBase))]
 public class EnemyBossAI : MonoBehaviour, IStabReceiver
 {
-    public enum BossState { Idle, Chase, AttackStance, AttackMotion, Rush, Missile, Stunned, Stagger }
+    public enum BossState { Idle, AttackStance, AttackMotion, Rush, Missile, Stunned, Stagger }
 
     [Header("References")]
     [SerializeField] private EnemyBossBaseA_Animator m_animator;
@@ -58,8 +58,6 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     private BossState m_state = BossState.Idle;
     private float m_cooldownTimer;
     private float m_staminaBreakTimer;
-    private Vector3 m_lastDirection;
-
     private Vector3 m_rushTargetPosition;
     // Rush 突入時に確定する固定方向。direction を毎フレーム再計算するとターゲット通過時に 180°反転して回転が暴れるため
     private Vector3 m_rushDirection;
@@ -157,7 +155,6 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         switch (m_state)
         {
             case BossState.Idle: TickIdle(dt); break;
-            case BossState.Chase: TickChase(dt); break;
             case BossState.AttackStance: TickAttackStance(dt); break;
             case BossState.AttackMotion: TickAttackMotion(dt); break;
             case BossState.Rush: TickRush(dt); break;
@@ -174,7 +171,6 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     {
         if (m_animator == null) return;
 
-        m_animator.SetIsStaggerTrue();
         m_animator.TriggerBeInterrupted();
     }
 
@@ -301,7 +297,6 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         }
 
         m_animator.SetIsStunnedFalse();
-        m_animator.SetIsStaggerFalse();
     }
 
     // === 状態遷移 ===
@@ -358,7 +353,6 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     {
         if (m_animator == null) return;
 
-        m_animator.SetIsStaggerFalse();
         m_animator.SetIsStunnedFalse();
         // Animator のトランジション遅延中はまだ Stun/Stagger ステートに残っている。
         // ここで false 固定すると、次フレームで TickStunEntry/TickStaggerEntry が立ち上がりエッジを
@@ -414,25 +408,6 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
             ChangeState(m_nextLongRangeAttackIsRush ? BossState.Rush : BossState.Missile);
             // 遠距離攻撃が実際に発動したときだけ Rush ↔ Missile を反転させる
             m_nextLongRangeAttackIsRush = !m_nextLongRangeAttackIsRush;
-        }
-    }
-
-    // 使わない20260511
-    private void TickChase(float dt)
-    {
-        if (m_animator.IsStunned) { ChangeState(BossState.Stunned); return; }
-
-        if (m_agent != null && m_agent.enabled && m_agent.isOnNavMesh)
-            m_agent.ResetPath();
-
-        m_boss.SlowDown(dt);
-        FacePlayer(dt, m_settings.faceDeadZoneDeg);
-
-        float distance = DistanceToPlayer();
-        if (distance <= m_settings.attackRange && m_cooldownTimer <= 0f)
-        {
-            m_animator.TriggerAttack();
-            ChangeState(BossState.AttackStance);
         }
     }
 
@@ -507,13 +482,6 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     {
         Debug.Log("[EnemyBossAI] OnAttackFinished called");
         if (m_state == BossState.AttackMotion)
-            ChangeState(BossState.Idle);
-    }
-
-    /// <summary>AttackStun clip 末尾の AnimEvent から呼ばれる。</summary>
-    public void OnStunEnd()
-    {
-        if (m_state == BossState.Stunned)
             ChangeState(BossState.Idle);
     }
 
@@ -663,66 +631,12 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         return Vector3.Distance(transform.position, m_player.position);
     }
 
-    private bool PlayerInChaseRange()
-    {
-        // 今使わないけど、将来の拡張で Idle → Chase 遷移条件にするかもなので残しておく
-        // 廃棄したいですけど。蘇
-        return DistanceToPlayer() <= m_settings.chaseRange;
-    }
-
     private void FacePlayer(float dt, float deadZoneDeg = 0f)
     {
         Vector3 look = m_player.position - transform.position;
         look.y = 0f;
         if (look.sqrMagnitude > 0.0001f)
             m_boss.FaceToward(look.normalized, dt, deadZoneDeg);
-    }
-
-    private void MoveTowardPlayer(float dt, float speedMultiplier)
-    {
-        if (m_agent == null || !m_agent.enabled || !m_agent.isOnNavMesh)
-        {
-            // フォールバック直線追跡
-            Vector3 dir = GetDirectionToPlayer();
-            if (dir.sqrMagnitude > 0.0001f)
-                m_boss.AccelerateToward(dir * speedMultiplier, dt);
-            return;
-        }
-
-        m_agent.SetDestination(m_player.position);
-        Vector3 navDir = GetNavMeshDirection();
-        if (navDir.sqrMagnitude > 0.0001f)
-            m_boss.AccelerateToward(navDir * speedMultiplier, dt);
-    }
-
-    private Vector3 GetNavMeshDirection()
-    {
-        if (m_agent == null)
-            return GetDirectionToPlayer();
-
-        if (!m_agent.hasPath && !m_agent.pathPending)
-            return GetDirectionToPlayer();
-
-        if (m_agent.pathPending)
-            return m_lastDirection;
-
-        Vector3 dir = m_agent.steeringTarget - transform.position;
-        dir.y = 0f;
-
-        if (dir.sqrMagnitude > 0.0001f)
-        {
-            m_lastDirection = dir.normalized;
-            return m_lastDirection;
-        }
-
-        return m_lastDirection;
-    }
-
-    private Vector3 GetDirectionToPlayer()
-    {
-        Vector3 dir = m_player.position - transform.position;
-        dir.y = 0f;
-        return dir.sqrMagnitude > 0.0001f ? dir.normalized : Vector3.zero;
     }
 
     private void SyncAgentToBody()
