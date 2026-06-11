@@ -13,10 +13,6 @@ public class EnemyBossBase : Entity
     [Header("References")]
     [SerializeField] private Transform m_player;
 
-    [Header("Magnetic")]
-    [Tooltip("no use for now")]
-    //[SerializeField] private MagneticMover m_mover;
-
     public EnemyBossSettings StatusData => m_statusData;
     public Transform Player => m_player;
 
@@ -64,11 +60,6 @@ public class EnemyBossBase : Entity
     void Update()
     {
         UpdateEntity(Time.deltaTime);
-    }
-
-    public void AccelerateToward(Vector3 worldDirection, float dt)
-    {
-        AccelerateToward(worldDirection, dt, 1f);
     }
 
     /// <summary>

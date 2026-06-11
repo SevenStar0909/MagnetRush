@@ -39,13 +39,13 @@ public class EnemyBossSettings : ScriptableObject
     [Tooltip("NavMeshAgentの加速度")]
     public float acceleration = 8.0f;
     [Label("追跡範囲（m）")]
-    [Tooltip("プレイヤーを追跡する範囲（m）")]
+    [Tooltip("noUse_プレイヤーを追跡する範囲（m）")]
     public float chaseRange = 20f;
     [Label("停止距離（m）")]
-    [Tooltip("プレイヤーとの停止距離（m）")]
+    [Tooltip("no_useプレイヤーとの停止距離（m）")]
     public float stopDistance = 1.5f;
 
-    [Header("[Entity移動]")]
+    [Header("[Entity(?)移動]")]
     [Label("方向転換減衰")]
     [Tooltip("方向転換時の減衰（大きいほど素早く曲がる）")]
     public float turningDrag = 15f;
@@ -103,7 +103,7 @@ public class EnemyBossSettings : ScriptableObject
     [Tooltip("プレイヤーへの回転速度")]
     public float rotationSpeed = 10f;
     [Label("ヒットボックス持続時間（秒）")]
-    [Tooltip("攻撃ヒットボックスの持続時間（秒）")]
+    [Tooltip("no_use攻撃ヒットボックスの持続時間（秒）")]
     public float attackHitboxDuration = 0.2f;
 
     [Header("[向き調整]")]
@@ -120,6 +120,9 @@ public class EnemyBossSettings : ScriptableObject
     [Label("よろけ状態の継続時間（秒）")]
     [Tooltip("スタンゲージ満タンでよろけたとき動けない時間。仕様＝10秒")]
     public float staggerDuration = 10f;
+    [Tooltip("no_useスタッガー中の移動速度倍率（未使用）")]
+    [Range(0f, 1f)]
+    public float staggerMoveMultiplier = 0.5f;
 
     [Header("[手の磁力範囲キャスト]")]
     [Label("手の磁力範囲半径（m）")]

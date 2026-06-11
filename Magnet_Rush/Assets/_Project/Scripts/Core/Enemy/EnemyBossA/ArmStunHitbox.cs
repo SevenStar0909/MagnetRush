@@ -55,7 +55,6 @@ public sealed class ArmStunHitbox : MonoBehaviour, IHittable
         if (m_animator != null && (m_animator.IsInAttackStance || m_animator.IsInAttackMotion))
         {
             m_animator.SetIsStunnedTrue();
-            m_animator.SetIsStaggerFalse();
             ChannelLogger.Log("EnemyBossA",
                 $"[ArmStunHitbox] 振り上げカウンター成立 → Stun src={(hit.source != null ? hit.source.name : "null")}");
         }
