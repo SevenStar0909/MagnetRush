@@ -49,6 +49,7 @@ public class PlayerAnimator : MonoBehaviour
     [SerializeField] private string m_verticalSpeedName = "VerticalSpeed";
     [SerializeField] private string m_stabName = "Stab";
     [SerializeField] private string m_hitName = "Hit";
+    [SerializeField] private string m_hitUpperName = "HitUpper";
 
     [Header("Layer Names (Inspector 単一箇所管理)")]
     [Tooltip("エイム時に有効化する上半身 Layer 名。Animator Controller のレイヤー名と一致させる。")]
@@ -60,6 +61,10 @@ public class PlayerAnimator : MonoBehaviour
     [Tooltip("射撃時に上半身レイヤーを上げ続ける時間 (秒)。移動しながら撃つとき、下半身は歩いたまま上半身だけ撃たせるため。")]
     [SerializeField] private float m_shootUpperBodyHold = 0.6f;
     private float m_shootHoldTimer;
+
+    [Tooltip("空中被弾時に上半身レイヤーを上げ続ける時間 (秒)。空中姿勢を保ったまま上半身だけ食らいモーションを重ねるため。")]
+    [SerializeField] private float m_hitUpperBodyHold = 0.6f;
+    private float m_hitHoldTimer;
 
     /// <summary>
     /// State 型 → Animator の State Int 値への固定マッピング。
@@ -96,6 +101,7 @@ public class PlayerAnimator : MonoBehaviour
     private int m_hVerticalSpeed;
     private int m_hStab;
     private int m_hHit;
+    private int m_hHitUpper;
 
     void Awake()
     {
@@ -129,6 +135,7 @@ public class PlayerAnimator : MonoBehaviour
         m_hVerticalSpeed   = Animator.StringToHash(m_verticalSpeedName);
         m_hStab            = Animator.StringToHash(m_stabName);
         m_hHit             = Animator.StringToHash(m_hitName);
+        m_hHitUpper        = Animator.StringToHash(m_hitUpperName);
 
         ValidateAnimatorParameters();
         StartCoroutine(ValidateStateOrderDelayed());
@@ -169,6 +176,7 @@ public class PlayerAnimator : MonoBehaviour
             (m_verticalSpeedName,   "VerticalSpeed (Float)"),
             (m_stabName,            "Stab (Trigger)"),
             (m_hitName,             "Hit (Trigger)"),
+            (m_hitUpperName,        "HitUpper (Trigger)"),
         };
 
         var existing = new System.Collections.Generic.HashSet<string>();
@@ -273,12 +281,13 @@ public class PlayerAnimator : MonoBehaviour
         // 射撃直後は一定時間だけ上半身レイヤーを上げてホールドする。
         // これで移動中に撃っても下半身は歩いたまま、上半身だけ射撃モーションを重ねられる。
         if (m_shootHoldTimer > 0f) m_shootHoldTimer -= Time.deltaTime;
+        if (m_hitHoldTimer > 0f) m_hitHoldTimer -= Time.deltaTime;
 
-        // 上半身 Aim Layer の重みを補間切替（エイム中 or 射撃直後は上半身だけポーズを重ねる）
+        // 上半身 Aim Layer の重みを補間切替（エイム中 or 射撃直後 or 空中被弾直後は上半身だけポーズを重ねる）
         if (m_aimLayerIndex >= 0)
         {
             float current = m_animator.GetLayerWeight(m_aimLayerIndex);
-            float target = (aiming || m_shootHoldTimer > 0f) ? 1f : 0f;
+            float target = (aiming || m_shootHoldTimer > 0f || m_hitHoldTimer > 0f) ? 1f : 0f;
             float maxDelta = (m_aimLayerFadeTime > 0f) ? (Time.deltaTime / m_aimLayerFadeTime) : 1f;
             m_animator.SetLayerWeight(m_aimLayerIndex, Mathf.MoveTowards(current, target, maxDelta));
         }
@@ -303,10 +312,29 @@ public class PlayerAnimator : MonoBehaviour
 
     // 被弾アニメ。Health.OnDamage は実ダメージが通った時だけ発火する（無敵時間中は鳴らない）。
     // 致死ダメージ時は死亡アニメを優先したいので IsDead ならスキップ。
+    // 空中では全身 HitReact を出すと落下姿勢が壊れるため、上半身レイヤーだけに食らいを重ねる。
     private void HandleDamage(int amount)
     {
         if (m_animator == null || m_health == null || m_health.IsDead) return;
-        m_animator.SetTrigger(m_hHit);
+
+        if (IsGroundedForAnimator())
+        {
+            m_animator.SetTrigger(m_hHit);
+        }
+        else
+        {
+            m_animator.SetTrigger(m_hHitUpper);
+            m_hitHoldTimer = m_hitUpperBodyHold;
+        }
+    }
+
+    // LateUpdate の IsGrounded 判定と同じ基準（磁力等の上向き外力で持ち上がっている間は離地扱い）。
+    private bool IsGroundedForAnimator()
+    {
+        if (m_player == null) return true;
+        float snapForce = m_player.Settings != null ? m_player.Settings.snapForce : 0f;
+        bool airborneByExternal = m_player.externalVelocity.y > snapForce;
+        return m_player.IsGrounded && !airborneByExternal;
     }
 
     // Stab はステート遷移と同時に FireStab → SetTrigger(Stab) するため、ここでリセットすると直後に消える。
