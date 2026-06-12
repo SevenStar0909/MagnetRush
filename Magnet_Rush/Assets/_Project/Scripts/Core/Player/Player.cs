@@ -274,6 +274,7 @@ public class Player : Entity
         UpdateMagneticInfluence();
 
         bool isDying = states.IsCurrentOfType<DiePlayerState>();
+        bool isMagnetStuck = states.IsCurrentOfType<MagnetStickPlayerState>();
 
         // 能力呼び出しは各 State の OnStep が Player.TickAllAbilities() 経由で行う。
         // Stab/Die は OnStep を空にすることで自動的に全入力ロックされる。
@@ -283,7 +284,8 @@ public class Player : Entity
         {
             float dt = Mathf.Min(Time.deltaTime, Time.fixedDeltaTime * 3f);
             states.UpdateState(dt);
-            if (!isDying) UpdateEntity(dt);
+            // 磁力張り付き中は UpdateEntity ごとスキップして重力・移動を完全停止（ビタ止め）
+            if (!isDying && !isMagnetStuck) UpdateEntity(dt);
         }
     }
 
@@ -293,9 +295,27 @@ public class Player : Entity
         if (!IsSlowMotion) return;
 
         bool isDying = states.IsCurrentOfType<DiePlayerState>();
+        bool isMagnetStuck = states.IsCurrentOfType<MagnetStickPlayerState>();
         float dt = Time.fixedDeltaTime;
         states.UpdateState(dt);
-        if (!isDying) UpdateEntity(dt);
+        if (!isDying && !isMagnetStuck) UpdateEntity(dt);
+    }
+
+    /// <summary>
+    /// 磁力で壁・地面にビタ止めできる状況か。
+    /// 磁化中に磁力で引かれていて、引かれる方向の至近距離に張り付き対象レイヤーの面がある時 true。
+    /// </summary>
+    public bool CanMagnetStick()
+    {
+        if (m_settings == null) return false;
+        if (magnetizable == null || !magnetizable.IsActive) return false;
+
+        Vector3 pull = externalVelocity + holdVelocity;
+        if (pull.magnitude < m_settings.magnetStickMinPullSpeed) return false;
+        if (m_settings.magnetStickLayer.value == 0) return false;
+
+        return CapsuleCast(pull.normalized, m_settings.magnetStickCheckDistance,
+            m_settings.magnetStickLayer.value);
     }
 
     /// <summary>
