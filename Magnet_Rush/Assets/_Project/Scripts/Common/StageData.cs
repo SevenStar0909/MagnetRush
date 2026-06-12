@@ -8,6 +8,7 @@ public class StageData : ScriptableObject
     {
         public string mainSceneName;
         public string mapSceneName;
+        public GameObject previewPrefab;
     }
 
     public Stage[] stages = new Stage[3];
