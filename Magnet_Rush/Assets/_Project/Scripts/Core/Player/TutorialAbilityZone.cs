@@ -11,19 +11,23 @@ using UnityEngine;
 [RequireComponent(typeof(Collider))]
 public class TutorialAbilityZone : MonoBehaviour
 {
-    /// <summary>ゾーンに入ったときに行う操作。</summary>
+    /// <summary>ゾーンに入ったときに行う操作。InspectorName でドロップダウンには日本語で表示される。</summary>
     public enum ZoneAction
     {
         /// <summary>全機能をロックする（移動とカメラは元々対象外）。</summary>
+        [InspectorName("全ロック（移動とカメラ以外を全部使えなくする）")]
         LockAll,
 
         /// <summary>指定した1機能のロックを解除する。</summary>
+        [InspectorName("1機能を解除（アビリティで選んだものだけ）")]
         Unlock,
 
         /// <summary>指定した1機能をロックする。</summary>
+        [InspectorName("1機能をロック（アビリティで選んだものだけ）")]
         Lock,
 
         /// <summary>全機能のロックを解除する。</summary>
+        [InspectorName("全解除（全部の機能を使えるようにする）")]
         UnlockAll,
     }
 
