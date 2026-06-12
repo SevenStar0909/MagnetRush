@@ -78,6 +78,9 @@ public class Player : Entity
     /// <summary>スタブ攻撃 Ability。Stab() / OnStabHitEvent() メソッド本体は feature/stab で実装する。</summary>
     public StabAbility stab { get; private set; }
 
+    /// <summary>機能ロック状態（チュートリアル用）。無ければ全機能アンロック扱い。</summary>
+    public PlayerAbilityLocker abilityLocker { get; private set; }
+
     /// <summary>最後に接地した位置の記録。落下リスポーンの戻り先に使う。任意（無くても固定スポーンへフォールバック）。</summary>
     private PlayerGroundTracker m_groundTracker;
 
@@ -96,6 +99,7 @@ public class Player : Entity
         pole = GetComponent<PoleAbility>();
         jump = GetComponent<JumpAbility>();
         stab = GetComponent<StabAbility>();
+        abilityLocker = GetComponent<PlayerAbilityLocker>();
         m_groundTracker = GetComponent<PlayerGroundTracker>();
 
         if (m_settings.groundLayer == 0)
@@ -231,27 +235,64 @@ public class Player : Entity
     public static bool IsSlowMotion => Time.timeScale < k_SlowMotionThreshold;
 
     // === Ability ラッパー(State.OnStep から呼ばれる Facade API) ===
+    // チュートリアルの機能ロックはここで一括ゲートする（移動とカメラはラッパーを通らないので常に有効）
+
+    /// <summary>指定機能がロック中か。PlayerAbilityLocker が無いシーンでは常にアンロック。</summary>
+    public bool IsAbilityLocked(PlayerAbilityType ability)
+        => abilityLocker != null && abilityLocker.IsLocked(ability);
 
     /// <summary>磁極切替(PoleAbility ラッパー)。</summary>
-    public void SwitchPole() => pole.Switch();
+    public void SwitchPole()
+    {
+        if (IsAbilityLocked(PlayerAbilityType.PoleSwitch)) return;
+        pole.Switch();
+    }
 
-    /// <summary>エイム入力処理(AimAbility ラッパー)。</summary>
-    public void UpdateAim() => aim.UpdateInput();
+    /// <summary>エイム入力処理(AimAbility ラッパー)。ロック時はエイム継続中でも強制解除する。</summary>
+    public void UpdateAim()
+    {
+        if (IsAbilityLocked(PlayerAbilityType.Aim))
+        {
+            if (aim.IsAiming) aim.StopAim();
+            return;
+        }
+        aim.UpdateInput();
+    }
 
     /// <summary>通常射撃(ShootingAbility ラッパー)。</summary>
-    public void Fire() => shooting.Fire();
+    public void Fire()
+    {
+        if (IsAbilityLocked(PlayerAbilityType.Fire)) return;
+        shooting.Fire();
+    }
 
     /// <summary>セルフファイア(ShootingAbility ラッパー)。</summary>
-    public void SelfFire() => shooting.SelfFire();
+    public void SelfFire()
+    {
+        if (IsAbilityLocked(PlayerAbilityType.SelfFire)) return;
+        shooting.SelfFire();
+    }
 
     /// <summary>リロード(ShootingAbility ラッパー)。</summary>
-    public void Reload() => shooting.Reload();
+    public void Reload()
+    {
+        if (IsAbilityLocked(PlayerAbilityType.Reload)) return;
+        shooting.Reload();
+    }
 
     /// <summary>ジャンプ(JumpAbility ラッパー)。jump プロパティは feature/jump 実装で接続される。</summary>
-    public void Jump() => jump.Jump();
+    public void Jump()
+    {
+        if (IsAbilityLocked(PlayerAbilityType.Jump)) return;
+        jump.Jump();
+    }
 
     /// <summary>スタブ攻撃(StabAbility ラッパー)。stab プロパティは feature/stab 実装で接続される。</summary>
-    public void Stab() => stab.Stab();
+    public void Stab()
+    {
+        if (IsAbilityLocked(PlayerAbilityType.Stab)) return;
+        stab.Stab();
+    }
 
     /// <summary>
     /// 通常 State 用の全許可ヘルパ。Idle / Move / Aim 等が呼ぶ。
