@@ -260,14 +260,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fbdcd354734c16d48b56ca49da896c8b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Scene::SceneLoader
-  m_additiveScenes:
-  - OS_B_MAP
+  m_additiveScenes: []
   m_skipTitlePatterns:
   - Test
   - NS_
   - SSS_
   - Shimomoto
   - Nishigori
+  - GameScene
   m_loadingScreenPrefab: {fileID: 2311108185041038898, guid: 403f66da0ba77fd448ee17a29bd38394, type: 3}
   m_loadingScreenSettings: {fileID: 11400000, guid: fef40ed0df179d146b2392abf0f916f1, type: 2}
 --- !u!1001 &1340658581277431734
@@ -365,13 +365,37 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8579786359634858839, guid: b9dd3451f4fd5e048b518487552cc703, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3420283907458290458}
   m_SourcePrefab: {fileID: 100100000, guid: b9dd3451f4fd5e048b518487552cc703, type: 3}
 --- !u!224 &6954856084637301886 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 8223121169866025928, guid: b9dd3451f4fd5e048b518487552cc703, type: 3}
   m_PrefabInstance: {fileID: 1340658581277431734}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &7317082606235403489 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8579786359634858839, guid: b9dd3451f4fd5e048b518487552cc703, type: 3}
+  m_PrefabInstance: {fileID: 1340658581277431734}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &3420283907458290458
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7317082606235403489}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa26fb84373d77145ac93c09d1e4647f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.UI::DeathEnemyScatter
+  m_retreatRadius: 14
+  m_retreatDelay: 0.6
+  m_retreatDuration: 3.2
+  m_faceTravelDirection: 1
 --- !u!1001 &4744709040514733718
 PrefabInstance:
   m_ObjectHideFlags: 0
