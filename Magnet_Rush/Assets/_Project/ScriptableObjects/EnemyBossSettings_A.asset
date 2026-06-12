@@ -18,11 +18,11 @@ MonoBehaviour:
   staminaRecovery: 0
   staminaRecoveryCooldown: 15
   staminaBreakDuration: 15
-  stunGaugePercentPerBodyHit: 3
+  stunGaugePercentPerBodyHit: 2
   moveSpeed: 5
   acceleration: 8
   chaseRange: 40
-  stopDistance: 1.5
+  stopDistance: 5
   turningDrag: 33.5
   deceleration: 20
   gravity: -20
@@ -33,12 +33,12 @@ MonoBehaviour:
     m_Bits: 65
   externalDrag: 3
   attackDamage: 5
-  activationRange: 80
+  activationRange: 75
   attackRange: 20
-  rushAttackRange: 22
-  rushSpeedMultiplier: 3
-  missileAttackRange: 24
-  attackInterval: 5
+  rushAttackRange: 24
+  rushSpeedMultiplier: 5
+  missileAttackRange: 30
+  attackInterval: 0.8
   rotationSpeed: 4
   attackHitboxDuration: 0.2
   faceDeadZoneDeg: 0
