@@ -121,7 +121,7 @@ public class SimpleTutorial : MonoBehaviour
         }
 
         currentStep = 6;
-        SetPlayerShootingLock(true); // 射撃ロック
+        // 一度解除した射撃はそのまま使えるようにする（教えるための再ロックはしない）
         yield return StartCoroutine(TypeAndAutoAdvance("弾が発射されて、クレートからドームが展開されているでしょう？これは磁場が可視化されたものよ。"));                      //9
         yield return StartCoroutine(TypeAndAutoAdvance("ところで磁力にはNとSの２つの磁極があるのは知ってるわね。同じ磁極同士なら反発し、異なる磁極同士なら引き寄せあう…"));  //10
         yield return StartCoroutine(TypeAndAutoAdvance("実はあなたの銃はこのSとNの磁極を切り替える機能も備わっているの。RBボタンを押してみて。"));  //11
@@ -136,7 +136,7 @@ public class SimpleTutorial : MonoBehaviour
         }
 
         currentStep = 8;
-        SetPlayerSwitchMagnetLock(true); // 切り替えロック
+        // 一度解除した磁極切替はそのまま使えるようにする（教えるための再ロックはしない）
         yield return StartCoroutine(TypeAndAutoAdvance("右下のインタフェースが変わったのに気付いた？これであなたの弾で付与できる磁極を切り替えられるのよ。")); //12
         yield return StartCoroutine(TypeAndAutoAdvance("じゃあそのままさっきとは別のクレートに向けて、銃を撃ってみましょう。")); //13
 
@@ -149,17 +149,16 @@ public class SimpleTutorial : MonoBehaviour
         }
 
         currentStep = 10;
-        SetPlayerSwitchMagnetLock(true); // 切り替えロック
-        SetPlayerShootingLock(true); // 射撃ロック
+        // 射撃・磁極切替は解除済みのまま（再ロックしない）
         yield return StartCoroutine(TypeAndAutoAdvance("異なる磁極を付与したことでオブジェクト同士が引き合ったわね、成功よ。"));        //14
         yield return StartCoroutine(TypeAndAutoAdvance("逆に反発を起こしたいときは、同じ磁極を付与すればOKよ。この機能を活用して、目の前の障害物を突破して進んでちょうだい。"));        //15
         yield return StartCoroutine(TypeAndAutoAdvance("そうそう、右下のインタフェースはあなたの銃の残弾数も示しているの。"));        //16
         yield return StartCoroutine(TypeAndAutoAdvance("リロードしたくなったら、Xボタンを押すのよ。ただリロードすると、今の磁力がリセットされる点には注意して。"));        //17
 
         currentStep = 11;
-        SetPlayerSwitchMagnetLock(false); // 切り替えロック
-        SetPlayerShootingLock(false); // 射撃ロック
-        SetPlayerSwitchMagnetLock(false); // 磁力切り替え
+        // 仕様⑩: 自分への磁力(LB)以外のすべての機能を解除（リロードもここで解禁）
+        SetPlayerLockAll(false);
+        SetPlayerSelfMagnetLock(true);
 
         while (currentStep == 11)
         {
@@ -167,8 +166,7 @@ public class SimpleTutorial : MonoBehaviour
         }
 
         currentStep = 12;
-        SetPlayerSwitchMagnetLock(true); // 切り替えロック
-        SetPlayerShootingLock(true); // 射撃ロック
+        // 解除済みの機能はそのまま（図2でも再ロックしない）。自分への磁力だけ⑫で解禁する
         yield return StartCoroutine(TypeAndAutoAdvance("高い壁ね..、でも問題ないわ、あなたの銃の機能を応用すればね。"));        //18
         yield return StartCoroutine(TypeAndAutoAdvance("実はあなたの銃には、あなた自身にもＮかＳの磁力を付与する機能があるの。LBを押してみて。"));        //19
 
@@ -277,18 +275,31 @@ public class SimpleTutorial : MonoBehaviour
     }
 
     // 外部から呼ばれる「磁力を切り替えたよ」の通知
+    // step7突入時の磁極を基準に取り、実際に切り替わった瞬間だけ進める
+    private MagneticPole m_poleBaseline;
+    private bool m_poleBaselineSet;
+
     private void OnMagnetSwitched()
     {
-        if (currentStep == 7)
+        if (currentStep != 7)
         {
-            bool rbPressed = Gamepad.current != null && Gamepad.current.rightShoulder.wasPressedThisFrame; // コントローラーのRBボタン
-            bool ePressed = Keyboard.current != null && Keyboard.current.qKey.wasPressedThisFrame;       // キーボードのEキー
-
-            if (rbPressed || ePressed)
-            {
-                currentStep = 8;
-            }
+            m_poleBaselineSet = false;
+            return;
         }
+
+        var p = Player.Current;
+        if (p == null || p.pole == null) return;
+
+        // 生の RB/Q 入力ではなく、実際の磁極変化を見る（他の検知と同じく状態ベース）
+        if (!m_poleBaselineSet)
+        {
+            m_poleBaseline = p.pole.CurrentPole;
+            m_poleBaselineSet = true;
+            return;
+        }
+
+        if (p.pole.CurrentPole != m_poleBaseline)
+            currentStep = 8;
     }
 
     //クレート同士がつながったよ
@@ -316,42 +327,44 @@ public class SimpleTutorial : MonoBehaviour
     // 外部から呼ばれる「自分に磁力を付与したよ」の通知
     private void OnMagnetAppliedToSelf()
     {
-        if (currentStep == 13 && playerTransform != null)
-        {
-            // プレイヤー自身に付いている「Magnetizable」を取得
-            Magnetizable playerMagnet = playerTransform.GetComponent<Magnetizable>();
+        if (currentStep != 13) return;
 
-            // プレイヤー自身の磁力がONになったかをチェック！
-            if (playerMagnet != null && playerMagnet.IsActive)
-            {
-                currentStep = 14;
-            }
-        }
+        var pt = GetPlayerTransform();
+        if (pt == null) return;
+
+        // プレイヤー自身に付いている「Magnetizable」を取得し、磁力がONになったかをチェック
+        Magnetizable playerMagnet = pt.GetComponent<Magnetizable>();
+        if (playerMagnet != null && playerMagnet.IsActive)
+            currentStep = 14;
     }
 
+    // プレイヤーは GameScene 側（Additive ロード）に居るためシーン参照では繋がらない。
+    // Inspector 参照があれば優先し、無ければ Player.Current で実行時に解決する。
+    private Transform GetPlayerTransform()
+    {
+        if (playerTransform != null) return playerTransform;
+        if (Player.Current != null) return Player.Current.transform;
+        return null;
+    }
+
+    // カメラは Cinemachine 制御（_Camera.prefab の CameraSettingsApplier）なので mainCamera を直接回すと競合する。
+    // ピボットを動かす CameraSettingsApplier.FocusOn 経由でエネミーに向ける。
     private void CameraZoom()
     {
-        // ==========================================
-        // 🎥 カメラの自動ズーム演出処理
-        // ==========================================
-        if (mainCamera != null)
-        {
-            if (isZooming && tutorialEnemy != null)
-            {
-                // 1. 敵の方を滑らかに向く
-                Vector3 targetDir = tutorialEnemy.transform.position - mainCamera.transform.position;
-                Quaternion targetRot = Quaternion.LookRotation(targetDir);
-                mainCamera.transform.rotation = Quaternion.Slerp(mainCamera.transform.rotation, targetRot, Time.deltaTime * 3f);
+        var applier = GetCameraApplier();
+        if (applier == null) return;
 
-                // 2. 滑らかにズームインする
-                mainCamera.fieldOfView = Mathf.Lerp(mainCamera.fieldOfView, zoomFOV, Time.deltaTime * 3f);
-            }
-            else
-            {
-                // ズームOFFの時は、滑らかに元の視野角に戻す
-                mainCamera.fieldOfView = Mathf.Lerp(mainCamera.fieldOfView, defaultFOV, Time.deltaTime * 5f);
-            }
-        }
+        if (isZooming && tutorialEnemy != null)
+            applier.FocusOn(tutorialEnemy.transform, zoomFOV);
+        else
+            applier.ClearFocus();
+    }
+
+    private CameraSettingsApplier m_cameraApplier;
+    private CameraSettingsApplier GetCameraApplier()
+    {
+        if (m_cameraApplier == null) m_cameraApplier = FindAnyObjectByType<CameraSettingsApplier>();
+        return m_cameraApplier;
     }
 
     private void OneEnemyDead()
@@ -367,25 +380,63 @@ public class SimpleTutorial : MonoBehaviour
         }
     }
 
-    //窓口
+    // 機能ロックは _Player.prefab の PlayerAbilityLocker に委譲する。
+    // ロックの解除/再ロックはすべてメッセージ進行に合わせてこのコルーチンから行う（コライダー不要）。
+    // プレイヤーは GameScene 側（Additive）に居るので、locker は Player.Current 等で実行時解決する。
+    private PlayerAbilityLocker m_locker;
+
+    private PlayerAbilityLocker GetLocker()
+    {
+        if (m_locker != null) return m_locker;
+        if (playerTransform != null) m_locker = playerTransform.GetComponentInChildren<PlayerAbilityLocker>(true);
+        if (m_locker == null && Player.Current != null) m_locker = Player.Current.abilityLocker;
+        if (m_locker == null) m_locker = FindAnyObjectByType<PlayerAbilityLocker>();
+        if (m_locker == null) Debug.LogWarning("[Tutorial] PlayerAbilityLocker が見つからない — ロックが効きません");
+        return m_locker;
+    }
+
+    // 移動・カメラを含む全機能をロック/解除する（仕様①開始時・⑭エネミー遭遇時の全ロック）。
     private void SetPlayerLockAll(bool isLock)
     {
-        Debug.Log($"全操作ロック: {isLock}");
+        var locker = GetLocker();
+        if (locker == null) return;
+        foreach (PlayerAbilityType ability in System.Enum.GetValues(typeof(PlayerAbilityType)))
+            locker.SetLocked(ability, isLock);
     }
+
+    // 仕様③メッセージ4で解除する移動・カメラ・ジャンプ。
     private void SetPlayerMovementLock(bool isLock)
     {
-        Debug.Log($"移動ロック: {isLock}");
+        var locker = GetLocker();
+        if (locker == null) return;
+        locker.SetLocked(PlayerAbilityType.Move, isLock);
+        locker.SetLocked(PlayerAbilityType.Camera, isLock);
+        locker.SetLocked(PlayerAbilityType.Jump, isLock);
     }
+
+    // 射撃グループ＝エイム＋射撃＋リロード（銃の一式。射撃が使えるならリロードも使える）。
     private void SetPlayerShootingLock(bool isLock)
     {
-        Debug.Log($"射撃ロック: {isLock}");
+        var locker = GetLocker();
+        if (locker == null) return;
+        locker.SetLocked(PlayerAbilityType.Aim, isLock);
+        locker.SetLocked(PlayerAbilityType.Fire, isLock);
+        locker.SetLocked(PlayerAbilityType.Reload, isLock);
     }
+
+    // 磁極切替（RB）。
     private void SetPlayerSwitchMagnetLock(bool isLock)
     {
-        Debug.Log($"磁力切り替えロック: {isLock}");
+        var locker = GetLocker();
+        if (locker == null) return;
+        locker.SetLocked(PlayerAbilityType.PoleSwitch, isLock);
     }
+
+    // 自分への磁力付与（LB / セルフファイア）。
     private void SetPlayerSelfMagnetLock(bool isLock)
     {
-        Debug.Log($"自分への磁力ロック: {isLock}");
+        var locker = GetLocker();
+        if (locker == null) return;
+        locker.SetLocked(PlayerAbilityType.SelfFire, isLock);
     }
 }

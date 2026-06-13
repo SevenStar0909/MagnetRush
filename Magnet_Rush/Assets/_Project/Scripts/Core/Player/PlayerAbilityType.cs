@@ -2,7 +2,8 @@ using UnityEngine;
 
 /// <summary>
 /// チュートリアル等で個別ロックできるプレイヤー機能の種類。
-/// 移動とカメラはロック対象外（常に操作可能）のため含めない。
+/// Move / Camera は LockAll の対象外（個別指定でのみロックされる）。
+/// 既存プレハブのシリアライズ値を壊さないため、新メンバは必ず末尾に追加する。
 /// InspectorName で Inspector のドロップダウンには日本語で表示される。
 /// </summary>
 public enum PlayerAbilityType
@@ -34,4 +35,12 @@ public enum PlayerAbilityType
     /// <summary>スタブ攻撃（崩れたボスへのとどめ）。</summary>
     [InspectorName("スタブ攻撃（崩れたボスへのとどめ）")]
     Stab,
+
+    /// <summary>移動（左スティック / WASD）。</summary>
+    [InspectorName("移動（左スティックで歩く）")]
+    Move,
+
+    /// <summary>カメラ操作（右スティック / マウス）。</summary>
+    [InspectorName("カメラ（右スティック/マウスで見回す）")]
+    Camera,
 }

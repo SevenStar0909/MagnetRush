@@ -24,6 +24,12 @@ public class CameraSettingsApplier : MonoBehaviour
     [Tooltip("反発ジャンプ演出などカメラ演出のパラメータ（SO）")]
     [SerializeField] private PlayerCameraSettings m_cameraSettings;
 
+    [Header("チュートリアル強制注目")]
+    [Tooltip("ターゲットへ向き直る速さ（度/秒）")]
+    [SerializeField] private float m_focusTurnSpeed = 200f;
+    [Tooltip("注目FOVへ寄せる速さ（度/秒）")]
+    [SerializeField] private float m_focusFovSpeed = 60f;
+
     private PlayerSettings m_settings;
     private Health m_health;
 
@@ -47,6 +53,10 @@ public class CameraSettingsApplier : MonoBehaviour
     private bool m_isAiming;
     private float m_repulsePullCurrent;
     private float m_repulseActiveTimer;
+
+    private Transform m_focusTarget;
+    private float m_focusFov;
+    private bool m_isFocusing;
 
     void OnEnable()
     {
@@ -143,21 +153,30 @@ public class CameraSettingsApplier : MonoBehaviour
         if (m_isFrozen) return;
         if (m_cameraPivot == null || m_settings == null) { ChannelLogger.LogGuardReturn("Player", "カメラピボットまたは設定なし"); return; }
 
-        // マウス: ピクセル差分 (フレーム独立)。deltaTime を掛けない。
-        if (Mouse.current != null)
+        // チュートリアルでカメラロック中は入力で回さない（追従・エイム距離・反発演出はそのまま動かす）
+        bool cameraLocked = m_player != null && m_player.IsAbilityLocked(PlayerAbilityType.Camera);
+        if (!cameraLocked)
         {
-            Vector2 mouseLook = Mouse.current.delta.ReadValue();
-            m_yaw += mouseLook.x * m_settings.cameraMouseSensitivityX * k_MousePixelToDegree;
-            m_pitch -= mouseLook.y * m_settings.cameraMouseSensitivityY * k_MousePixelToDegree;
+            // マウス: ピクセル差分 (フレーム独立)。deltaTime を掛けない。
+            if (Mouse.current != null)
+            {
+                Vector2 mouseLook = Mouse.current.delta.ReadValue();
+                m_yaw += mouseLook.x * m_settings.cameraMouseSensitivityX * k_MousePixelToDegree;
+                m_pitch -= mouseLook.y * m_settings.cameraMouseSensitivityY * k_MousePixelToDegree;
+            }
+
+            // パッド: アナログ軸 (連続値)。deltaTime を掛けて時間積分する。
+            if (Gamepad.current != null)
+            {
+                Vector2 stick = Gamepad.current.rightStick.ReadValue();
+                m_yaw += stick.x * m_settings.cameraSensitivityX * Time.unscaledDeltaTime;
+                m_pitch -= stick.y * m_settings.cameraSensitivityY * Time.unscaledDeltaTime;
+            }
         }
 
-        // パッド: アナログ軸 (連続値)。deltaTime を掛けて時間積分する。
-        if (Gamepad.current != null)
-        {
-            Vector2 stick = Gamepad.current.rightStick.ReadValue();
-            m_yaw += stick.x * m_settings.cameraSensitivityX * Time.unscaledDeltaTime;
-            m_pitch -= stick.y * m_settings.cameraSensitivityY * Time.unscaledDeltaTime;
-        }
+        // チュートリアルの強制注目中はターゲット方向へヨー/ピッチを寄せる（カメラ入力ロック中に呼ばれる想定）
+        if (m_isFocusing && m_focusTarget != null)
+            ApplyFocus();
 
         m_pitch = Mathf.Clamp(m_pitch, m_settings.cameraPitchMin, m_settings.cameraPitchMax);
         m_cameraPivot.rotation = Quaternion.Euler(m_pitch, m_yaw, 0f);
@@ -222,6 +241,54 @@ public class CameraSettingsApplier : MonoBehaviour
         {
             var lens = m_cinemachineCamera.Lens;
             lens.FieldOfView = aiming ? m_settings.aimFOV : m_defaultFOV;
+            m_cinemachineCamera.Lens = lens;
+        }
+    }
+
+    /// <summary>
+    /// 指定ターゲットへカメラを向け、FOVを寄せる（チュートリアルの強制注目用）。
+    /// カメラ操作ロック中に毎フレーム呼ぶ想定。target が null のときは何もしない。
+    /// </summary>
+    public void FocusOn(Transform target, float fov)
+    {
+        if (target == null) return;
+        m_focusTarget = target;
+        m_focusFov = fov;
+        m_isFocusing = true;
+    }
+
+    /// <summary>強制注目を解除し、FOVを通常（エイム/既定）へ戻す。注目していないときは何もしない。</summary>
+    public void ClearFocus()
+    {
+        if (!m_isFocusing) return;
+        m_isFocusing = false;
+        m_focusTarget = null;
+
+        if (m_cinemachineCamera != null && m_settings != null)
+        {
+            var lens = m_cinemachineCamera.Lens;
+            lens.FieldOfView = m_isAiming ? m_settings.aimFOV : m_defaultFOV;
+            m_cinemachineCamera.Lens = lens;
+        }
+    }
+
+    // ピボットのヨー/ピッチをターゲット方向へ寄せ、FOVを注目値へ寄せる。LateUpdateから呼ぶ。
+    private void ApplyFocus()
+    {
+        Vector3 dir = m_focusTarget.position - m_cameraPivot.position;
+        if (dir.sqrMagnitude > 0.0001f)
+        {
+            Vector3 n = dir.normalized;
+            float desiredYaw = Mathf.Atan2(n.x, n.z) * Mathf.Rad2Deg;
+            float desiredPitch = -Mathf.Asin(Mathf.Clamp(n.y, -1f, 1f)) * Mathf.Rad2Deg;
+            m_yaw = Mathf.MoveTowardsAngle(m_yaw, desiredYaw, m_focusTurnSpeed * Time.unscaledDeltaTime);
+            m_pitch = Mathf.MoveTowards(m_pitch, desiredPitch, m_focusTurnSpeed * Time.unscaledDeltaTime);
+        }
+
+        if (m_cinemachineCamera != null && m_focusFov > 0f)
+        {
+            var lens = m_cinemachineCamera.Lens;
+            lens.FieldOfView = Mathf.MoveTowards(lens.FieldOfView, m_focusFov, m_focusFovSpeed * Time.unscaledDeltaTime);
             m_cinemachineCamera.Lens = lens;
         }
     }
