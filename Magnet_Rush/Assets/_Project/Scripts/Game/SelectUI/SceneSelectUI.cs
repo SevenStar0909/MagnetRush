@@ -14,6 +14,17 @@ public class SceneSelectUI : MonoBehaviour
     private string m_lastSelectedMapName = "";
     private Coroutine m_previewCoroutine;
 
+    private void Start()
+    {
+        // タイトルから来たとき、先頭ステージ(チュートリアル)を初期選択としてプレビュー表示する。
+        if (m_stageData == null || m_stageData.stages == null || m_stageData.stages.Length == 0)
+            return;
+
+        StageData.Stage first = m_stageData.stages[0];
+        if (first != null && !string.IsNullOrEmpty(first.mapSceneName))
+            OnSelectStage(first.mapSceneName);
+    }
+
     // --- 既存のコードはそのままで、クラスの中に以下のメソッドを追加・修正してください ---
 
     /// <summary>
