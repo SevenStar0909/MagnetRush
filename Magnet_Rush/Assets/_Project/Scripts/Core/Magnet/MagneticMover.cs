@@ -158,30 +158,17 @@ public class MagneticMover : MonoBehaviour, IMagneticResponse
 
     private void RecoverFromMagnet()
     {
+        // 必ず Idle に戻す。壁張り付き(NavMesh外)でも磁力制御を確実に抜け、重力が戻って落下できるようにする。
+        // NavMesh への復帰は AI 側 (EnemyWalkAxeAi.TryRecoverAgent / 接地後の TickDirectMove) が処理する。
         m_heldActive = false;
-        if (m_agent != null && m_agent.enabled)
+        m_state = MoverState.Idle;
+        m_recoveryAttempts = 0;
+
+        // 近くに NavMesh があれば agent を同期しておく（無ければ落下→接地後にAIが復帰）
+        if (m_agent != null && m_agent.enabled
+            && NavMesh.SamplePosition(transform.position, out var hit, 2f, NavMesh.AllAreas))
         {
-            if (NavMesh.SamplePosition(transform.position, out var hit, 2f, NavMesh.AllAreas))
-            {
-                m_agent.nextPosition = hit.position;
-                m_state = MoverState.Idle;
-                m_recoveryAttempts = 0;
-            }
-            else
-            {
-                m_recoveryAttempts++;
-                if (m_recoveryAttempts >= m_settings.maxRecoveryAttempts)
-                {
-                    m_agent.Warp(transform.position);
-                    m_state = MoverState.Idle;
-                    m_recoveryAttempts = 0;
-                }
-            }
-        }
-        else
-        {
-            // NavMeshAgentなし（将来の飛行敵等）→ フラグ解除のみ
-            m_state = MoverState.Idle;
+            m_agent.nextPosition = hit.position;
         }
     }
 }
