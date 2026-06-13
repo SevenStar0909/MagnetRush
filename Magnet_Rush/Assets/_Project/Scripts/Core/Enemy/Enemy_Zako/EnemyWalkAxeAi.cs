@@ -12,6 +12,9 @@ public class EnemyWalkAxeAi : MonoBehaviour
     [SerializeField] private MeshRenderer m_attackBoxMeshRenderer;
     [SerializeField] private EnemyWalkAxeAnimator m_animator;
 
+    [Header("Weapon")]
+    [SerializeField] private EnemyWeaponHolder m_weaponHolder;
+
     private EnemyWalkBase m_enemyBase;
     private NavMeshAgent m_agent;
     private EnemySettings m_data;
@@ -32,6 +35,9 @@ public class EnemyWalkAxeAi : MonoBehaviour
 
         if (m_animator == null)
             m_animator = gameObject.AddComponent<EnemyWalkAxeAnimator>();
+
+        if (m_weaponHolder == null)
+            m_weaponHolder = GetComponent<EnemyWeaponHolder>();
 
         if (m_agent != null)
         {
@@ -153,6 +159,10 @@ public class EnemyWalkAxeAi : MonoBehaviour
     private void TryAttack()
     {
         if (m_attackBox == null)
+            return;
+
+        // 磁力で武器を剝がされたら丸腰なので近接攻撃しない。
+        if (m_weaponHolder != null && !m_weaponHolder.IsArmed)
             return;
 
         if (m_isAttacking)
