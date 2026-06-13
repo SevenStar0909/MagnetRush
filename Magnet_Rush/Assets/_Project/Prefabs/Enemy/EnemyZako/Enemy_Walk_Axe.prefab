@@ -450,6 +450,7 @@ MonoBehaviour:
   m_attackBoxMeshRenderer: {fileID: 0}
   m_animator: {fileID: 0}
   m_weaponHolder: {fileID: 6038870575501996323}
+  m_weaponPickupRange: 1.5
 --- !u!54 &272791022539229585
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -900,6 +901,10 @@ PrefabInstance:
     - target: {fileID: 1851596299686503439, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: -90.121
+      objectReference: {fileID: 0}
+    - target: {fileID: 3203641024391090725, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+      propertyPath: m_IsKinematic
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8190324584306041367, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
       propertyPath: m_ownedLocalEulerOffset.y

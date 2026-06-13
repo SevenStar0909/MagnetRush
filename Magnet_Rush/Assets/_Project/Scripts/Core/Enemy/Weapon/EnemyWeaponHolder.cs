@@ -56,6 +56,23 @@ public class EnemyWeaponHolder : MonoBehaviour
         m_weapon.EquipInPlace(gameObject);
     }
 
+    // 装備中の武器は、アニメで動く飾り斧ノードの子でありながら Rigidbody を持つため、
+    // 親の動きに追従しきれず実行時にズレる（スポーン時の一瞬の落下が装備固定で残る等）。
+    // 毎フレーム、装備時に控えた握り姿勢へ強制的に張り付けてズレを打ち消す。
+    private void LateUpdate()
+    {
+        if (m_weapon == null || m_modelWeapon == null) return;
+        if (m_weapon.State != WeaponStateController.WeaponOwnerState.Owned) return;
+
+        Transform weaponTransform = m_weapon.transform;
+        // 剝がされて別の親に移っている間は触らない（落下・拾い直しを邪魔しない）。
+        if (weaponTransform.parent != m_modelWeapon.transform) return;
+
+        weaponTransform.localPosition = m_heldLocalPosition;
+        weaponTransform.localRotation = m_heldLocalRotation;
+        weaponTransform.localScale = m_heldLocalScale;
+    }
+
     /// <summary>
     /// 落ちた武器を手元（飾り斧ノード）の装備姿勢へ戻して再装備する。拾いに行くAIが接近後に呼ぶ。
     /// </summary>
