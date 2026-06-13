@@ -37,6 +37,10 @@ public class EnemyWalkBase : Entity
     // 接地が一瞬切れても数フレームは接地扱いを維持し、めり込み押し出しや床の継ぎ目での「急に沈む」を防ぐ。
     protected override int GroundGraceFrames => 3;
 
+    // 磁力で引かれている間は重力・接地スナップを切り、磁力だけで着弾点まで引き寄せられるようにする
+    // （床に縛られて手前の壁で止まる・ぴょんぴょん跳ねるのを防ぐ）。
+    protected override bool SuppressEnvironmentPhysics => m_mover != null && m_mover.IsMagnetActive;
+
     protected override void Awake()
     {
         base.Awake();
@@ -70,6 +74,8 @@ public class EnemyWalkBase : Entity
     private void Update()
     {
         CachePlayer();
+        // 磁力で壁・地面にビタ止め中は重力・移動を凍結（位置を固定）
+        if (m_mover != null && m_mover.IsStuck) { ChannelLogger.LogGuardReturn("Enemy", "磁力ビタ止め中のため移動凍結"); return; }
         UpdateEntity(Time.deltaTime);
     }
 

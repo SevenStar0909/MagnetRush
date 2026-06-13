@@ -33,6 +33,11 @@ MonoBehaviour:
   shoulderOffset: {x: 1.3, y: 0.3, z: 0}
   cameraPitchMin: -80
   cameraPitchMax: 90
+  magnetStickLayer:
+    serializedVersion: 2
+    m_Bits: 192
+  magnetStickCheckDistance: 0.15
+  magnetStickMinPullSpeed: 3
   firePointHeight: 1.2
   stabRange: 7
   stabDamage: 5
