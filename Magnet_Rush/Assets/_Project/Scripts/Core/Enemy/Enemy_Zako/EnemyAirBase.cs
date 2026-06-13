@@ -96,6 +96,9 @@ public class EnemyAirBase : Entity
         if (m_isDead) { ChannelLogger.LogGuardReturn("Enemy", "リスポーン待ちのため停止中"); return; }
 
         CachePlayer();
+        // 磁力で壁・地面にビタ止め中は飛行・移動を凍結（位置を固定）。
+        // カミカゼの自爆は OnTriggerEnter（物理イベント）経由なので本スキップでは止まらず、壁接触で自爆できる。
+        if (m_mover != null && m_mover.IsStuck) { ChannelLogger.LogGuardReturn("Enemy", "磁力ビタ止め中のため飛行凍結"); return; }
         UpdateAir(Time.deltaTime);
         UpdateMagneticOrientation(Time.deltaTime);
         ApplyMovement(Time.deltaTime);

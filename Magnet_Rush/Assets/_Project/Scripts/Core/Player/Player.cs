@@ -310,12 +310,8 @@ public class Player : Entity
         if (m_settings == null) return false;
         if (magnetizable == null || !magnetizable.IsActive) return false;
 
-        Vector3 pull = externalVelocity + holdVelocity;
-        if (pull.magnitude < m_settings.magnetStickMinPullSpeed) return false;
-        if (m_settings.magnetStickLayer.value == 0) return false;
-
-        return CapsuleCast(pull.normalized, m_settings.magnetStickCheckDistance,
-            m_settings.magnetStickLayer.value);
+        return IsPulledIntoSurface(m_settings.magnetStickLayer,
+            m_settings.magnetStickCheckDistance, m_settings.magnetStickMinPullSpeed);
     }
 
     /// <summary>

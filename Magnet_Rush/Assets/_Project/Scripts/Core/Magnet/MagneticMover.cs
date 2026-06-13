@@ -14,7 +14,8 @@ public class MagneticMover : MonoBehaviour, IMagneticResponse
     {
         Idle,            // 磁力非アクティブ、AI通常動作
         DistanceForce,   // 距離減衰引力受信中 (OnMagnetForce ルート)
-        Holding          // PD 保持中 (MagnetManager.ProcessHold ルート)
+        Holding,         // PD 保持中 (MagnetManager.ProcessHold ルート)
+        Stuck            // 壁・地面に押し付けられて静止中（ビタ止め）
     }
 
     [SerializeField] private MagneticMoverSettings m_settings;
@@ -22,6 +23,7 @@ public class MagneticMover : MonoBehaviour, IMagneticResponse
     private Magnetizable m_magnetizable;
     private NavMeshAgent m_agent;
     private IMagnetTarget m_magnetTarget;
+    private Entity m_entity;
 
     private MoverState m_state = MoverState.Idle;
     private float m_lastForceTime;
@@ -32,11 +34,15 @@ public class MagneticMover : MonoBehaviour, IMagneticResponse
     /// <summary>磁力移動モード中かどうか (Idle 以外)。AI はこの間スキップされる。</summary>
     public bool IsMagnetActive => m_state != MoverState.Idle;
 
+    /// <summary>壁・地面に押し付けられて静止中（ビタ止め）か。敵Baseはこの間 UpdateEntity をスキップして凍結する。</summary>
+    public bool IsStuck => m_state == MoverState.Stuck;
+
     void Awake()
     {
         m_magnetizable = GetComponent<Magnetizable>();
         m_agent = GetComponent<NavMeshAgent>();
         m_magnetTarget = GetComponent<IMagnetTarget>();
+        m_entity = m_magnetTarget as Entity;
     }
 
     public void OnMagnetForce(Vector3 force, Vector3 sourcePosition)
@@ -45,6 +51,9 @@ public class MagneticMover : MonoBehaviour, IMagneticResponse
         if (m_state == MoverState.Holding) { ChannelLogger.LogGuardReturn("Magnet", "PD保持中は距離減衰力を無視"); return; }
 
         if (m_settings == null) { ChannelLogger.LogGuardReturn("Magnet", "Mover設定なし"); return; }
+
+        // ビタ止め中は力を蓄積しない（完全静止を保つ）。磁力が続いているタイミングだけ記録し、止まったら解除に使う
+        if (m_state == MoverState.Stuck) { m_lastForceTime = Time.time; return; }
 
         m_state = MoverState.DistanceForce;
         m_lastForceTime = Time.time;
@@ -84,6 +93,28 @@ public class MagneticMover : MonoBehaviour, IMagneticResponse
     {
         if (m_state == MoverState.Idle) { ChannelLogger.LogGuardReturn("Magnet", "磁力移動モード非アクティブ"); return; }
 
+#if UNITY_EDITOR
+        // TODO: ビタ止めデバッグ用。原因特定後に削除する
+        if (m_entity != null && Time.frameCount % 15 == 0)
+        {
+            Vector3 dbgPull = m_entity.externalVelocity + m_entity.holdVelocity;
+            bool dbgHit = m_settings != null && m_entity.IsPulledIntoSurface(
+                m_settings.magnetStickLayer, m_settings.magnetStickCheckDistance, m_settings.magnetStickMinPullSpeed);
+            ChannelLogger.Log("Magnet", $"[Stick診断] {name} state={m_state} ext={m_entity.externalVelocity.magnitude:F2} hold={m_entity.holdVelocity.magnitude:F2} pull={dbgPull.magnitude:F2} surfaceHit={dbgHit} active={IsResponseActive} layer={(m_settings != null ? m_settings.magnetStickLayer.value : 0)}");
+        }
+#endif
+
+        // ビタ止め中: 毎フレーム速度をゼロに保ち完全静止。磁化(極)が切れたら剥がしてAI復帰（プレイヤーのビタ止めと同じ解除条件）
+        if (m_state == MoverState.Stuck)
+        {
+            ZeroVelocities();
+            if (!IsResponseActive) RecoverFromMagnet();
+            return;
+        }
+
+        // 距離減衰でも PD 保持中でも、引かれて壁・地面に密着したらビタ止めへ（Holding の return より前で判定する）
+        if (TryStick()) return;
+
         // PD 保持中はタイムアウト復帰しない (SetHoldActive(false) で明示的に解除される)
         if (m_state == MoverState.Holding) return;
 
@@ -91,6 +122,31 @@ public class MagneticMover : MonoBehaviour, IMagneticResponse
         // externalVelocityの減衰はEntity側で処理されるため、ここではタイミングのみ管理
         if (Time.time - m_lastForceTime > m_settings.recoveryDelay)
             RecoverFromMagnet();
+    }
+
+    /// <summary>引かれた方向の壁・地面に押し付けられていればビタ止め(Stuck)へ遷移する。</summary>
+    private bool TryStick()
+    {
+        if (m_settings == null || !m_settings.enableMagnetStick) return false;
+        if (m_entity == null) return false;
+        if (!IsResponseActive) return false;   // 磁化中のみ（プレイヤーの CanMagnetStick と同条件）
+        if (!m_entity.IsPulledIntoSurface(m_settings.magnetStickLayer,
+                m_settings.magnetStickCheckDistance, m_settings.magnetStickMinPullSpeed))
+            return false;
+
+        m_state = MoverState.Stuck;
+        m_lastForceTime = Time.time;
+        ZeroVelocities();   // 蓄積した磁力を消して完全静止
+        return true;
+    }
+
+    /// <summary>Entityの全速度成分をゼロにする（ビタ止めの静止維持・剥がれ時の吹っ飛び防止）。</summary>
+    private void ZeroVelocities()
+    {
+        if (m_entity == null) { ChannelLogger.LogGuardReturn("Magnet", "Entity未取得のため速度クリア不可"); return; }
+        m_entity.velocity = Vector3.zero;
+        m_entity.externalVelocity = Vector3.zero;
+        m_entity.holdVelocity = Vector3.zero;
     }
 
     private void RecoverFromMagnet()
