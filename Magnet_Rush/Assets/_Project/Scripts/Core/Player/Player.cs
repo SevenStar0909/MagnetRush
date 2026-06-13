@@ -86,6 +86,9 @@ public class Player : Entity
     /// <summary>スタブ攻撃 Ability。Stab() / OnStabHitEvent() メソッド本体は feature/stab で実装する。</summary>
     public StabAbility stab { get; private set; }
 
+    /// <summary>機能ロック状態（チュートリアル用）。無ければ全機能アンロック扱い。</summary>
+    public PlayerAbilityLocker abilityLocker { get; private set; }
+
     /// <summary>最後に接地した位置の記録。落下リスポーンの戻り先に使う。任意（無くても固定スポーンへフォールバック）。</summary>
     private PlayerGroundTracker m_groundTracker;
 
@@ -104,6 +107,7 @@ public class Player : Entity
         pole = GetComponent<PoleAbility>();
         jump = GetComponent<JumpAbility>();
         stab = GetComponent<StabAbility>();
+        abilityLocker = GetComponent<PlayerAbilityLocker>();
         m_groundTracker = GetComponent<PlayerGroundTracker>();
 
         if (m_settings.groundLayer == 0)
@@ -239,27 +243,65 @@ public class Player : Entity
     public static bool IsSlowMotion => Time.timeScale < k_SlowMotionThreshold;
 
     // === Ability ラッパー(State.OnStep から呼ばれる Facade API) ===
+    // チュートリアルの機能ロックはここで一括ゲートする。
+    // 移動は PlayerInputHandler.MoveInput、カメラは CameraSettingsApplier 側でゲートする（ラッパーを通らないため）
+
+    /// <summary>指定機能がロック中か。PlayerAbilityLocker が無いシーンでは常にアンロック。</summary>
+    public bool IsAbilityLocked(PlayerAbilityType ability)
+        => abilityLocker != null && abilityLocker.IsLocked(ability);
 
     /// <summary>磁極切替(PoleAbility ラッパー)。</summary>
-    public void SwitchPole() => pole.Switch();
+    public void SwitchPole()
+    {
+        if (IsAbilityLocked(PlayerAbilityType.PoleSwitch)) return;
+        pole.Switch();
+    }
 
-    /// <summary>エイム入力処理(AimAbility ラッパー)。</summary>
-    public void UpdateAim() => aim.UpdateInput();
+    /// <summary>エイム入力処理(AimAbility ラッパー)。ロック時はエイム継続中でも強制解除する。</summary>
+    public void UpdateAim()
+    {
+        if (IsAbilityLocked(PlayerAbilityType.Aim))
+        {
+            if (aim.IsAiming) aim.StopAim();
+            return;
+        }
+        aim.UpdateInput();
+    }
 
     /// <summary>通常射撃(ShootingAbility ラッパー)。</summary>
-    public void Fire() => shooting.Fire();
+    public void Fire()
+    {
+        if (IsAbilityLocked(PlayerAbilityType.Fire)) return;
+        shooting.Fire();
+    }
 
     /// <summary>セルフファイア(ShootingAbility ラッパー)。</summary>
-    public void SelfFire() => shooting.SelfFire();
+    public void SelfFire()
+    {
+        if (IsAbilityLocked(PlayerAbilityType.SelfFire)) return;
+        shooting.SelfFire();
+    }
 
     /// <summary>リロード(ShootingAbility ラッパー)。</summary>
-    public void Reload() => shooting.Reload();
+    public void Reload()
+    {
+        if (IsAbilityLocked(PlayerAbilityType.Reload)) return;
+        shooting.Reload();
+    }
 
     /// <summary>ジャンプ(JumpAbility ラッパー)。jump プロパティは feature/jump 実装で接続される。</summary>
-    public void Jump() => jump.Jump();
+    public void Jump()
+    {
+        if (IsAbilityLocked(PlayerAbilityType.Jump)) return;
+        jump.Jump();
+    }
 
     /// <summary>スタブ攻撃(StabAbility ラッパー)。stab プロパティは feature/stab 実装で接続される。</summary>
-    public void Stab() => stab.Stab();
+    public void Stab()
+    {
+        if (IsAbilityLocked(PlayerAbilityType.Stab)) return;
+        stab.Stab();
+    }
 
     /// <summary>BossStabFinisherState から呼ぶ。カメラ演出の開始/終了を通知する。</summary>
     public void FireStabFinisherStart(Transform target, int variant) => OnStabFinisherStart?.Invoke(target, variant);
@@ -288,6 +330,8 @@ public class Player : Entity
         bool isDying = states.IsCurrentOfType<DiePlayerState>();
         // 死亡・スタブ演出中は自前で transform を動かすため共通物理ステップ(重力/衝突/磁力)をスキップする。
         bool controlsOwnTransform = isDying || states.IsCurrentOfType<BossStabFinisherState>();
+        // 磁力張り付き中も重力・移動を完全停止（ビタ止め）するため物理ステップをスキップする。
+        bool isMagnetStuck = states.IsCurrentOfType<MagnetStickPlayerState>();
 
         // 能力呼び出しは各 State の OnStep が Player.TickAllAbilities() 経由で行う。
         // Stab/Die は OnStep を空にすることで自動的に全入力ロックされる。
@@ -297,7 +341,8 @@ public class Player : Entity
         {
             float dt = Mathf.Min(Time.deltaTime, Time.fixedDeltaTime * 3f);
             states.UpdateState(dt);
-            if (!controlsOwnTransform) UpdateEntity(dt);
+            // 死亡・スタブ演出中（controlsOwnTransform）と磁力張り付き中は重力・移動を完全停止する。
+            if (!controlsOwnTransform && !isMagnetStuck) UpdateEntity(dt);
         }
     }
 
@@ -308,14 +353,41 @@ public class Player : Entity
 
         bool isDying = states.IsCurrentOfType<DiePlayerState>();
         bool controlsOwnTransform = isDying || states.IsCurrentOfType<BossStabFinisherState>();
+        bool isMagnetStuck = states.IsCurrentOfType<MagnetStickPlayerState>();
         float dt = Time.fixedDeltaTime;
         states.UpdateState(dt);
-        if (!controlsOwnTransform) UpdateEntity(dt);
+        if (!controlsOwnTransform && !isMagnetStuck) UpdateEntity(dt);
+    }
+
+    /// <summary>
+    /// 磁力で壁・地面にビタ止めできる状況か。
+    /// 磁化中に磁力で引かれていて、引かれる方向の至近距離に張り付き対象レイヤーの面がある時 true。
+    /// </summary>
+    public bool CanMagnetStick()
+    {
+        if (m_settings == null) return false;
+        if (magnetizable == null || !magnetizable.IsActive) return false;
+
+        return IsPulledIntoSurface(m_settings.magnetStickLayer,
+            m_settings.magnetStickCheckDistance, m_settings.magnetStickMinPullSpeed);
+    }
+
+    /// <summary>
+    /// IMagnetTarget実装のoverride。プレイヤーは空中でのみ磁力を受ける。
+    /// </summary>
+    public override void ApplyMagnetForce(Vector3 force)
+    {
+        if (IsGrounded)
+        {
+            ChannelLogger.LogGuardReturn("Player", "接地中は磁力無効");
+            return;
+        }
+        base.ApplyMagnetForce(force);
     }
 
     /// <summary>
     /// 磁力場の影響度に応じてEntity multiplierを更新する。
-    /// 強い磁力を受けているほど移動が鈍くなる。
+    /// 強い磁力を受けているほど移動が鈍くなる（空中のみ。接地中は磁力の影響を受けない）。
     /// </summary>
     private void UpdateMagneticInfluence()
     {
@@ -325,6 +397,14 @@ public class Player : Entity
             topSpeedMultiplier = 1f;
             turningDragMultiplier = 1f;
             ChannelLogger.LogGuardReturn("Player", "Magnetizable/MagnetManager未取得");
+            return;
+        }
+
+        if (IsGrounded)
+        {
+            topSpeedMultiplier = 1f;
+            turningDragMultiplier = 1f;
+            ChannelLogger.LogGuardReturn("Player", "接地中は磁力鈍化なし");
             return;
         }
 

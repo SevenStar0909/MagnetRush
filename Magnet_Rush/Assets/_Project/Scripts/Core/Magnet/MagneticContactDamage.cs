@@ -17,6 +17,7 @@ public class MagneticContactDamage : MonoBehaviour
     private Rigidbody m_rb;
     private readonly HashSet<IHittable> m_hitTargets = new HashSet<IHittable>();
     private bool m_wasActive;
+    private Vector3 m_pullStartPosition;
 
     void Awake()
     {
@@ -34,8 +35,10 @@ public class MagneticContactDamage : MonoBehaviour
             m_hitTargets.Clear();
             m_wasActive = false;
         }
-        else if (m_magnetizable.IsActive)
+        else if (m_magnetizable.IsActive && !m_wasActive)
         {
+            // 磁化された瞬間の位置を記録。ここから衝突地点までの移動距離でダメージが決まる
+            m_pullStartPosition = transform.position;
             m_wasActive = true;
         }
     }
@@ -58,15 +61,20 @@ public class MagneticContactDamage : MonoBehaviour
         // プレイヤーには物理オブジェクトの接触ダメージを与えない（ボスのスタン蓄積・敵への加害は維持）
         if (hittable.HitGroup == HitGroup.Player) { ChannelLogger.LogGuardReturn("ContactDmg", "プレイヤーへの接触ダメージは無効"); return; }
 
+        // 磁化された位置から衝突地点までの直線距離をカーブに通してダメージを決める（近くから=弱、遠くから飛んできた=強）
+        float pulledDistance = Vector3.Distance(transform.position, m_pullStartPosition);
+        int damage = Mathf.Max(0, Mathf.RoundToInt(m_settings.damageByDistance.Evaluate(pulledDistance)));
+        if (damage <= 0) { ChannelLogger.LogGuardReturn("ContactDmg", $"飛距離{pulledDistance:F1}mのカーブ値が0のためダメージなし"); return; }
+
         // HIT のみ目立つログで残す
-        Debug.Log($"<color=#FF5722>[ContactDmg]</color> {name} → {((MonoBehaviour)hittable).name} dmg={m_settings.damage} vel={vel:F1}");
+        Debug.Log($"<color=#FF5722>[ContactDmg]</color> {name} → {((MonoBehaviour)hittable).name} dmg={damage} dist={pulledDistance:F1}m vel={vel:F1}");
 
         // 同一対象への重複ダメージ防止（磁力切れるまで1回のみ）
         if (m_hitTargets.Add(hittable))
         {
             hittable.OnHit(new HitData
             {
-                damage = m_settings.damage,
+                damage = damage,
                 hitPoint = collision.GetContact(0).point,
                 knockbackDir = collision.relativeVelocity.normalized,
                 source = gameObject

@@ -234,7 +234,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1dddde946f822994e8a99a48b20b3df3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Core::MagneticContactDamage
-  m_settings: {fileID: 11400000, guid: e1513859b505ebb43aae138ee58fa533, type: 2}
+  m_settings: {fileID: 11400000, guid: 9f01ed40bc61deb4b9bf10679226afbc, type: 2}
 --- !u!114 &1537800206930250247
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -249,7 +249,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: MagnetRush.Enemy::EnemyBossBaseA_Animator
   m_animator: {fileID: 5724448596103820357}
   m_ai: {fileID: 8951133768723248270}
-  m_armHitbox: {fileID: 0}
+  m_attackHitboxes: {fileID: 116755455659821107}
   m_boss: {fileID: 0}
   m_rushEffect: {fileID: 5132977627738312607}
   m_dustEffect: {fileID: 982530548752732595}
@@ -260,12 +260,9 @@ MonoBehaviour:
   m_fireMissileFinishedName: FireMissileFinished
   m_attackRushName: AttackRush
   m_attackRushFinishedName: AttackRushFinished
-  m_canInterruptName: CanInterrupt
-  m_canNotInterruptName: CanNotInterrupt
   m_beInterruptedName: BeInterrupted
   m_isStunnedName: IsStunned
   m_stunEndName: StunEnd
-  m_isStaggerName: IsStagger
   m_staggerEndName: StaggerEnd
 --- !u!195 &8726206793231442367
 NavMeshAgent:
@@ -314,6 +311,11 @@ MonoBehaviour:
   m_missileLobAngle: 90
   m_missileLobRiseTime: 0.65
   m_missileCollisionGrace: 3
+  m_shockAfterAttackStance: 1
+  m_shockAfterAttackMotion: 1
+  m_shockRadius: 8
+  m_shockHorizontalForce: 12
+  m_shockUpwardlForce: 3
   m_logStateChange: 1
   m_nextLongRangeAttackIsRush: 1
 --- !u!114 &8780740096348751557
@@ -373,7 +375,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: MagnetRush.Core::Magnetizable
   m_pole: 0
   m_isActive: 0
-  m_initialMass: 9999
+  m_initialMass: Infinity
   m_immovable: 1
   m_centerOffset: {x: 0, y: 0, z: 0}
   m_useEdgeDetectionOutline: 0
@@ -554,6 +556,7 @@ Transform:
   m_Children:
   - {fileID: 1254147958317872086}
   - {fileID: 670011939497139803}
+  - {fileID: 3809441685285971335}
   m_Father: {fileID: 9143151154395978059}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &5091773845958119871
@@ -570,6 +573,74 @@ MonoBehaviour:
   m_EditorClassIdentifier: MagnetRush.Core::Hitbox
   m_health: {fileID: 971369539054672765}
   m_hitGroup: 1
+--- !u!1 &1193734409511167720
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 451591989034573317}
+  - component: {fileID: 2260008209048045659}
+  - component: {fileID: 7348117621468029301}
+  m_Layer: 12
+  m_Name: AttackBoxRush
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &451591989034573317
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1193734409511167720}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 5, z: 3}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3809441685285971335}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!136 &2260008209048045659
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1193734409511167720}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 7
+  m_Height: 7
+  m_Direction: 1
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &7348117621468029301
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1193734409511167720}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6d967d4fb9243af898d7c2b5191c4f1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Enemy::BossAttackHitboxRelay
 --- !u!1 &1257687688123719838
 GameObject:
   m_ObjectHideFlags: 0
@@ -983,6 +1054,56 @@ Transform:
   - {fileID: 1842393909041147455}
   m_Father: {fileID: 9143151154395978059}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &4248555068340581981
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3809441685285971335}
+  - component: {fileID: 116755455659821107}
+  m_Layer: 9
+  m_Name: AttackHitboxes
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3809441685285971335
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4248555068340581981}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 451591989034573317}
+  - {fileID: 7884287201843435452}
+  m_Father: {fileID: 3430188263162592626}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &116755455659821107
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4248555068340581981}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a5ac75e081cba22448b1c0ed8924bc03, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Enemy::BossAttackHitboxes
+  m_armCollider: {fileID: 214837557782222351}
+  m_rushCollider: {fileID: 2260008209048045659}
+  m_settings: {fileID: 11400000, guid: c18fd890e7dc6ab42854abb4e3c2e1f1, type: 2}
+  m_owner: {fileID: 1849210394476134877}
 --- !u!1 &4436345793524159621
 GameObject:
   m_ObjectHideFlags: 0
@@ -1313,6 +1434,74 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 2.61, y: 0.59, z: 2}
   m_Center: {x: 0.47, y: 0, z: 1.94}
+--- !u!1 &6399212942176756622
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7884287201843435452}
+  - component: {fileID: 214837557782222351}
+  - component: {fileID: 7348117621468029302}
+  m_Layer: 12
+  m_Name: AttackBoxRightHand
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7884287201843435452
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6399212942176756622}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 18.7}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3809441685285971335}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!136 &214837557782222351
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6399212942176756622}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 6
+  m_Height: 6
+  m_Direction: 1
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &7348117621468029302
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6399212942176756622}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6d967d4fb9243af898d7c2b5191c4f1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Enemy::BossAttackHitboxRelay
 --- !u!1 &6644779021072365031
 GameObject:
   m_ObjectHideFlags: 0
@@ -1430,7 +1619,7 @@ Transform:
   m_GameObject: {fileID: 7569532096466058637}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 3.87, z: -0.43}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4772,7 +4961,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: MagnetRush.Core::Magnetizable
   m_pole: 0
   m_isActive: 0
-  m_initialMass: 9999
+  m_initialMass: Infinity
   m_immovable: 0
   m_centerOffset: {x: 0, y: 0, z: 0}
   m_useEdgeDetectionOutline: 0
@@ -5101,7 +5290,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: MagnetRush.Core::Magnetizable
   m_pole: 0
   m_isActive: 0
-  m_initialMass: 9999
+  m_initialMass: Infinity
   m_immovable: 0
   m_centerOffset: {x: 0, y: 0, z: 0}
   m_useEdgeDetectionOutline: 0

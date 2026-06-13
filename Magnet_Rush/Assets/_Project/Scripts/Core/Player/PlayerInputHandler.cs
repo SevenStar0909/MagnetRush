@@ -20,6 +20,9 @@ public class PlayerInputHandler : MonoBehaviour
     private InputAction m_jump;
     private InputAction m_stab;
 
+    // チュートリアルの移動ロック用。無ければ常にアンロック扱い
+    private PlayerAbilityLocker m_abilityLocker;
+
     // 入力先行受付の時間窓（秒）。100ms はゲーム業界の経験的な標準値
     private const float k_inputBufferTime = 0.1f;
 
@@ -30,8 +33,14 @@ public class PlayerInputHandler : MonoBehaviour
     private float? m_jumpPressTime;
     private float? m_stabPressTime;
 
-    /// <summary>移動入力のベクトル（左スティック）</summary>
-    public Vector2 MoveInput => m_move.ReadValue<Vector2>();
+    /// <summary>
+    /// 移動入力のベクトル（左スティック）。
+    /// チュートリアルで移動ロック中はゼロを返す（ここで止めると State 遷移・アニメ・ストレイフが全部一括で止まる）。
+    /// </summary>
+    public Vector2 MoveInput =>
+        m_abilityLocker != null && m_abilityLocker.IsLocked(PlayerAbilityType.Move)
+            ? Vector2.zero
+            : m_move.ReadValue<Vector2>();
 
     /// <summary>エイムボタン（LT）が押されているかどうか</summary>
     public bool AimHeld => m_aim.ReadValue<float>() > 0.5f;
@@ -113,6 +122,8 @@ public class PlayerInputHandler : MonoBehaviour
 
     void Awake()
     {
+        m_abilityLocker = GetComponent<PlayerAbilityLocker>();
+
         if (m_actions == null)
         {
             ChannelLogger.LogGuardReturn("Player", "PlayerInputHandler: m_actions 未設定");

@@ -200,6 +200,32 @@ public class WeaponStateController : MonoBehaviour
         return TryStartEquip(newOwner, handSocket);
     }
 
+    // 装備モーションも位置合わせもせず、今の親・姿勢のまま即座に所持状態にする。
+    // 武器を手ボーン(や飾り武器ノード)にあらかじめ重ねて配置しているケース用。
+    public void EquipInPlace(GameObject newOwner)
+    {
+        m_owner = newOwner;
+        m_ownerHand = transform.parent;
+        m_pendingOwner = null;
+        m_pendingHand = null;
+        m_state = WeaponOwnerState.Owned;
+
+        if (m_rb != null)
+        {
+            if (!m_rb.isKinematic)
+            {
+                m_rb.linearVelocity = Vector3.zero;
+                m_rb.angularVelocity = Vector3.zero;
+            }
+            m_rb.isKinematic = true;
+        }
+
+        SetPhysicsCollidersEnabled(false);
+
+        if (m_attackTrigger != null)
+            m_attackTrigger.enabled = false;
+    }
+
     public void Drop()
     {
         m_owner = null;

@@ -92,7 +92,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: MagnetRush.UI::PlayerHealthGauge
   m_greenGauge: {fileID: 8392333701021892783}
   m_whiteGauge: {fileID: 7868100998934114429}
-  m_normalColor: {r: 1, g: 1, b: 1, a: 1}
+  m_normalColor: {r: 0, g: 1, b: 0, a: 1}
   m_blinkColor: {r: 1, g: 0, b: 0, a: 1}
   m_blinkCount: 4
   m_blinkInterval: 0.1
@@ -674,7 +674,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &2064895950325708481
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2160,7 +2160,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: -1232538361, guid: 084d3b8c89c6bd34494973529b1b2d0b, type: 3}
+  m_Sprite: {fileID: -885201947, guid: 8dd1b0e898462ae4197ece121091bd65, type: 3}
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1

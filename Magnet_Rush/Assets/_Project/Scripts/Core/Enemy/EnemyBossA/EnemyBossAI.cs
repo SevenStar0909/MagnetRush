@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -12,7 +13,7 @@ using UnityEngine.AI;
 [RequireComponent(typeof(EnemyBossBase))]
 public class EnemyBossAI : MonoBehaviour, IStabReceiver
 {
-    public enum BossState { Idle, Chase, AttackStance, AttackMotion, Rush, Missile, Stunned, Stagger }
+    public enum BossState { Idle, AttackStance, AttackMotion, Rush, Missile, Stunned, Stagger }
 
     [Header("References")]
     [SerializeField] private EnemyBossBaseA_Animator m_animator;
@@ -42,6 +43,25 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     [Tooltip("発射してからこの秒数はミサイルがボス本体に当たらない(発射直後の自爆防止)。経過後はボスにも当たる=磁力で撃ち返せる。0で即当たる")]
     [SerializeField] private float m_missileCollisionGrace = 3f;
 
+    [Header("Shock Wave After Arm Attack Interrupted")]
+    [Tooltip("AttackStance から Stunned / Stagger に入った時、周囲の PhysicsObject を押し出す")]
+    [SerializeField] private bool m_shockAfterAttackStance = true;
+
+    [Tooltip("AttackMotion から Stunned / Stagger に入った時、周囲の PhysicsObject を押し出す")]
+    [SerializeField] private bool m_shockAfterAttackMotion = true;
+
+    [Tooltip("衝撃波が PhysicsObject を押し出す範囲")]
+    [Min(0f)]
+    [SerializeField] private float m_shockRadius = 8f;
+
+    [Tooltip("ボス中心から外側へ押し出す水平方向の力")]
+    [Min(0f)]
+    [SerializeField] private float m_shockHorizontalForce = 12f;
+
+    [Tooltip("PhysicsObject を上へ持ち上げる力")]
+    [Min(0f)]
+    [SerializeField] private float m_shockUpwardlForce = 3f;
+
     // 次の OnMissileFireEvent でアーク弾を撃つか。アニメの2イベントで 通常→アーク と交互に切り替える
     private bool m_nextMissileIsLob;
 
@@ -57,14 +77,14 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
 
     // ボス本体（各ボーン）の Hitbox。物理オブジェクト接触でスタンゲージを溜める（機構1）。
     private Hitbox[] m_bodyHitboxes;
+    private readonly Collider[] m_interruptShockWaveBuffer = new Collider[64];
+    private readonly HashSet<Rigidbody> m_interruptShockWaveBodies = new HashSet<Rigidbody>();
 
     private BossState m_state = BossState.Idle;
     private float m_cooldownTimer;
     private float m_staminaBreakTimer;
-    private Vector3 m_lastDirection;
-
     private Vector3 m_rushTargetPosition;
-    // Rush 突入時に確定する固定方向。direction を毎フレーム再計算するとターゲット通過時に 180°反転して回転が暴れるため
+    // Rush 突入時の進行方向。Rush 中は turningDrag の範囲でプレイヤー方向へ少しずつ補正する。
     private Vector3 m_rushDirection;
 
     [Header("Rush or missile")]
@@ -78,6 +98,8 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     // Rush 中に Animator が一度でも IsInRush=true になったか。
     // 入り transition と exit transition を区別し、exit 時の player 追尾回転を抑制する。
     private bool m_rushHasStarted;
+    // DisableWindEffectEvent 後は回復姿勢に入るため、Rush 移動を停止する。
+    private bool m_rushMovementStopped;
 
     public event Action OnStabHitSucceeded;   // スタブが成功したときに発火
 
@@ -161,7 +183,6 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         switch (m_state)
         {
             case BossState.Idle: TickIdle(dt); break;
-            case BossState.Chase: TickChase(dt); break;
             case BossState.AttackStance: TickAttackStance(dt); break;
             case BossState.AttackMotion: TickAttackMotion(dt); break;
             case BossState.Rush: TickRush(dt); break;
@@ -178,7 +199,6 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     {
         if (m_animator == null) return;
 
-        m_animator.SetIsStaggerTrue();
         m_animator.TriggerBeInterrupted();
     }
 
@@ -306,7 +326,6 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         }
 
         m_animator.SetIsStunnedFalse();
-        m_animator.SetIsStaggerFalse();
     }
 
     // === 状態遷移 ===
@@ -320,11 +339,14 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         var prev = m_state;
         m_state = next;
 
+        TryEmitInterruptShockWave(prev, next);
+
         if (next == BossState.Rush)
         {
             m_rushTargetPosition = m_player.position;
             m_boss.lateralVelocity = Vector3.zero;
             m_rushHasStarted = false; // 入り transition フェーズへ。Animator が IsInRush=true に入った時点で true 化
+            m_rushMovementStopped = false;
         }
 
         if (next == BossState.Idle)
@@ -359,11 +381,67 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
             m_cooldownTimer = m_settings.attackInterval;
     }
 
+    private void TryEmitInterruptShockWave(BossState previous, BossState next)
+    {
+        bool enteredBreak = next == BossState.Stunned || next == BossState.Stagger;
+        if (!enteredBreak)
+            return;
+
+        bool enabledForPreviousState =
+            (previous == BossState.AttackStance && m_shockAfterAttackStance)
+            || (previous == BossState.AttackMotion && m_shockAfterAttackMotion);
+        if (!enabledForPreviousState)
+            return;
+
+        float radius = Mathf.Max(0f, m_shockRadius);
+        if (radius <= 0f)
+            return;
+
+        int physicsObjectLayer = PhysicsLayers.PhysicsObject;
+        if (physicsObjectLayer < 0)
+            return;
+
+        Vector3 center = transform.position;
+        int count = Physics.OverlapSphereNonAlloc(
+            center,
+            radius,
+            m_interruptShockWaveBuffer,
+            1 << physicsObjectLayer,
+            QueryTriggerInteraction.Ignore);
+
+        m_interruptShockWaveBodies.Clear();
+        for (int i = 0; i < count; i++)
+        {
+            Collider col = m_interruptShockWaveBuffer[i];
+            m_interruptShockWaveBuffer[i] = null;
+            if (col == null)
+                continue;
+
+            Rigidbody body = col.attachedRigidbody;
+            if (body == null)
+                body = col.GetComponentInParent<Rigidbody>();
+            if (body == null || body.isKinematic || !m_interruptShockWaveBodies.Add(body))
+                continue;
+
+            Vector3 horizontalDirection = body.worldCenterOfMass - center;
+            horizontalDirection.y = 0f;
+            if (horizontalDirection.sqrMagnitude <= 0.0001f)
+                horizontalDirection = transform.forward;
+            else
+                horizontalDirection.Normalize();
+
+            Vector3 impulse =
+                horizontalDirection * Mathf.Max(0f, m_shockHorizontalForce)
+                + Vector3.up * Mathf.Max(0f, m_shockUpwardlForce);
+            body.AddForce(impulse, ForceMode.Impulse);
+        }
+        m_interruptShockWaveBodies.Clear();
+    }
+
     private void ClearStaminaFlags()
     {
         if (m_animator == null) return;
 
-        m_animator.SetIsStaggerFalse();
         m_animator.SetIsStunnedFalse();
         // Animator のトランジション遅延中はまだ Stun/Stagger ステートに残っている。
         // ここで false 固定すると、次フレームで TickStunEntry/TickStaggerEntry が立ち上がりエッジを
@@ -422,25 +500,6 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         }
     }
 
-    // 使わない20260511
-    private void TickChase(float dt)
-    {
-        if (m_animator.IsStunned) { ChangeState(BossState.Stunned); return; }
-
-        if (m_agent != null && m_agent.enabled && m_agent.isOnNavMesh)
-            m_agent.ResetPath();
-
-        m_boss.SlowDown(dt);
-        FacePlayer(dt, m_settings.faceDeadZoneDeg);
-
-        float distance = DistanceToPlayer();
-        if (distance <= m_settings.attackRange && m_cooldownTimer <= 0f)
-        {
-            m_animator.TriggerAttack();
-            ChangeState(BossState.AttackStance);
-        }
-    }
-
     private void TickAttackStance(float dt)
     {
         FacePlayer(dt, m_settings.faceDeadZoneDeg);
@@ -475,7 +534,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
 
         if (!m_rushHasStarted)
         {
-            // Rush 突入の瞬間に方向を確定（以降このまま直進、毎フレーム再計算しない）
+            // Rush 突入の瞬間に初期方向を確定する。
             Vector3 toTarget = m_rushTargetPosition - transform.position;
             toTarget.y = 0f;
             m_rushDirection = toTarget.sqrMagnitude > 0.0001f
@@ -484,8 +543,37 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
             m_rushHasStarted = true;
         }
 
-        // 固定方向に直進。NavMesh path や targetPosition との距離は参照しない（オーバーシュート時の180°反転を防ぐ）
+        // Wind 終了後は回復姿勢中。慣性で滑らないよう、Rush の水平移動を停止する。
+        if (m_rushMovementStopped)
+        {
+            m_boss.lateralVelocity = Vector3.zero;
+            return;
+        }
+
+        // Kamikaze と同様に現在のプレイヤー位置を追うが、turningDrag で旋回量を制限して急旋回を防ぐ。
+        Vector3 toPlayer = m_player.position - transform.position;
+        toPlayer.y = 0f;
+        if (toPlayer.sqrMagnitude > 0.0001f)
+        {
+            float turnRadians = Mathf.Max(0f, m_settings.turningDrag) * Mathf.Deg2Rad * dt;
+            m_rushDirection = Vector3.RotateTowards(
+                m_rushDirection,
+                toPlayer.normalized,
+                turnRadians,
+                0f
+            ).normalized;
+        }
+
         m_boss.AccelerateToward(m_rushDirection, dt, m_settings.rushSpeedMultiplier);
+    }
+
+    public void StopRushMovement()
+    {
+        if (m_state == BossState.Rush && m_rushHasStarted)
+        {
+            m_rushMovementStopped = true;
+            m_boss.lateralVelocity = Vector3.zero;
+        }
     }
 
     private void TickMissile(float dt)
@@ -512,13 +600,6 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     {
         Debug.Log("[EnemyBossAI] OnAttackFinished called");
         if (m_state == BossState.AttackMotion)
-            ChangeState(BossState.Idle);
-    }
-
-    /// <summary>AttackStun clip 末尾の AnimEvent から呼ばれる。</summary>
-    public void OnStunEnd()
-    {
-        if (m_state == BossState.Stunned)
             ChangeState(BossState.Idle);
     }
 
@@ -679,66 +760,12 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         return Vector3.Distance(transform.position, m_player.position);
     }
 
-    private bool PlayerInChaseRange()
-    {
-        // 今使わないけど、将来の拡張で Idle → Chase 遷移条件にするかもなので残しておく
-        // 廃棄したいですけど。蘇
-        return DistanceToPlayer() <= m_settings.chaseRange;
-    }
-
     private void FacePlayer(float dt, float deadZoneDeg = 0f)
     {
         Vector3 look = m_player.position - transform.position;
         look.y = 0f;
         if (look.sqrMagnitude > 0.0001f)
             m_boss.FaceToward(look.normalized, dt, deadZoneDeg);
-    }
-
-    private void MoveTowardPlayer(float dt, float speedMultiplier)
-    {
-        if (m_agent == null || !m_agent.enabled || !m_agent.isOnNavMesh)
-        {
-            // フォールバック直線追跡
-            Vector3 dir = GetDirectionToPlayer();
-            if (dir.sqrMagnitude > 0.0001f)
-                m_boss.AccelerateToward(dir * speedMultiplier, dt);
-            return;
-        }
-
-        m_agent.SetDestination(m_player.position);
-        Vector3 navDir = GetNavMeshDirection();
-        if (navDir.sqrMagnitude > 0.0001f)
-            m_boss.AccelerateToward(navDir * speedMultiplier, dt);
-    }
-
-    private Vector3 GetNavMeshDirection()
-    {
-        if (m_agent == null)
-            return GetDirectionToPlayer();
-
-        if (!m_agent.hasPath && !m_agent.pathPending)
-            return GetDirectionToPlayer();
-
-        if (m_agent.pathPending)
-            return m_lastDirection;
-
-        Vector3 dir = m_agent.steeringTarget - transform.position;
-        dir.y = 0f;
-
-        if (dir.sqrMagnitude > 0.0001f)
-        {
-            m_lastDirection = dir.normalized;
-            return m_lastDirection;
-        }
-
-        return m_lastDirection;
-    }
-
-    private Vector3 GetDirectionToPlayer()
-    {
-        Vector3 dir = m_player.position - transform.position;
-        dir.y = 0f;
-        return dir.sqrMagnitude > 0.0001f ? dir.normalized : Vector3.zero;
     }
 
     private void SyncAgentToBody()

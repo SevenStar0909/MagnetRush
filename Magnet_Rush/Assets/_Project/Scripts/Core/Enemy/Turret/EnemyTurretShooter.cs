@@ -100,7 +100,12 @@ public class EnemyTurretShooter : MonoBehaviour
 
         EnemyBullet enemyBullet = projectileObj.GetComponent<EnemyBullet>();
         if (enemyBullet != null)
+        {
+            // 物理ハザード化した弾は spawn 位置（砲口＝自分の Pushbox 内）で自分の EntityBody に即衝突しうる。
+            // 発射元タレットのコライダーを無視させてから発射し、自爆・自傷を防ぐ。
+            enemyBullet.IgnoreCollisionsWith(gameObject);
             enemyBullet.Initialize(direction);
+        }
     }
 
     private Transform ResolveFirePoint()

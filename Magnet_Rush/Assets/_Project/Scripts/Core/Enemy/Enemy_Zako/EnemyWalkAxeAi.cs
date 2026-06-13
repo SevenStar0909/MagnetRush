@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -11,6 +11,12 @@ public class EnemyWalkAxeAi : MonoBehaviour
     [SerializeField] private CapsuleCollider m_attackBox;
     [SerializeField] private MeshRenderer m_attackBoxMeshRenderer;
     [SerializeField] private EnemyWalkAxeAnimator m_animator;
+
+    [Header("Weapon")]
+    [SerializeField] private EnemyWeaponHolder m_weaponHolder;
+
+    [Tooltip("落ちた武器をこの距離まで近づいたら拾う")]
+    [SerializeField] private float m_weaponPickupRange = 1.5f;
 
     private EnemyWalkBase m_enemyBase;
     private NavMeshAgent m_agent;
@@ -32,6 +38,9 @@ public class EnemyWalkAxeAi : MonoBehaviour
 
         if (m_animator == null)
             m_animator = gameObject.AddComponent<EnemyWalkAxeAnimator>();
+
+        if (m_weaponHolder == null)
+            m_weaponHolder = GetComponent<EnemyWeaponHolder>();
 
         if (m_agent != null)
         {
@@ -83,6 +92,13 @@ public class EnemyWalkAxeAi : MonoBehaviour
             return;
         }
 
+        // 磁力で武器を剝がされていたら、落ちた武器を拾いに行く（プレイヤー追跡より優先）。
+        if (m_weaponHolder != null && !m_weaponHolder.IsArmed)
+        {
+            UpdateWeaponPickup(Time.deltaTime);
+            return;
+        }
+
         Transform player = m_enemyBase.Player;
         if (player == null)
         {
@@ -127,6 +143,55 @@ public class EnemyWalkAxeAi : MonoBehaviour
         m_enemyBase.AccelerateToward(GetNavMeshDirection(player), dt);
     }
 
+    // 丸腰のとき、落ちた自分の武器まで移動し、拾える状態になったら手元へ戻して再装備する。
+    private void UpdateWeaponPickup(float dt)
+    {
+        m_isAttacking = false;
+        SetAttackBoxActive(false);
+
+        Vector3 weaponPos = m_weaponHolder.DroppedWeaponPosition;
+        TryRecoverAgent();
+
+        bool agentReady = m_agent.enabled && m_agent.isOnNavMesh;
+        if (agentReady)
+        {
+            m_agent.nextPosition = transform.position;
+            m_agent.velocity = Vector3.zero;
+        }
+
+        float distance = Vector3.Distance(transform.position, weaponPos);
+        if (distance <= m_weaponPickupRange)
+        {
+            SetMoving(false);
+            if (agentReady)
+                m_agent.ResetPath();
+            m_enemyBase.SlowDown(dt);
+            m_enemyBase.FaceToward(weaponPos - transform.position, dt);
+
+            // 磁力が切れて拾える状態になったら手元へ戻す。磁化中は CanReEquip が false なので待つ。
+            if (m_weaponHolder.CanReEquip)
+                m_weaponHolder.ReEquip();
+            return;
+        }
+
+        Vector3 direction;
+        if (agentReady)
+        {
+            m_agent.SetDestination(weaponPos);
+            direction = m_agent.steeringTarget - transform.position;
+            direction.y = 0f;
+            if (direction.sqrMagnitude <= 0.0001f)
+                direction = weaponPos - transform.position;
+        }
+        else
+        {
+            direction = weaponPos - transform.position;
+        }
+
+        SetMoving(true);
+        m_enemyBase.AccelerateToward(direction, dt);
+    }
+
     private void TickDirectMove(Transform player, float dt)
     {
         float distance = Vector3.Distance(transform.position, player.position);
@@ -153,6 +218,10 @@ public class EnemyWalkAxeAi : MonoBehaviour
     private void TryAttack()
     {
         if (m_attackBox == null)
+            return;
+
+        // 磁力で武器を剝がされたら丸腰なので近接攻撃しない。
+        if (m_weaponHolder != null && !m_weaponHolder.IsArmed)
             return;
 
         if (m_isAttacking)
@@ -216,11 +285,15 @@ public class EnemyWalkAxeAi : MonoBehaviour
 
     private void CheckAttackBoxOverlapAndDamage()
     {
+        // 攻撃判定を有効にした時点で、すでにPlayerが範囲内にいる場合、
+        // OnTriggerEnterだけでは検知できないことがあるため、手動で重なりを確認する
         if (m_attackBox == null || !m_attackBox.enabled)
             return;
 
+        // CapsuleColliderの現在の範囲をOverlapCapsule用のワールド座標に変換する
         GetCapsuleWorldPoints(m_attackBox, out Vector3 p0, out Vector3 p1, out float radius);
 
+        // 攻撃範囲内にいるPlayerを直接検索する
         int hitCount = Physics.OverlapCapsuleNonAlloc(
             p0,
             p1,
@@ -230,6 +303,7 @@ public class EnemyWalkAxeAi : MonoBehaviour
             QueryTriggerInteraction.Collide
         );
 
+        // 範囲内にいたPlayerへダメージ処理を行う
         for (int i = 0; i < hitCount; i++)
         {
             Collider col = m_overlapResults[i];
@@ -243,6 +317,9 @@ public class EnemyWalkAxeAi : MonoBehaviour
     private static void GetCapsuleWorldPoints(CapsuleCollider capsule, out Vector3 p0, out Vector3 p1, out float radius)
     {
         Transform t = capsule.transform;
+
+        // OverlapCapsuleはワールド座標の2点と半径が必要なため、
+        // CapsuleColliderの現在の位置・向き・スケールからそれらを計算する
         Vector3 center = t.TransformPoint(capsule.center);
         Vector3 scale = t.lossyScale;
         float sx = Mathf.Abs(scale.x);
@@ -260,11 +337,13 @@ public class EnemyWalkAxeAi : MonoBehaviour
                 axisScale = sx;
                 radiusScale = Mathf.Max(sy, sz);
                 break;
+
             case 2:
                 axis = t.forward;
                 axisScale = sz;
                 radiusScale = Mathf.Max(sx, sy);
                 break;
+
             default:
                 axis = t.up;
                 axisScale = sy;

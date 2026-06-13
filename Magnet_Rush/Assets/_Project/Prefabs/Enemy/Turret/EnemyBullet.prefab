@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 3894587258011065767}
   - component: {fileID: 2854550376931725622}
   - component: {fileID: 2179256059378339528}
-  m_Layer: 11
+  m_Layer: 14
   m_Name: EnemyBullet
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -109,7 +109,7 @@ SphereCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
@@ -137,11 +137,11 @@ Rigidbody:
     m_Bits: 0
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
-  m_UseGravity: 1
+  m_UseGravity: 0
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
-  m_CollisionDetection: 0
+  m_CollisionDetection: 2
 --- !u!114 &2854550376931725622
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -157,6 +157,7 @@ MonoBehaviour:
   m_speed: 20
   m_lifetime: 4
   m_damage: 1
+  m_hitGroup: 2
 --- !u!114 &2179256059378339528
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -172,5 +173,6 @@ MonoBehaviour:
   m_pole: 0
   m_isActive: 0
   m_initialMass: 1
+  m_immovable: 0
   m_centerOffset: {x: 0, y: 0, z: 0}
   m_useEdgeDetectionOutline: 1

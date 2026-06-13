@@ -1,8 +1,11 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using System.Collections;
+using System.Collections.Generic;
 /// <summary>
 /// シーンローダー。シングルトンでシーン遷移を管理する。
 /// アディティブシーン（マップ等）はInspectorで設定。
+/// 遷移は非同期ロード＋ロード画面（LoadingScreenView）を挟む。
 /// </summary>
 public class SceneLoader : Singleton<SceneLoader>
 {
@@ -22,6 +25,16 @@ public class SceneLoader : Singleton<SceneLoader>
     [Header("タイトル遷移をスキップするシーン名パターン")]
     [Tooltip("これらの文字列を含むシーンではタイトルに遷移せずアディティブシーンだけ読み込む")]
     [SerializeField] private string[] m_skipTitlePatterns = { "Test", "NS_", "SSS_", "Shimomoto", "Nishigori" };
+
+    [Header("ロード画面")]
+    [Tooltip("シーン遷移中に表示するロード画面プレハブ")]
+    [SerializeField] private LoadingScreenView m_loadingScreenPrefab;
+    [Tooltip("ロード画面の見た目設定（背景画像・動画・表示時間）")]
+    [SerializeField] private LoadingScreenSettings m_loadingScreenSettings;
+
+    private LoadingScreenView m_loadingScreen;
+    private bool m_isLoading;
+    private readonly List<AsyncOperation> m_pendingAdditiveOps = new List<AsyncOperation>();
 
     protected override void Awake()
     {
@@ -62,14 +75,15 @@ public class SceneLoader : Singleton<SceneLoader>
         }
     }
 
-    /// <summary>アディティブシーンをすべて読み込む。</summary>
+    /// <summary>アディティブシーンをすべて非同期で読み込む。完了待ちはLoadRoutineが行う。</summary>
     private void LoadAdditiveScenes()
     {
         foreach (var sceneName in m_additiveScenes)
         {
             if (string.IsNullOrEmpty(sceneName)) continue;
             if (IsSceneLoaded(sceneName)) continue;
-            SceneManager.LoadScene(sceneName, LoadSceneMode.Additive);
+            var op = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
+            if (op != null) m_pendingAdditiveOps.Add(op);
         }
     }
 
@@ -105,10 +119,80 @@ public class SceneLoader : Singleton<SceneLoader>
         return true;
     }
 
-    /// <summary>指定シーンをSingleモードでロードする。</summary>
+    /// <summary>指定シーンをロード画面を挟んで非同期ロードする。</summary>
     public void LoadScene(SceneType sceneType)
     {
-        SceneManager.LoadScene(sceneType.ToString(), LoadSceneMode.Single);
+        StartLoad(sceneType.ToString());
+    }
+
+    /// <summary>ロード処理を開始する。多重呼び出しは無視される。</summary>
+    private void StartLoad(string sceneName)
+    {
+        if (m_isLoading)
+        {
+            ChannelLogger.LogGuardReturn("Game", $"ロード中のため '{sceneName}' の遷移要求を無視");
+            return;
+        }
+        StartCoroutine(LoadRoutine(sceneName));
+    }
+
+    /// <summary>
+    /// ロード画面を表示してシーンを非同期ロードする。
+    /// アディティブシーン（OnSceneLoaded経由で積まれる）の完了も待ってから閉じる。
+    /// </summary>
+    private IEnumerator LoadRoutine(string sceneName)
+    {
+        m_isLoading = true;
+        float startTime = Time.unscaledTime;
+
+        var screen = GetLoadingScreen();
+        if (screen != null)
+            yield return screen.ShowRoutine();
+
+        var op = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Single);
+        if (op == null)
+        {
+            ChannelLogger.LogGuardReturn("Game", $"エラー: シーン '{sceneName}' をロードできない（Build Settings未登録？）");
+            if (screen != null) yield return screen.HideRoutine();
+            m_isLoading = false;
+            yield break;
+        }
+
+        while (!op.isDone)
+            yield return null;
+
+        // OnSceneLoadedが積んだアディティブシーン（マップ等）の完了を待つ
+        while (m_pendingAdditiveOps.Count > 0)
+        {
+            m_pendingAdditiveOps.RemoveAll(o => o == null || o.isDone);
+            yield return null;
+        }
+
+        if (screen != null)
+        {
+            float minTime = m_loadingScreenSettings != null ? m_loadingScreenSettings.minDisplayTime : 0f;
+            while (Time.unscaledTime - startTime < minTime)
+                yield return null;
+            yield return screen.HideRoutine();
+        }
+
+        m_isLoading = false;
+    }
+
+    /// <summary>ロード画面を遅延生成して返す。プレハブ未設定ならnull（ロード画面なしで遷移）。</summary>
+    private LoadingScreenView GetLoadingScreen()
+    {
+        if (m_loadingScreen != null) return m_loadingScreen;
+
+        if (m_loadingScreenPrefab == null || m_loadingScreenSettings == null)
+        {
+            ChannelLogger.LogGuardReturn("Game", "ロード画面プレハブ/設定が未割当（ロード画面なしで遷移）");
+            return null;
+        }
+
+        m_loadingScreen = Instantiate(m_loadingScreenPrefab, transform);
+        m_loadingScreen.Initialize(m_loadingScreenSettings);
+        return m_loadingScreen;
     }
 
     /// <summary> メインシーンとアディティブマップを指定してロードする </summary>
@@ -141,7 +225,7 @@ public class SceneLoader : Singleton<SceneLoader>
         {
             // 列挙型に一致しない場合は、シーン名のまま直接ロード
             ChannelLogger.LogGuardReturn("Game", $"警告: SceneType列挙型に一致しないため、シーン名で直接ロード: {selectedSceneName}");
-            SceneManager.LoadScene(selectedSceneName, LoadSceneMode.Single);
+            StartLoad(selectedSceneName);
         }
     }
 

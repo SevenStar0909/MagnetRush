@@ -13,6 +13,13 @@ public class FallPlayerState : EntityState<Player>
         // 空中ジャンプは JumpAbility 内部の IsGrounded ガードで自動的に no-op になるため、
         // TickAllAbilities() で全許可しても二重ジャンプは発動しない。
 
+        // 磁力で引かれて壁・地面に密着したらビタ止め状態へ
+        if (player.CanMagnetStick())
+        {
+            player.states.Change<MagnetStickPlayerState>();
+            return;
+        }
+
         player.AccelerateToInputDirection(dt);
         player.TickAllAbilities();
 

@@ -20,6 +20,16 @@ public class CameraSettingsApplier : MonoBehaviour
     [Tooltip("死亡時に見る高さ(プレイヤー基準のローカルY)。倒れた体を画面中央に収めるため通常(1.2)より低くする")]
     [SerializeField] private float m_deathCenterHeight = 0.5f;
 
+    [Header("カメラ演出設定")]
+    [Tooltip("反発ジャンプ演出などカメラ演出のパラメータ（SO）")]
+    [SerializeField] private PlayerCameraSettings m_cameraSettings;
+
+    [Header("チュートリアル強制注目")]
+    [Tooltip("ターゲットへ向き直る速さ（度/秒）")]
+    [SerializeField] private float m_focusTurnSpeed = 200f;
+    [Tooltip("注目FOVへ寄せる速さ（度/秒）")]
+    [SerializeField] private float m_focusFovSpeed = 60f;
+
     private PlayerSettings m_settings;
     private Health m_health;
 
@@ -37,6 +47,16 @@ public class CameraSettingsApplier : MonoBehaviour
     private float m_deathStartPivotY;
     private float m_deathStartShoulderX;
     private float m_deathStartDistance;
+
+    private Player m_player;
+    private Magnetizable m_playerMagnetizable;
+    private bool m_isAiming;
+    private float m_repulsePullCurrent;
+    private float m_repulseActiveTimer;
+
+    private Transform m_focusTarget;
+    private float m_focusFov;
+    private bool m_isFocusing;
 
     void OnEnable()
     {
@@ -58,6 +78,7 @@ public class CameraSettingsApplier : MonoBehaviour
         Player.OnStabFinisherStart -= OnStabFinisherStart;
         Player.OnStabFinisherEnd -= OnStabFinisherEnd;
         if (m_health != null) m_health.OnDie -= HandlePlayerDeath;
+        if (m_playerMagnetizable != null) m_playerMagnetizable.OnRepulsionForce -= HandleRepulsionForce;
     }
 
     private void InitializeWithPlayer(Player playerComponent)
@@ -71,6 +92,10 @@ public class CameraSettingsApplier : MonoBehaviour
 
         m_health = playerComponent.GetComponent<Health>();
         if (m_health != null) m_health.OnDie += HandlePlayerDeath;
+
+        m_player = playerComponent;
+        m_playerMagnetizable = playerComponent.magnetizable;
+        if (m_playerMagnetizable != null) m_playerMagnetizable.OnRepulsionForce += HandleRepulsionForce;
 
         // カメラ回転ピボットをプレイヤーの子に生成
         var pivotGO = new GameObject("CameraPivot");
@@ -135,24 +160,78 @@ public class CameraSettingsApplier : MonoBehaviour
         if (m_isFrozen) return;
         if (m_cameraPivot == null || m_settings == null) { ChannelLogger.LogGuardReturn("Player", "カメラピボットまたは設定なし"); return; }
 
-        // マウス: ピクセル差分 (フレーム独立)。deltaTime を掛けない。
-        if (Mouse.current != null)
+        // チュートリアルでカメラロック中は入力で回さない（追従・エイム距離・反発演出はそのまま動かす）
+        bool cameraLocked = m_player != null && m_player.IsAbilityLocked(PlayerAbilityType.Camera);
+        if (!cameraLocked)
         {
-            Vector2 mouseLook = Mouse.current.delta.ReadValue();
-            m_yaw += mouseLook.x * m_settings.cameraMouseSensitivityX * k_MousePixelToDegree;
-            m_pitch -= mouseLook.y * m_settings.cameraMouseSensitivityY * k_MousePixelToDegree;
+            // マウス: ピクセル差分 (フレーム独立)。deltaTime を掛けない。
+            if (Mouse.current != null)
+            {
+                Vector2 mouseLook = Mouse.current.delta.ReadValue();
+                m_yaw += mouseLook.x * m_settings.cameraMouseSensitivityX * k_MousePixelToDegree;
+                m_pitch -= mouseLook.y * m_settings.cameraMouseSensitivityY * k_MousePixelToDegree;
+            }
+
+            // パッド: アナログ軸 (連続値)。deltaTime を掛けて時間積分する。
+            if (Gamepad.current != null)
+            {
+                Vector2 stick = Gamepad.current.rightStick.ReadValue();
+                m_yaw += stick.x * m_settings.cameraSensitivityX * Time.unscaledDeltaTime;
+                m_pitch -= stick.y * m_settings.cameraSensitivityY * Time.unscaledDeltaTime;
+            }
         }
 
-        // パッド: アナログ軸 (連続値)。deltaTime を掛けて時間積分する。
-        if (Gamepad.current != null)
-        {
-            Vector2 stick = Gamepad.current.rightStick.ReadValue();
-            m_yaw += stick.x * m_settings.cameraSensitivityX * Time.unscaledDeltaTime;
-            m_pitch -= stick.y * m_settings.cameraSensitivityY * Time.unscaledDeltaTime;
-        }
+        // チュートリアルの強制注目中はターゲット方向へヨー/ピッチを寄せる（カメラ入力ロック中に呼ばれる想定）
+        if (m_isFocusing && m_focusTarget != null)
+            ApplyFocus();
 
         m_pitch = Mathf.Clamp(m_pitch, m_settings.cameraPitchMin, m_settings.cameraPitchMax);
         m_cameraPivot.rotation = Quaternion.Euler(m_pitch, m_yaw, 0f);
+
+        UpdateRepulsePull();
+    }
+
+    /// <summary>
+    /// 反発力を受けた時のコールバック。空中でしきい値以上の反発を受けている間だけ
+    /// 引き演出のタイマーを更新する（反発中は毎FixedUpdate呼ばれる）。
+    /// </summary>
+    private void HandleRepulsionForce(Vector3 force)
+    {
+        if (m_cameraSettings == null || m_cameraSettings.repulsePullDistance <= 0f) return;
+        if (m_player == null || m_player.IsGrounded)
+        {
+            ChannelLogger.LogGuardReturn("Player", "接地中は反発カメラ演出なし");
+            return;
+        }
+        if (force.sqrMagnitude < m_cameraSettings.repulseForceThreshold * m_cameraSettings.repulseForceThreshold)
+        {
+            ChannelLogger.LogGuardReturn("Player", "反発が弱いためカメラ演出なし");
+            return;
+        }
+
+        // 反発が続く間は毎FixedUpdate届くので、短い猶予で更新し続ける
+        m_repulseActiveTimer = 0.15f;
+    }
+
+    /// <summary>
+    /// 反発ジャンプ中のカメラ引きを毎フレームブレンドする。
+    /// エイム距離への加算方式なので、エイム切替・通常距離のどちらとも干渉しない。
+    /// </summary>
+    private void UpdateRepulsePull()
+    {
+        if (m_thirdPersonFollow == null || m_settings == null || m_cameraSettings == null) return;
+        if (m_cameraSettings.repulsePullDistance <= 0f && m_repulsePullCurrent <= 0f) return;
+
+        m_repulseActiveTimer -= Time.deltaTime;
+        bool active = m_repulseActiveTimer > 0f;
+
+        float target = active ? m_cameraSettings.repulsePullDistance : 0f;
+        float duration = Mathf.Max(0.01f, active ? m_cameraSettings.repulsePullInDuration : m_cameraSettings.repulsePullOutDuration);
+        float speed = Mathf.Max(0.01f, m_cameraSettings.repulsePullDistance) / duration;
+        m_repulsePullCurrent = Mathf.MoveTowards(m_repulsePullCurrent, target, speed * Time.deltaTime);
+
+        float baseDistance = m_isAiming ? m_settings.aimCameraDistance : m_defaultCameraDistance;
+        m_thirdPersonFollow.CameraDistance = baseDistance + m_repulsePullCurrent;
     }
 
     /// <summary>
@@ -162,12 +241,61 @@ public class CameraSettingsApplier : MonoBehaviour
     {
         if (m_thirdPersonFollow == null || m_settings == null) { ChannelLogger.LogGuardReturn("Player", "ThirdPersonFollowまたは設定なし"); return; }
 
-        m_thirdPersonFollow.CameraDistance = aiming ? m_settings.aimCameraDistance : m_defaultCameraDistance;
+        m_isAiming = aiming;
+        m_thirdPersonFollow.CameraDistance = (aiming ? m_settings.aimCameraDistance : m_defaultCameraDistance) + m_repulsePullCurrent;
 
         if (m_cinemachineCamera != null)
         {
             var lens = m_cinemachineCamera.Lens;
             lens.FieldOfView = aiming ? m_settings.aimFOV : m_defaultFOV;
+            m_cinemachineCamera.Lens = lens;
+        }
+    }
+
+    /// <summary>
+    /// 指定ターゲットへカメラを向け、FOVを寄せる（チュートリアルの強制注目用）。
+    /// カメラ操作ロック中に毎フレーム呼ぶ想定。target が null のときは何もしない。
+    /// </summary>
+    public void FocusOn(Transform target, float fov)
+    {
+        if (target == null) return;
+        m_focusTarget = target;
+        m_focusFov = fov;
+        m_isFocusing = true;
+    }
+
+    /// <summary>強制注目を解除し、FOVを通常（エイム/既定）へ戻す。注目していないときは何もしない。</summary>
+    public void ClearFocus()
+    {
+        if (!m_isFocusing) return;
+        m_isFocusing = false;
+        m_focusTarget = null;
+
+        if (m_cinemachineCamera != null && m_settings != null)
+        {
+            var lens = m_cinemachineCamera.Lens;
+            lens.FieldOfView = m_isAiming ? m_settings.aimFOV : m_defaultFOV;
+            m_cinemachineCamera.Lens = lens;
+        }
+    }
+
+    // ピボットのヨー/ピッチをターゲット方向へ寄せ、FOVを注目値へ寄せる。LateUpdateから呼ぶ。
+    private void ApplyFocus()
+    {
+        Vector3 dir = m_focusTarget.position - m_cameraPivot.position;
+        if (dir.sqrMagnitude > 0.0001f)
+        {
+            Vector3 n = dir.normalized;
+            float desiredYaw = Mathf.Atan2(n.x, n.z) * Mathf.Rad2Deg;
+            float desiredPitch = -Mathf.Asin(Mathf.Clamp(n.y, -1f, 1f)) * Mathf.Rad2Deg;
+            m_yaw = Mathf.MoveTowardsAngle(m_yaw, desiredYaw, m_focusTurnSpeed * Time.unscaledDeltaTime);
+            m_pitch = Mathf.MoveTowards(m_pitch, desiredPitch, m_focusTurnSpeed * Time.unscaledDeltaTime);
+        }
+
+        if (m_cinemachineCamera != null && m_focusFov > 0f)
+        {
+            var lens = m_cinemachineCamera.Lens;
+            lens.FieldOfView = Mathf.MoveTowards(lens.FieldOfView, m_focusFov, m_focusFovSpeed * Time.unscaledDeltaTime);
             m_cinemachineCamera.Lens = lens;
         }
     }

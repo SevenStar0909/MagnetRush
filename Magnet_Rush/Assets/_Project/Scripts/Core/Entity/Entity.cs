@@ -193,6 +193,21 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
             direction, out hit, distance + radius, layer, trigger);
     }
 
+    /// <summary>
+    /// 磁力で引かれていて、引かれる方向の至近距離に指定レイヤーの面がある（＝壁・地面に押し付けられている）か。
+    /// プレイヤーの磁力ビタ止めと敵のビタ止め検出で共用する。
+    /// </summary>
+    /// <param name="surfaceLayer">張り付き対象の面レイヤー（未設定=0なら常に false）</param>
+    /// <param name="checkDistance">面までの許容距離（m）</param>
+    /// <param name="minPullSpeed">張り付き判定に必要な引き速度（m/s）</param>
+    public bool IsPulledIntoSurface(LayerMask surfaceLayer, float checkDistance, float minPullSpeed)
+    {
+        if (surfaceLayer.value == 0) return false;
+        Vector3 pull = externalVelocity + holdVelocity;
+        if (pull.magnitude < minPullSpeed) return false;
+        return CapsuleCast(pull.normalized, checkDistance, surfaceLayer.value);
+    }
+
     /// <summary>Entity位置でOverlapCapsule。接触判定に使用。</summary>
     public virtual int OverlapEntity(Collider[] result, float skinOffset = 0)
     {
@@ -229,6 +244,16 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
     /// </summary>
     protected void UpdateEntity(float dt)
     {
+        // 磁力で引かれている間は重力・接地スナップを切り、磁力速度だけで3D移動する。
+        // 歩行敵が床に縛られず、高所の着弾点まで引き寄せられるようにするため（プレイヤーの空中引き寄せと同じ挙動）。
+        if (SuppressEnvironmentPhysics)
+        {
+            velocity = Vector3.zero;   // 重力・AI由来の速度を消す（verticalVelocity も velocity 経由でゼロになる）
+            UpdateMagneticOrientation(dt);
+            ApplyMovement(dt);          // externalVelocity + holdVelocity のみで移動。collide-and-slide は維持
+            return;
+        }
+
         UpdateGround();
         HandleCeiling();
         ApplyGravity(dt);
@@ -236,6 +261,12 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
         ApplyMovement(dt);
         HandleContacts();
     }
+
+    /// <summary>
+    /// true の間 UpdateEntity が重力・接地スナップをスキップし、磁力速度だけで移動する。
+    /// 既定 false。磁力で引かれる歩行敵で override する。
+    /// </summary>
+    protected virtual bool SuppressEnvironmentPhysics => false;
 
     /// <summary>
     /// 接触中のColliderからIEntityContactを取得し、OnEntityContactを発火する。
@@ -467,7 +498,7 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
     /// IMagnetTarget���装。磁力を加速度として蓄積する（AddForce相当）。
     /// 実際の減衰はApplyMovement内のm_externalDragが処理する。
     /// </summary>
-    public void ApplyMagnetForce(Vector3 force)
+    public virtual void ApplyMagnetForce(Vector3 force)
     {
         externalVelocity += force * Time.deltaTime;
     }

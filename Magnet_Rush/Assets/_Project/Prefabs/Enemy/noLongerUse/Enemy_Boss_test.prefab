@@ -360,6 +360,7 @@ MonoBehaviour:
   collisionLayer:
     serializedVersion: 2
     m_Bits: 65523
+  m_canPushPhysicsObjects: 0
 --- !u!114 &2249649121702153851
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -400,7 +401,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: MagnetRush.Enemy::EnemyBossBaseA_Animator
   m_animator: {fileID: 7416477724262092756}
   m_ai: {fileID: 1337750729755968398}
-  m_armHitbox: {fileID: 0}
+  m_attackHitboxes: {fileID: 0}
   m_boss: {fileID: 0}
   m_rushEffect: {fileID: 3380056374446848387}
   m_dustEffect: {fileID: 6088006474434685527}
@@ -411,12 +412,9 @@ MonoBehaviour:
   m_fireMissileFinishedName: FireMissileFinished
   m_attackRushName: AttackRush
   m_attackRushFinishedName: AttackRushFinished
-  m_canInterruptName: CanInterrupt
-  m_canNotInterruptName: CanNotInterrupt
   m_beInterruptedName: BeInterrupted
   m_isStunnedName: IsStunned
   m_stunEndName: StunEnd
-  m_isStaggerName: IsStagger
   m_staggerEndName: StaggerEnd
 --- !u!114 &1337750729755968398
 MonoBehaviour:
@@ -439,6 +437,12 @@ MonoBehaviour:
   m_fireLobMissiles: 1
   m_missileLobAngle: 90
   m_missileLobRiseTime: 0.65
+  m_missileCollisionGrace: 3
+  m_shockAfterAttackStance: 1
+  m_shockAfterAttackMotion: 1
+  m_shockRadius: 8
+  m_shockHorizontalForce: 12
+  m_shockUpwardlForce: 3
   m_logStateChange: 1
   m_nextLongRangeAttackIsRush: 1
 --- !u!114 &5546392387088309262
@@ -499,6 +503,7 @@ MonoBehaviour:
   m_pole: 0
   m_isActive: 1
   m_initialMass: 9999
+  m_immovable: 0
   m_centerOffset: {x: 0, y: 0, z: 0}
   m_useEdgeDetectionOutline: 0
 --- !u!114 &6265531234747577853
@@ -547,6 +552,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 193
   m_skinWidth: 0.08
+  m_maxPushPerFrame: 1
   m_maxIterations: 2
   m_horizontalOnly: 1
 --- !u!1 &691930224160693279
@@ -2066,6 +2072,7 @@ MonoBehaviour:
   m_pole: 0
   m_isActive: 0
   m_initialMass: 9999
+  m_immovable: 0
   m_centerOffset: {x: 0, y: 0, z: 0}
   m_useEdgeDetectionOutline: 0
 --- !u!114 &7658373837121982185
@@ -4387,17 +4394,17 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 5084856853744830301, guid: e066a806db08a85418d1bcf240a657b4, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 305504606409984048}
+      addedObject: {fileID: 5384010452137305156}
     - targetCorrespondingSourceObject: {fileID: 8949475762533121605, guid: e066a806db08a85418d1bcf240a657b4, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 7232145041843227214}
+      addedObject: {fileID: 5678888584606852543}
   m_SourcePrefab: {fileID: 100100000, guid: e066a806db08a85418d1bcf240a657b4, type: 3}
 --- !u!1 &23474008313206879 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 5084856853744830301, guid: e066a806db08a85418d1bcf240a657b4, type: 3}
   m_PrefabInstance: {fileID: 5098759921363410690}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &305504606409984048
+--- !u!114 &5384010452137305156
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -4421,7 +4428,7 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 8949475762533121605, guid: e066a806db08a85418d1bcf240a657b4, type: 3}
   m_PrefabInstance: {fileID: 5098759921363410690}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &7232145041843227214
+--- !u!114 &5678888584606852543
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -4942,9 +4949,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Enemy::ArmStunHitbox
   m_health: {fileID: 2249649121702153851}
-  m_stamina: {fileID: 5546392387088309262}
   m_animator: {fileID: 573067799464740083}
-  m_settings: {fileID: 11400000, guid: c18fd890e7dc6ab42854abb4e3c2e1f1, type: 2}
   m_hitGroup: 1
 --- !u!1 &2004301888153645300 stripped
 GameObject:
@@ -5124,6 +5129,7 @@ MonoBehaviour:
   m_pole: 0
   m_isActive: 0
   m_initialMass: 9999
+  m_immovable: 0
   m_centerOffset: {x: 0, y: 0, z: 0}
   m_useEdgeDetectionOutline: 0
 --- !u!114 &7097843701442887088

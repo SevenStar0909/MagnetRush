@@ -202,7 +202,7 @@ Transform:
   m_GameObject: {fileID: 30666197}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.1, y: 0, z: 0}
+  m_LocalPosition: {x: 2.1, y: 0.3, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -252,7 +252,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -5.628704
+      value: -5.0244102
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -289,8 +289,16 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 611949379}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &94655184 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 94655183}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &110659899
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -321,7 +329,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -23.001
+      value: -23.199585
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -358,8 +366,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 110659901}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &110659900 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 110659899}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &110659901
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 110659900}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1001 &113222336
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -378,7 +406,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -30.040894
+      value: -29.381716
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -415,8 +443,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 113222338}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &113222337 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 113222336}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &113222338
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 113222337}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1001 &138750419
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -447,7 +495,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -23.021
+      value: -23.19082
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -484,8 +532,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 138750421}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &138750420 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 138750419}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &138750421
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 138750420}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1001 &147985035
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -516,7 +584,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -21.741
+      value: -21.67182
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -553,8 +621,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 147985037}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &147985036 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 147985035}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &147985037
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 147985036}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1001 &156344823
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -585,7 +673,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -23.001
+      value: -23.199585
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -622,8 +710,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 156344825}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &156344824 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 156344823}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &156344825
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 156344824}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1001 &184601369
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -681,6 +789,75 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f52c849e694832142897101f5d167e95, type: 3}
+--- !u!1001 &190805669
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1744902352940930542, guid: 3027a87d7884dcc4c9db491d12f45536, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1278.6763
+      objectReference: {fileID: 0}
+    - target: {fileID: 1744902352940930542, guid: 3027a87d7884dcc4c9db491d12f45536, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 10103.378
+      objectReference: {fileID: 0}
+    - target: {fileID: 1744902352940930542, guid: 3027a87d7884dcc4c9db491d12f45536, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1360.4717
+      objectReference: {fileID: 0}
+    - target: {fileID: 1744902352940930542, guid: 3027a87d7884dcc4c9db491d12f45536, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -55.29
+      objectReference: {fileID: 0}
+    - target: {fileID: 1744902352940930542, guid: 3027a87d7884dcc4c9db491d12f45536, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -19.41
+      objectReference: {fileID: 0}
+    - target: {fileID: 1744902352940930542, guid: 3027a87d7884dcc4c9db491d12f45536, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -94.02
+      objectReference: {fileID: 0}
+    - target: {fileID: 1744902352940930542, guid: 3027a87d7884dcc4c9db491d12f45536, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.5059263
+      objectReference: {fileID: 0}
+    - target: {fileID: 1744902352940930542, guid: 3027a87d7884dcc4c9db491d12f45536, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0.86257344
+      objectReference: {fileID: 0}
+    - target: {fileID: 1744902352940930542, guid: 3027a87d7884dcc4c9db491d12f45536, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0.002066514
+      objectReference: {fileID: 0}
+    - target: {fileID: 1744902352940930542, guid: 3027a87d7884dcc4c9db491d12f45536, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0.0012120677
+      objectReference: {fileID: 0}
+    - target: {fileID: 1744902352940930542, guid: 3027a87d7884dcc4c9db491d12f45536, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 119.214005
+      objectReference: {fileID: 0}
+    - target: {fileID: 1744902352940930542, guid: 3027a87d7884dcc4c9db491d12f45536, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1744902352940930542, guid: 3027a87d7884dcc4c9db491d12f45536, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: -0.2749939
+      objectReference: {fileID: 0}
+    - target: {fileID: 5544796117688543818, guid: 3027a87d7884dcc4c9db491d12f45536, type: 3}
+      propertyPath: m_Name
+      value: pPlane4 (3)
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 3027a87d7884dcc4c9db491d12f45536, type: 3}
 --- !u!1001 &191557742
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -689,17 +866,33 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 2958568544906377151, guid: 053558ec5eb5f15469ce89137c948873, type: 3}
+      propertyPath: m_pole
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2958568544906377151, guid: 053558ec5eb5f15469ce89137c948873, type: 3}
+      propertyPath: m_isActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6635251846347781248, guid: 053558ec5eb5f15469ce89137c948873, type: 3}
+      propertyPath: m_animator
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 6635251846347781248, guid: 053558ec5eb5f15469ce89137c948873, type: 3}
       propertyPath: m_pullRange
-      value: 20
+      value: 18
       objectReference: {fileID: 0}
     - target: {fileID: 6635251846347781248, guid: 053558ec5eb5f15469ce89137c948873, type: 3}
       propertyPath: m_pullMaxSpeed
-      value: 9
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 6635251846347781248, guid: 053558ec5eb5f15469ce89137c948873, type: 3}
+      propertyPath: m_pullMinDistance
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 6635251846347781248, guid: 053558ec5eb5f15469ce89137c948873, type: 3}
       propertyPath: m_pullAcceleration
-      value: 30
+      value: 50
       objectReference: {fileID: 0}
     - target: {fileID: 7025300836606099460, guid: 053558ec5eb5f15469ce89137c948873, type: 3}
       propertyPath: m_LocalPosition.x
@@ -707,7 +900,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7025300836606099460, guid: 053558ec5eb5f15469ce89137c948873, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -32.08064
+      value: -34
       objectReference: {fileID: 0}
     - target: {fileID: 7025300836606099460, guid: 053558ec5eb5f15469ce89137c948873, type: 3}
       propertyPath: m_LocalPosition.z
@@ -865,6 +1058,112 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
   m_PrefabInstance: {fileID: 451621599}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &233521877
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 233521878}
+  - component: {fileID: 233521879}
+  m_Layer: 6
+  m_Name: HitBox1 (9)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &233521878
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 233521877}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: -0.71116763, z: 0, w: 0.70302254}
+  m_LocalPosition: {x: -50.99, y: 20.02, z: 0.31518555}
+  m_LocalScale: {x: 31.587278, y: 30.774931, z: 1.3840321}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1821738253}
+  m_LocalEulerAnglesHint: {x: 0, y: -90.66, z: 0}
+--- !u!65 &233521879
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 233521877}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!1 &243445112
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 243445113}
+  - component: {fileID: 243445114}
+  m_Layer: 6
+  m_Name: HitBox1 (11)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &243445113
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 243445112}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0.8314551, z: -0, w: 0.55559194}
+  m_LocalPosition: {x: -46.89, y: 28.389997, z: -27.79001}
+  m_LocalScale: {x: 31.587278, y: 30.774931, z: 1.3840321}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1821738253}
+  m_LocalEulerAnglesHint: {x: 0, y: -112.497, z: 0}
+--- !u!65 &243445114
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 243445112}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &249642910
 GameObject:
   m_ObjectHideFlags: 0
@@ -1000,6 +1299,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 172527228608406771, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      propertyPath: m_Constraints
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_Name
       value: CrateBig1 (13)
@@ -1022,7 +1325,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -21.512
+      value: -21.431585
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -1059,8 +1362,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 318836349}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &318836348 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 318836347}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &318836349
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 318836348}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!4 &321569164 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
@@ -1096,7 +1419,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -23.021
+      value: -23.19082
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -1133,8 +1456,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 322070327}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &322070326 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 322070325}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &322070327
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 322070326}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1 &328661825 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -4858975716322590731, guid: 148453075071d16489859a80f8f3a90d, type: 3}
@@ -1185,7 +1528,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -30.040894
+      value: -29.381716
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -1222,8 +1565,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 352499890}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &352499889 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 352499888}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &352499890
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 352499889}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1001 &360018062
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1311,7 +1674,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -21.512
+      value: -21.431585
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -1348,8 +1711,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 363700363}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &363700362 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 363700361}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &363700363
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 363700362}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1001 &394601760
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1437,7 +1820,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -21.512
+      value: -21.431585
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -1474,8 +1857,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 400247664}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &400247663 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 400247662}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &400247664
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 400247663}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1 &417230221
 GameObject:
   m_ObjectHideFlags: 0
@@ -1679,7 +2082,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -4.1195984
+      value: -3.4604263
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -1716,8 +2119,16 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1282152601}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &450407630 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 450407629}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &451621599
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1736,7 +2147,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -4.809601
+      value: -4.2795296
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -1773,8 +2184,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 451621601}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &451621600 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 451621599}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &451621601
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 451621600}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1 &466904694
 GameObject:
   m_ObjectHideFlags: 0
@@ -1942,7 +2373,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -21.741
+      value: -21.67182
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -1979,8 +2410,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 499493077}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &499493076 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 499493075}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &499493077
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 499493076}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1 &511151537
 GameObject:
   m_ObjectHideFlags: 0
@@ -2143,7 +2594,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -21.741
+      value: -21.67182
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -2180,8 +2631,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 535990679}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &535990678 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 535990677}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &535990679
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 535990678}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1001 &562312945
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2200,7 +2671,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -3.479599
+      value: -3.1704254
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -2237,8 +2708,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 562312947}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &562312946 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 562312945}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &562312947
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 562312946}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1001 &563466315
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2269,7 +2760,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -24.54
+      value: -25.530483
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -2306,13 +2797,45 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 563466317}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &563466316 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 563466315}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &563466317
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 563466316}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!4 &611949378 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
   m_PrefabInstance: {fileID: 94655183}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &611949379
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 94655184}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1001 &641410310
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2331,7 +2854,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -48.729107
+      value: -49.39168
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -2368,8 +2891,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 641410312}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &641410311 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 641410310}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &641410312
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 641410311}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1 &663872423
 GameObject:
   m_ObjectHideFlags: 0
@@ -2450,7 +2993,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -70.1, y: -17.1, z: -91.4}
-  m_LocalScale: {x: 0.67088, y: 2.3969, z: 0.54}
+  m_LocalScale: {x: 0.66, y: 4.381054, z: 0.53}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -2649,7 +3192,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 79874597783744221, guid: 148453075071d16489859a80f8f3a90d, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -190.8
+      value: -194.31999
       objectReference: {fileID: 0}
     - target: {fileID: 79874597783744221, guid: 148453075071d16489859a80f8f3a90d, type: 3}
       propertyPath: m_LocalPosition.z
@@ -2777,7 +3320,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5810067297442847668, guid: 148453075071d16489859a80f8f3a90d, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -25.7
+      value: -26.8
       objectReference: {fileID: 0}
     - target: {fileID: 5810067297442847668, guid: 148453075071d16489859a80f8f3a90d, type: 3}
       propertyPath: m_LocalPosition.z
@@ -2941,13 +3484,22 @@ PrefabInstance:
       addedObject: {fileID: 1584381362}
     - targetCorrespondingSourceObject: {fileID: -5086086556174600858, guid: 148453075071d16489859a80f8f3a90d, type: 3}
       insertIndex: -1
+      addedObject: {fileID: 698304268}
+    - targetCorrespondingSourceObject: {fileID: -5086086556174600858, guid: 148453075071d16489859a80f8f3a90d, type: 3}
+      insertIndex: -1
       addedObject: {fileID: 1201749879}
     - targetCorrespondingSourceObject: {fileID: -5086086556174600858, guid: 148453075071d16489859a80f8f3a90d, type: 3}
       insertIndex: -1
       addedObject: {fileID: 851048629}
     - targetCorrespondingSourceObject: {fileID: -5086086556174600858, guid: 148453075071d16489859a80f8f3a90d, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 2106590422}
+      addedObject: {fileID: 233521878}
+    - targetCorrespondingSourceObject: {fileID: -5086086556174600858, guid: 148453075071d16489859a80f8f3a90d, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2001066914}
+    - targetCorrespondingSourceObject: {fileID: -5086086556174600858, guid: 148453075071d16489859a80f8f3a90d, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 243445113}
     - targetCorrespondingSourceObject: {fileID: -5086086556174600858, guid: 148453075071d16489859a80f8f3a90d, type: 3}
       insertIndex: -1
       addedObject: {fileID: 935386083}
@@ -3024,7 +3576,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6502018102171756954, guid: f52c849e694832142897101f5d167e95, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -32.7
+      value: -36
       objectReference: {fileID: 0}
     - target: {fileID: 6502018102171756954, guid: f52c849e694832142897101f5d167e95, type: 3}
       propertyPath: m_LocalPosition.z
@@ -3067,6 +3619,59 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f52c849e694832142897101f5d167e95, type: 3}
+--- !u!1 &698304267
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 698304268}
+  - component: {fileID: 698304269}
+  m_Layer: 6
+  m_Name: HitBox1 (8)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &698304268
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 698304267}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0.99997973, z: -0, w: -0.0063703223}
+  m_LocalPosition: {x: 0.57158756, y: 28.809973, z: -53.60509}
+  m_LocalScale: {x: 31.587278, y: 30.774931, z: 4.8618827}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1821738253}
+  m_LocalEulerAnglesHint: {x: 0, y: 180.73, z: 0}
+--- !u!65 &698304269
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 698304267}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1001 &703802728
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3085,7 +3690,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -31.55
+      value: -34.92503
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -3122,8 +3727,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 703802730}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &703802729 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 703802728}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &703802730
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 703802729}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1001 &706527822
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3142,7 +3767,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -30.730896
+      value: -30.200819
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -3179,8 +3804,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 706527824}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &706527823 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 706527822}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &706527824
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 706527823}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1001 &714544102
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3199,7 +3844,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -30.730896
+      value: -30.200819
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -3236,8 +3881,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 714544104}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &714544103 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 714544102}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &714544104
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 714544103}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1 &724604330
 GameObject:
   m_ObjectHideFlags: 0
@@ -3309,7 +3974,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -30.040894
+      value: -29.381716
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -3346,8 +4011,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 737714536}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &737714535 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 737714534}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &737714536
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 737714535}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1001 &778597138
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3378,7 +4063,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -21.512
+      value: -21.431585
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -3415,8 +4100,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 778597140}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &778597139 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 778597138}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &778597140
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 778597139}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1 &786537541
 GameObject:
   m_ObjectHideFlags: 0
@@ -3496,8 +4201,8 @@ Transform:
   m_GameObject: {fileID: 786537541}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 8.1, y: -31, z: -6.9}
-  m_LocalScale: {x: 0.4, y: 2.7386, z: 0.4}
+  m_LocalPosition: {x: 8.1084, y: -31, z: -6.905}
+  m_LocalScale: {x: 0.388216, y: 3.8359113, z: 0.388216}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -3604,7 +4309,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -30.730896
+      value: -30.200819
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -3641,8 +4346,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 840490803}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &840490802 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 840490801}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &840490803
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 840490802}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1001 &843580818
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3707,11 +4432,43 @@ PrefabInstance:
       propertyPath: m_Name
       value: Enemy_Walk_Axe (4)
       objectReference: {fileID: 0}
+    - target: {fileID: 7972966757293523795, guid: c5172a3be336d8f40ae6f6e16c633712, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.020311326
+      objectReference: {fileID: 0}
+    - target: {fileID: 7972966757293523795, guid: c5172a3be336d8f40ae6f6e16c633712, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.10670251
+      objectReference: {fileID: 0}
+    - target: {fileID: 7972966757293523795, guid: c5172a3be336d8f40ae6f6e16c633712, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.051007282
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7344944010026998249, guid: c5172a3be336d8f40ae6f6e16c633712, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 843580820}
   m_SourcePrefab: {fileID: 100100000, guid: c5172a3be336d8f40ae6f6e16c633712, type: 3}
+--- !u!1 &843580819 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7344944010026998249, guid: c5172a3be336d8f40ae6f6e16c633712, type: 3}
+  m_PrefabInstance: {fileID: 843580818}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &843580820
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 843580819}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1 &851048628
 GameObject:
   m_ObjectHideFlags: 0
@@ -3815,7 +4572,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -31.55
+      value: -34.92503
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -3852,8 +4609,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 865573404}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &865573403 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 865573402}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &865573404
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 865573403}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1001 &874332381
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3872,7 +4649,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -47.22
+      value: -46.56083
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -3909,8 +4686,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 874332383}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &874332382 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 874332381}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &874332383
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 874332382}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1 &890600168
 GameObject:
   m_ObjectHideFlags: 0
@@ -3965,7 +4762,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -4.7696
+      value: -4.2795296
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -4002,8 +4799,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 891414314}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &891414313 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 891414312}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &891414314
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 891414313}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1 &909478543
 GameObject:
   m_ObjectHideFlags: 0
@@ -4094,6 +4911,63 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1048796535}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1001 &921276033
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 529854419887168867, guid: 86ca71d9eb6a05847a992a5dd1f43333, type: 3}
+      propertyPath: m_Name
+      value: Enemy_Boss_ver_0517
+      objectReference: {fileID: 0}
+    - target: {fileID: 9143151154395978059, guid: 86ca71d9eb6a05847a992a5dd1f43333, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 56
+      objectReference: {fileID: 0}
+    - target: {fileID: 9143151154395978059, guid: 86ca71d9eb6a05847a992a5dd1f43333, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -27
+      objectReference: {fileID: 0}
+    - target: {fileID: 9143151154395978059, guid: 86ca71d9eb6a05847a992a5dd1f43333, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -174
+      objectReference: {fileID: 0}
+    - target: {fileID: 9143151154395978059, guid: 86ca71d9eb6a05847a992a5dd1f43333, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9143151154395978059, guid: 86ca71d9eb6a05847a992a5dd1f43333, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9143151154395978059, guid: 86ca71d9eb6a05847a992a5dd1f43333, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9143151154395978059, guid: 86ca71d9eb6a05847a992a5dd1f43333, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9143151154395978059, guid: 86ca71d9eb6a05847a992a5dd1f43333, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9143151154395978059, guid: 86ca71d9eb6a05847a992a5dd1f43333, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9143151154395978059, guid: 86ca71d9eb6a05847a992a5dd1f43333, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 86ca71d9eb6a05847a992a5dd1f43333, type: 3}
 --- !u!1 &935386082
 GameObject:
   m_ObjectHideFlags: 0
@@ -4165,7 +5039,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -4.1195984
+      value: -3.4604263
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -4202,8 +5076,16 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1495487895}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &957397022 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 957397021}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &958218478
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4542,7 +5424,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -5.628704
+      value: -5.0244102
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -4579,8 +5461,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1016355971}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &1016355970 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 1016355969}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1016355971
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1016355970}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1001 &1039703871
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4611,7 +5513,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -24.769
+      value: -25.420366
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -4648,8 +5550,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1039703873}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &1039703872 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 1039703871}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1039703873
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1039703872}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1 &1048796534
 GameObject:
   m_ObjectHideFlags: 0
@@ -4689,6 +5611,63 @@ Transform:
   - {fileID: 1083918609}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1001 &1054595429
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1138459005377295336, guid: d72bb3e8609b25e43b62b3879e3988cc, type: 3}
+      propertyPath: m_Name
+      value: StageSpawnPoint
+      objectReference: {fileID: 0}
+    - target: {fileID: 4454273042962076385, guid: d72bb3e8609b25e43b62b3879e3988cc, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 11
+      objectReference: {fileID: 0}
+    - target: {fileID: 4454273042962076385, guid: d72bb3e8609b25e43b62b3879e3988cc, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -42
+      objectReference: {fileID: 0}
+    - target: {fileID: 4454273042962076385, guid: d72bb3e8609b25e43b62b3879e3988cc, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 38
+      objectReference: {fileID: 0}
+    - target: {fileID: 4454273042962076385, guid: d72bb3e8609b25e43b62b3879e3988cc, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4454273042962076385, guid: d72bb3e8609b25e43b62b3879e3988cc, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4454273042962076385, guid: d72bb3e8609b25e43b62b3879e3988cc, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4454273042962076385, guid: d72bb3e8609b25e43b62b3879e3988cc, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4454273042962076385, guid: d72bb3e8609b25e43b62b3879e3988cc, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4454273042962076385, guid: d72bb3e8609b25e43b62b3879e3988cc, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4454273042962076385, guid: d72bb3e8609b25e43b62b3879e3988cc, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: d72bb3e8609b25e43b62b3879e3988cc, type: 3}
 --- !u!1001 &1060425691
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4866,7 +5845,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -24.54
+      value: -25.530483
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -4903,8 +5882,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1083931427}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &1083931426 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 1083931425}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1083931427
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1083931426}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1001 &1126537515
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4935,7 +5934,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -23.021
+      value: -23.19082
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -4972,8 +5971,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1126537517}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &1126537516 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 1126537515}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1126537517
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1126537516}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1001 &1141942005
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5004,7 +6023,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -21.741
+      value: -21.67182
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -5041,8 +6060,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1141942007}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &1141942006 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 1141942005}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1141942007
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1141942006}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1 &1145747306
 GameObject:
   m_ObjectHideFlags: 0
@@ -5155,11 +6194,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6502018102171756954, guid: f52c849e694832142897101f5d167e95, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -36.05
+      value: -38
       objectReference: {fileID: 0}
     - target: {fileID: 6502018102171756954, guid: f52c849e694832142897101f5d167e95, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -32.78
+      value: -36
       objectReference: {fileID: 0}
     - target: {fileID: 6502018102171756954, guid: f52c849e694832142897101f5d167e95, type: 3}
       propertyPath: m_LocalPosition.z
@@ -5322,7 +6361,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -21.741
+      value: -21.67182
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -5359,8 +6398,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1179298965}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &1179298964 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 1179298963}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1179298965
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1179298964}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!4 &1189766692 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
@@ -5672,7 +6731,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -24.54
+      value: -25.530483
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -5709,8 +6768,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1245934457}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &1245934456 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 1245934455}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1245934457
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1245934456}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1 &1265868745 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -2813360571992868039, guid: 148453075071d16489859a80f8f3a90d, type: 3}
@@ -5800,6 +6879,18 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
   m_PrefabInstance: {fileID: 450407629}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1282152601
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 450407630}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1 &1312588888
 GameObject:
   m_ObjectHideFlags: 0
@@ -5828,7 +6919,7 @@ Transform:
   m_GameObject: {fileID: 1312588888}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: -20.55, y: -7.46, z: 3.29}
+  m_LocalPosition: {x: -44.84, y: -3.3999891, z: -30.29}
   m_LocalScale: {x: 1.88631, y: 1.88631, z: 1.88631}
   m_ConstrainProportionsScale: 1
   m_Children:
@@ -5946,7 +7037,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -24.54
+      value: -25.530483
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -5983,8 +7074,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1325968223}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &1325968222 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 1325968221}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1325968223
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1325968222}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1001 &1330601276
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6015,7 +7126,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -24.54
+      value: -24.427485
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -6052,8 +7163,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1330601278}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &1330601277 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 1330601276}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1330601278
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1330601277}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1001 &1334045937
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6072,7 +7203,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -31.55
+      value: -34.92503
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -6109,8 +7240,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1334045939}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &1334045938 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 1334045937}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1334045939
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1334045938}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1 &1346111361
 GameObject:
   m_ObjectHideFlags: 0
@@ -6257,7 +7408,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -24.769
+      value: -25.420366
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -6294,8 +7445,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1348836211}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &1348836210 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 1348836209}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1348836211
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1348836210}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1001 &1360174193
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6326,7 +7497,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -21.512
+      value: -21.431585
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -6363,8 +7534,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1360174195}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &1360174194 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 1360174193}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1360174195
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1360174194}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1001 &1372048702
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6440,7 +7631,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -4.809601
+      value: -4.2795296
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -6477,8 +7668,16 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2047278741}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &1431749140 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 1431749139}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1438260068
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6619,7 +7818,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -47.910004
+      value: -47.379932
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -6656,8 +7855,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1443530739}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &1443530738 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 1443530737}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1443530739
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1443530738}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1 &1454488464
 GameObject:
   m_ObjectHideFlags: 0
@@ -6768,7 +7987,7 @@ MonoBehaviour:
   m_OverrideVoxelSize: 0
   m_VoxelSize: 0.33333334
   m_MinRegionArea: 2
-  m_NavMeshData: {fileID: 23800000, guid: 134e9c9154b4d7d44949bd88e1119500, type: 2}
+  m_NavMeshData: {fileID: 23800000, guid: a4e88b4b9f2273c4fad51fee4a3b2529, type: 2}
   m_BuildHeightMesh: 0
 --- !u!1 &1479419566 stripped
 GameObject:
@@ -6864,6 +8083,18 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
   m_PrefabInstance: {fileID: 957397021}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1495487895
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 957397022}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1001 &1521857398
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6882,7 +8113,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -5.628704
+      value: -5.0244102
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -6919,8 +8150,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1521857400}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &1521857399 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 1521857398}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1521857400
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1521857399}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1001 &1525248804
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6951,7 +8202,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -23.021
+      value: -23.19082
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -6988,8 +8239,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1525248806}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &1525248805 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 1525248804}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1525248806
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1525248805}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1 &1544201031
 GameObject:
   m_ObjectHideFlags: 0
@@ -7098,7 +8369,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -30.730896
+      value: -30.200819
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -7135,8 +8406,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1559924287}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &1559924286 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 1559924285}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1559924287
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1559924286}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1 &1559945003
 GameObject:
   m_ObjectHideFlags: 0
@@ -7245,7 +8536,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -30.730896
+      value: -30.200819
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -7282,8 +8573,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1577677165}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &1577677164 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 1577677163}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1577677165
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1577677164}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1001 &1578417040
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -7314,7 +8625,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -21.741
+      value: -21.67182
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -7351,8 +8662,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1578417042}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &1578417041 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 1578417040}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1578417042
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1578417041}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1 &1579487534
 GameObject:
   m_ObjectHideFlags: 0
@@ -7542,7 +8873,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -23.001
+      value: -23.199585
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -7579,8 +8910,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1589194113}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &1589194112 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 1589194111}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1589194113
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1589194112}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1 &1652507872
 GameObject:
   m_ObjectHideFlags: 0
@@ -7689,7 +9040,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -31.55
+      value: -34.925014
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -7726,8 +9077,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1654558678}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &1654558677 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 1654558676}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1654558678
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1654558677}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1 &1656872553 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -5884137205360853842, guid: 148453075071d16489859a80f8f3a90d, type: 3}
@@ -7842,7 +9213,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -24.769
+      value: -25.420366
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -7879,8 +9250,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1663421836}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &1663421835 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 1663421834}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1663421836
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1663421835}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1 &1672372415
 GameObject:
   m_ObjectHideFlags: 0
@@ -7960,7 +9351,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6538001333568368064, guid: b1a828cbd3aae314c8bb6990b976fd20, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -58.1
+      value: -80.7
       objectReference: {fileID: 0}
     - target: {fileID: 6538001333568368064, guid: b1a828cbd3aae314c8bb6990b976fd20, type: 3}
       propertyPath: m_LocalPosition.z
@@ -8017,7 +9408,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -4.5196
+      value: -4.2795296
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -8054,8 +9445,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1699271785}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &1699271784 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 1699271783}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1699271785
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1699271784}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1 &1705268533
 GameObject:
   m_ObjectHideFlags: 0
@@ -8192,7 +9603,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7025300836606099460, guid: c5172a3be336d8f40ae6f6e16c633712, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -40.97234
+      value: -39
       objectReference: {fileID: 0}
     - target: {fileID: 7025300836606099460, guid: c5172a3be336d8f40ae6f6e16c633712, type: 3}
       propertyPath: m_LocalPosition.z
@@ -8230,11 +9641,43 @@ PrefabInstance:
       propertyPath: m_Name
       value: Enemy_Walk_Axe
       objectReference: {fileID: 0}
+    - target: {fileID: 7972966757293523795, guid: c5172a3be336d8f40ae6f6e16c633712, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.020311326
+      objectReference: {fileID: 0}
+    - target: {fileID: 7972966757293523795, guid: c5172a3be336d8f40ae6f6e16c633712, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.10670251
+      objectReference: {fileID: 0}
+    - target: {fileID: 7972966757293523795, guid: c5172a3be336d8f40ae6f6e16c633712, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.051007282
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7344944010026998249, guid: c5172a3be336d8f40ae6f6e16c633712, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1736678118}
   m_SourcePrefab: {fileID: 100100000, guid: c5172a3be336d8f40ae6f6e16c633712, type: 3}
+--- !u!1 &1736678117 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7344944010026998249, guid: c5172a3be336d8f40ae6f6e16c633712, type: 3}
+  m_PrefabInstance: {fileID: 1736678116}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1736678118
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1736678117}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1 &1756192235
 GameObject:
   m_ObjectHideFlags: 0
@@ -8699,7 +10142,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -23.001
+      value: -23.199585
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -8736,8 +10179,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1794154657}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &1794154656 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 1794154655}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1794154657
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1794154656}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1001 &1808350129
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -9002,7 +10465,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7025300836606099460, guid: c5172a3be336d8f40ae6f6e16c633712, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -40.972343
+      value: -39
       objectReference: {fileID: 0}
     - target: {fileID: 7025300836606099460, guid: c5172a3be336d8f40ae6f6e16c633712, type: 3}
       propertyPath: m_LocalPosition.z
@@ -9040,11 +10503,43 @@ PrefabInstance:
       propertyPath: m_Name
       value: Enemy_Walk_Axe (3)
       objectReference: {fileID: 0}
+    - target: {fileID: 7972966757293523795, guid: c5172a3be336d8f40ae6f6e16c633712, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.020311326
+      objectReference: {fileID: 0}
+    - target: {fileID: 7972966757293523795, guid: c5172a3be336d8f40ae6f6e16c633712, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.10670251
+      objectReference: {fileID: 0}
+    - target: {fileID: 7972966757293523795, guid: c5172a3be336d8f40ae6f6e16c633712, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.051007282
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7344944010026998249, guid: c5172a3be336d8f40ae6f6e16c633712, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1815589335}
   m_SourcePrefab: {fileID: 100100000, guid: c5172a3be336d8f40ae6f6e16c633712, type: 3}
+--- !u!1 &1815589334 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7344944010026998249, guid: c5172a3be336d8f40ae6f6e16c633712, type: 3}
+  m_PrefabInstance: {fileID: 1815589333}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1815589335
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1815589334}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1 &1821738238 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -651568184671408675, guid: 148453075071d16489859a80f8f3a90d, type: 3}
@@ -9067,7 +10562,7 @@ MeshCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 5
   m_Convex: 0
   m_CookingOptions: 30
@@ -9091,7 +10586,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 4.5, y: 11.1, z: 21.3}
+  m_Size: {x: 4.5, y: 11.1, z: 28.61}
   m_Center: {x: 53.4, y: 37.5, z: 0.78}
 --- !u!65 &1821738247
 BoxCollider:
@@ -9225,11 +10720,43 @@ PrefabInstance:
       propertyPath: m_Name
       value: Enemy_Walk_Axe (8)
       objectReference: {fileID: 0}
+    - target: {fileID: 7972966757293523795, guid: c5172a3be336d8f40ae6f6e16c633712, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.020311326
+      objectReference: {fileID: 0}
+    - target: {fileID: 7972966757293523795, guid: c5172a3be336d8f40ae6f6e16c633712, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.10670251
+      objectReference: {fileID: 0}
+    - target: {fileID: 7972966757293523795, guid: c5172a3be336d8f40ae6f6e16c633712, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.051007282
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7344944010026998249, guid: c5172a3be336d8f40ae6f6e16c633712, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1832815876}
   m_SourcePrefab: {fileID: 100100000, guid: c5172a3be336d8f40ae6f6e16c633712, type: 3}
+--- !u!1 &1832815875 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7344944010026998249, guid: c5172a3be336d8f40ae6f6e16c633712, type: 3}
+  m_PrefabInstance: {fileID: 1832815874}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1832815876
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1832815875}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1001 &1833991060
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -9260,7 +10787,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -23.021
+      value: -23.19082
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -9297,8 +10824,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1833991062}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &1833991061 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 1833991060}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1833991062
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1833991061}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1 &1866512802 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 148453075071d16489859a80f8f3a90d, type: 3}
@@ -9349,7 +10896,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -5.628704
+      value: -5.0244102
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -9386,8 +10933,16 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2064494546}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &1879903665 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 1879903664}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1888751208
 GameObject:
   m_ObjectHideFlags: 0
@@ -9516,7 +11071,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -3.9855995
+      value: -3.4204254
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -9553,8 +11108,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1929586387}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &1929586386 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 1929586385}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1929586387
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1929586386}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1001 &1936034180
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -9676,11 +11251,43 @@ PrefabInstance:
       propertyPath: m_Name
       value: Enemy_Walk_Axe (7)
       objectReference: {fileID: 0}
+    - target: {fileID: 7972966757293523795, guid: c5172a3be336d8f40ae6f6e16c633712, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.020311326
+      objectReference: {fileID: 0}
+    - target: {fileID: 7972966757293523795, guid: c5172a3be336d8f40ae6f6e16c633712, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.10670251
+      objectReference: {fileID: 0}
+    - target: {fileID: 7972966757293523795, guid: c5172a3be336d8f40ae6f6e16c633712, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.051007282
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7344944010026998249, guid: c5172a3be336d8f40ae6f6e16c633712, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1953357163}
   m_SourcePrefab: {fileID: 100100000, guid: c5172a3be336d8f40ae6f6e16c633712, type: 3}
+--- !u!1 &1953357162 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7344944010026998249, guid: c5172a3be336d8f40ae6f6e16c633712, type: 3}
+  m_PrefabInstance: {fileID: 1953357161}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1953357163
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1953357162}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1 &1976616369
 GameObject:
   m_ObjectHideFlags: 0
@@ -9815,7 +11422,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -30.040894
+      value: -29.381716
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -9852,8 +11459,82 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1996031931}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &1996031930 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 1996031929}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1996031931
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1996031930}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
+--- !u!1 &2001066913
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2001066914}
+  - component: {fileID: 2001066915}
+  m_Layer: 6
+  m_Name: HitBox1 (10)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2001066914
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2001066913}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0.5540411, z: -0, w: 0.8324894}
+  m_LocalPosition: {x: -46.939972, y: 28.389997, z: 27.220001}
+  m_LocalScale: {x: 31.587278, y: 30.774931, z: 1.3840321}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 2106590422}
+  m_Father: {fileID: 1821738253}
+  m_LocalEulerAnglesHint: {x: 0, y: -67.289, z: 0}
+--- !u!65 &2001066915
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2001066913}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1001 &2017519777
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -9884,7 +11565,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -23.001
+      value: -23.199585
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -9921,8 +11602,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2017519779}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &2017519778 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 2017519777}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &2017519779
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2017519778}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1001 &2026665283
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -9953,7 +11654,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -24.769
+      value: -25.420366
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -9990,8 +11691,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2026665285}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &2026665284 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 2026665283}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &2026665285
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2026665284}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1001 &2034737877
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -10010,7 +11731,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -31.55
+      value: -34.92503
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -10047,8 +11768,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2034737879}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &2034737878 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 2034737877}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &2034737879
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2034737878}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1 &2045827962
 GameObject:
   m_ObjectHideFlags: 0
@@ -10144,11 +11885,35 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
   m_PrefabInstance: {fileID: 1431749139}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &2047278741
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1431749140}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!4 &2064494545 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
   m_PrefabInstance: {fileID: 1879903664}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &2064494546
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1879903665}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1001 &2082147362
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -10179,7 +11944,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -24.769
+      value: -25.420366
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -10216,8 +11981,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2082147364}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &2082147363 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 2082147362}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &2082147364
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2082147363}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1001 &2091992393
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -10248,7 +12033,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -23.021
+      value: -23.19082
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -10285,8 +12070,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2091992395}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &2091992394 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 2091992393}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &2091992395
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2091992394}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1001 &2097962698
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -10305,7 +12110,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -30.040894
+      value: -29.381716
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -10342,8 +12147,101 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2097962700}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &2097962699 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 2097962698}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &2097962700
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2097962699}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
+--- !u!1001 &2099337631
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1744902352940930542, guid: 3027a87d7884dcc4c9db491d12f45536, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1278.6763
+      objectReference: {fileID: 0}
+    - target: {fileID: 1744902352940930542, guid: 3027a87d7884dcc4c9db491d12f45536, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 10103.378
+      objectReference: {fileID: 0}
+    - target: {fileID: 1744902352940930542, guid: 3027a87d7884dcc4c9db491d12f45536, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1360.4717
+      objectReference: {fileID: 0}
+    - target: {fileID: 1744902352940930542, guid: 3027a87d7884dcc4c9db491d12f45536, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -14.34
+      objectReference: {fileID: 0}
+    - target: {fileID: 1744902352940930542, guid: 3027a87d7884dcc4c9db491d12f45536, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -42.91
+      objectReference: {fileID: 0}
+    - target: {fileID: 1744902352940930542, guid: 3027a87d7884dcc4c9db491d12f45536, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -39.66
+      objectReference: {fileID: 0}
+    - target: {fileID: 1744902352940930542, guid: 3027a87d7884dcc4c9db491d12f45536, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.5059263
+      objectReference: {fileID: 0}
+    - target: {fileID: 1744902352940930542, guid: 3027a87d7884dcc4c9db491d12f45536, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0.86257344
+      objectReference: {fileID: 0}
+    - target: {fileID: 1744902352940930542, guid: 3027a87d7884dcc4c9db491d12f45536, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0.002066514
+      objectReference: {fileID: 0}
+    - target: {fileID: 1744902352940930542, guid: 3027a87d7884dcc4c9db491d12f45536, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0.0012120677
+      objectReference: {fileID: 0}
+    - target: {fileID: 1744902352940930542, guid: 3027a87d7884dcc4c9db491d12f45536, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 119.214005
+      objectReference: {fileID: 0}
+    - target: {fileID: 1744902352940930542, guid: 3027a87d7884dcc4c9db491d12f45536, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1744902352940930542, guid: 3027a87d7884dcc4c9db491d12f45536, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: -0.2749939
+      objectReference: {fileID: 0}
+    - target: {fileID: 5544796117688543818, guid: 3027a87d7884dcc4c9db491d12f45536, type: 3}
+      propertyPath: m_Name
+      value: pPlane4 (2)
+      objectReference: {fileID: 0}
+    - target: {fileID: 5544796117688543818, guid: 3027a87d7884dcc4c9db491d12f45536, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 3027a87d7884dcc4c9db491d12f45536, type: 3}
 --- !u!1 &2106590421
 GameObject:
   m_ObjectHideFlags: 0
@@ -10369,12 +12267,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2106590421}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0.19144687, z: -0, w: 0.981503}
-  m_LocalPosition: {x: -25.71, y: 28.809973, z: 48.93}
-  m_LocalScale: {x: 31.587278, y: 30.774931, z: 4.8618827}
+  m_LocalRotation: {x: -0, y: 0.38441554, z: -0, w: 0.92316025}
+  m_LocalPosition: {x: 0.89349735, y: 0.01364667, z: -8.093899}
+  m_LocalScale: {x: 1.929305, y: 1, z: 0.29290304}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1821738253}
+  m_Father: {fileID: 2001066914}
   m_LocalEulerAnglesHint: {x: 0, y: -22.074, z: 0}
 --- !u!65 &2106590423
 BoxCollider:
@@ -10487,63 +12385,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2110543720}
   m_Mesh: {fileID: 1048259711176262175, guid: ae448c980d2616444afc51b49ff12498, type: 3}
---- !u!1001 &2125206156
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 1138459005377295336, guid: d72bb3e8609b25e43b62b3879e3988cc, type: 3}
-      propertyPath: m_Name
-      value: StageSpawnPoint
-      objectReference: {fileID: 0}
-    - target: {fileID: 4454273042962076385, guid: d72bb3e8609b25e43b62b3879e3988cc, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 20.37
-      objectReference: {fileID: 0}
-    - target: {fileID: 4454273042962076385, guid: d72bb3e8609b25e43b62b3879e3988cc, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: -40.65
-      objectReference: {fileID: 0}
-    - target: {fileID: 4454273042962076385, guid: d72bb3e8609b25e43b62b3879e3988cc, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 41.03
-      objectReference: {fileID: 0}
-    - target: {fileID: 4454273042962076385, guid: d72bb3e8609b25e43b62b3879e3988cc, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4454273042962076385, guid: d72bb3e8609b25e43b62b3879e3988cc, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4454273042962076385, guid: d72bb3e8609b25e43b62b3879e3988cc, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4454273042962076385, guid: d72bb3e8609b25e43b62b3879e3988cc, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4454273042962076385, guid: d72bb3e8609b25e43b62b3879e3988cc, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4454273042962076385, guid: d72bb3e8609b25e43b62b3879e3988cc, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4454273042962076385, guid: d72bb3e8609b25e43b62b3879e3988cc, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: d72bb3e8609b25e43b62b3879e3988cc, type: 3}
 --- !u!1001 &2144368396
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -10574,7 +12415,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -24.54
+      value: -24.427485
       objectReference: {fileID: 0}
     - target: {fileID: 2002920043972039226, guid: 860cd108d44105d41bd280135327e828, type: 3}
       propertyPath: m_LocalPosition.z
@@ -10611,8 +12452,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2144368398}
   m_SourcePrefab: {fileID: 100100000, guid: 860cd108d44105d41bd280135327e828, type: 3}
+--- !u!1 &2144368397 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1188982769913874560, guid: 860cd108d44105d41bd280135327e828, type: 3}
+  m_PrefabInstance: {fileID: 2144368396}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &2144368398
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2144368397}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1 &865020004279077342
 GameObject:
   m_ObjectHideFlags: 0
@@ -10631,99 +12492,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!1001 &5567607591048211451
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 569016687892123619, guid: 595708abaf7beee438dc7b5e80cbc9d0, type: 3}
-      propertyPath: m_Name
-      value: Enemy_Boss_test
-      objectReference: {fileID: 0}
-    - target: {fileID: 2117485147018455599, guid: 595708abaf7beee438dc7b5e80cbc9d0, type: 3}
-      propertyPath: m_LocalScale.x
-      value: 1.91
-      objectReference: {fileID: 0}
-    - target: {fileID: 2117485147018455599, guid: 595708abaf7beee438dc7b5e80cbc9d0, type: 3}
-      propertyPath: m_LocalScale.y
-      value: 1.91
-      objectReference: {fileID: 0}
-    - target: {fileID: 2117485147018455599, guid: 595708abaf7beee438dc7b5e80cbc9d0, type: 3}
-      propertyPath: m_LocalScale.z
-      value: 1.91
-      objectReference: {fileID: 0}
-    - target: {fileID: 2117485147018455599, guid: 595708abaf7beee438dc7b5e80cbc9d0, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 2.07
-      objectReference: {fileID: 0}
-    - target: {fileID: 2117485147018455599, guid: 595708abaf7beee438dc7b5e80cbc9d0, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: -4.56
-      objectReference: {fileID: 0}
-    - target: {fileID: 2117485147018455599, guid: 595708abaf7beee438dc7b5e80cbc9d0, type: 3}
-      propertyPath: m_ConstrainProportionsScale
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 6652155985440203101, guid: 595708abaf7beee438dc7b5e80cbc9d0, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 59.98
-      objectReference: {fileID: 0}
-    - target: {fileID: 6652155985440203101, guid: 595708abaf7beee438dc7b5e80cbc9d0, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: -25.67
-      objectReference: {fileID: 0}
-    - target: {fileID: 6652155985440203101, guid: 595708abaf7beee438dc7b5e80cbc9d0, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: -170.2
-      objectReference: {fileID: 0}
-    - target: {fileID: 6652155985440203101, guid: 595708abaf7beee438dc7b5e80cbc9d0, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 6652155985440203101, guid: 595708abaf7beee438dc7b5e80cbc9d0, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6652155985440203101, guid: 595708abaf7beee438dc7b5e80cbc9d0, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6652155985440203101, guid: 595708abaf7beee438dc7b5e80cbc9d0, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6652155985440203101, guid: 595708abaf7beee438dc7b5e80cbc9d0, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6652155985440203101, guid: 595708abaf7beee438dc7b5e80cbc9d0, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6652155985440203101, guid: 595708abaf7beee438dc7b5e80cbc9d0, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7612307786705529290, guid: 595708abaf7beee438dc7b5e80cbc9d0, type: 3}
-      propertyPath: m_wallMask.m_Bits
-      value: 193
-      objectReference: {fileID: 0}
-    - target: {fileID: 8271609699821274392, guid: 595708abaf7beee438dc7b5e80cbc9d0, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 1.58
-      objectReference: {fileID: 0}
-    - target: {fileID: 8271609699821274392, guid: 595708abaf7beee438dc7b5e80cbc9d0, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: -2.6
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 595708abaf7beee438dc7b5e80cbc9d0, type: 3}
 --- !u!33 &5896499853985431694
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -10975,8 +12743,6 @@ SceneRoots:
   - {fileID: 1672372417}
   - {fileID: 890600169}
   - {fileID: 1809315406}
-  - {fileID: 2125206156}
-  - {fileID: 5567607591048211451}
   - {fileID: 1189974695}
   - {fileID: 1661049834}
   - {fileID: 1160902621}
@@ -10985,6 +12751,7 @@ SceneRoots:
   - {fileID: 1736678116}
   - {fileID: 1936034180}
   - {fileID: 1815589333}
+  - {fileID: 921276033}
   - {fileID: 985531246}
   - {fileID: 843580818}
   - {fileID: 1953357161}
@@ -11000,6 +12767,8 @@ SceneRoots:
   - {fileID: 958218478}
   - {fileID: 394601760}
   - {fileID: 1584753048}
+  - {fileID: 2099337631}
+  - {fileID: 190805669}
   - {fileID: 15475581}
   - {fileID: 1927638334}
   - {fileID: 1279632677}
@@ -11008,3 +12777,4 @@ SceneRoots:
   - {fileID: 1438260068}
   - {fileID: 786537544}
   - {fileID: 663872426}
+  - {fileID: 1054595429}
