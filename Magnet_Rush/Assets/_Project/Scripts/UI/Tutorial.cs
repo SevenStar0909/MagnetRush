@@ -166,13 +166,13 @@ public class SimpleTutorial : MonoBehaviour
         }
 
         currentStep = 12;
-        // 解除済みの機能はそのまま（図2でも再ロックしない）。自分への磁力だけ⑫で解禁する
+        // 解除済みの機能はそのまま（図2でも再ロックしない）
         yield return StartCoroutine(TypeAndAutoAdvance("高い壁ね..、でも問題ないわ、あなたの銃の機能を応用すればね。"));        //18
-        yield return StartCoroutine(TypeAndAutoAdvance("実はあなたの銃には、あなた自身にもＮかＳの磁力を付与する機能があるの。LBを押してみて。"));        //19
 
-
-        currentStep = 13;
+        // 仕様⑫: メッセージ19「LBを押してみて」の表示と同時に自分磁力(LB)を解禁し、検知も有効化する
         SetPlayerSelfMagnetLock(false);
+        currentStep = 13;
+        yield return StartCoroutine(TypeAndAutoAdvance("実はあなたの銃には、あなた自身にもＮかＳの磁力を付与する機能があるの。LBを押してみて。"));        //19
 
         while (currentStep == 13)
         {
