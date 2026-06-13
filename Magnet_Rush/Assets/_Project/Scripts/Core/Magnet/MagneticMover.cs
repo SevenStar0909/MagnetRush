@@ -28,6 +28,7 @@ public class MagneticMover : MonoBehaviour, IMagneticResponse
     private MoverState m_state = MoverState.Idle;
     private float m_lastForceTime;
     private int m_recoveryAttempts;
+    private bool m_heldActive;   // PD保持(ProcessHold)を受けている間 true。Stuck の解除判定に使う
 
     public bool IsResponseActive => m_magnetizable != null && m_magnetizable.IsActive;
 
@@ -73,10 +74,12 @@ public class MagneticMover : MonoBehaviour, IMagneticResponse
     /// </summary>
     public void SetHoldActive(bool active)
     {
+        m_heldActive = active;
         if (active)
         {
-            m_state = MoverState.Holding;
             m_lastForceTime = Time.time;
+            // ビタ止め中は Stuck を維持する（Holding に落とすと凍結が解けてしまう）
+            if (m_state != MoverState.Stuck) m_state = MoverState.Holding;
         }
         else
         {
@@ -100,15 +103,19 @@ public class MagneticMover : MonoBehaviour, IMagneticResponse
             Vector3 dbgPull = m_entity.externalVelocity + m_entity.holdVelocity;
             bool dbgHit = m_settings != null && m_entity.IsPulledIntoSurface(
                 m_settings.magnetStickLayer, m_settings.magnetStickCheckDistance, m_settings.magnetStickMinPullSpeed);
-            ChannelLogger.Log("Magnet", $"[Stick診断] {name} state={m_state} ext={m_entity.externalVelocity.magnitude:F2} hold={m_entity.holdVelocity.magnitude:F2} pull={dbgPull.magnitude:F2} surfaceHit={dbgHit} active={IsResponseActive} layer={(m_settings != null ? m_settings.magnetStickLayer.value : 0)}");
+            ChannelLogger.Log("Magnet", $"[Stick診断] {name} state={m_state} pull={dbgPull.magnitude:F2} surfaceHit={dbgHit} active={IsResponseActive} held={m_heldActive} age={(Time.time - m_lastForceTime):F2} layer={(m_settings != null ? m_settings.magnetStickLayer.value : 0)}");
         }
 #endif
 
-        // ビタ止め中: 毎フレーム速度をゼロに保ち完全静止。磁化(極)が切れたら剥がしてAI復帰（プレイヤーのビタ止めと同じ解除条件）
+        // ビタ止め中: 毎フレーム速度をゼロに保ち完全静止。
+        // 解除は「磁化が解けた」または「保持中でなく一定時間 磁力が来ていない」。
+        // 保持(held)中は磁力源が消えたときの SetHoldActive(false) で剥がれる（早すぎる解除を防ぐ）。
         if (m_state == MoverState.Stuck)
         {
             ZeroVelocities();
-            if (!IsResponseActive) RecoverFromMagnet();
+            bool magnetGone = !IsResponseActive
+                || (!m_heldActive && Time.time - m_lastForceTime > m_settings.recoveryDelay);
+            if (magnetGone) RecoverFromMagnet();
             return;
         }
 
@@ -151,6 +158,7 @@ public class MagneticMover : MonoBehaviour, IMagneticResponse
 
     private void RecoverFromMagnet()
     {
+        m_heldActive = false;
         if (m_agent != null && m_agent.enabled)
         {
             if (NavMesh.SamplePosition(transform.position, out var hit, 2f, NavMesh.AllAreas))
