@@ -14,7 +14,7 @@ public class TutorialAbilityZone : MonoBehaviour
     /// <summary>ゾーンに入ったときに行う操作。InspectorName でドロップダウンには日本語で表示される。</summary>
     public enum ZoneAction
     {
-        /// <summary>全機能をロックする（移動とカメラは元々対象外）。</summary>
+        /// <summary>全機能をロックする（移動とカメラは対象外。封じたい場合は Lock で個別指定する）。</summary>
         [InspectorName("全ロック（移動とカメラ以外を全部使えなくする）")]
         LockAll,
 

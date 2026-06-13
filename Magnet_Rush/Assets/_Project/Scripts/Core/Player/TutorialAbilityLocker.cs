@@ -31,6 +31,12 @@ public class TutorialAbilityLocker : MonoBehaviour
     [Tooltip("スタブ攻撃（崩れたボスへのとどめ）をロックする")]
     [SerializeField] private bool m_lockStab = true;
 
+    [Tooltip("移動（左スティックで歩く）をロックする。説明を読ませる間など完全に立ち止まらせたいとき用")]
+    [SerializeField] private bool m_lockMove = false;
+
+    [Tooltip("カメラ（右スティック/マウスで見回す）をロックする。視点を固定したいとき用")]
+    [SerializeField] private bool m_lockCamera = false;
+
     private PlayerAbilityLocker m_locker;
 
     void OnEnable()
@@ -74,6 +80,8 @@ public class TutorialAbilityLocker : MonoBehaviour
         m_locker.SetLocked(PlayerAbilityType.PoleSwitch, m_lockPoleSwitch);
         m_locker.SetLocked(PlayerAbilityType.Jump, m_lockJump);
         m_locker.SetLocked(PlayerAbilityType.Stab, m_lockStab);
+        m_locker.SetLocked(PlayerAbilityType.Move, m_lockMove);
+        m_locker.SetLocked(PlayerAbilityType.Camera, m_lockCamera);
     }
 
     /// <summary>任意の機能のロック状態を変更する。enum を渡せる呼び出し元はこちらを使う。</summary>
@@ -110,6 +118,12 @@ public class TutorialAbilityLocker : MonoBehaviour
     /// <summary>スタブ攻撃を解除する。</summary>
     public void UnlockStab() => SetLock(PlayerAbilityType.Stab, false);
 
+    /// <summary>移動を解除する。</summary>
+    public void UnlockMove() => SetLock(PlayerAbilityType.Move, false);
+
+    /// <summary>カメラ操作を解除する。</summary>
+    public void UnlockCamera() => SetLock(PlayerAbilityType.Camera, false);
+
     /// <summary>全機能を解除する（チュートリアル完了時用）。</summary>
     public void UnlockAll()
     {
@@ -137,4 +151,10 @@ public class TutorialAbilityLocker : MonoBehaviour
 
     /// <summary>スタブ攻撃をロックする。</summary>
     public void LockStab() => SetLock(PlayerAbilityType.Stab, true);
+
+    /// <summary>移動をロックする。</summary>
+    public void LockMove() => SetLock(PlayerAbilityType.Move, true);
+
+    /// <summary>カメラ操作をロックする。</summary>
+    public void LockCamera() => SetLock(PlayerAbilityType.Camera, true);
 }

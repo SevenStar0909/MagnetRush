@@ -235,7 +235,8 @@ public class Player : Entity
     public static bool IsSlowMotion => Time.timeScale < k_SlowMotionThreshold;
 
     // === Ability ラッパー(State.OnStep から呼ばれる Facade API) ===
-    // チュートリアルの機能ロックはここで一括ゲートする（移動とカメラはラッパーを通らないので常に有効）
+    // チュートリアルの機能ロックはここで一括ゲートする。
+    // 移動は PlayerInputHandler.MoveInput、カメラは CameraSettingsApplier 側でゲートする（ラッパーを通らないため）
 
     /// <summary>指定機能がロック中か。PlayerAbilityLocker が無いシーンでは常にアンロック。</summary>
     public bool IsAbilityLocked(PlayerAbilityType ability)

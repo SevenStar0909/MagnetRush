@@ -63,8 +63,7 @@ public class DebugGameClearButton : MonoBehaviour
 
         const float panelW = 220f;
         const float panelH = 58f;
-        // ボス用デバッグパネル(左上)と重ならないよう右上に出す
-        var rect = new Rect(Screen.width - panelW - 10f, 10f, panelW, panelH);
+        var rect = new Rect(10f, 10f, panelW, panelH);
         GUI.Box(rect, "[Debug] Game Clear");
 
         if (ClickButton(new Rect(rect.x + 12f, rect.y + 28f, panelW - 24f, 24f), "Play Clear演出"))
