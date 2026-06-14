@@ -15,6 +15,11 @@ public class ReticleUI : MonoBehaviour
     [SerializeField] private Sprite m_hipfireLineS;
     [SerializeField] private Sprite m_hipfireLineN;
 
+    [Header("Center Dot")]
+    [SerializeField] private Image m_centerDotImage;
+    [SerializeField] private Sprite m_dotSpriteS;
+    [SerializeField] private Sprite m_dotSpriteN;
+
     [Header("Aim Transition Settings")]
     [Range(0f, 1f)]
     [SerializeField] private float m_aimDistancePercent = 0.6f; // エイム時に中心までの距離の何%まで寄せるか (0で中心、1で通常位置)
@@ -104,6 +109,12 @@ public class ReticleUI : MonoBehaviour
         if (m_hipfireImages != null)
             foreach (var img in m_hipfireImages)
                 if (img != null) img.sprite = currentSprite;
+
+        if (m_centerDotImage != null)
+        {
+            Sprite currentDotSprite = m_currentPole == MagneticPole.S ? m_dotSpriteS : m_dotSpriteN;
+            m_centerDotImage.sprite = currentDotSprite;
+        }
     }
 
     /// <summary>
