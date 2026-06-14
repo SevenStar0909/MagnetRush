@@ -12,6 +12,19 @@ public class EnemyAirKamikazeAi : MonoBehaviour
     [SerializeField] private Collider m_attackBox;
     [SerializeField] private EnemyAirKamikazeAnimator m_animator;
 
+    [Header("Obstacle Avoidance")]
+    [Tooltip("通常飛行時に避ける障害物レイヤー。未設定なら Default/Ground/Wall/PhysicsObject を使う")]
+    [SerializeField] private LayerMask m_obstacleMask;
+
+    [Tooltip("前方の障害物を確認する距離")]
+    [SerializeField] private float m_obstacleLookAhead = 4f;
+
+    [Tooltip("障害物確認に使う球の半径")]
+    [SerializeField] private float m_obstacleProbeRadius = 0.7f;
+
+    [Tooltip("障害物回避の曲がりやすさ")]
+    [SerializeField] private float m_obstacleAvoidanceWeight = 2.5f;
+
     private EnemyAirBase m_enemyBase;
     private Magnetizable m_magnetizable;
     private bool m_hasHit;
@@ -118,13 +131,116 @@ public class EnemyAirKamikazeAi : MonoBehaviour
         }
 
         // プレイヤーが追跡範囲内のときは、停止距離を見ずに突撃する。
+        Vector3 moveDirection = GetObstacleAwareDirection(toPlayer);
         if (m_animator != null)
         {
-            m_animator.SetAttackTargetDirection(toPlayer);
+            m_animator.SetAttackTargetDirection(moveDirection);
             m_animator.TriggerAttack();
         }
 
-        m_enemyBase.AccelerateToward(toPlayer, Time.deltaTime);
+        m_enemyBase.AccelerateToward(moveDirection, Time.deltaTime);
+    }
+
+    private Vector3 GetObstacleAwareDirection(Vector3 toPlayer)
+    {
+        Vector3 desiredDirection = toPlayer.normalized;
+        int obstacleMask = ObstacleMask;
+        if (obstacleMask == 0 || m_obstacleLookAhead <= 0f || m_obstacleProbeRadius <= 0f)
+            return desiredDirection;
+
+        if (!ProbeObstacle(desiredDirection, m_obstacleLookAhead, obstacleMask, out RaycastHit directHit))
+            return desiredDirection;
+
+        Vector3 bestDirection = desiredDirection;
+        float bestScore = float.NegativeInfinity;
+
+        EvaluateAvoidanceCandidate(desiredDirection, desiredDirection, obstacleMask, ref bestDirection, ref bestScore);
+
+        TryEvaluateYawCandidate(desiredDirection, -75f, obstacleMask, ref bestDirection, ref bestScore);
+        TryEvaluateYawCandidate(desiredDirection, -45f, obstacleMask, ref bestDirection, ref bestScore);
+        TryEvaluateYawCandidate(desiredDirection, -25f, obstacleMask, ref bestDirection, ref bestScore);
+        TryEvaluateYawCandidate(desiredDirection, 25f, obstacleMask, ref bestDirection, ref bestScore);
+        TryEvaluateYawCandidate(desiredDirection, 45f, obstacleMask, ref bestDirection, ref bestScore);
+        TryEvaluateYawCandidate(desiredDirection, 75f, obstacleMask, ref bestDirection, ref bestScore);
+
+        EvaluateAvoidanceCandidate(desiredDirection, (desiredDirection + Vector3.up * 0.75f).normalized, obstacleMask, ref bestDirection, ref bestScore);
+        EvaluateAvoidanceCandidate(desiredDirection, (desiredDirection + Vector3.down * 0.5f).normalized, obstacleMask, ref bestDirection, ref bestScore);
+
+        if (bestScore > 0f)
+            return bestDirection;
+
+        Vector3 slideDirection = Vector3.ProjectOnPlane(desiredDirection, directHit.normal);
+        if (slideDirection.sqrMagnitude > 0.0001f)
+            return slideDirection.normalized;
+
+        return (desiredDirection + directHit.normal * m_obstacleAvoidanceWeight).normalized;
+    }
+
+    private int ObstacleMask
+    {
+        get
+        {
+            if (m_obstacleMask.value != 0)
+                return m_obstacleMask.value;
+
+            return PhysicsLayers.Bit(PhysicsLayers.Default)
+                | PhysicsLayers.Bit(PhysicsLayers.Ground)
+                | PhysicsLayers.Bit(PhysicsLayers.Wall)
+                | PhysicsLayers.Bit(PhysicsLayers.PhysicsObject);
+        }
+    }
+
+    private void TryEvaluateYawCandidate(
+        Vector3 desiredDirection,
+        float yawDegrees,
+        int obstacleMask,
+        ref Vector3 bestDirection,
+        ref float bestScore)
+    {
+        Vector3 candidate = Quaternion.AngleAxis(yawDegrees, Vector3.up) * desiredDirection;
+        EvaluateAvoidanceCandidate(desiredDirection, candidate, obstacleMask, ref bestDirection, ref bestScore);
+    }
+
+    private void EvaluateAvoidanceCandidate(
+        Vector3 desiredDirection,
+        Vector3 candidate,
+        int obstacleMask,
+        ref Vector3 bestDirection,
+        ref float bestScore)
+    {
+        if (candidate.sqrMagnitude <= 0.0001f)
+            return;
+
+        candidate.Normalize();
+        float score = Vector3.Dot(candidate, desiredDirection);
+        if (ProbeObstacle(candidate, m_obstacleLookAhead * 0.85f, obstacleMask, out RaycastHit hit))
+        {
+            float blockedRate = 1f - Mathf.Clamp01(hit.distance / Mathf.Max(0.01f, m_obstacleLookAhead));
+            score -= blockedRate * m_obstacleAvoidanceWeight;
+        }
+        else
+        {
+            score += m_obstacleAvoidanceWeight;
+        }
+
+        if (score <= bestScore)
+            return;
+
+        bestScore = score;
+        bestDirection = candidate;
+    }
+
+    private bool ProbeObstacle(Vector3 direction, float distance, int obstacleMask, out RaycastHit hit)
+    {
+        return Physics.SphereCast(
+            transform.position,
+            m_obstacleProbeRadius,
+            direction,
+            out hit,
+            distance,
+            obstacleMask,
+            QueryTriggerInteraction.Ignore
+        );
     }
 
     private Collider FindAttackBoxCollider()

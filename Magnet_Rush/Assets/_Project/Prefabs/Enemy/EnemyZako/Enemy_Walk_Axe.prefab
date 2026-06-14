@@ -453,6 +453,8 @@ MonoBehaviour:
   m_animator: {fileID: 0}
   m_weaponHolder: {fileID: 6038870575501996323}
   m_weaponPickupRange: 1.5
+  m_allyAvoidanceRadius: 1.8
+  m_allyAvoidanceWeight: 1.5
 --- !u!54 &272791022539229585
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -592,6 +594,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: MagnetRush.Enemy::EnemyWeaponHolder
   m_weapon: {fileID: 485960858119341387}
   m_modelWeapon: {fileID: 356359754326410981}
+  m_reEquipDuration: 0.25
 --- !u!1 &8029942397825399512
 GameObject:
   m_ObjectHideFlags: 0

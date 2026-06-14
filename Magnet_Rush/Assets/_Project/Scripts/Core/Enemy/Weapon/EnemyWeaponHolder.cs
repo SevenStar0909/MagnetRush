@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 /// <summary>
@@ -16,13 +17,23 @@ public class EnemyWeaponHolder : MonoBehaviour
     [Tooltip("モデル付属の飾り斧。描画を消し、この Transform に武器を重ねて追従させる")]
     [SerializeField] private GameObject m_modelWeapon;
 
+    [Tooltip("落ちた武器を手元へ戻す時間")]
+    [SerializeField] private float m_reEquipDuration = 0.25f;
+
     // 装備時の握り姿勢。プレハブで調整したローカル値を Awake で控え、再装備で復元する。
     private Vector3 m_heldLocalPosition;
     private Quaternion m_heldLocalRotation;
     private Vector3 m_heldLocalScale = Vector3.one;
+    private Coroutine m_reEquipCoroutine;
+    private bool m_isReEquipping;
 
-    /// <summary>武器を所持しているか。磁力で剝がされると false になる。</summary>
-    public bool IsArmed => m_weapon != null && m_weapon.HasOwner;
+    /// <summary>武器を攻撃に使える状態で所持しているか。磁力で剝がされると false になる。</summary>
+    public bool IsArmed => m_weapon != null
+        && m_weapon.State == WeaponStateController.WeaponOwnerState.Owned
+        && !m_isReEquipping;
+
+    /// <summary>落ちた武器を手元へ戻している途中か。</summary>
+    public bool IsReEquipping => m_isReEquipping;
 
     /// <summary>落ちた武器の現在位置。拾いに行くAIが目標にする。武器がなければ自分の位置。</summary>
     public Vector3 DroppedWeaponPosition => m_weapon != null ? m_weapon.transform.position : transform.position;
@@ -68,9 +79,7 @@ public class EnemyWeaponHolder : MonoBehaviour
         // 剝がされて別の親に移っている間は触らない（落下・拾い直しを邪魔しない）。
         if (weaponTransform.parent != m_modelWeapon.transform) return;
 
-        weaponTransform.localPosition = m_heldLocalPosition;
-        weaponTransform.localRotation = m_heldLocalRotation;
-        weaponTransform.localScale = m_heldLocalScale;
+        SnapWeaponToHeldPose();
     }
 
     /// <summary>
@@ -81,12 +90,65 @@ public class EnemyWeaponHolder : MonoBehaviour
         if (m_weapon == null) { ChannelLogger.LogGuardReturn("Enemy", "武器インスタンス未設定"); return; }
         if (m_modelWeapon == null) { ChannelLogger.LogGuardReturn("Enemy", "飾り斧ノード未設定"); return; }
 
+        if (m_isReEquipping)
+            return;
+
+        m_reEquipCoroutine = StartCoroutine(ReEquipRoutine());
+    }
+
+    private IEnumerator ReEquipRoutine()
+    {
+        m_isReEquipping = true;
+
         Transform weaponTransform = m_weapon.transform;
-        weaponTransform.SetParent(m_modelWeapon.transform, false);
+        weaponTransform.SetParent(null, true);
+        Vector3 startPosition = weaponTransform.position;
+        Quaternion startRotation = weaponTransform.rotation;
+
+        m_weapon.EquipInPlace(gameObject);
+
+        float duration = Mathf.Max(0.01f, m_reEquipDuration);
+        float elapsed = 0f;
+
+        while (elapsed < duration && m_weapon != null && m_modelWeapon != null)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / duration));
+            Vector3 targetPosition = m_modelWeapon.transform.TransformPoint(m_heldLocalPosition);
+            Quaternion targetRotation = m_modelWeapon.transform.rotation * m_heldLocalRotation;
+
+            weaponTransform.position = Vector3.Lerp(startPosition, targetPosition, t);
+            weaponTransform.rotation = Quaternion.Slerp(startRotation, targetRotation, t);
+            yield return null;
+        }
+
+        if (m_weapon != null && m_modelWeapon != null)
+        {
+            weaponTransform.SetParent(m_modelWeapon.transform, false);
+            SnapWeaponToHeldPose();
+            m_weapon.EquipInPlace(gameObject);
+        }
+
+        m_isReEquipping = false;
+        m_reEquipCoroutine = null;
+    }
+
+    private void OnDisable()
+    {
+        if (m_reEquipCoroutine != null)
+        {
+            StopCoroutine(m_reEquipCoroutine);
+            m_reEquipCoroutine = null;
+        }
+
+        m_isReEquipping = false;
+    }
+
+    private void SnapWeaponToHeldPose()
+    {
+        Transform weaponTransform = m_weapon.transform;
         weaponTransform.localPosition = m_heldLocalPosition;
         weaponTransform.localRotation = m_heldLocalRotation;
         weaponTransform.localScale = m_heldLocalScale;
-
-        m_weapon.EquipInPlace(gameObject);
     }
 }

@@ -18,20 +18,30 @@ public class EnemyWalkAxeAi : MonoBehaviour
     [Tooltip("落ちた武器をこの距離まで近づいたら拾う")]
     [SerializeField] private float m_weaponPickupRange = 1.5f;
 
+    [Header("Ally Avoidance")]
+    [Tooltip("AxeEnemy 同士がこの距離以内に近づいたら離れる")]
+    [SerializeField] private float m_allyAvoidanceRadius = 1.8f;
+
+    [Tooltip("AxeEnemy 同士の重なり回避の強さ")]
+    [SerializeField] private float m_allyAvoidanceWeight = 1.5f;
+
     private EnemyWalkBase m_enemyBase;
     private NavMeshAgent m_agent;
     private EnemySettings m_data;
     private Vector3 m_lastDirection;
     private float m_attackTimer;
     private bool m_isAttacking;
+    private Health m_ownHealth;
 
     private readonly HashSet<Health> m_hitTargets = new();
-    private readonly Collider[] m_overlapResults = new Collider[16];
+    private readonly Collider[] m_overlapResults = new Collider[32];
+    private readonly Collider[] m_allyAvoidanceResults = new Collider[12];
 
     private void Awake()
     {
         m_enemyBase = GetComponent<EnemyWalkBase>();
         m_agent = GetComponent<NavMeshAgent>();
+        m_ownHealth = GetComponent<Health>();
 
         if (m_animator == null)
             m_animator = GetComponent<EnemyWalkAxeAnimator>();
@@ -132,7 +142,8 @@ public class EnemyWalkAxeAi : MonoBehaviour
         {
             SetMoving(false);
             m_agent.ResetPath();
-            m_enemyBase.SlowDown(dt);
+            if (!TryMoveAwayFromOverlappingAlly(dt))
+                m_enemyBase.SlowDown(dt);
             FacePlayer(player, dt);
             TryAttack();
             return;
@@ -140,7 +151,7 @@ public class EnemyWalkAxeAi : MonoBehaviour
 
         m_agent.SetDestination(player.position);
         SetMoving(true);
-        m_enemyBase.AccelerateToward(GetNavMeshDirection(player), dt);
+        m_enemyBase.AccelerateToward(AddAllyAvoidance(GetNavMeshDirection(player)), dt);
     }
 
     // 丸腰のとき、落ちた自分の武器まで移動し、拾える状態になったら手元へ戻して再装備する。
@@ -148,6 +159,22 @@ public class EnemyWalkAxeAi : MonoBehaviour
     {
         m_isAttacking = false;
         SetAttackBoxActive(false);
+
+        if (m_weaponHolder.IsReEquipping)
+        {
+            SetMoving(false);
+            TryRecoverAgent();
+            if (m_agent != null && m_agent.enabled && m_agent.isOnNavMesh)
+            {
+                m_agent.nextPosition = transform.position;
+                m_agent.velocity = Vector3.zero;
+                m_agent.ResetPath();
+            }
+
+            m_enemyBase.SlowDown(dt);
+            FaceWeapon(m_weaponHolder.DroppedWeaponPosition, dt);
+            return;
+        }
 
         Vector3 weaponPos = m_weaponHolder.DroppedWeaponPosition;
         TryRecoverAgent();
@@ -166,7 +193,7 @@ public class EnemyWalkAxeAi : MonoBehaviour
             if (agentReady)
                 m_agent.ResetPath();
             m_enemyBase.SlowDown(dt);
-            m_enemyBase.FaceToward(weaponPos - transform.position, dt);
+            FaceWeapon(weaponPos, dt);
 
             // 磁力が切れて拾える状態になったら手元へ戻す。磁化中は CanReEquip が false なので待つ。
             if (m_weaponHolder.CanReEquip)
@@ -189,7 +216,17 @@ public class EnemyWalkAxeAi : MonoBehaviour
         }
 
         SetMoving(true);
-        m_enemyBase.AccelerateToward(direction, dt);
+        m_enemyBase.AccelerateToward(AddAllyAvoidance(direction), dt);
+    }
+
+    private void FaceWeapon(Vector3 weaponPosition, float dt)
+    {
+        Vector3 direction = weaponPosition - transform.position;
+        direction.y = 0f;
+        if (direction.sqrMagnitude <= 0.0001f)
+            return;
+
+        m_enemyBase.FaceToward(direction, dt);
     }
 
     private void TickDirectMove(Transform player, float dt)
@@ -205,14 +242,79 @@ public class EnemyWalkAxeAi : MonoBehaviour
         if (distance <= m_data.attackRange)
         {
             SetMoving(false);
-            m_enemyBase.SlowDown(dt);
+            if (!TryMoveAwayFromOverlappingAlly(dt))
+                m_enemyBase.SlowDown(dt);
             FacePlayer(player, dt);
             TryAttack();
             return;
         }
 
         SetMoving(true);
-        m_enemyBase.AccelerateToward(GetDirectionToPlayer(player), dt);
+        m_enemyBase.AccelerateToward(AddAllyAvoidance(GetDirectionToPlayer(player)), dt);
+    }
+
+    private Vector3 AddAllyAvoidance(Vector3 desiredDirection)
+    {
+        Vector3 avoidance = GetAllyAvoidanceDirection();
+        if (avoidance.sqrMagnitude <= 0.0001f)
+            return desiredDirection;
+
+        desiredDirection.y = 0f;
+        if (desiredDirection.sqrMagnitude <= 0.0001f)
+            return avoidance;
+
+        return (desiredDirection.normalized + avoidance * m_allyAvoidanceWeight).normalized;
+    }
+
+    private bool TryMoveAwayFromOverlappingAlly(float dt)
+    {
+        Vector3 avoidance = GetAllyAvoidanceDirection();
+        if (avoidance.sqrMagnitude <= 0.0001f)
+            return false;
+
+        m_enemyBase.AccelerateToward(avoidance, dt);
+        return true;
+    }
+
+    private Vector3 GetAllyAvoidanceDirection()
+    {
+        if (m_allyAvoidanceRadius <= 0f)
+            return Vector3.zero;
+
+        int count = Physics.OverlapSphereNonAlloc(
+            transform.position,
+            m_allyAvoidanceRadius,
+            m_allyAvoidanceResults,
+            PhysicsLayers.Bit(PhysicsLayers.EntityBody),
+            QueryTriggerInteraction.Ignore
+        );
+
+        Vector3 avoidance = Vector3.zero;
+        for (int i = 0; i < count; i++)
+        {
+            Collider col = m_allyAvoidanceResults[i];
+            m_allyAvoidanceResults[i] = null;
+            if (col == null)
+                continue;
+
+            if (col.transform == transform || col.transform.IsChildOf(transform))
+                continue;
+
+            EnemyWalkAxeAi other = col.GetComponentInParent<EnemyWalkAxeAi>();
+            if (other == null || other == this)
+                continue;
+
+            Vector3 away = transform.position - other.transform.position;
+            away.y = 0f;
+            if (away.sqrMagnitude <= 0.0001f)
+                away = transform.right;
+
+            float distance = Mathf.Max(away.magnitude, 0.001f);
+            float strength = Mathf.Clamp01((m_allyAvoidanceRadius - distance) / m_allyAvoidanceRadius);
+            avoidance += away.normalized * strength;
+        }
+
+        return avoidance.sqrMagnitude > 0.0001f ? avoidance.normalized : Vector3.zero;
     }
 
     private void TryAttack()
@@ -285,7 +387,7 @@ public class EnemyWalkAxeAi : MonoBehaviour
 
     private void CheckAttackBoxOverlapAndDamage()
     {
-        // 攻撃判定を有効にした時点で、すでにPlayerが範囲内にいる場合、
+        // 攻撃判定を有効にした時点で、すでに対象が範囲内にいる場合、
         // OnTriggerEnterだけでは検知できないことがあるため、手動で重なりを確認する
         if (m_attackBox == null || !m_attackBox.enabled)
             return;
@@ -293,20 +395,21 @@ public class EnemyWalkAxeAi : MonoBehaviour
         // CapsuleColliderの現在の範囲をOverlapCapsule用のワールド座標に変換する
         GetCapsuleWorldPoints(m_attackBox, out Vector3 p0, out Vector3 p1, out float radius);
 
-        // 攻撃範囲内にいるPlayerを直接検索する
+        // 攻撃範囲内にいるPlayerとEnemyを直接検索する
         int hitCount = Physics.OverlapCapsuleNonAlloc(
             p0,
             p1,
             radius,
             m_overlapResults,
-            1 << PhysicsLayers.Player,
+            PhysicsLayers.Bit(PhysicsLayers.Player) | PhysicsLayers.Bit(PhysicsLayers.Enemy),
             QueryTriggerInteraction.Collide
         );
 
-        // 範囲内にいたPlayerへダメージ処理を行う
+        // 範囲内にいた対象へダメージ処理を行う
         for (int i = 0; i < hitCount; i++)
         {
             Collider col = m_overlapResults[i];
+            m_overlapResults[i] = null;
             if (col == null)
                 continue;
 
@@ -372,11 +475,17 @@ public class EnemyWalkAxeAi : MonoBehaviour
         if (other == null)
             return;
 
+        if (other.transform == transform || other.transform.IsChildOf(transform))
+            return;
+
         IHittable hittable = other.GetComponentInParent<IHittable>();
         if (hittable == null)
             return;
 
         Health health = other.GetComponentInParent<Health>();
+        if (health != null && health == m_ownHealth)
+            return;
+
         if (health != null && !m_hitTargets.Add(health))
             return;
 
