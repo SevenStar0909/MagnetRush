@@ -12,6 +12,10 @@ public class EnemyWalkBase : Entity
     [Header("Magnetic")]
     [SerializeField] private MagneticMover m_mover;
 
+    [Header("Disappear Effect")]
+    [SerializeField] private GameObject m_disappearEffectPrefab;
+    [SerializeField] private float m_disappearEffectLifetime = 0.75f;
+
     public EnemySettings StatusData => m_statusData;
     public Transform Player => m_player;
     public bool IsMagnetControlled => m_mover != null && m_mover.IsMagnetActive;
@@ -19,6 +23,7 @@ public class EnemyWalkBase : Entity
     private Vector3 m_spawnPosition;
     private Quaternion m_spawnRotation;
     private bool m_spawnCaptured;
+    private bool m_disappearEffectPlayed;
 
     /// <summary>最初に配置された位置。死亡演出で敵をここへ戻すのに使う。未確定時は現在位置を返す。</summary>
     public Vector3 SpawnPosition => m_spawnCaptured ? m_spawnPosition : transform.position;
@@ -131,6 +136,23 @@ public class EnemyWalkBase : Entity
 
     private void Die()
     {
+        TriggerDisappearEffect();
         Destroy(gameObject);
+    }
+
+    private void TriggerDisappearEffect()
+    {
+        if (m_disappearEffectPlayed)
+            return;
+
+        m_disappearEffectPlayed = true;
+
+        if (m_disappearEffectPrefab == null)
+            return;
+
+        GameObject effectObject = Instantiate(m_disappearEffectPrefab, transform.position, Quaternion.identity);
+
+        if (m_disappearEffectLifetime > 0f)
+            Destroy(effectObject, m_disappearEffectLifetime);
     }
 }
