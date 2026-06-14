@@ -188,9 +188,9 @@ public class TitleMenuSheetController : MonoBehaviour
                         (gamepad != null && gamepad.dpad.left.wasPressedThisFrame) ||
                         (gamepad != null && gamepad.leftStick.left.wasPressedThisFrame && gamepad.leftStick.x.ReadValue() < -0.5f);
 
-        // 右を押したらSTART(0)方向へ(-1)、左を押したらEXIT(1)方向へ(+1)移動
-        if (moveRight) ChangeSelection(-1);
-        if (moveLeft) ChangeSelection(1);
+        // 右を押したらEXIT(1)方向へ(+1)、左を押したらSTART(0)方向へ(-1)移動
+        if (moveRight) ChangeSelection(1);
+        if (moveLeft) ChangeSelection(-1);
 
         // --- 決定（Submit） ---
         // Enterキー、GamepadのAボタン/南ボタン
