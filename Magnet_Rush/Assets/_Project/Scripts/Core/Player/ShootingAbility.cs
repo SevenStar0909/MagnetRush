@@ -61,7 +61,8 @@ public class ShootingAbility : Ability
             | PhysicsLayers.Bit(PhysicsLayers.IgnoreRaycast));
         float maxDist = m_bulletSettings.raycastDistance;
 
-        Vector3 targetPoint = CalculateTargetPoint(ray, camForward, spawnPos, layerMask, maxDist);
+        float aimAssistRadius = Mathf.Max(0f, m_bulletSettings.aimAssistRadius);
+        Vector3 targetPoint = CalculateTargetPoint(ray, camForward, spawnPos, layerMask, maxDist, aimAssistRadius);
 
         float debugDuration = 3.0f;
         Debug.DrawLine(ray.origin, targetPoint, Color.cyan, debugDuration);
@@ -158,17 +159,17 @@ public class ShootingAbility : Ability
     /// spawnPos からのRaycastを優先する理由: TPS でカメラがプレイヤー後方上にあるため、
     /// カメラRayは下向き時にプレイヤー後方を指して弾が画面外の方向に飛ぶ問題を防ぐ。
     /// </summary>
-    private Vector3 CalculateTargetPoint(Ray ray, Vector3 camForward, Vector3 spawnPos, int layerMask, float maxDist)
+    private Vector3 CalculateTargetPoint(Ray ray, Vector3 camForward, Vector3 spawnPos, int layerMask, float maxDist, float aimAssistRadius)
     {
         // カメラからレティクルへレイを飛ばす (TPSでの遠距離照準合わせ用)
-        if (Physics.Raycast(ray, out RaycastHit hit, maxDist, layerMask))
+        if (TryAimCast(ray.origin, ray.direction, maxDist, layerMask, aimAssistRadius, out RaycastHit hit))
         {
             if (Vector3.Dot(camForward, hit.point - spawnPos) > 0f)
                 return hit.point;
         }
 
         // 弾の発射点からカメラ方向にRaycast (弾の進行方向と一致するので照準ズレなし)
-        if (Physics.Raycast(spawnPos, camForward, out RaycastHit bulletHit, maxDist, layerMask))
+        if (TryAimCast(spawnPos, camForward, maxDist, layerMask, aimAssistRadius, out RaycastHit bulletHit))
             return bulletHit.point;
 
         Plane firePlane = new Plane(Vector3.up, spawnPos);
@@ -181,5 +182,13 @@ public class ShootingAbility : Ability
         }
 
         return spawnPos + camForward * maxDist;
+    }
+
+    private bool TryAimCast(Vector3 origin, Vector3 direction, float maxDist, int layerMask, float radius, out RaycastHit hit)
+    {
+        if (radius > 0.001f && Physics.SphereCast(origin, radius, direction, out hit, maxDist, layerMask, QueryTriggerInteraction.Collide))
+            return true;
+
+        return Physics.Raycast(origin, direction, out hit, maxDist, layerMask, QueryTriggerInteraction.Collide);
     }
 }
