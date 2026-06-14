@@ -173,7 +173,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 8306166869299380518, guid: d88d1e89cc9e6a1458b81fe08ab3b4dc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 625244300}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d88d1e89cc9e6a1458b81fe08ab3b4dc, type: 3}
 --- !u!1001 &172596156
@@ -256,6 +259,78 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 989953339}
   m_SourcePrefab: {fileID: 100100000, guid: 6b054d6dbebac8b49be1e9aed68e9497, type: 3}
+--- !u!4 &596143192 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 8306166869299380518, guid: d88d1e89cc9e6a1458b81fe08ab3b4dc, type: 3}
+  m_PrefabInstance: {fileID: 147992256}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &625244299
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 625244300}
+  - component: {fileID: 625244301}
+  - component: {fileID: 625244302}
+  m_Layer: 0
+  m_Name: FinisherCameraRig
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &625244300
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 625244299}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.09311998, y: -0.2030551, z: -0.01940255, w: 0.97453624}
+  m_LocalPosition: {x: -20.028393, y: -1.544982, z: 30.280497}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1035001054}
+  m_Father: {fileID: 596143192}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &625244301
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 625244299}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 208ffa23bcabe4643a92141923913937, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Player::StabFinisherCamera
+  m_finisherVcam: {fileID: 1035001057}
+  m_director: {fileID: 625244302}
+--- !u!320 &625244302
+PlayableDirector:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 625244299}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_PlayableAsset: {fileID: 11400000, guid: 745764a052fbca840856dc8b9f7e0322, type: 2}
+  m_InitialState: 0
+  m_WrapMode: 0
+  m_DirectorUpdateMode: 1
+  m_InitialTime: 0
+  m_SceneBindings:
+  - key: {fileID: 5077845601405606885, guid: 745764a052fbca840856dc8b9f7e0322, type: 2}
+    value: {fileID: 1035001058}
+  m_ExposedReferences:
+    m_References: []
 --- !u!1001 &645861716
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -339,6 +414,104 @@ MonoBehaviour:
   m_retreatDelay: 0.6
   m_retreatDuration: 3.2
   m_faceTravelDirection: 1
+--- !u!1 &1035001053
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1035001054}
+  - component: {fileID: 1035001057}
+  - component: {fileID: 1035001058}
+  m_Layer: 0
+  m_Name: FinisherCamera
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &1035001054
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1035001053}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 625244300}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1035001057
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1035001053}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9dfa5b682dcd46bda6128250e975f58, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineCamera
+  Priority:
+    Enabled: 1
+    m_Value: 100
+  OutputChannel: 1
+  StandbyUpdate: 2
+  m_StreamingVersion: 0
+  m_LegacyPriority: 0
+  Target:
+    TrackingTarget: {fileID: 0}
+    LookAtTarget: {fileID: 0}
+    CustomLookAtTarget: 0
+  Lens:
+    FieldOfView: 40
+    OrthographicSize: 10
+    NearClipPlane: 0.1
+    FarClipPlane: 5000
+    Dutch: 0
+    ModeOverride: 0
+    PhysicalProperties:
+      GateFit: 2
+      SensorSize: {x: 21.946, y: 16.002}
+      LensShift: {x: 0, y: 0}
+      FocusDistance: 10
+      Iso: 200
+      ShutterSpeed: 0.005
+      Aperture: 16
+      BladeCount: 5
+      Curvature: {x: 2, y: 11}
+      BarrelClipping: 0.25
+      Anamorphism: 0
+  BlendHint: 0
+--- !u!95 &1035001058
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1035001053}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 0}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1001 &1095209964
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -35,17 +35,6 @@ public class StabFinisherSettings : ScriptableObject
         [Label("離脱の時間（秒）")]
         public float retreatDuration = 0.4f;
 
-        [Header("[カメラ]")]
-        [Label("カメラ寄り距離（m）")]
-        [Tooltip("演出中のカメラ距離。小さいほど寄る")]
-        public float cameraDistance = 4f;
-
-        [Label("カメラを置く水平角（度・ボス正面基準）")]
-        [Tooltip("演出中にボスをどの横方向から写すか。寝てるボスは斜め上、しゃがみは横、など")]
-        public float cameraYaw = 35f;
-
-        [Label("カメラの高さ（ボス基準のローカルY）")]
-        public float cameraHeight = 2f;
     }
 
     [Label("Staggerポーズ用プロファイル")]
