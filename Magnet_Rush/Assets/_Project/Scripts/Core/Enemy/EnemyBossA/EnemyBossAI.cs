@@ -28,7 +28,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     [Tooltip("各生成位置のローカルオフセット。m_missileSpawnPoints と同じ順番で指定")]
     [SerializeField] private Vector3[] m_missileSpawnOffsets;
 
-    [Tooltip("ONで2発目のアニメイベントをアーク弾(上げてから狙う)にする。OFFで両方とも通常弾。発射数は変わらない(計4発)")]
+    [Tooltip("ONでミサイルを 上2発→左上/右上1発ずつ の順に撃つ。OFFなら従来通り前方へ撃つ")]
     [SerializeField] private bool m_fireLobMissiles = true;
 
     [Tooltip("アーク弾の打ち上げ角度(度)。前方から上へ傾ける。大きいほど高く上がる")]
@@ -36,6 +36,9 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
 
     [Tooltip("アーク弾が上昇してからプレイヤーへ向き直すまでの時間(秒)。長いほど高く上げてから落ちる")]
     [SerializeField] private float m_missileLobRiseTime = 0.45f;
+
+    [Tooltip("左右上ミサイルの横方向への開き角度(度)。0なら真上、90なら真横")]
+    [SerializeField] private float m_missileSideLobAngle = 35f;
 
     [Tooltip("発射してからこの秒数はミサイルがボス本体に当たらない(発射直後の自爆防止)。経過後はボスにも当たる=磁力で撃ち返せる。0で即当たる")]
     [SerializeField] private float m_missileCollisionGrace = 3f;
@@ -59,8 +62,8 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     [Min(0f)]
     [SerializeField] private float m_shockUpwardlForce = 3f;
 
-    // 次の OnMissileFireEvent でアーク弾を撃つか。アニメの2イベントで 通常→アーク と交互に切り替える
-    private bool m_nextMissileIsLob;
+    // 次の OnMissileFireEvent で左右上ミサイルを撃つか。アニメの2イベントで 上→左右上 と切り替える
+    private bool m_nextMissileIsSideLob;
 
     [Header("Debug")]
     [SerializeField] private bool m_logStateChange = true;
@@ -357,9 +360,9 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
             }
         }
 
-        // ミサイル攻撃の入り口でトグルをリセット（必ず 1発目=通常波 から始める）
+        // ミサイル攻撃の入り口でトグルをリセット（必ず 1発目=上波 から始める）
         if (next == BossState.Missile)
-            m_nextMissileIsLob = false;
+            m_nextMissileIsSideLob = false;
 
         // Rush 中に Stun/Stagger で割り込まれると Rush 側の Disable AnimEvent が発火せず
         // Wind/Dust が出続けるので、ブレイク入り口でも明示停止する
@@ -622,23 +625,34 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
             return;
         }
 
-        // アニメの2イベントで 1発目=通常波 / 2発目=アーク波 と交互に撃つ（発射数は元のまま 計4発）
-        bool lob = m_fireLobMissiles && m_nextMissileIsLob;
-        FireMissileWave(lob);
-        m_nextMissileIsLob = !m_nextMissileIsLob;
+        // アニメの2イベントで 1回目=上2発 / 2回目=左上1発+右上1発 と撃つ（計4発）
+        MissileWavePattern pattern = m_fireLobMissiles
+            ? (m_nextMissileIsSideLob ? MissileWavePattern.LeftRightUp : MissileWavePattern.Up)
+            : MissileWavePattern.Forward;
+
+        FireMissileWave(pattern);
+        m_nextMissileIsSideLob = !m_nextMissileIsSideLob;
     }
 
-    /// <summary>1波分。全発射点から通常弾 or アーク弾を1発ずつ撃つ。</summary>
-    private void FireMissileWave(bool lob)
+    private enum MissileWavePattern
+    {
+        Forward,
+        Up,
+        LeftRightUp
+    }
+
+    /// <summary>1波分。全発射点からパターンに応じた初期方向で1発ずつ撃つ。</summary>
+    private void FireMissileWave(MissileWavePattern pattern)
     {
         if (m_missilePrefab == null) return;
 
-        Vector3 direction = lob ? ComputeLobDirection() : transform.forward;
-        float seekDelay = lob ? m_missileLobRiseTime : -1f;
+        float seekDelay = pattern == MissileWavePattern.Forward ? -1f : m_missileLobRiseTime;
 
         if (m_missileSpawnPoints == null || m_missileSpawnPoints.Length == 0)
         {
-            SpawnMissileAt(this.transform, Vector3.zero, direction, seekDelay);
+            SpawnMissileAt(this.transform, Vector3.zero, ComputeMissileDirection(pattern, 0), seekDelay);
+            if (pattern == MissileWavePattern.LeftRightUp)
+                SpawnMissileAt(this.transform, Vector3.zero, ComputeMissileDirection(pattern, 1), seekDelay);
             return;
         }
 
@@ -651,16 +665,42 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
             if (m_missileSpawnOffsets != null && i < m_missileSpawnOffsets.Length)
                 offset = m_missileSpawnOffsets[i];
 
+            Vector3 direction = ComputeMissileDirection(pattern, i);
             SpawnMissileAt(spawnPoint, offset, direction, seekDelay);
         }
     }
 
-    /// <summary>アーク弾の初期方向。ボス正面を上へ m_missileLobAngle 度だけ傾ける。</summary>
-    private Vector3 ComputeLobDirection()
+    private Vector3 ComputeMissileDirection(MissileWavePattern pattern, int spawnIndex)
+    {
+        switch (pattern)
+        {
+            case MissileWavePattern.Up:
+                return ComputeUpDirection();
+
+            case MissileWavePattern.LeftRightUp:
+                return ComputeSideUpDirection(spawnIndex);
+
+            default:
+                return transform.forward;
+        }
+    }
+
+    /// <summary>上ミサイルの初期方向。ボス正面を上へ m_missileLobAngle 度だけ傾ける。</summary>
+    private Vector3 ComputeUpDirection()
     {
         Vector3 fwd = transform.forward;
         if (fwd.sqrMagnitude <= 0.0001f) fwd = Vector3.forward;
         return Vector3.RotateTowards(fwd, Vector3.up, m_missileLobAngle * Mathf.Deg2Rad, 0f).normalized;
+    }
+
+    /// <summary>左上/右上ミサイルの初期方向。</summary>
+    private Vector3 ComputeSideUpDirection(int spawnIndex)
+    {
+        float sideSign = spawnIndex % 2 == 0 ? -1f : 1f;
+        Vector3 side = transform.right * sideSign;
+        float angle = Mathf.Clamp(m_missileSideLobAngle, 0f, 89f) * Mathf.Deg2Rad;
+        Vector3 direction = Vector3.up * Mathf.Cos(angle) + side * Mathf.Sin(angle);
+        return direction.sqrMagnitude > 0.0001f ? direction.normalized : Vector3.up;
     }
 
     private void SpawnMissileAt(Transform spawnPoint, Vector3 localOffset, Vector3 direction, float seekDelayOverride)

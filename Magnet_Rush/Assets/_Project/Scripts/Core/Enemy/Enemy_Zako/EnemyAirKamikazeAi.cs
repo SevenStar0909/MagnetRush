@@ -289,6 +289,9 @@ public class EnemyAirKamikazeAi : MonoBehaviour
                 continue;
 
             var hittable = col.GetComponentInParent<IHittable>();
+            if (ShouldIgnoreAsNormalObstacle(hittable))
+                continue;
+
             Vector3 point = col.ClosestPoint(transform.position);
             ChannelLogger.Log("Enemy", $"[Kamikaze診断] 実体接触で自爆 vs {col.name}");
             Detonate(hittable, point);
@@ -316,6 +319,9 @@ public class EnemyAirKamikazeAi : MonoBehaviour
         if (hittable == null)
             return;
 
+        if (ShouldIgnoreAsNormalObstacle(hittable))
+            return;
+
         // 同グループ（敵同士／磁界トリガー経由で自陣 Hitbox に到達したケース）は自爆させない。
         // OnTriggerEnter はルートのRigidbodyに集約され HurtBox(Enemy層) 等の接触も拾う。
         // 他敵の MagnetFieldTrigger(8m) に HurtBox が触れて誤発火するのを HitGroup で弾く。
@@ -333,9 +339,22 @@ public class EnemyAirKamikazeAi : MonoBehaviour
         if (m_hasHit)
             return;
 
+        if (!IsMagnetized)
+            return;
+
         m_hasHit = true;
         ChannelLogger.Log("Enemy", $"[Kamikaze診断] 環境接触で自爆 vs {other.name}");
         PerformExplosion(null, transform.position);
+    }
+
+    private bool IsMagnetized => m_magnetizable != null && m_magnetizable.IsActive;
+
+    private bool ShouldIgnoreAsNormalObstacle(IHittable hittable)
+    {
+        if (IsMagnetized)
+            return false;
+
+        return hittable == null || hittable.HitGroup == HitGroup.Physics;
     }
 
     /// <summary>

@@ -5,7 +5,7 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(CapsuleCollider))]
 [RequireComponent(typeof(Magnetizable))]
-public class EnemyMissile : MonoBehaviour
+public class EnemyMissile : MonoBehaviour, IMagneticResponse
 {
     [Header("Movement")]
     [SerializeField] private float m_maxSpeed = 18f;    // 最高速度
@@ -17,6 +17,13 @@ public class EnemyMissile : MonoBehaviour
     [Header("Targeting")]
     [SerializeField] private Vector3 m_targetOffset;    // ターゲットのどこを狙うかのオフセット
     [SerializeField] private float m_targetRefreshInterval = 0.1f; // ターゲットの再検索間隔
+
+    [Header("Visual Orientation")]
+    [Tooltip("ミサイルの先端が向いているローカル方向")]
+    [SerializeField] private Vector3 m_tipLocalDirection = Vector3.forward;
+
+    [Tooltip("磁力で撃ち返されている時、先端をターゲットへ向ける速度")]
+    [SerializeField] private float m_magnetFaceTurnRate = 30f;
 
     [Header("References")]
     [SerializeField] private Transform m_player;    // プレイヤーへの参照（Inspectorで設定、もしくは起動時に自動検索）
@@ -60,6 +67,8 @@ public class EnemyMissile : MonoBehaviour
     private bool m_initialized;
     private Collider m_collider;
     private bool m_exploded;
+    private Vector3 m_lastMagnetSourcePosition;
+    private bool m_hasMagnetSourcePosition;
 
     private readonly List<Collider> m_ignoredColliders = new List<Collider>();
     private bool m_collisionRestored = true;
@@ -121,7 +130,7 @@ public class EnemyMissile : MonoBehaviour
 
         Vector3 dir = initialDirection.sqrMagnitude > 0f ? initialDirection.normalized : transform.forward;
         m_rb.linearVelocity = dir * Mathf.Max(0.1f, m_maxSpeed * 0.6f);
-        transform.rotation = Quaternion.LookRotation(dir, Vector3.up);
+        transform.rotation = BuildTipRotation(dir);
     }
 
     /// <summary>
@@ -191,11 +200,99 @@ public class EnemyMissile : MonoBehaviour
         Vector3 nextVelocity = m_rb.linearVelocity + steering;
         m_rb.linearVelocity = Vector3.ClampMagnitude(nextVelocity, m_maxSpeed);
 
-        if (m_rb.linearVelocity.sqrMagnitude > 0.001f)
+        UpdateRotation(Time.fixedDeltaTime);
+    }
+
+    public bool IsResponseActive => m_selfMagnetizable != null
+        && m_selfMagnetizable.IsActive
+        && m_rb != null
+        && !m_exploded;
+
+    public void OnMagnetForce(Vector3 force, Vector3 sourcePosition)
+    {
+        if (m_rb == null || m_exploded)
+            return;
+
+        m_hasMagnetSourcePosition = true;
+        m_lastMagnetSourcePosition = sourcePosition;
+
+        m_rb.linearVelocity += force * Time.fixedDeltaTime;
+        m_rb.angularVelocity = Vector3.zero;
+    }
+
+    public void OnMagnetContact(Magnetizable self, Magnetizable other)
+    {
+        // 爆発処理は既存の Magnetizable.OnMagnetContact 購読経路で行う。
+    }
+
+    private void UpdateRotation(float dt)
+    {
+        Vector3 lookDirection = ResolveLookDirection();
+        if (lookDirection.sqrMagnitude <= 0.001f)
+            return;
+
+        Quaternion targetRot = BuildTipRotation(lookDirection.normalized);
+        float turnRate = IsResponseActive && HasMagnetLookTarget()
+            ? m_magnetFaceTurnRate
+            : m_turnRate;
+
+        Quaternion nextRotation = Quaternion.Slerp(
+            m_rb.rotation,
+            targetRot,
+            Mathf.Clamp01(turnRate * dt)
+        );
+
+        m_rb.MoveRotation(nextRotation);
+    }
+
+    private Vector3 ResolveLookDirection()
+    {
+        if (IsResponseActive && TryGetMagnetLookTarget(out Vector3 targetPosition))
         {
-            Quaternion targetRot = Quaternion.LookRotation(m_rb.linearVelocity.normalized, Vector3.up);
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, m_turnRate * Time.fixedDeltaTime);
+            Vector3 toMagnetTarget = targetPosition - transform.position;
+            if (toMagnetTarget.sqrMagnitude > 0.001f)
+                return toMagnetTarget;
         }
+
+        return m_rb != null ? m_rb.linearVelocity : transform.forward;
+    }
+
+    private bool HasMagnetLookTarget()
+    {
+        return m_currentTarget != null || m_hasMagnetSourcePosition;
+    }
+
+    private bool TryGetMagnetLookTarget(out Vector3 targetPosition)
+    {
+        if (m_currentTarget != null)
+        {
+            targetPosition = m_currentTarget.Position;
+            return true;
+        }
+
+        if (m_hasMagnetSourcePosition)
+        {
+            targetPosition = m_lastMagnetSourcePosition;
+            return true;
+        }
+
+        targetPosition = Vector3.zero;
+        return false;
+    }
+
+    private Quaternion BuildTipRotation(Vector3 lookDirection)
+    {
+        Vector3 tipDirection = m_tipLocalDirection.sqrMagnitude > 0.0001f
+            ? m_tipLocalDirection.normalized
+            : Vector3.forward;
+
+        Vector3 up = Mathf.Abs(Vector3.Dot(lookDirection.normalized, Vector3.up)) > 0.98f
+            ? transform.up
+            : Vector3.up;
+
+        Quaternion baseRotation = Quaternion.LookRotation(lookDirection.normalized, up);
+        Quaternion tipOffset = Quaternion.FromToRotation(tipDirection, Vector3.forward);
+        return baseRotation * tipOffset;
     }
 
     private void UpdateMagnetTarget()
@@ -203,6 +300,7 @@ public class EnemyMissile : MonoBehaviour
         if (m_selfMagnetizable == null || !m_selfMagnetizable.IsActive)
         {
             m_currentTarget = null;
+            m_hasMagnetSourcePosition = false;
             return;
         }
 
