@@ -81,6 +81,11 @@ public class EnemyAirKamikazeAi : MonoBehaviour
         if (m_enemyBase.IsDead)
             return;
 
+        // AttackBox の Trigger は HitGroup で敵同士を弾くため、実体同士の接触は別経路で拾う。
+        // QueryTriggerInteraction.Ignore の OverlapEntity なので、磁界や HurtBox の大きい Trigger では誤爆しない。
+        if (!m_hasHit && CheckBodyContact())
+            return;
+
         // 磁化中は「引き寄せられて他の磁化オブジェクトに実接触したら自爆」を最優先で判定する。
         // 磁力移動中こそ衝突が起きるため、IsMagnetControlled の早期returnより前に置く。
         if (!m_hasHit && m_magnetizable != null && m_magnetizable.IsActive && CheckMagnetizedContact())
@@ -151,6 +156,31 @@ public class EnemyAirKamikazeAi : MonoBehaviour
     }
 
     private readonly System.Collections.Generic.HashSet<Health> m_hitTargets = new System.Collections.Generic.HashSet<Health>();
+
+    /// <summary>
+    /// 実体コライダーに触れたら即自爆する。敵同士は HitGroup が同じため AttackBox 経路では弾かれる。
+    /// </summary>
+    private bool CheckBodyContact()
+    {
+        int count = m_enemyBase.OverlapEntity(m_overlapBuffer, 0.02f);
+        for (int i = 0; i < count; i++)
+        {
+            Collider col = m_overlapBuffer[i];
+            if (col == null)
+                continue;
+
+            if (col.transform.root == transform.root)
+                continue;
+
+            var hittable = col.GetComponentInParent<IHittable>();
+            Vector3 point = col.ClosestPoint(transform.position);
+            ChannelLogger.Log("Enemy", $"[Kamikaze診断] 実体接触で自爆 vs {col.name}");
+            Detonate(hittable, point);
+            return true;
+        }
+
+        return false;
+    }
 
     private void OnTriggerEnter(Collider other)
     {

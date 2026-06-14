@@ -29,6 +29,7 @@ public class MagnetBullet : MonoBehaviour, IBulletProximity
     private bool m_registered;
     // 自前速度。Kinematic Rigidbody なので物理エンジンの velocity は使わず、自分で位置を進める
     private Vector3 m_velocity;
+    private readonly Collider[] m_hitBuffer = new Collider[8];
 
     // 衝突対象レイヤーマスク（PlayerBullet が当たるべき相手）。初期化は遅延（PhysicsLayers が確定後）
     private static int s_collisionMask;
@@ -163,14 +164,18 @@ public class MagnetBullet : MonoBehaviour, IBulletProximity
 
         // 自前 SphereCast による衝突検出。物理エンジンの CCD に頼らないので
         // 厚み0の MeshCollider でも確実に検知できる
-        float radius = m_sphereCollider != null ? m_sphereCollider.radius : 0.03f;
+        float radius = GetCollisionRadius();
         float speed = m_velocity.magnitude;
         if (speed <= 0.0001f) return;
 
         Vector3 dir = m_velocity / speed;
         float dist = speed * Time.fixedDeltaTime;
 
-        if (Physics.SphereCast(transform.position, radius, dir, out RaycastHit hit, dist, GetCollisionMask(), QueryTriggerInteraction.Collide))
+        if (TryFindImmediateHit(radius, out Collider overlapped))
+        {
+            ResolveHit(overlapped);
+        }
+        else if (Physics.SphereCast(transform.position, radius, dir, out RaycastHit hit, dist, GetCollisionMask(), QueryTriggerInteraction.Collide))
         {
             // 着弾で停止するので MovePosition の1フレーム遅延を避け、表面の手前へ直接スナップ。
             // この位置がそのまま磁場の中心（＝着弾点）になる。
@@ -181,6 +186,35 @@ public class MagnetBullet : MonoBehaviour, IBulletProximity
         {
             m_rb.MovePosition(transform.position + m_velocity * Time.fixedDeltaTime);
         }
+    }
+
+    private float GetCollisionRadius()
+    {
+        float prefabRadius = m_sphereCollider != null
+            ? m_sphereCollider.radius * Mathf.Max(transform.lossyScale.x, transform.lossyScale.y, transform.lossyScale.z)
+            : 0.03f;
+        float settingsRadius = m_settings != null ? m_settings.collisionRadius : 0f;
+        return Mathf.Max(prefabRadius, settingsRadius);
+    }
+
+    private bool TryFindImmediateHit(float radius, out Collider hit)
+    {
+        int count = Physics.OverlapSphereNonAlloc(transform.position, radius, m_hitBuffer, GetCollisionMask(), QueryTriggerInteraction.Collide);
+        for (int i = 0; i < count; i++)
+        {
+            Collider col = m_hitBuffer[i];
+            if (col == null)
+                continue;
+
+            if (col.transform.root == transform.root)
+                continue;
+
+            hit = col;
+            return true;
+        }
+
+        hit = null;
+        return false;
     }
 
     /// <summary>SphereCast でヒットした collider に対する処理。</summary>
