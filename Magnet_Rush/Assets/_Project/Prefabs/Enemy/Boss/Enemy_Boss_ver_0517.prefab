@@ -4971,6 +4971,16 @@ MonoBehaviour:
   m_colorN: {r: 1, g: 0.2, b: 0.2, a: 0.8}
   m_colorS: {r: 0.2, g: 0.4, b: 1, a: 0.8}
   m_lineWidth: 0.05
+  m_referenceBulletSettings: {fileID: 11400000, guid: 425ee2473071b7a4fa2afd4ccb6a162c, type: 2}
+  m_chargeEffectN: {fileID: 1392514685208627377, guid: a85d063e0b66930408617a427b125910, type: 3}
+  m_chargeEffectS: {fileID: 5771629677290899619, guid: 9bffa0e5a0c77ff4d8247ed370ebabe6, type: 3}
+  m_chargeDuration: 1.1
+  m_visualizerStartScale: 0.05
+  m_effectStartScale: 0.05
+  m_effectEndScale: 20
+  m_effectGroundOffset: 0.05
+  m_delayMagnetUntilChargeComplete: 1
+  m_tintChargeEffect: 1
   m_logCast: 1
 --- !u!1001 &5656691817322481352
 PrefabInstance:

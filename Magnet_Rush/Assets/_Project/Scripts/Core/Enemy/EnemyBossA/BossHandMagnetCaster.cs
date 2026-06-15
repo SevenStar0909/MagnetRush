@@ -32,6 +32,19 @@ public class BossHandMagnetCaster : MonoBehaviour
     [Tooltip("LineRendererの太さ")]
     [SerializeField] private float m_lineWidth = 0.05f;
 
+    [Header("Charge Preview")]
+    [SerializeField] private BulletSettings m_referenceBulletSettings;
+    [SerializeField] private GameObject m_chargeEffectN;
+    [SerializeField] private GameObject m_chargeEffectS;
+    [SerializeField, Min(0f)] private float m_chargeDuration = 1.1f;
+    [SerializeField, Min(0f)] private float m_visualizerStartScale = 0.05f;
+    [SerializeField, Min(0f)] private float m_effectStartScale = 0.05f;
+    [SerializeField, Min(0f)] private float m_effectEndScale = 20f;
+    [SerializeField] private float m_effectGroundOffset = 0.05f;
+    [SerializeField] private bool m_delayMagnetUntilChargeComplete = true;
+    [SerializeField] private bool m_tintChargeEffect = true;
+    [SerializeField] private AnimationCurve m_chargeCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+
     [Header("Debug")]
     [SerializeField] private bool m_logCast = true;
 
@@ -41,8 +54,13 @@ public class BossHandMagnetCaster : MonoBehaviour
     private bool m_wasInCastableState;
 
     private GameObject m_visualizerGO;
+    private GameObject m_chargeEffectInstance;
     private readonly List<LineRenderer> m_visualLines = new List<LineRenderer>();
     private static Material s_lineMaterial;
+    private MagneticPole m_pendingPole = MagneticPole.None;
+    private float m_chargeElapsed;
+    private bool m_isCharging;
+    private bool m_hasAppliedCharge;
 
     private void Awake()
     {
@@ -54,6 +72,7 @@ public class BossHandMagnetCaster : MonoBehaviour
 
     private void OnDisable()
     {
+        StopChargePreview();
         ClearAffected();
         HideVisualizer();
     }
@@ -65,6 +84,8 @@ public class BossHandMagnetCaster : MonoBehaviour
             if (Application.isPlaying) Destroy(m_visualizerGO);
             else DestroyImmediate(m_visualizerGO);
         }
+
+        DestroyChargeEffect();
     }
 
     private void Update()
@@ -74,11 +95,16 @@ public class BossHandMagnetCaster : MonoBehaviour
         if (inState && !m_wasInCastableState)
         {
             MagneticPole pole = Random.value < 0.5f ? MagneticPole.N : MagneticPole.S;
-            Cast(pole);
-            ShowVisualizer(pole);
+            BeginChargePreview(pole);
+        }
+
+        if (inState && m_isCharging)
+        {
+            UpdateChargePreview();
         }
         else if (!inState && m_wasInCastableState)
         {
+            StopChargePreview();
             ClearAffected();
             HideVisualizer();
         }
@@ -88,8 +114,11 @@ public class BossHandMagnetCaster : MonoBehaviour
 
     private void LateUpdate()
     {
-        if (m_visualizerGO == null || !m_visualizerGO.activeSelf) return;
-        UpdateVisualizerTransform();
+        if (m_visualizerGO != null && m_visualizerGO.activeSelf)
+            UpdateVisualizerTransform();
+
+        if (m_chargeEffectInstance != null)
+            m_chargeEffectInstance.transform.position = GetGroundCenterPosition() + Vector3.up * m_effectGroundOffset;
     }
 
     /// <summary>
@@ -98,7 +127,15 @@ public class BossHandMagnetCaster : MonoBehaviour
     /// </summary>
     private void UpdateVisualizerTransform()
     {
-        if (m_boss == null) return;
+        if (m_visualizerGO == null) return;
+
+        m_visualizerGO.transform.position = GetGroundCenterPosition();
+        m_visualizerGO.transform.rotation = Quaternion.identity;
+    }
+
+    private Vector3 GetGroundCenterPosition()
+    {
+        if (m_boss == null) return transform.position;
 
         Vector3 bossPos = m_boss.transform.position;
         float groundY = bossPos.y;
@@ -107,8 +144,7 @@ public class BossHandMagnetCaster : MonoBehaviour
         if (Physics.Raycast(bossPos + Vector3.up * 1f, Vector3.down, out RaycastHit hit, 100f, groundMask, QueryTriggerInteraction.Ignore))
             groundY = hit.point.y;
 
-        m_visualizerGO.transform.position = new Vector3(bossPos.x, groundY, bossPos.z);
-        m_visualizerGO.transform.rotation = Quaternion.identity;
+        return new Vector3(bossPos.x, groundY, bossPos.z);
     }
 
     private bool IsBossInCastableState()
@@ -152,6 +188,144 @@ public class BossHandMagnetCaster : MonoBehaviour
 
         if (m_logCast)
             ChannelLogger.Log("EnemyBossA", $"[BossHandMagnetCaster] cast pole={pole} radius={radius} affected={m_affected.Count}");
+    }
+
+    private void BeginChargePreview(MagneticPole pole)
+    {
+        m_pendingPole = pole;
+        m_chargeElapsed = 0f;
+        m_isCharging = true;
+        m_hasAppliedCharge = false;
+
+        ShowVisualizer(pole);
+        SpawnChargeEffect(pole);
+        SetChargeProgress(0f);
+
+        if (!m_delayMagnetUntilChargeComplete)
+            ApplyPendingCast();
+
+        if (m_chargeDuration <= 0f)
+        {
+            SetChargeProgress(1f);
+            ApplyPendingCast();
+        }
+    }
+
+    private void UpdateChargePreview()
+    {
+        if (m_chargeDuration > 0f)
+            m_chargeElapsed += Time.deltaTime;
+
+        float progress = m_chargeDuration <= 0f ? 1f : Mathf.Clamp01(m_chargeElapsed / m_chargeDuration);
+        SetChargeProgress(progress);
+
+        if (!m_hasAppliedCharge && progress >= 1f)
+            ApplyPendingCast();
+    }
+
+    private void ApplyPendingCast()
+    {
+        if (m_hasAppliedCharge || m_pendingPole == MagneticPole.None) return;
+
+        Cast(m_pendingPole);
+        m_hasAppliedCharge = true;
+    }
+
+    private void StopChargePreview()
+    {
+        m_isCharging = false;
+        m_hasAppliedCharge = false;
+        m_pendingPole = MagneticPole.None;
+        m_chargeElapsed = 0f;
+        DestroyChargeEffect();
+    }
+
+    private void SetChargeProgress(float progress)
+    {
+        float curved = m_chargeCurve != null ? m_chargeCurve.Evaluate(progress) : progress;
+        curved = Mathf.Clamp01(curved);
+
+        if (m_visualizerGO != null)
+        {
+            float visualScale = Mathf.Lerp(m_visualizerStartScale, 1f, curved);
+            m_visualizerGO.transform.localScale = Vector3.one * Mathf.Max(0f, visualScale);
+        }
+
+        if (m_chargeEffectInstance != null)
+        {
+            float effectScale = Mathf.Lerp(m_effectStartScale, GetEffectEndScale(), curved);
+            m_chargeEffectInstance.transform.localScale = Vector3.one * Mathf.Max(0f, effectScale);
+        }
+    }
+
+    private void SpawnChargeEffect(MagneticPole pole)
+    {
+        DestroyChargeEffect();
+
+        GameObject prefab = GetChargeEffectPrefab(pole);
+        if (prefab == null) return;
+
+        m_chargeEffectInstance = Instantiate(prefab, GetGroundCenterPosition() + Vector3.up * m_effectGroundOffset, Quaternion.identity);
+        m_chargeEffectInstance.SetActive(true);
+
+        if (m_tintChargeEffect)
+            TintChargeEffect(m_chargeEffectInstance, GetPoleColor(pole));
+    }
+
+    private GameObject GetChargeEffectPrefab(MagneticPole pole)
+    {
+        if (pole == MagneticPole.S)
+            return m_chargeEffectS != null ? m_chargeEffectS : m_referenceBulletSettings != null ? m_referenceBulletSettings.impactEffect_S : null;
+
+        return m_chargeEffectN != null ? m_chargeEffectN : m_referenceBulletSettings != null ? m_referenceBulletSettings.impactEffect_N : null;
+    }
+
+    private float GetEffectEndScale()
+    {
+        if (m_effectEndScale > 0f) return m_effectEndScale;
+        return m_referenceBulletSettings != null ? Mathf.Max(0f, m_referenceBulletSettings.impactEffectScale) : 1f;
+    }
+
+    private Color GetPoleColor(MagneticPole pole)
+    {
+        return pole == MagneticPole.N ? m_colorN : m_colorS;
+    }
+
+    private void TintChargeEffect(GameObject root, Color color)
+    {
+        var particleSystems = root.GetComponentsInChildren<ParticleSystem>(true);
+        for (int i = 0; i < particleSystems.Length; i++)
+        {
+            var main = particleSystems[i].main;
+            main.startColor = color;
+        }
+
+        var renderers = root.GetComponentsInChildren<Renderer>(true);
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            var materials = renderers[i].materials;
+            for (int j = 0; j < materials.Length; j++)
+            {
+                var material = materials[j];
+                if (material == null) continue;
+                if (material.HasProperty("_BaseColor"))
+                    material.SetColor("_BaseColor", color);
+                if (material.HasProperty("_Color"))
+                    material.SetColor("_Color", color);
+                if (material.HasProperty("_TintColor"))
+                    material.SetColor("_TintColor", color);
+            }
+        }
+    }
+
+    private void DestroyChargeEffect()
+    {
+        if (m_chargeEffectInstance == null) return;
+
+        if (Application.isPlaying) Destroy(m_chargeEffectInstance);
+        else DestroyImmediate(m_chargeEffectInstance);
+
+        m_chargeEffectInstance = null;
     }
 
     private void ClearAffected()
@@ -209,7 +383,7 @@ public class BossHandMagnetCaster : MonoBehaviour
         if (m_visualizerGO == null) return;
         m_visualizerGO.SetActive(true);
         UpdateVisualizerTransform();
-        Color c = pole == MagneticPole.N ? m_colorN : m_colorS;
+        Color c = GetPoleColor(pole);
         for (int i = 0; i < m_visualLines.Count; i++)
         {
             var lr = m_visualLines[i];
@@ -222,6 +396,7 @@ public class BossHandMagnetCaster : MonoBehaviour
     private void HideVisualizer()
     {
         if (m_visualizerGO == null) return;
+        m_visualizerGO.transform.localScale = Vector3.one;
         m_visualizerGO.SetActive(false);
     }
 
