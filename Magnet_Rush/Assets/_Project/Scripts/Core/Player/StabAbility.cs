@@ -16,6 +16,10 @@ public class StabAbility : Ability
     {
         if (!m_input.IsStabPressed) return;
 
+        // 既に演出中なら再解決・再突入しない（複数ボス時に対象ボスが切り替わるのを防ぐ）。
+        if (m_states.IsCurrentOfType<BossStabFinisherState>())
+        { ChannelLogger.LogGuardReturn("Stab", "スタブ演出中のため再突入しない"); return; }
+
         if (m_player.Settings == null)
         { ChannelLogger.LogGuardReturn("Stab", "PlayerSettings未設定"); return; }
 
@@ -30,7 +34,9 @@ public class StabAbility : Ability
 
         m_input.ConsumeStab();
 
-        var finisherSettings = m_player.Settings.stabFinisherSettings;
+        // ボスが自分の演出設定を持っていればそれを使う。無ければプレイヤー共通にフォールバック。
+        var bossSettings = m_bossReceiver != null ? m_bossReceiver.StabFinisherSettings : null;
+        var finisherSettings = bossSettings != null ? bossSettings : m_player.Settings.stabFinisherSettings;
         if (finisherSettings == null || m_bossReceiver == null)
         {
             ChannelLogger.LogGuardReturn("Stab", "StabFinisherSettings未設定 or Receiver無し — 旧その場スタブにフォールバック");
@@ -86,13 +92,14 @@ public class StabAbility : Ability
         Object.Destroy(fx, settings.stabHitVfxLifetime);
     }
 
-    /// <summary>Boss を遅延解決。タグ未登録時もログ1回のみで安全に false を返す。</summary>
+    /// <summary>
+    /// 最寄りのボスを解決する。複数ボスでもプレイヤーに最も近い IStabReceiver 個体を選ぶ。
+    /// キャッシュしない（呼ぶたびに最寄りを取り直す）。タグ未登録時はログ1回のみで false。
+    /// </summary>
     private bool TryResolveBoss()
     {
-        if (m_bossTarget != null) return true;
-
-        GameObject bossObj;
-        try { bossObj = GameObject.FindWithTag("Boss"); }
+        GameObject[] bosses;
+        try { bosses = GameObject.FindGameObjectsWithTag("Boss"); }
         catch (UnityException)
         {
             if (!m_warnedNoBossTag)
@@ -103,9 +110,23 @@ public class StabAbility : Ability
             return false;
         }
 
-        if (bossObj == null) return false;
-        m_bossTarget = bossObj.transform;
-        m_bossReceiver = bossObj.GetComponent<IStabReceiver>();
+        if (bosses == null || bosses.Length == 0) return false;
+
+        Vector3 playerPos = m_player.transform.position;
+        float bestSqr = float.MaxValue;
+        GameObject best = null;
+        IStabReceiver bestReceiver = null;
+        foreach (var b in bosses)
+        {
+            var recv = b.GetComponent<IStabReceiver>();
+            if (recv == null) continue;
+            float sqr = (b.transform.position - playerPos).sqrMagnitude;
+            if (sqr < bestSqr) { bestSqr = sqr; best = b; bestReceiver = recv; }
+        }
+
+        if (best == null) return false;
+        m_bossTarget = best.transform;
+        m_bossReceiver = bestReceiver;
         return true;
     }
 }

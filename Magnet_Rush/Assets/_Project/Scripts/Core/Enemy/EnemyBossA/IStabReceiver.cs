@@ -15,6 +15,9 @@ public interface IStabReceiver
     /// <summary>演出プロファイル選択用。0=Staggerポーズ / 1=Stunポーズ。</summary>
     int StabChoreographyIndex { get; }
 
+    /// <summary>このボス専用のスタブ演出設定（数値＋カメラTimeline）。null ならプレイヤー共通設定にフォールバック。</summary>
+    StabFinisherSettings StabFinisherSettings { get; }
+
     /// <summary>突き刺し瞬間の AnimEvent から呼ばれる。実ダメージ処理を行う。</summary>
     void OnStabHit(StabHitData data);
 }

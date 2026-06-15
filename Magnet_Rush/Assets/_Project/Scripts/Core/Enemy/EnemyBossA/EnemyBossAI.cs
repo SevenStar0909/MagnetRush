@@ -21,6 +21,9 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     [Tooltip("スタブの突き刺し目標。頭ボーン下に置いた空オブジェクト（StabAnchor）をアサインする")]
     [SerializeField] private Transform m_stabAnchor;
 
+    [Tooltip("このボス専用のスタブ演出設定（数値＋カメラTimeline）。未設定ならプレイヤー共通設定を使う")]
+    [SerializeField] private StabFinisherSettings m_stabFinisherSettings;
+
     [Header("Missile")]
     [Tooltip("生成するミサイルPrefab")]
     [SerializeField] private EnemyMissile m_missilePrefab;
@@ -94,6 +97,10 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     private bool m_wasInStaggerAnim;
     private bool m_staminaBreakEndRequested;
     private bool m_stabFinisherActive;
+    // 演出開始〜終了まで持続する向きロック（命中で解除される m_stabFinisherActive と違い、立ち上がり中も維持）。
+    private bool m_stabFinisherFacingLock;
+    // 演出中の沈み込み防止。開始時の接地Yを保持し、LateUpdate で固定する（重力スナップ/崩れアニメ root motion を打ち消す）。
+    private float m_stabFinisherFrozenY;
 
     // Rush 中に Animator が一度でも IsInRush=true になったか。
     // 入り transition と exit transition を区別し、exit 時の player 追尾回転を抑制する。
@@ -189,6 +196,20 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
             case BossState.Missile: TickMissile(dt); break;
             case BossState.Stunned: TickStunned(dt); break;
             case BossState.Stagger: TickStagger(dt); break;
+        }
+    }
+
+    void LateUpdate()
+    {
+        // 演出中はボスを「刺される台」として安定させる。UpdateEntity(EnemyBossBase) の重力スナップや
+        // 崩れアニメの root motion で沈むのを防ぐため、開始時の接地Yに固定する。
+        // 演出外は毎フレーム来るので、ここはログを出さず静かに抜ける（RootMotionToController と同じ方針）。
+        if (!m_stabFinisherFacingLock) return;
+        Vector3 p = transform.position;
+        if (!Mathf.Approximately(p.y, m_stabFinisherFrozenY))
+        {
+            p.y = m_stabFinisherFrozenY;
+            transform.position = p;
         }
     }
 
@@ -699,6 +720,9 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     /// <summary>演出プロファイル選択。Stagger=0 / Stun=1。崩れでなければ 0。</summary>
     public int StabChoreographyIndex => m_state == BossState.Stunned ? 1 : 0;
 
+    /// <summary>このボス専用のスタブ演出設定。未設定(null)ならプレイヤー共通設定にフォールバックさせる。</summary>
+    public StabFinisherSettings StabFinisherSettings => m_stabFinisherSettings;
+
     /// <summary>
     /// プレイヤーのスタブAnimEventから呼ばれる。HPバー1本分を一気に削る（クールダウン無視）。
     /// data.damage は無視し、EnemyBossSettings.healthBarSegments と MaxHealth からバー境界HPを算出する。
@@ -737,8 +761,8 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     }
 
     /// <summary>フィニッシャー演出の開始/終了を受け取り、演出中の崩れ回復を止める。</summary>
-    public void BeginStabFinisher() => m_stabFinisherActive = true;
-    public void EndStabFinisher() => m_stabFinisherActive = false;
+    public void BeginStabFinisher() { m_stabFinisherActive = true; m_stabFinisherFacingLock = true; m_stabFinisherFrozenY = transform.position.y; }
+    public void EndStabFinisher() { m_stabFinisherActive = false; m_stabFinisherFacingLock = false; }
 
     // スタブ成功時：スタン値を0に戻し、スタン/よろけを終了して Idle へ。これ以上スタブできない＝1回のスタンにつき1回。
     private void EndBreakAfterStab()
@@ -762,6 +786,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
 
     private void FacePlayer(float dt, float deadZoneDeg = 0f)
     {
+        if (m_stabFinisherFacingLock) return; // スタブ演出中(開始〜終了)はプレイヤーを追尾して回頭しない（命中後の立ち上がり中も維持）
         Vector3 look = m_player.position - transform.position;
         look.y = 0f;
         if (look.sqrMagnitude > 0.0001f)
