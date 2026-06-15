@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 4022685328076152797}
   - component: {fileID: 3248401797439555635}
   - component: {fileID: 8415192833665430904}
+  - component: {fileID: 6204801680249309174}
   - component: {fileID: 7473496859954039961}
   - component: {fileID: 4320032113719753399}
   - component: {fileID: 2310377158301139839}
@@ -128,7 +129,8 @@ MonoBehaviour:
   - FallPlayerState, MagnetRush.Player, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - StabPlayerState, MagnetRush.Player, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - StabPlayerState, MagnetRush.Player, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-  - MagnetStickPlayerState, MagnetRush.Player, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  - MagnetStickPlayerState, MagnetRush.Player, Version=0.0.0.0, Culture=neutral,
+    PublicKeyToken=null
 --- !u!114 &8415192833665430904
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -142,6 +144,75 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MagnetRush.Entity.Health
   m_damageCooldown: 1
+--- !u!114 &6204801680249309174
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1725508640444081474}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b83c7d7237a84c14a912ed29af6d2f71, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Player::PlayerLowHealthEffect
+  m_health: {fileID: 8415192833665430904}
+  m_effectPrefab: {fileID: 5084856853744830301, guid: e066a806db08a85418d1bcf240a657b4, type: 3}
+  m_effectParent: {fileID: 890088630592913366}
+  m_thresholdMode: 0
+  m_healthRatioThreshold: 0.357
+  m_healthValueThreshold: 10
+  m_localPositionOffset: {x: 0, y: 0, z: 0}
+  m_autoScaleToPlayerHeight: 1
+  m_referenceHeight: 2
+  m_scaleMultiplier: 0.4
+  m_showWhileDead: 1
+  m_bodyPartEffects:
+  - m_label: "\u80F8"
+    m_enabled: 1
+    m_bone: 8
+    m_anchorOverride: {fileID: 0}
+    m_localPositionOffset: {x: 0, y: 0, z: 0.02}
+    m_localEulerOffset: {x: 0, y: 0, z: 0}
+    m_scaleMultiplier: 0.18
+    m_countMultiplier: 0.4
+    m_sizeMultiplier: 0.35
+  - m_label: "\u5DE6\u80A9"
+    m_enabled: 1
+    m_bone: 11
+    m_anchorOverride: {fileID: 0}
+    m_localPositionOffset: {x: 0, y: 0, z: 0}
+    m_localEulerOffset: {x: 0, y: 0, z: 0}
+    m_scaleMultiplier: 0.14
+    m_countMultiplier: 0.35
+    m_sizeMultiplier: 0.3
+  - m_label: "\u53F3\u80A9"
+    m_enabled: 1
+    m_bone: 12
+    m_anchorOverride: {fileID: 0}
+    m_localPositionOffset: {x: 0, y: 0, z: 0}
+    m_localEulerOffset: {x: 0, y: 0, z: 0}
+    m_scaleMultiplier: 0.14
+    m_countMultiplier: 0.35
+    m_sizeMultiplier: 0.3
+  - m_label: "\u5DE6\u8DB3"
+    m_enabled: 1
+    m_bone: 5
+    m_anchorOverride: {fileID: 0}
+    m_localPositionOffset: {x: 0, y: 0.02, z: 0}
+    m_localEulerOffset: {x: 0, y: 0, z: 0}
+    m_scaleMultiplier: 0.13
+    m_countMultiplier: 0.3
+    m_sizeMultiplier: 0.28
+  - m_label: "\u53F3\u8DB3"
+    m_enabled: 1
+    m_bone: 6
+    m_anchorOverride: {fileID: 0}
+    m_localPositionOffset: {x: 0, y: 0.02, z: 0}
+    m_localEulerOffset: {x: 0, y: 0, z: 0}
+    m_scaleMultiplier: 0.13
+    m_countMultiplier: 0.3
+    m_sizeMultiplier: 0.28
 --- !u!114 &7473496859954039961
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -290,9 +361,11 @@ MonoBehaviour:
   m_verticalSpeedName: VerticalSpeed
   m_stabName: Stab
   m_hitName: Hit
+  m_hitUpperName: HitUpper
   m_aimLayerName: Upper Body
   m_aimLayerFadeTime: 0.15
   m_shootUpperBodyHold: 0.6
+  m_hitUpperBodyHold: 0.6
 --- !u!114 &4121543987773168685
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -764,11 +837,11 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -2933139716659438605, guid: f06552fba20857b4ebab566556d4415e, type: 3}
-      propertyPath: m_Materials.Array.data[0]
+      propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: 586ee20b6d8b32d4385e28297417a486, type: 2}
     - target: {fileID: -2933139716659438605, guid: f06552fba20857b4ebab566556d4415e, type: 3}
-      propertyPath: m_Materials.Array.data[1]
+      propertyPath: 'm_Materials.Array.data[1]'
       value: 
       objectReference: {fileID: 2100000, guid: 37abf5f11f4f436449ea2c1c037197e5, type: 2}
     - target: {fileID: 919132149155446097, guid: f06552fba20857b4ebab566556d4415e, type: 3}
