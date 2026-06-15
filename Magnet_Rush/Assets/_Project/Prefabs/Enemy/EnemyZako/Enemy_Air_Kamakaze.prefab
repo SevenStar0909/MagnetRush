@@ -451,6 +451,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: MagnetRush.Enemy::EnemyAirKamikazeAi
   m_attackBox: {fileID: 3371804068742996250}
   m_animator: {fileID: 7410589952064792230}
+  m_obstacleMask:
+    serializedVersion: 2
+    m_Bits: 0
+  m_obstacleLookAhead: 4
+  m_obstacleProbeRadius: 0.7
+  m_obstacleAvoidanceWeight: 2.5
 --- !u!114 &7410589952064792230
 MonoBehaviour:
   m_ObjectHideFlags: 0
