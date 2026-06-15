@@ -38,6 +38,7 @@ public class CameraSettingsApplier : MonoBehaviour
     private Health m_health;
 
     private CinemachineThirdPersonFollow m_thirdPersonFollow;
+    private CinemachineCameraOffset m_damageShakeOffset;
     private float m_defaultFOV;
     private float m_defaultCameraDistance;
     private Transform m_cameraPivot;
@@ -65,12 +66,19 @@ public class CameraSettingsApplier : MonoBehaviour
     private float m_focusFov;
     private bool m_isFocusing;
 
+    private float m_damageShakeAmplitude;
+    private float m_damageShakeDuration;
+    private float m_damageShakeTimer;
+    private float m_damageShakeFrequency;
+    private Vector3 m_damageShakeSeed;
+
     void OnEnable()
     {
         AimAbility.OnAimChanged += SetAimMode;
         Player.OnPlayerReady += InitializeWithPlayer;
         Player.OnFallRespawnStart += OnFallRespawnStart;
         Player.OnFallRespawnEnd += OnFallRespawnEnd;
+        MagneticContactDamage.OnEnemyDamageCameraShake += HandleEnemyDamageCameraShake;
         if (Player.Current != null) InitializeWithPlayer(Player.Current);
     }
 
@@ -80,8 +88,10 @@ public class CameraSettingsApplier : MonoBehaviour
         Player.OnPlayerReady -= InitializeWithPlayer;
         Player.OnFallRespawnStart -= OnFallRespawnStart;
         Player.OnFallRespawnEnd -= OnFallRespawnEnd;
+        MagneticContactDamage.OnEnemyDamageCameraShake -= HandleEnemyDamageCameraShake;
         if (m_health != null) m_health.OnDie -= HandlePlayerDeath;
         if (m_playerMagnetizable != null) m_playerMagnetizable.OnRepulsionForce -= HandleRepulsionForce;
+        ResetDamageShake();
     }
 
     private void InitializeWithPlayer(Player playerComponent)
@@ -109,6 +119,13 @@ public class CameraSettingsApplier : MonoBehaviour
 
         m_cinemachineCamera.Follow = m_cameraPivot;
         m_cinemachineCamera.LookAt = m_cameraPivot;
+
+        m_damageShakeOffset = m_cinemachineCamera.GetComponent<CinemachineCameraOffset>();
+        if (m_damageShakeOffset == null)
+            m_damageShakeOffset = m_cinemachineCamera.gameObject.AddComponent<CinemachineCameraOffset>();
+        m_damageShakeOffset.ApplyAfter = CinemachineCore.Stage.Aim;
+        m_damageShakeOffset.PreserveComposition = false;
+        m_damageShakeOffset.Offset = Vector3.zero;
 
         m_thirdPersonFollow = m_cinemachineCamera.GetComponent<CinemachineThirdPersonFollow>();
         m_defaultFOV = m_cinemachineCamera.Lens.FieldOfView;
@@ -157,10 +174,10 @@ public class CameraSettingsApplier : MonoBehaviour
     void LateUpdate()
     {
         // 死亡中は寄せ＋中央寄せを毎フレーム適用（Play中にInspector値を変えると即反映＝ライブ調整可）
-        if (m_isDead && m_thirdPersonFollow != null) { UpdateDeathFraming(); return; }
+        if (m_isDead && m_thirdPersonFollow != null) { UpdateDeathFraming(); UpdateDamageShake(); return; }
 
         // 凍結中は入力でピボットを回さない。落下→復帰の間カメラを静止させる
-        if (m_isFrozen) return;
+        if (m_isFrozen) { ResetDamageShake(); return; }
         if (m_cameraPivot == null || m_settings == null) { ChannelLogger.LogGuardReturn("Player", "カメラピボットまたは設定なし"); return; }
 
         // チュートリアルでカメラロック中は入力で回さない（追従・エイム距離・反発演出はそのまま動かす）
@@ -193,7 +210,9 @@ public class CameraSettingsApplier : MonoBehaviour
 
         UpdateRepulsePull();
 
+
         UpdateAimAndApplyCamera();
+
     }
 
     /// <summary>
@@ -234,6 +253,66 @@ public class CameraSettingsApplier : MonoBehaviour
         float duration = Mathf.Max(0.01f, active ? m_cameraSettings.repulsePullInDuration : m_cameraSettings.repulsePullOutDuration);
         float speed = Mathf.Max(0.01f, m_cameraSettings.repulsePullDistance) / duration;
         m_repulsePullCurrent = Mathf.MoveTowards(m_repulsePullCurrent, target, speed * Time.deltaTime);
+    }
+
+    private void HandleEnemyDamageCameraShake(float amplitude, float duration, float frequency)
+    {
+        if (!m_initialized || m_damageShakeOffset == null) return;
+
+        amplitude = Mathf.Max(0f, amplitude);
+        duration = Mathf.Max(0.01f, duration);
+        if (amplitude <= 0f) return;
+
+        float currentAmplitude = m_damageShakeAmplitude * GetDamageShakeEnvelope();
+        m_damageShakeAmplitude = Mathf.Max(currentAmplitude, amplitude);
+        m_damageShakeDuration = duration;
+        m_damageShakeTimer = duration;
+        m_damageShakeFrequency = Mathf.Max(0.01f, frequency);
+        m_damageShakeSeed = new Vector3(
+            UnityEngine.Random.value * 100f,
+            UnityEngine.Random.value * 100f,
+            UnityEngine.Random.value * 100f);
+    }
+
+    private void UpdateDamageShake()
+    {
+        if (m_damageShakeOffset == null) return;
+        if (m_damageShakeTimer <= 0f)
+        {
+            m_damageShakeOffset.Offset = Vector3.zero;
+            return;
+        }
+
+        m_damageShakeTimer = Mathf.Max(0f, m_damageShakeTimer - Time.unscaledDeltaTime);
+        float envelope = GetDamageShakeEnvelope();
+        float t = Time.unscaledTime * m_damageShakeFrequency;
+        Vector3 noise = new Vector3(
+            NoiseSigned(m_damageShakeSeed.x, t),
+            NoiseSigned(m_damageShakeSeed.y, t),
+            NoiseSigned(m_damageShakeSeed.z, t) * 0.35f);
+
+        m_damageShakeOffset.Offset = noise * (m_damageShakeAmplitude * envelope);
+    }
+
+    private float GetDamageShakeEnvelope()
+    {
+        if (m_damageShakeDuration <= 0f || m_damageShakeTimer <= 0f) return 0f;
+
+        float progress = 1f - Mathf.Clamp01(m_damageShakeTimer / m_damageShakeDuration);
+        return 1f - Mathf.SmoothStep(0f, 1f, progress);
+    }
+
+    private static float NoiseSigned(float seed, float t)
+    {
+        return (Mathf.PerlinNoise(seed, t) - 0.5f) * 2f;
+    }
+
+    private void ResetDamageShake()
+    {
+        m_damageShakeTimer = 0f;
+        m_damageShakeAmplitude = 0f;
+        if (m_damageShakeOffset != null)
+            m_damageShakeOffset.Offset = Vector3.zero;
     }
 
     /// <summary>

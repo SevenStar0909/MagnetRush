@@ -1,3 +1,5 @@
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,6 +10,9 @@ using UnityEngine;
 /// </summary>
 public class MagneticContactDamage : MonoBehaviour
 {
+    public static event Action<float, float, float> OnEnemyDamageCameraShake;
+    public static bool IsHitStopActive => s_hitStopRoutine != null;
+
     [SerializeField] private ContactDamageSettings m_settings;
 
     /// <summary>この物理オブジェクトがボス本体に当たった時に与えるスタン値の蓄積率（％）。設定SOから取得。</summary>
@@ -18,6 +23,23 @@ public class MagneticContactDamage : MonoBehaviour
     private readonly HashSet<IHittable> m_hitTargets = new HashSet<IHittable>();
     private bool m_wasActive;
     private Vector3 m_pullStartPosition;
+
+    private static Coroutine s_hitStopRoutine;
+    private static float s_hitStopEndTime;
+    private static float s_hitStopTimeScale;
+    private static float s_restoreTimeScale;
+    private static float s_restoreFixedDeltaTime;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetStatics()
+    {
+        OnEnemyDamageCameraShake = null;
+        s_hitStopRoutine = null;
+        s_hitStopEndTime = 0f;
+        s_hitStopTimeScale = 0f;
+        s_restoreTimeScale = 1f;
+        s_restoreFixedDeltaTime = 0.02f;
+    }
 
     void Awake()
     {
@@ -72,6 +94,10 @@ public class MagneticContactDamage : MonoBehaviour
         // 同一対象への重複ダメージ防止（磁力切れるまで1回のみ）
         if (m_hitTargets.Add(hittable))
         {
+            var targetBehaviour = (MonoBehaviour)hittable;
+            var targetHealth = targetBehaviour.GetComponentInParent<Health>();
+            int healthBefore = targetHealth != null ? targetHealth.CurrentHealth : 0;
+
             hittable.OnHit(new HitData
             {
                 damage = damage,
@@ -79,6 +105,79 @@ public class MagneticContactDamage : MonoBehaviour
                 knockbackDir = collision.relativeVelocity.normalized,
                 source = gameObject
             });
+
+            bool dealtDamage = targetHealth != null && targetHealth.CurrentHealth < healthBefore;
+            if (dealtDamage && hittable.HitGroup == HitGroup.Enemy)
+                RequestEnemyDamageFeedback(damage);
         }
+    }
+
+    private void RequestEnemyDamageFeedback(int damage)
+    {
+        RequestEnemyDamageCameraShake(damage);
+        RequestEnemyDamageHitStop(damage);
+    }
+
+    private void RequestEnemyDamageCameraShake(int damage)
+    {
+        if (!m_settings.enableCameraShake) return;
+
+        float amplitude = Mathf.Max(0f, m_settings.cameraShakeAmplitudeByDamage.Evaluate(damage));
+        float duration = Mathf.Max(0f, m_settings.cameraShakeDurationByDamage.Evaluate(damage));
+        if (amplitude <= 0f || duration <= 0f) return;
+
+        float frequency = Mathf.Max(0f, m_settings.cameraShakeFrequency);
+        OnEnemyDamageCameraShake?.Invoke(amplitude, duration, frequency);
+    }
+
+    private void RequestEnemyDamageHitStop(int damage)
+    {
+        if (!m_settings.enableHitStop) return;
+
+        float duration = Mathf.Max(0f, m_settings.hitStopDurationByDamage.Evaluate(damage));
+        if (duration <= 0f) return;
+
+        float timeScale = Mathf.Clamp01(m_settings.hitStopTimeScale);
+        StartOrExtendHitStop(duration, timeScale);
+    }
+
+    private void StartOrExtendHitStop(float duration, float timeScale)
+    {
+        float requestedEndTime = Time.realtimeSinceStartup + duration;
+
+        if (s_hitStopRoutine == null)
+        {
+            s_restoreTimeScale = Time.timeScale;
+            s_restoreFixedDeltaTime = Time.fixedDeltaTime;
+            s_hitStopTimeScale = timeScale;
+            s_hitStopEndTime = requestedEndTime;
+            s_hitStopRoutine = StartCoroutine(HitStopRoutine());
+            return;
+        }
+
+        s_hitStopEndTime = Mathf.Max(s_hitStopEndTime, requestedEndTime);
+        s_hitStopTimeScale = Mathf.Min(s_hitStopTimeScale, timeScale);
+        ApplyHitStopTimeScale();
+    }
+
+    private static IEnumerator HitStopRoutine()
+    {
+        ApplyHitStopTimeScale();
+
+        while (Time.realtimeSinceStartup < s_hitStopEndTime)
+        {
+            ApplyHitStopTimeScale();
+            yield return null;
+        }
+
+        Time.timeScale = s_restoreTimeScale;
+        Time.fixedDeltaTime = s_restoreFixedDeltaTime;
+        s_hitStopRoutine = null;
+    }
+
+    private static void ApplyHitStopTimeScale()
+    {
+        Time.timeScale = s_hitStopTimeScale;
+        Time.fixedDeltaTime = Mathf.Max(0.0001f, s_restoreFixedDeltaTime * Mathf.Max(0.0001f, s_hitStopTimeScale));
     }
 }
