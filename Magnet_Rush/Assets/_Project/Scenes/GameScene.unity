@@ -307,6 +307,7 @@ GameObject:
   - component: {fileID: 625244300}
   - component: {fileID: 625244301}
   - component: {fileID: 625244302}
+  - component: {fileID: 625244304}
   m_Layer: 0
   m_Name: FinisherCameraRig
   m_TagString: Untagged
@@ -344,6 +345,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: MagnetRush.Player::StabFinisherCamera
   m_finisherCamera: {fileID: 1035001060}
   m_director: {fileID: 625244302}
+  m_playerAnchorHeight: 1
+  m_shakeAmplitude: 0.35
+  m_shakeDuration: 0.3
+  m_shakeFrequency: 22
 --- !u!320 &625244302
 PlayableDirector:
   m_ObjectHideFlags: 0
@@ -356,19 +361,41 @@ PlayableDirector:
   m_PlayableAsset: {fileID: 11400000, guid: 745764a052fbca840856dc8b9f7e0322, type: 2}
   m_InitialState: 0
   m_WrapMode: 0
-  m_DirectorUpdateMode: 1
+  m_DirectorUpdateMode: 3
   m_InitialTime: 0
   m_SceneBindings:
   - key: {fileID: 0}
-    value: {fileID: 1035001058}
+    value: {fileID: 0}
   - key: {fileID: 0}
-    value: {fileID: 1035001058}
+    value: {fileID: 0}
   - key: {fileID: 0}
-    value: {fileID: 1035001058}
+    value: {fileID: 0}
   - key: {fileID: -605302490748573950, guid: 745764a052fbca840856dc8b9f7e0322, type: 2}
-    value: {fileID: 1035001058}
+    value: {fileID: 625244304}
   m_ExposedReferences:
     m_References: []
+--- !u!95 &625244304
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 625244299}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 0}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1001 &645861716
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -922,7 +949,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1035001054}
   - component: {fileID: 1035001057}
-  - component: {fileID: 1035001058}
   - component: {fileID: 1035001060}
   - component: {fileID: 1035001059}
   m_Layer: 0
@@ -990,28 +1016,6 @@ MonoBehaviour:
       BarrelClipping: 0.25
       Anamorphism: 0
   BlendHint: 0
---- !u!95 &1035001058
-Animator:
-  serializedVersion: 7
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1035001053}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 0}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_AnimatePhysics: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
 --- !u!114 &1035001059
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1089,7 +1093,7 @@ Camera:
     height: 1
   near clip plane: 0.1
   far clip plane: 5000
-  field of view: 60
+  field of view: 66
   orthographic: 0
   orthographic size: 5
   m_Depth: 10
