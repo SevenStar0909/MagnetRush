@@ -24,6 +24,10 @@ public class CameraSettingsApplier : MonoBehaviour
     [Tooltip("反発ジャンプ演出などカメラ演出のパラメータ（SO）")]
     [SerializeField] private PlayerCameraSettings m_cameraSettings;
 
+    [Header("エイム演出")]
+    [Tooltip("エイム時のFOV・距離を補間する速さ（大きいほど早い）")]
+    [SerializeField] private float m_aimBlendSpeed = 15f;
+
     [Header("チュートリアル強制注目")]
     [Tooltip("ターゲットへ向き直る速さ（度/秒）")]
     [SerializeField] private float m_focusTurnSpeed = 200f;
@@ -54,6 +58,9 @@ public class CameraSettingsApplier : MonoBehaviour
     private bool m_isAiming;
     private float m_repulsePullCurrent;
     private float m_repulseActiveTimer;
+
+    private float m_currentFOV;
+    private float m_currentCameraDistance;
 
     private Transform m_focusTarget;
     private float m_focusFov;
@@ -122,6 +129,7 @@ public class CameraSettingsApplier : MonoBehaviour
 
         m_thirdPersonFollow = m_cinemachineCamera.GetComponent<CinemachineThirdPersonFollow>();
         m_defaultFOV = m_cinemachineCamera.Lens.FieldOfView;
+        m_currentFOV = m_defaultFOV;
 
         if (m_thirdPersonFollow != null)
         {
@@ -144,6 +152,8 @@ public class CameraSettingsApplier : MonoBehaviour
                     m_defaultCameraDistance = m_settings.cameraDistance;
                 }
             }
+
+            m_currentCameraDistance = m_defaultCameraDistance;
         }
 
         // 初期角度: ほぼ水平（ピッチ0°でプレイヤーの背後から水平に見る）
@@ -199,7 +209,10 @@ public class CameraSettingsApplier : MonoBehaviour
         m_cameraPivot.rotation = Quaternion.Euler(m_pitch, m_yaw, 0f);
 
         UpdateRepulsePull();
-        UpdateDamageShake();
+
+
+        UpdateAimAndApplyCamera();
+
     }
 
     /// <summary>
@@ -240,9 +253,6 @@ public class CameraSettingsApplier : MonoBehaviour
         float duration = Mathf.Max(0.01f, active ? m_cameraSettings.repulsePullInDuration : m_cameraSettings.repulsePullOutDuration);
         float speed = Mathf.Max(0.01f, m_cameraSettings.repulsePullDistance) / duration;
         m_repulsePullCurrent = Mathf.MoveTowards(m_repulsePullCurrent, target, speed * Time.deltaTime);
-
-        float baseDistance = m_isAiming ? m_settings.aimCameraDistance : m_defaultCameraDistance;
-        m_thirdPersonFollow.CameraDistance = baseDistance + m_repulsePullCurrent;
     }
 
     private void HandleEnemyDamageCameraShake(float amplitude, float duration, float frequency)
@@ -306,19 +316,36 @@ public class CameraSettingsApplier : MonoBehaviour
     }
 
     /// <summary>
-    /// エイムモード切替。カメラ距離とFOVを変更する。
+    /// エイムモード切替。
     /// </summary>
     public void SetAimMode(bool aiming)
     {
-        if (m_thirdPersonFollow == null || m_settings == null) { ChannelLogger.LogGuardReturn("Player", "ThirdPersonFollowまたは設定なし"); return; }
-
         m_isAiming = aiming;
-        m_thirdPersonFollow.CameraDistance = (aiming ? m_settings.aimCameraDistance : m_defaultCameraDistance) + m_repulsePullCurrent;
+    }
 
-        if (m_cinemachineCamera != null)
+    /// <summary>
+    /// エイム状態に応じた目標値へぬるっと近づけ、最終的な距離・FOVをカメラへ適用する
+    /// </summary>
+    private void UpdateAimAndApplyCamera()
+    {
+        if (m_thirdPersonFollow == null || m_settings == null) return;
+
+        // 目標値の設定
+        float targetDistance = m_isAiming ? m_settings.aimCameraDistance : m_defaultCameraDistance;
+        float targetFOV = m_isAiming ? m_settings.aimFOV : m_defaultFOV;
+
+        // 毎フレーム補間 (スローモーションの影響を受けないよう unscaledDeltaTime を使用)
+        m_currentCameraDistance = Mathf.Lerp(m_currentCameraDistance, targetDistance, m_aimBlendSpeed * Time.unscaledDeltaTime);
+        m_currentFOV = Mathf.Lerp(m_currentFOV, targetFOV, m_aimBlendSpeed * Time.unscaledDeltaTime);
+
+        // 距離の適用 (ベース距離 + 反発演出の距離)
+        m_thirdPersonFollow.CameraDistance = m_currentCameraDistance + m_repulsePullCurrent;
+
+        // FOVの適用 (※強制注目中は ApplyFocus 側で操作するため、競合を避ける)
+        if (!m_isFocusing && m_cinemachineCamera != null)
         {
             var lens = m_cinemachineCamera.Lens;
-            lens.FieldOfView = aiming ? m_settings.aimFOV : m_defaultFOV;
+            lens.FieldOfView = m_currentFOV;
             m_cinemachineCamera.Lens = lens;
         }
     }
@@ -342,11 +369,9 @@ public class CameraSettingsApplier : MonoBehaviour
         m_isFocusing = false;
         m_focusTarget = null;
 
-        if (m_cinemachineCamera != null && m_settings != null)
+        if (m_cinemachineCamera != null)
         {
-            var lens = m_cinemachineCamera.Lens;
-            lens.FieldOfView = m_isAiming ? m_settings.aimFOV : m_defaultFOV;
-            m_cinemachineCamera.Lens = lens;
+            m_currentFOV = m_cinemachineCamera.Lens.FieldOfView;
         }
     }
 
