@@ -12,6 +12,10 @@ using UnityEngine;
 /// </summary>
 public class BossHandMagnetCaster : MonoBehaviour
 {
+    private const int RingSegments = 48;
+    private const int MeridianSegments = 24;
+    private static readonly float[] s_latitudes = { 0f, 30f, 60f, 89f };
+
     [Header("References")]
     [Tooltip("ドームと範囲キャストの中心となる右手 Magnetizable")]
     [SerializeField] private Magnetizable m_handMagnetizable;
@@ -24,13 +28,13 @@ public class BossHandMagnetCaster : MonoBehaviour
 
     [Header("Visualizer")]
     [Tooltip("N極時のリング色")]
-    [SerializeField] private Color m_colorN = new Color(1f, 0.2f, 0.2f, 0.8f);
+    [SerializeField] private Color m_colorN = new Color(1f, 0.5f, 0.5f, 0.22f);
 
     [Tooltip("S極時のリング色")]
-    [SerializeField] private Color m_colorS = new Color(0.2f, 0.4f, 1f, 0.8f);
+    [SerializeField] private Color m_colorS = new Color(0.5f, 0.65f, 1f, 0.22f);
 
     [Tooltip("LineRendererの太さ")]
-    [SerializeField] private float m_lineWidth = 0.05f;
+    [SerializeField] private float m_lineWidth = 0.035f;
 
     [Header("Charge Preview")]
     [SerializeField] private BulletSettings m_referenceBulletSettings;
@@ -39,8 +43,15 @@ public class BossHandMagnetCaster : MonoBehaviour
     [SerializeField, Min(0f)] private float m_chargeDuration = 1.1f;
     [SerializeField, Min(0f)] private float m_visualizerStartScale = 0.05f;
     [SerializeField, Min(0f)] private float m_effectStartScale = 0.05f;
+    [Tooltip("ONならエフェクト終端サイズを magnetCastRadius に合わせる")]
+    [SerializeField] private bool m_matchEffectEndScaleToMagnetRadius = true;
+    [Tooltip("magnetCastRadius に合わせる時の倍率")]
+    [SerializeField, Min(0f)] private float m_effectRadiusMultiplier = 1.3f;
+    [Tooltip("Match Effect End Scale To Magnet Radius がOFFの時に使う手動終端サイズ")]
     [SerializeField, Min(0f)] private float m_effectEndScale = 20f;
     [SerializeField] private float m_effectGroundOffset = 0.05f;
+    [Tooltip("ONなら広がりきったタイミングで予兆エフェクトを消す")]
+    [SerializeField] private bool m_destroyChargeEffectOnComplete = true;
     [SerializeField] private bool m_delayMagnetUntilChargeComplete = true;
     [SerializeField] private bool m_tintChargeEffect = true;
     [SerializeField] private AnimationCurve m_chargeCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
@@ -57,10 +68,13 @@ public class BossHandMagnetCaster : MonoBehaviour
     private GameObject m_chargeEffectInstance;
     private readonly List<LineRenderer> m_visualLines = new List<LineRenderer>();
     private static Material s_lineMaterial;
+    private float m_visualizerRadius = -1f;
     private MagneticPole m_pendingPole = MagneticPole.None;
+    private MagneticPole m_visiblePole = MagneticPole.None;
     private float m_chargeElapsed;
     private bool m_isCharging;
     private bool m_hasAppliedCharge;
+    private bool m_hasCompletedChargeVisual;
 
     private void Awake()
     {
@@ -101,6 +115,7 @@ public class BossHandMagnetCaster : MonoBehaviour
         if (inState && m_isCharging)
         {
             UpdateChargePreview();
+            ApplyLivePreviewSettings();
         }
         else if (!inState && m_wasInCastableState)
         {
@@ -196,6 +211,7 @@ public class BossHandMagnetCaster : MonoBehaviour
         m_chargeElapsed = 0f;
         m_isCharging = true;
         m_hasAppliedCharge = false;
+        m_hasCompletedChargeVisual = false;
 
         ShowVisualizer(pole);
         SpawnChargeEffect(pole);
@@ -207,7 +223,7 @@ public class BossHandMagnetCaster : MonoBehaviour
         if (m_chargeDuration <= 0f)
         {
             SetChargeProgress(1f);
-            ApplyPendingCast();
+            CompleteChargePreview();
         }
     }
 
@@ -219,8 +235,20 @@ public class BossHandMagnetCaster : MonoBehaviour
         float progress = m_chargeDuration <= 0f ? 1f : Mathf.Clamp01(m_chargeElapsed / m_chargeDuration);
         SetChargeProgress(progress);
 
-        if (!m_hasAppliedCharge && progress >= 1f)
+        if (progress >= 1f)
+            CompleteChargePreview();
+    }
+
+    private void CompleteChargePreview()
+    {
+        if (!m_hasAppliedCharge)
             ApplyPendingCast();
+
+        if (m_hasCompletedChargeVisual) return;
+        m_hasCompletedChargeVisual = true;
+
+        if (m_destroyChargeEffectOnComplete)
+            DestroyChargeEffect();
     }
 
     private void ApplyPendingCast()
@@ -235,6 +263,7 @@ public class BossHandMagnetCaster : MonoBehaviour
     {
         m_isCharging = false;
         m_hasAppliedCharge = false;
+        m_hasCompletedChargeVisual = false;
         m_pendingPole = MagneticPole.None;
         m_chargeElapsed = 0f;
         DestroyChargeEffect();
@@ -282,6 +311,9 @@ public class BossHandMagnetCaster : MonoBehaviour
 
     private float GetEffectEndScale()
     {
+        if (m_matchEffectEndScaleToMagnetRadius && m_settings != null)
+            return Mathf.Max(0f, m_settings.magnetCastRadius * m_effectRadiusMultiplier);
+
         if (m_effectEndScale > 0f) return m_effectEndScale;
         return m_referenceBulletSettings != null ? Mathf.Max(0f, m_referenceBulletSettings.impactEffectScale) : 1f;
     }
@@ -357,11 +389,11 @@ public class BossHandMagnetCaster : MonoBehaviour
         m_visualizerGO.transform.position = Vector3.zero;
         m_visualizerGO.transform.rotation = Quaternion.identity;
 
-        float radius = m_settings.magnetCastRadius;
+        float radius = Mathf.Max(0f, m_settings.magnetCastRadius);
+        m_visualizerRadius = radius;
 
         // 緯線: 0(底辺の赤道)、30、60、89度(ほぼ天頂)。上半球のみ
-        float[] latitudes = { 0f, 30f, 60f, 89f };
-        foreach (float lat in latitudes)
+        foreach (float lat in s_latitudes)
         {
             float rad = lat * Mathf.Deg2Rad;
             float h = Mathf.Sin(rad) * radius;
@@ -378,16 +410,66 @@ public class BossHandMagnetCaster : MonoBehaviour
         }
     }
 
+    private void RefreshVisualizerGeometry()
+    {
+        if (m_visualizerGO == null || m_settings == null) return;
+
+        float radius = Mathf.Max(0f, m_settings.magnetCastRadius);
+        if (Mathf.Approximately(m_visualizerRadius, radius)) return;
+
+        m_visualizerRadius = radius;
+
+        int lineIndex = 0;
+        foreach (float lat in s_latitudes)
+        {
+            if (lineIndex >= m_visualLines.Count) return;
+
+            float rad = lat * Mathf.Deg2Rad;
+            float h = Mathf.Sin(rad) * radius;
+            float r = Mathf.Cos(rad) * radius;
+            SetRingGeometry(m_visualLines[lineIndex], Vector3.up * h, r);
+            lineIndex++;
+        }
+
+        for (int i = 0; i < 4; i++)
+        {
+            if (lineIndex >= m_visualLines.Count) return;
+
+            float angle = i * 45f * Mathf.Deg2Rad;
+            Vector3 dir = new Vector3(Mathf.Sin(angle), 0f, Mathf.Cos(angle));
+            SetMeridianGeometry(m_visualLines[lineIndex], dir, radius);
+            lineIndex++;
+        }
+    }
+
     private void ShowVisualizer(MagneticPole pole)
     {
         if (m_visualizerGO == null) return;
+        m_visiblePole = pole;
         m_visualizerGO.SetActive(true);
         UpdateVisualizerTransform();
+        ApplyVisualizerStyle(pole);
+    }
+
+    private void ApplyLivePreviewSettings()
+    {
+        RefreshVisualizerGeometry();
+
+        if (m_visualizerGO != null && m_visualizerGO.activeSelf && m_visiblePole != MagneticPole.None)
+            ApplyVisualizerStyle(m_visiblePole);
+
+        if (m_chargeEffectInstance != null && m_tintChargeEffect && m_pendingPole != MagneticPole.None)
+            TintChargeEffect(m_chargeEffectInstance, GetPoleColor(m_pendingPole));
+    }
+
+    private void ApplyVisualizerStyle(MagneticPole pole)
+    {
         Color c = GetPoleColor(pole);
         for (int i = 0; i < m_visualLines.Count; i++)
         {
             var lr = m_visualLines[i];
             if (lr == null) continue;
+            lr.widthMultiplier = m_lineWidth;
             lr.startColor = c;
             lr.endColor = c;
         }
@@ -396,6 +478,7 @@ public class BossHandMagnetCaster : MonoBehaviour
     private void HideVisualizer()
     {
         if (m_visualizerGO == null) return;
+        m_visiblePole = MagneticPole.None;
         m_visualizerGO.transform.localScale = Vector3.one;
         m_visualizerGO.SetActive(false);
     }
@@ -413,15 +496,22 @@ public class BossHandMagnetCaster : MonoBehaviour
         lr.widthMultiplier = m_lineWidth;
         SetupLineMaterial(lr);
 
-        const int segments = 48;
-        lr.positionCount = segments;
-        for (int i = 0; i < segments; i++)
-        {
-            float a = (float)i / segments * Mathf.PI * 2f;
-            lr.SetPosition(i, new Vector3(Mathf.Cos(a) * radius, 0f, Mathf.Sin(a) * radius));
-        }
+        SetRingGeometry(lr, localCenter, radius);
 
         m_visualLines.Add(lr);
+    }
+
+    private void SetRingGeometry(LineRenderer lr, Vector3 localCenter, float radius)
+    {
+        if (lr == null) return;
+
+        lr.transform.localPosition = localCenter;
+        lr.positionCount = RingSegments;
+        for (int i = 0; i < RingSegments; i++)
+        {
+            float a = (float)i / RingSegments * Mathf.PI * 2f;
+            lr.SetPosition(i, new Vector3(Mathf.Cos(a) * radius, 0f, Mathf.Sin(a) * radius));
+        }
     }
 
     private void CreateMeridianHalf(Vector3 dir, float radius)
@@ -437,16 +527,23 @@ public class BossHandMagnetCaster : MonoBehaviour
         lr.widthMultiplier = m_lineWidth;
         SetupLineMaterial(lr);
 
-        const int segments = 24;
-        lr.positionCount = segments + 1;
-        for (int i = 0; i <= segments; i++)
+        SetMeridianGeometry(lr, dir, radius);
+
+        m_visualLines.Add(lr);
+    }
+
+    private void SetMeridianGeometry(LineRenderer lr, Vector3 dir, float radius)
+    {
+        if (lr == null) return;
+
+        lr.transform.localPosition = Vector3.zero;
+        lr.positionCount = MeridianSegments + 1;
+        for (int i = 0; i <= MeridianSegments; i++)
         {
-            float a = (float)i / segments * Mathf.PI / 2f;
+            float a = (float)i / MeridianSegments * Mathf.PI / 2f;
             Vector3 pos = dir * (Mathf.Cos(a) * radius) + Vector3.up * (Mathf.Sin(a) * radius);
             lr.SetPosition(i, pos);
         }
-
-        m_visualLines.Add(lr);
     }
 
     private static void SetupLineMaterial(LineRenderer lr)

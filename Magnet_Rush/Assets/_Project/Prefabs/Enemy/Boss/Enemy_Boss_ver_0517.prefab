@@ -4694,6 +4694,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 7979327020922395008, guid: 4209ff3e04242d249831366d7807a31b, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1107415245816965841}
+    - targetCorrespondingSourceObject: {fileID: 7979327020922395008, guid: 4209ff3e04242d249831366d7807a31b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3966792540574013720}
     - targetCorrespondingSourceObject: {fileID: 2314021898761952882, guid: 4209ff3e04242d249831366d7807a31b, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4963936875325702524}
@@ -4712,9 +4715,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 2314021898761952882, guid: 4209ff3e04242d249831366d7807a31b, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7376478091582785942}
-    - targetCorrespondingSourceObject: {fileID: 2314021898761952882, guid: 4209ff3e04242d249831366d7807a31b, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 3966792540574013720}
     - targetCorrespondingSourceObject: {fileID: 8767651658933856306, guid: 4209ff3e04242d249831366d7807a31b, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3263067800039960590}
@@ -4753,6 +4753,62 @@ MonoBehaviour:
   m_counterCuePulseSpeed: 6
   m_counterCuePulseAmount: 0.08
   m_counterCueLocalOffset: {x: 0, y: 0, z: 0}
+--- !u!114 &3966792540574013720
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2584804830593947915}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bced0bea9b91a6440a0085a1ed88fd15, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Enemy::BossHandMagnetCaster
+  m_handMagnetizable: {fileID: 9114501031449292670}
+  m_bossAI: {fileID: 8951133768723248270}
+  m_boss: {fileID: 1849210394476134877}
+  m_colorN: {r: 1, g: 0.5, b: 0.5, a: 0.34509805}
+  m_colorS: {r: 0.5, g: 0.65, b: 1, a: 0.34509805}
+  m_lineWidth: 0.035
+  m_referenceBulletSettings: {fileID: 11400000, guid: 425ee2473071b7a4fa2afd4ccb6a162c, type: 2}
+  m_chargeEffectN: {fileID: 1392514685208627377, guid: a85d063e0b66930408617a427b125910, type: 3}
+  m_chargeEffectS: {fileID: 5771629677290899619, guid: 9bffa0e5a0c77ff4d8247ed370ebabe6, type: 3}
+  m_chargeDuration: 2
+  m_visualizerStartScale: 0.05
+  m_effectStartScale: 0.05
+  m_matchEffectEndScaleToMagnetRadius: 1
+  m_effectRadiusMultiplier: 1.3
+  m_effectEndScale: 20
+  m_effectGroundOffset: 0.05
+  m_destroyChargeEffectOnComplete: 1
+  m_delayMagnetUntilChargeComplete: 1
+  m_tintChargeEffect: 1
+  m_chargeCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  m_logCast: 1
 --- !u!1 &3805441978747365561 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 8767651658933856306, guid: 4209ff3e04242d249831366d7807a31b, type: 3}
@@ -4953,35 +5009,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: MagnetRush.Enemy::BossHandMagnetLink
   m_boneNameOverride: 
   m_outline: {fileID: 0}
---- !u!114 &3966792540574013720
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7889848335474564857}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bced0bea9b91a6440a0085a1ed88fd15, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: MagnetRush.Enemy::BossHandMagnetCaster
-  m_handMagnetizable: {fileID: 9114501031449292670}
-  m_bossAI: {fileID: 8951133768723248270}
-  m_boss: {fileID: 1849210394476134877}
-  m_colorN: {r: 1, g: 0.2, b: 0.2, a: 0.8}
-  m_colorS: {r: 0.2, g: 0.4, b: 1, a: 0.8}
-  m_lineWidth: 0.05
-  m_referenceBulletSettings: {fileID: 11400000, guid: 425ee2473071b7a4fa2afd4ccb6a162c, type: 2}
-  m_chargeEffectN: {fileID: 1392514685208627377, guid: a85d063e0b66930408617a427b125910, type: 3}
-  m_chargeEffectS: {fileID: 5771629677290899619, guid: 9bffa0e5a0c77ff4d8247ed370ebabe6, type: 3}
-  m_chargeDuration: 1.1
-  m_visualizerStartScale: 0.05
-  m_effectStartScale: 0.05
-  m_effectEndScale: 20
-  m_effectGroundOffset: 0.05
-  m_delayMagnetUntilChargeComplete: 1
-  m_tintChargeEffect: 1
-  m_logCast: 1
 --- !u!1001 &5656691817322481352
 PrefabInstance:
   m_ObjectHideFlags: 0
