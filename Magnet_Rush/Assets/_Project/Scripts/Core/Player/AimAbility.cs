@@ -49,6 +49,8 @@ public class AimAbility : Ability
 
     void Update()
     {
+        if (MagneticContactDamage.IsHitStopActive) return;
+
         // 目標値へ実時間でなめらかに追従。スナップ切替えのカクつきを除去
         float duration = (m_targetTimeScale < Time.timeScale)
             ? m_player.Settings.aimEnterDuration
