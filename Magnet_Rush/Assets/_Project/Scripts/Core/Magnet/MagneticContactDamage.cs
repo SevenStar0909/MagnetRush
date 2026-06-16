@@ -74,6 +74,7 @@ public class MagneticContactDamage : MonoBehaviour
         if (vel < m_settings.minVelocity) { ChannelLogger.LogGuardReturn("ContactDmg", $"速度不足 {vel:F1}<{m_settings.minVelocity}"); return; }
 
         if (collision.collider.transform.IsChildOf(m_magnetizable.transform)) { ChannelLogger.LogGuardReturn("ContactDmg", "自己衝突"); return; }
+        if (IsOwnDamageOwner(collision.collider.gameObject)) { ChannelLogger.LogGuardReturn("ContactDmg", "所有者への自分の武器ダメージは無効"); return; }
 
         var hittable = collision.collider.GetComponentInParent<IHittable>();
         if (hittable == null && collision.rigidbody != null)
@@ -110,6 +111,12 @@ public class MagneticContactDamage : MonoBehaviour
             if (dealtDamage && hittable.HitGroup == HitGroup.Enemy)
                 RequestEnemyDamageFeedback(damage);
         }
+    }
+
+    private bool IsOwnDamageOwner(GameObject target)
+    {
+        var owner = GetComponentInParent<MagneticDamageOwner>();
+        return owner != null && owner.IsOwnedBy(target);
     }
 
     private void RequestEnemyDamageFeedback(int damage)

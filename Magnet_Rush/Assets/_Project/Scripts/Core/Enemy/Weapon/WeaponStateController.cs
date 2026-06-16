@@ -34,6 +34,7 @@ public class WeaponStateController : MonoBehaviour
 
     private Rigidbody m_rb;
     private Magnetizable m_magnetizable;
+    private MagneticDamageOwner m_damageOwner;
 
     private GameObject m_owner;
     private Transform m_ownerHand;
@@ -70,6 +71,9 @@ public class WeaponStateController : MonoBehaviour
     {
         m_rb = GetComponent<Rigidbody>();
         m_magnetizable = GetComponent<Magnetizable>();
+        m_damageOwner = GetComponent<MagneticDamageOwner>();
+        if (m_damageOwner == null)
+            m_damageOwner = gameObject.AddComponent<MagneticDamageOwner>();
 
         if (m_attackTrigger != null)
             m_attackTrigger.enabled = false;
@@ -164,6 +168,7 @@ public class WeaponStateController : MonoBehaviour
     {
         m_owner = m_pendingOwner;
         m_ownerHand = m_pendingHand;
+        m_damageOwner?.SetOwner(m_owner);
 
         m_pendingOwner = null;
         m_pendingHand = null;
@@ -206,6 +211,7 @@ public class WeaponStateController : MonoBehaviour
     {
         m_owner = newOwner;
         m_ownerHand = transform.parent;
+        m_damageOwner?.SetOwner(m_owner);
         m_pendingOwner = null;
         m_pendingHand = null;
         m_state = WeaponOwnerState.Owned;
