@@ -878,6 +878,14 @@ PrefabInstance:
       propertyPath: m_isActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4752736136569602758, guid: 053558ec5eb5f15469ce89137c948873, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 4.3297806e-17
+      objectReference: {fileID: 0}
+    - target: {fileID: 4752736136569602758, guid: 053558ec5eb5f15469ce89137c948873, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 4.3297806e-17
+      objectReference: {fileID: 0}
     - target: {fileID: 6635251846347781248, guid: 053558ec5eb5f15469ce89137c948873, type: 3}
       propertyPath: m_animator
       value: 
@@ -2971,7 +2979,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: MagnetRush.Enemy::EnemyArenaGate
   m_areaBox: {fileID: 0}
   m_playerTag: Player
-  m_sealTriggerInset: 6
+  m_sealTriggerInset: 1
   m_autoCollectEnemies: 1
   m_manualEnemies: []
   m_ignoreTurretsAndKamikaze: 1
@@ -4180,7 +4188,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: MagnetRush.Enemy::EnemyArenaGate
   m_areaBox: {fileID: 0}
   m_playerTag: Player
-  m_sealTriggerInset: 6
+  m_sealTriggerInset: 1
   m_autoCollectEnemies: 1
   m_manualEnemies: []
   m_ignoreTurretsAndKamikaze: 1
@@ -5362,15 +5370,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1802304174126137012, guid: 1f12e6be734d4614a91a1b7a264498bf, type: 3}
       propertyPath: m_LocalScale.x
-      value: 2.29
+      value: 2.1550732
       objectReference: {fileID: 0}
     - target: {fileID: 1802304174126137012, guid: 1f12e6be734d4614a91a1b7a264498bf, type: 3}
       propertyPath: m_LocalScale.y
-      value: 2.3112586
+      value: 2.175079
       objectReference: {fileID: 0}
     - target: {fileID: 1802304174126137012, guid: 1f12e6be734d4614a91a1b7a264498bf, type: 3}
       propertyPath: m_LocalScale.z
-      value: 2.3112586
+      value: 2.175079
       objectReference: {fileID: 0}
     - target: {fileID: 1802304174126137012, guid: 1f12e6be734d4614a91a1b7a264498bf, type: 3}
       propertyPath: m_LocalPosition.x
@@ -5378,7 +5386,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1802304174126137012, guid: 1f12e6be734d4614a91a1b7a264498bf, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -40
+      value: -37.957
       objectReference: {fileID: 0}
     - target: {fileID: 1802304174126137012, guid: 1f12e6be734d4614a91a1b7a264498bf, type: 3}
       propertyPath: m_LocalPosition.z
@@ -5428,6 +5436,10 @@ PrefabInstance:
       propertyPath: m_wallMaterial
       value: 
       objectReference: {fileID: 2100000, guid: db85ff7256dd1e24cbe6cd162e4778e4, type: 2}
+    - target: {fileID: 1802304174126137013, guid: 1f12e6be734d4614a91a1b7a264498bf, type: 3}
+      propertyPath: m_sealTriggerInset
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
