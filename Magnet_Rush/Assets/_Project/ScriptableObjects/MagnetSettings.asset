@@ -19,6 +19,9 @@ MonoBehaviour:
   repelMaxForcePerPair: 0
   influenceNormalizeForce: 0
   snapDistance: 1.5
+  burstOnAttractContact: 1
+  contactBurstVelocity: 12
+  contactBurstUpwardBias: 0.25
   snapBreakForce: 100
   holdEngageDistance: 1.5
   holdStiffness: 80

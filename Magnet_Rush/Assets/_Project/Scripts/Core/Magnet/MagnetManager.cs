@@ -380,7 +380,45 @@ public class MagnetManager : Singleton<MagnetManager>
         {
             a.NotifyContact(b);
             b.NotifyContact(a);
+            BurstAndReleaseAttractContact(a, b);
         }
+    }
+
+    /// <summary>
+    /// 異極同士がくっついた瞬間、磁力を解除して接触方向へ弾き飛ばす。
+    /// PD保持(Entity絡み)とFixedJointスナップ(Object同士)の両方をここで剥がす。
+    /// </summary>
+    private void BurstAndReleaseAttractContact(Magnetizable a, Magnetizable b)
+    {
+        if (m_settings == null || !m_settings.burstOnAttractContact) return;
+        if (a == null || b == null) return;
+        if (a.Pole == MagneticPole.None || b.Pole == MagneticPole.None) return;
+        if (a.Pole == b.Pole) return;
+
+        Vector3 delta = b.Position - a.Position;
+        Vector3 dirAtoB = delta.sqrMagnitude > 0.0001f
+            ? delta.normalized
+            : (b.transform.position - a.transform.position).normalized;
+        if (dirAtoB.sqrMagnitude < 0.0001f)
+            dirAtoB = Vector3.up;
+
+        Vector3 upBias = Vector3.up * Mathf.Max(0f, m_settings.contactBurstUpwardBias);
+        Vector3 burstA = (-dirAtoB + upBias).normalized * Mathf.Max(0f, m_settings.contactBurstVelocity);
+        Vector3 burstB = (dirAtoB + upBias).normalized * Mathf.Max(0f, m_settings.contactBurstVelocity);
+
+        // 先に保持/ジョイントを外す。DeactivateだけではFixedJointやPD保持が残るケースがある。
+        m_snapResolver?.ReleaseAllFor(a);
+        m_snapResolver?.ReleaseAllFor(b);
+        ReleaseHolds(a);
+        ReleaseHolds(b);
+
+        a.DeactivateWithFields();
+        b.DeactivateWithFields();
+
+        a.ApplyBurstVelocity(burstA);
+        b.ApplyBurstVelocity(burstB);
+
+        ChannelLogger.Log("Magnet", $"[ContactBurst] {a.name} <-> {b.name} を磁力解除して弾き飛ばし");
     }
 
     /// <summary>

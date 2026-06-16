@@ -228,6 +228,42 @@ public class Magnetizable : MonoBehaviour, IMagnetPoleProvider
     }
 
     /// <summary>
+    /// 自身に紐づくMagnetFieldも含めて磁化を解除する。
+    /// 着弾エフェクト/Visualizerの後始末は各FieldのOnFieldExpired購読に任せる。
+    /// </summary>
+    public void DeactivateWithFields()
+    {
+        var fields = GetComponentsInChildren<MagnetField>(true);
+        for (int i = 0; i < fields.Length; i++)
+        {
+            if (fields[i] != null)
+                fields[i].ForceExpire();
+        }
+
+        Deactivate();
+    }
+
+    /// <summary>
+    /// 磁力接触後の弾ける速度を一度だけ加える。
+    /// EntityはexternalVelocity、物理オブジェクトはRigidbodyへVelocityChangeとして適用する。
+    /// </summary>
+    public void ApplyBurstVelocity(Vector3 velocityDelta)
+    {
+        if (m_immovable) { ChannelLogger.LogGuardReturn("Magnet", "Immovable: 弾け速度を無視"); return; }
+        if (velocityDelta.sqrMagnitude < 0.0001f) { ChannelLogger.LogGuardReturn("Magnet", "弾け速度がゼロ"); return; }
+
+        if (m_cachedEntity != null)
+        {
+            m_cachedEntity.holdVelocity = Vector3.zero;
+            m_cachedEntity.externalVelocity += velocityDelta;
+            return;
+        }
+
+        if (m_rb != null && !m_rb.isKinematic)
+            m_rb.AddForce(velocityDelta, ForceMode.VelocityChange);
+    }
+
+    /// <summary>
     /// このフレームに受けた磁力の合計から影響度(0-1)を返す。
     /// maxForceを超えると1.0にクランプされる。
     /// </summary>

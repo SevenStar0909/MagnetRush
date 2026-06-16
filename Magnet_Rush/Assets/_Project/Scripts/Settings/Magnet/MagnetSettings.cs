@@ -36,6 +36,18 @@ public class MagnetSettings : ScriptableObject
     [Tooltip("物（クレート等）同士がこの距離まで近づくとくっつく。敵が絡む時は『吸い付き始める距離』を使う")]
     public float snapDistance = 1.5f;
 
+    [Label("くっついた瞬間に弾ける")]
+    [Tooltip("異極同士が接触したら磁力を解除し、接触方向へバチーンと弾き飛ばす")]
+    public bool burstOnAttractContact = true;
+
+    [Label("弾ける速さ（m/s）")]
+    [Tooltip("くっついた後に互いを引き離す速度。大きいほど勢いよく弾ける")]
+    public float contactBurstVelocity = 12f;
+
+    [Label("弾ける上向き補正")]
+    [Tooltip("弾ける方向に足す上向き成分。0なら真横、0.2〜0.4で少し派手に跳ねる")]
+    public float contactBurstUpwardBias = 0.25f;
+
     [Header("[スナップ]")]
     [Label("くっついた物体が離れる力")]
     [Tooltip("くっついた物どうしを引き剥がすのに要る力（同じ極で反発すると外れる）")]
