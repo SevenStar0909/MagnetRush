@@ -1681,6 +1681,23 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 78e9bb927d118a344a065af097c9c93b, type: 3}
+--- !u!1 &343512270 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2375503309117285780, guid: 8ce9c0690cd897d4bbbd683d6e510886, type: 3}
+  m_PrefabInstance: {fileID: 728005923}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &343512278
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 343512270}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1 &405592417
 GameObject:
   m_ObjectHideFlags: 0
@@ -2199,7 +2216,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3199827588150775943, guid: 2838ed7ac925e364bb6506f43830a1a0, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 739522017}
   m_SourcePrefab: {fileID: 100100000, guid: 2838ed7ac925e364bb6506f43830a1a0, type: 3}
 --- !u!1001 &562452872
 PrefabInstance:
@@ -2256,7 +2276,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 2375503309117285780, guid: 8ce9c0690cd897d4bbbd683d6e510886, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1813817335}
   m_SourcePrefab: {fileID: 100100000, guid: 8ce9c0690cd897d4bbbd683d6e510886, type: 3}
 --- !u!1 &584200914
 GameObject:
@@ -2371,6 +2394,23 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: -81.256}
+--- !u!1 &648163760 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2375503309117285780, guid: 8ce9c0690cd897d4bbbd683d6e510886, type: 3}
+  m_PrefabInstance: {fileID: 938850946}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &648163768
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 648163760}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1001 &684813286
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2665,8 +2705,45 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 2375503309117285780, guid: 8ce9c0690cd897d4bbbd683d6e510886, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 343512278}
   m_SourcePrefab: {fileID: 100100000, guid: 8ce9c0690cd897d4bbbd683d6e510886, type: 3}
+--- !u!1 &731214822 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2375503309117285780, guid: 8ce9c0690cd897d4bbbd683d6e510886, type: 3}
+  m_PrefabInstance: {fileID: 2013604473}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &731214830
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 731214822}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
+--- !u!1 &739522009 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3199827588150775943, guid: 2838ed7ac925e364bb6506f43830a1a0, type: 3}
+  m_PrefabInstance: {fileID: 545122379}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &739522017
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 739522009}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1 &854204630
 GameObject:
   m_ObjectHideFlags: 0
@@ -3177,7 +3254,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 2375503309117285780, guid: 8ce9c0690cd897d4bbbd683d6e510886, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 648163768}
   m_SourcePrefab: {fileID: 100100000, guid: 8ce9c0690cd897d4bbbd683d6e510886, type: 3}
 --- !u!1001 &952256293
 PrefabInstance:
@@ -4626,7 +4706,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 2375503309117285780, guid: 8ce9c0690cd897d4bbbd683d6e510886, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1497643651}
   m_SourcePrefab: {fileID: 100100000, guid: 8ce9c0690cd897d4bbbd683d6e510886, type: 3}
 --- !u!1 &1381162491
 GameObject:
@@ -4885,8 +4968,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8658713623504395900, guid: 087769e0a5ac90a4e9f6cc6114a531d6, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1613383802}
   m_SourcePrefab: {fileID: 100100000, guid: 087769e0a5ac90a4e9f6cc6114a531d6, type: 3}
+--- !u!1 &1497643643 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2375503309117285780, guid: 8ce9c0690cd897d4bbbd683d6e510886, type: 3}
+  m_PrefabInstance: {fileID: 1347513849}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1497643651
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1497643643}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1001 &1517642035
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5445,6 +5548,23 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 78e9bb927d118a344a065af097c9c93b, type: 3}
+--- !u!1 &1613383794 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8658713623504395900, guid: 087769e0a5ac90a4e9f6cc6114a531d6, type: 3}
+  m_PrefabInstance: {fileID: 1453937811}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1613383802
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1613383794}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1 &1652507872
 GameObject:
   m_ObjectHideFlags: 0
@@ -5681,6 +5801,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: tl_FL
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 00c333750f3e4954ab61a6bf4bafd1aa, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -5800,6 +5924,40 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1813817327 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2375503309117285780, guid: 8ce9c0690cd897d4bbbd683d6e510886, type: 3}
+  m_PrefabInstance: {fileID: 562452872}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1813817335
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1813817327}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
+--- !u!1 &1821828056 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2375503309117285780, guid: 8ce9c0690cd897d4bbbd683d6e510886, type: 3}
+  m_PrefabInstance: {fileID: 1879175955}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1821828064
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1821828056}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
 --- !u!1001 &1879175955
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5855,7 +6013,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 2375503309117285780, guid: 8ce9c0690cd897d4bbbd683d6e510886, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1821828064}
   m_SourcePrefab: {fileID: 100100000, guid: 8ce9c0690cd897d4bbbd683d6e510886, type: 3}
 --- !u!1001 &1918933355
 PrefabInstance:
@@ -6307,7 +6468,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 2375503309117285780, guid: 8ce9c0690cd897d4bbbd683d6e510886, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 731214830}
   m_SourcePrefab: {fileID: 100100000, guid: 8ce9c0690cd897d4bbbd683d6e510886, type: 3}
 --- !u!1 &2030178152
 GameObject:
