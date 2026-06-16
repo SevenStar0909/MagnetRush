@@ -32,6 +32,12 @@ public class EnemyHealthBarManager : MonoBehaviour
     [Tooltip("追従ゲージ(直近ダメージ)の色")]
     [SerializeField] private Color m_trailColor = Color.white;
 
+    [Header("位置補正")]
+    [Tooltip("頭上バーの画面位置をなめらかに追従させる時間(秒)。0で補正なし")]
+    [SerializeField] private float m_positionSmoothTime = 0.04f;
+    [Tooltip("この距離(px)以上ずれたら補間せず即座に移動する")]
+    [SerializeField] private float m_positionSnapDistance = 120f;
+
     [Header("フィル範囲(スプライト内のバー実寸。HP比をこの範囲へ線形マップ)")]
     [Tooltip("バー左端の正規化X")]
     [SerializeField] private float m_fillStart = 0.203f;
@@ -66,10 +72,14 @@ public class EnemyHealthBarManager : MonoBehaviour
         public Image health;
         public Image trail;
         public Collider headSource;
+        public Entity entity;
         public Renderer[] renderers;
+        public Vector2 anchoredPosition;
+        public Vector2 positionVelocity;
         public float trailValue;
         public float lastRatio;
         public float trailTimer;
+        public bool hasAnchoredPosition;
     }
 
     void Awake()
@@ -149,6 +159,7 @@ public class EnemyHealthBarManager : MonoBehaviour
             health = health,
             trail = trail,
             headSource = ResolveHeadCollider(h),
+            entity = h.GetComponentInParent<Entity>(),
             renderers = h.transform.root.GetComponentsInChildren<Renderer>(true),
             trailValue = ratio,
             lastRatio = ratio,
@@ -229,7 +240,7 @@ public class EnemyHealthBarManager : MonoBehaviour
         // スクリーン座標→コンテナのローカル座標(DPI/CanvasScalerを自動補正)
         if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
                 m_containerRect, new Vector2(screen.x, screen.y), null, out Vector2 local))
-            view.root.anchoredPosition = local;
+            ApplyAnchoredPosition(view, local, dt);
 
         ApplyFill(view.health, ratio); // 赤=現在HPは即時
 
@@ -271,6 +282,13 @@ public class EnemyHealthBarManager : MonoBehaviour
 
     private Vector3 GetHeadWorldPos(Health h, BarView view)
     {
+        if (view.entity == null) view.entity = h.GetComponentInParent<Entity>();
+        if (view.entity != null)
+        {
+            return view.entity.centerPosition
+                + view.entity.transform.up * (view.entity.height * 0.5f + m_headOffset);
+        }
+
         if (view.headSource == null) view.headSource = ResolveHeadCollider(h);
         float topY = view.headSource != null ? view.headSource.bounds.max.y : h.transform.position.y + 2f;
         Vector3 p = h.transform.position;
@@ -281,8 +299,32 @@ public class EnemyHealthBarManager : MonoBehaviour
     private Collider ResolveHeadCollider(Health h)
     {
         var col = h.GetComponent<Collider>();
+        if (col == null) col = h.GetComponentInParent<Collider>();
         if (col == null) col = h.GetComponentInChildren<Collider>();
         return col;
+    }
+
+    private void ApplyAnchoredPosition(BarView view, Vector2 target, float dt)
+    {
+        if (m_positionSmoothTime <= 0f || dt <= 0f || !view.hasAnchoredPosition
+            || Vector2.Distance(view.anchoredPosition, target) >= m_positionSnapDistance)
+        {
+            view.anchoredPosition = target;
+            view.positionVelocity = Vector2.zero;
+            view.hasAnchoredPosition = true;
+        }
+        else
+        {
+            view.anchoredPosition = Vector2.SmoothDamp(
+                view.anchoredPosition,
+                target,
+                ref view.positionVelocity,
+                m_positionSmoothTime,
+                Mathf.Infinity,
+                dt);
+        }
+
+        view.root.anchoredPosition = view.anchoredPosition;
     }
 
     // 本体の Renderer が1つでも表示中なら true。すべて非アクティブ/無効なら body が隠れているとみなす。

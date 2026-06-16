@@ -33,10 +33,10 @@ public class MagneticMover : MonoBehaviour, IMagneticResponse
     public bool IsResponseActive => m_magnetizable != null && m_magnetizable.IsActive;
 
     /// <summary>磁力移動モード中かどうか (Idle 以外)。AI はこの間スキップされる。</summary>
-    public bool IsMagnetActive => m_state != MoverState.Idle;
+    public bool IsMagnetActive => m_state != MoverState.Idle && IsResponseActive;
 
     /// <summary>壁・地面に押し付けられて静止中（ビタ止め）か。敵Baseはこの間 UpdateEntity をスキップして凍結する。</summary>
-    public bool IsStuck => m_state == MoverState.Stuck;
+    public bool IsStuck => m_state == MoverState.Stuck && IsResponseActive;
 
     void Awake()
     {
@@ -44,6 +44,27 @@ public class MagneticMover : MonoBehaviour, IMagneticResponse
         m_agent = GetComponent<NavMeshAgent>();
         m_magnetTarget = GetComponent<IMagnetTarget>();
         m_entity = m_magnetTarget as Entity;
+    }
+
+    void OnEnable()
+    {
+        if (m_magnetizable == null)
+            m_magnetizable = GetComponent<Magnetizable>();
+
+        if (m_magnetizable != null)
+            m_magnetizable.OnPoleChanged += HandlePoleChanged;
+    }
+
+    void OnDisable()
+    {
+        if (m_magnetizable != null)
+            m_magnetizable.OnPoleChanged -= HandlePoleChanged;
+    }
+
+    private void HandlePoleChanged(MagneticPole pole)
+    {
+        if (pole == MagneticPole.None)
+            RecoverFromMagnet();
     }
 
     public void OnMagnetForce(Vector3 force, Vector3 sourcePosition)

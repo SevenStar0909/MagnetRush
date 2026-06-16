@@ -27,6 +27,14 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
     [Tooltip("Dust エフェクト")]
     [SerializeField] private ParticleSystem m_dustEffect;
 
+    [Header("ふり降ろし砂埃")]
+    [Tooltip("右手が地面についた時に出す Dust の位置調整。AttackHitboxの地面中心からワールド座標でずらす")]
+    [SerializeField] private Vector3 m_armImpactDustOffset = new Vector3(0f, 0.05f, 0f);
+    [Tooltip("振り下ろし着地時の Dust サイズを右手 AttackHitbox の横幅に合わせる")]
+    [SerializeField] private bool m_matchArmImpactDustScaleToHitbox = true;
+    [Tooltip("右手 AttackHitbox 基準の Dust サイズ倍率。小さくしたい時はこの値を下げる")]
+    [SerializeField, Range(0.1f, 2f)] private float m_armImpactDustScaleMultiplier = 0.55f;
+
     //[Tooltip("ミサイル生成位置。未設定ならこのオブジェクト位置を使用")]
     //[SerializeField] private Transform[] m_missileSpawnPoints;
 
@@ -58,6 +66,11 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
     private int m_hIsStunned;
     private int m_hStaggerEnd;
 
+    private Vector3 m_dustDefaultLocalPosition;
+    private Quaternion m_dustDefaultLocalRotation;
+    private Vector3 m_dustDefaultLocalScale;
+    private bool m_hasDustDefaultTransform;
+
     void Awake()
     {
         if (m_animator == null)
@@ -84,6 +97,8 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
         m_hStunEnd = Animator.StringToHash(m_stunEndName);
         m_hIsStunned = Animator.StringToHash(m_isStunnedName);
         m_hStaggerEnd = Animator.StringToHash(m_staggerEndName);
+
+        CacheDustDefaultTransform();
 
         if (m_animator == null)
         {
@@ -246,6 +261,7 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
     public void EnableArmHitboxEvent()
     {
         if (m_attackHitboxes != null) m_attackHitboxes.EnableArmHitbox();
+        PlayArmImpactDustEffect();
         ChannelLogger.Log("EnemyBoss", $"BossArmEvent step2 is Triggered ");
     }
 
@@ -293,6 +309,7 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
     {
         if (m_dustEffect != null)
         {
+            RestoreDustDefaultTransform();
             m_dustEffect.Play();
         }
     }
@@ -391,5 +408,57 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
     public void ResetStaggerEnd()
     {
         if (m_animator != null) m_animator.ResetTrigger(m_hStaggerEnd);
+    }
+
+    private void CacheDustDefaultTransform()
+    {
+        if (m_dustEffect == null) return;
+
+        Transform dustTransform = m_dustEffect.transform;
+        m_dustDefaultLocalPosition = dustTransform.localPosition;
+        m_dustDefaultLocalRotation = dustTransform.localRotation;
+        m_dustDefaultLocalScale = dustTransform.localScale;
+        m_hasDustDefaultTransform = true;
+    }
+
+    private void RestoreDustDefaultTransform()
+    {
+        if (m_dustEffect == null || !m_hasDustDefaultTransform) return;
+
+        Transform dustTransform = m_dustEffect.transform;
+        dustTransform.localPosition = m_dustDefaultLocalPosition;
+        dustTransform.localRotation = m_dustDefaultLocalRotation;
+        dustTransform.localScale = m_dustDefaultLocalScale;
+    }
+
+    private void PlayArmImpactDustEffect()
+    {
+        if (m_dustEffect == null) return;
+
+        if (m_attackHitboxes != null
+            && m_attackHitboxes.TryGetArmHitboxDustPose(out Vector3 position, out float diameter))
+        {
+            Transform dustTransform = m_dustEffect.transform;
+            dustTransform.position = position + m_armImpactDustOffset;
+
+            if (m_matchArmImpactDustScaleToHitbox)
+            {
+                float parentScale = GetMaxAbsScale(dustTransform.parent);
+                float targetScale = diameter * m_armImpactDustScaleMultiplier;
+                float localScale = parentScale > Mathf.Epsilon ? targetScale / parentScale : targetScale;
+                dustTransform.localScale = Vector3.one * Mathf.Max(0.01f, localScale);
+            }
+        }
+
+        m_dustEffect.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        m_dustEffect.Play(true);
+    }
+
+    private static float GetMaxAbsScale(Transform target)
+    {
+        if (target == null) return 1f;
+
+        Vector3 scale = target.lossyScale;
+        return Mathf.Max(Mathf.Abs(scale.x), Mathf.Abs(scale.y), Mathf.Abs(scale.z));
     }
 }
