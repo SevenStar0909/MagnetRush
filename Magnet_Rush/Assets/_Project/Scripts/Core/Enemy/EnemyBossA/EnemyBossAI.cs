@@ -388,6 +388,11 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         var prev = m_state;
         m_state = next;
 
+        // 崩れ（Stun/Stagger）中だけ接地スナップを切る。崩れアニメで胴体が沈む間の下押しを止め、
+        // 本体が地面にめり込むのを防ぐ。崩れを抜けた瞬間（Idle 等）に false へ戻して通常の接地に復帰する。
+        if (m_boss != null)
+            m_boss.SuppressGroundSnap = next == BossState.Stunned || next == BossState.Stagger;
+
         TryEmitInterruptShockWave(prev, next);
 
         if (next == BossState.Rush)
