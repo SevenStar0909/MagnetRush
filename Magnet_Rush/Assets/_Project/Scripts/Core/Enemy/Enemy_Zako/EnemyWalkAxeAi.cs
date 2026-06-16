@@ -557,6 +557,9 @@ public class EnemyWalkAxeAi : MonoBehaviour
         if (m_agent.enabled && m_agent.isOnNavMesh)
             return;
 
+        if (m_enemyBase == null || !m_enemyBase.IsGrounded)
+            return;
+
         if (!NavMesh.SamplePosition(transform.position, out NavMeshHit hit, 5f, NavMesh.AllAreas))
             return;
 

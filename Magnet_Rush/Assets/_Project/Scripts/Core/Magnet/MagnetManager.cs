@@ -310,6 +310,17 @@ public class MagnetManager : Singleton<MagnetManager>
         float forceMagnitude = baseForce * strength;
         if (forceCap > 0f) forceMagnitude = Mathf.Min(forceMagnitude, forceCap);
 
+        // AxeEnemy など「有限質量の物理オブジェクト相手には自分を動かさない」対象との異極ペア。
+        // 箱/武器だけを敵へ飛ばし、壁・着弾弾などの固定磁力源には従来どおり敵を引き寄せる。
+        if (isOpposite && TryGetDynamicObjectAttractionOverride(a, b, out Magnetizable anchor, out Magnetizable mover))
+        {
+            Vector3 moverToAnchor = anchor.Position - mover.Position;
+            if (moverToAnchor.sqrMagnitude > 0.0001f)
+                mover.ApplyForce(moverToAnchor.normalized * forceMagnitude, anchor.Position);
+
+            return;
+        }
+
         // Entity 絡みの異極ペアが holdEngageDistance 内なら PD ホルダー経路に分岐（通常引力はスキップ）
         bool entityInvolved = a.CachedEntity != null || b.CachedEntity != null;
         if (isOpposite && entityInvolved && distance <= m_settings.holdEngageDistance)
@@ -405,6 +416,7 @@ public class MagnetManager : Singleton<MagnetManager>
         Vector3 upBias = Vector3.up * Mathf.Max(0f, m_settings.contactBurstUpwardBias);
         Vector3 burstA = (-dirAtoB + upBias).normalized * Mathf.Max(0f, m_settings.contactBurstVelocity);
         Vector3 burstB = (dirAtoB + upBias).normalized * Mathf.Max(0f, m_settings.contactBurstVelocity);
+        bool keepAnchorStill = TryGetDynamicObjectAttractionOverride(a, b, out Magnetizable anchor, out Magnetizable mover);
 
         // 先に保持/ジョイントを外す。DeactivateだけではFixedJointやPD保持が残るケースがある。
         m_snapResolver?.ReleaseAllFor(a);
@@ -415,10 +427,43 @@ public class MagnetManager : Singleton<MagnetManager>
         a.DeactivateWithFields();
         b.DeactivateWithFields();
 
+        if (keepAnchorStill)
+        {
+            Vector3 moverBurst = mover == a ? burstA : burstB;
+            mover.ApplyBurstVelocity(moverBurst);
+            ChannelLogger.Log("Magnet", $"[ContactBurst] {anchor.name} は固定したまま {mover.name} だけ弾き飛ばし");
+            return;
+        }
+
         a.ApplyBurstVelocity(burstA);
         b.ApplyBurstVelocity(burstB);
 
         ChannelLogger.Log("Magnet", $"[ContactBurst] {a.name} <-> {b.name} を磁力解除して弾き飛ばし");
+    }
+
+    private static bool TryGetDynamicObjectAttractionOverride(
+        Magnetizable a,
+        Magnetizable b,
+        out Magnetizable anchor,
+        out Magnetizable mover)
+    {
+        if (a != null && a.HoldPositionAgainstDynamicObjects && b != null && b.IsFiniteDynamicPhysicsObject)
+        {
+            anchor = a;
+            mover = b;
+            return true;
+        }
+
+        if (b != null && b.HoldPositionAgainstDynamicObjects && a != null && a.IsFiniteDynamicPhysicsObject)
+        {
+            anchor = b;
+            mover = a;
+            return true;
+        }
+
+        anchor = null;
+        mover = null;
+        return false;
     }
 
     /// <summary>
