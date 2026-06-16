@@ -18,6 +18,9 @@ public class EnemyMissile : MonoBehaviour, IMagneticResponse
     [SerializeField] private Vector3 m_targetOffset;    // ターゲットのどこを狙うかのオフセット
     [SerializeField] private float m_targetRefreshInterval = 0.1f; // ターゲットの再検索間隔
 
+    [Header("Arc Flight")]
+    [SerializeField] private float m_arcWaypointReachDistance = 1.2f;
+
     [Header("Visual Orientation")]
     [Tooltip("ミサイルの先端が向いているローカル方向")]
     [SerializeField] private Vector3 m_tipLocalDirection = Vector3.forward;
@@ -69,6 +72,14 @@ public class EnemyMissile : MonoBehaviour, IMagneticResponse
     private bool m_exploded;
     private Vector3 m_lastMagnetSourcePosition;
     private bool m_hasMagnetSourcePosition;
+    private bool m_arcFlightActive;
+    private bool m_arcWaypointReady;
+    private Vector3 m_arcStartPosition;
+    private Vector3 m_arcDirection;
+    private Vector3 m_arcWaypoint;
+    private float m_arcHeight;
+    private float m_arcSpreadDistance;
+    private float m_arcLaneOffset;
 
     private readonly List<Collider> m_ignoredColliders = new List<Collider>();
     private bool m_collisionRestored = true;
@@ -127,6 +138,7 @@ public class EnemyMissile : MonoBehaviour, IMagneticResponse
         m_seekTimer = m_seekDelay;
         m_refreshTimer = 0f;
         m_initialized = true;
+        ClearArcFlight();
 
         Vector3 dir = initialDirection.sqrMagnitude > 0f ? initialDirection.normalized : transform.forward;
         m_rb.linearVelocity = dir * Mathf.Max(0.1f, m_maxSpeed * 0.6f);
@@ -142,6 +154,22 @@ public class EnemyMissile : MonoBehaviour, IMagneticResponse
         Initialize(target, initialDirection);
         if (seekDelayOverride >= 0f)
             m_seekTimer = seekDelayOverride;
+    }
+
+    public void InitializeArc(
+        Transform target,
+        Vector3 launchDirection,
+        Vector3 formationDirection,
+        float launchDelay,
+        float arcHeight,
+        float arcSpreadDistance,
+        float arcLaneOffset)
+    {
+        Initialize(target, launchDirection);
+        if (launchDelay >= 0f)
+            m_seekTimer = launchDelay;
+
+        ConfigureArcFlight(formationDirection, arcHeight, arcSpreadDistance, arcLaneOffset);
     }
 
     public void SetPlayer(Transform player)
@@ -213,6 +241,7 @@ public class EnemyMissile : MonoBehaviour, IMagneticResponse
         if (m_rb == null || m_exploded)
             return;
 
+        ClearArcFlight();
         m_hasMagnetSourcePosition = true;
         m_lastMagnetSourcePosition = sourcePosition;
 
@@ -319,6 +348,9 @@ public class EnemyMissile : MonoBehaviour, IMagneticResponse
         if (target == null)
             return forward * m_maxSpeed;
 
+        if (TryResolveArcDesiredVelocity(out Vector3 arcVelocity))
+            return arcVelocity;
+
         Vector3 targetPos = target.position + m_targetOffset;
         Vector3 toTarget = targetPos - transform.position;
 
@@ -326,6 +358,117 @@ public class EnemyMissile : MonoBehaviour, IMagneticResponse
             return forward * m_maxSpeed;
 
         return toTarget.normalized * m_maxSpeed;
+    }
+
+    private void ConfigureArcFlight(Vector3 formationDirection, float arcHeight, float arcSpreadDistance, float arcLaneOffset)
+    {
+        Vector3 dir = formationDirection.sqrMagnitude > 0.0001f ? formationDirection.normalized : transform.forward;
+        m_arcDirection = dir.sqrMagnitude > 0.0001f ? dir.normalized : Vector3.up;
+        m_arcStartPosition = transform.position;
+        m_arcHeight = Mathf.Max(0f, arcHeight);
+        m_arcSpreadDistance = Mathf.Max(0f, arcSpreadDistance);
+        m_arcLaneOffset = arcLaneOffset;
+        m_arcWaypointReady = false;
+        m_arcFlightActive = m_arcHeight > 0f
+            || m_arcSpreadDistance > 0f
+            || Mathf.Abs(m_arcLaneOffset) > 0.001f;
+    }
+
+    private void ClearArcFlight()
+    {
+        m_arcFlightActive = false;
+        m_arcWaypointReady = false;
+        m_arcStartPosition = Vector3.zero;
+        m_arcDirection = Vector3.zero;
+        m_arcWaypoint = Vector3.zero;
+        m_arcHeight = 0f;
+        m_arcSpreadDistance = 0f;
+        m_arcLaneOffset = 0f;
+    }
+
+    private bool TryResolveArcDesiredVelocity(out Vector3 desiredVelocity)
+    {
+        desiredVelocity = Vector3.zero;
+
+        if (!m_arcFlightActive)
+            return false;
+
+        if (IsResponseActive)
+        {
+            ClearArcFlight();
+            return false;
+        }
+
+        if (!m_arcWaypointReady)
+            BuildArcWaypoint();
+
+        Vector3 toWaypoint = m_arcWaypoint - transform.position;
+        float reachDistance = Mathf.Max(0.05f, m_arcWaypointReachDistance);
+        if (toWaypoint.sqrMagnitude <= reachDistance * reachDistance || HasPassedArcWaypoint())
+        {
+            ClearArcFlight();
+            return false;
+        }
+
+        desiredVelocity = toWaypoint.normalized * m_maxSpeed;
+        return true;
+    }
+
+    private void BuildArcWaypoint()
+    {
+        Vector3 targetPos = ResolveArcTargetPosition();
+        Vector3 toTargetFlat = Vector3.ProjectOnPlane(targetPos - m_arcStartPosition, Vector3.up);
+        Vector3 targetDir = ResolveFlatDirection(toTargetFlat, transform.forward);
+        Vector3 formationFlat = Vector3.ProjectOnPlane(m_arcDirection, Vector3.up);
+        Vector3 spread = formationFlat.sqrMagnitude > 0.0001f
+            ? formationFlat.normalized * m_arcSpreadDistance
+            : Vector3.zero;
+        Vector3 laneDir = Vector3.Cross(Vector3.up, targetDir);
+        if (laneDir.sqrMagnitude <= 0.0001f)
+            laneDir = Vector3.right;
+
+        float targetDistance = toTargetFlat.magnitude;
+        float forwardDistance = Mathf.Max(m_arcSpreadDistance, targetDistance * 0.45f);
+
+        m_arcWaypoint = m_arcStartPosition
+            + targetDir * forwardDistance
+            + spread
+            + laneDir.normalized * m_arcLaneOffset;
+        m_arcWaypoint.y = Mathf.Max(m_arcStartPosition.y, targetPos.y) + m_arcHeight;
+        m_arcWaypointReady = true;
+    }
+
+    private Vector3 ResolveArcTargetPosition()
+    {
+        Transform target = ResolveTargetTransform();
+        if (target != null)
+            return target.position + m_targetOffset;
+
+        float distance = Mathf.Max(1f, m_arcSpreadDistance);
+        return m_arcStartPosition + m_arcDirection * distance;
+    }
+
+    private Vector3 ResolveFlatDirection(Vector3 candidate, Vector3 fallback)
+    {
+        Vector3 flat = Vector3.ProjectOnPlane(candidate, Vector3.up);
+        if (flat.sqrMagnitude > 0.0001f)
+            return flat.normalized;
+
+        flat = Vector3.ProjectOnPlane(fallback, Vector3.up);
+        if (flat.sqrMagnitude > 0.0001f)
+            return flat.normalized;
+
+        return Vector3.forward;
+    }
+
+    private bool HasPassedArcWaypoint()
+    {
+        Vector3 startToWaypoint = m_arcWaypoint - m_arcStartPosition;
+        if (startToWaypoint.sqrMagnitude <= 0.0001f)
+            return false;
+
+        Vector3 startToCurrent = transform.position - m_arcStartPosition;
+        return Vector3.Dot(startToCurrent, startToWaypoint) > startToWaypoint.sqrMagnitude;
     }
 
     private Transform ResolveTargetTransform()
@@ -406,13 +549,35 @@ public class EnemyMissile : MonoBehaviour, IMagneticResponse
 
     // 磁化されると異極の磁化オブジェクト同士が FixedJoint で固定され、Joint は既定で enableCollision=false の
     // ため OnCollisionEnter が発火しない。磁石に保持されて壁際で止まる弾も自由落下しなくなる。
-    // よって磁石の接触イベントでも爆発させる。これで磁化中でもミサイル同士・磁化物体への接触で確実に爆発する。
+    // よって磁石の接触イベントでも爆発させる。これで磁化中でも磁化物体への接触で確実に爆発する。
     private void HandleMagnetContact(Magnetizable other)
     {
         if (m_exploded) { ChannelLogger.LogGuardReturn("Enemy", "Missile既に爆発済み"); return; }
 
         Vector3 point = other != null ? Vector3.Lerp(transform.position, other.transform.position, 0.5f) : transform.position;
+        if (ShouldExplodeWithMissile(other))
+        {
+            Explode(point);
+            return;
+        }
+
         ResolveHitAndExplode(other != null ? other.gameObject : null, point);
+    }
+
+    private bool ShouldExplodeWithMissile(Magnetizable other)
+    {
+        if (other == null || m_selfMagnetizable == null)
+            return false;
+
+        EnemyMissile otherMissile = other.GetComponentInParent<EnemyMissile>();
+        if (otherMissile == null || otherMissile == this)
+            return false;
+
+        MagneticPole selfPole = m_selfMagnetizable.Pole;
+        MagneticPole otherPole = other.Pole;
+        return selfPole != MagneticPole.None
+            && otherPole != MagneticPole.None
+            && selfPole != otherPole;
     }
 
     // OnCollisionEnter（物理衝突）と HandleMagnetContact（磁石接触）の共通経路。
@@ -420,6 +585,9 @@ public class EnemyMissile : MonoBehaviour, IMagneticResponse
     private void ResolveHitAndExplode(GameObject other, Vector3 point)
     {
         if (m_exploded) return;
+
+        if (other != null && other.GetComponentInParent<EnemyMissile>() != null)
+            return;
 
         if (other != null)
         {
@@ -482,13 +650,12 @@ public class EnemyMissile : MonoBehaviour, IMagneticResponse
             }
         }
 
-        IgnoreOtherMissilesDuringGrace();
+        IgnoreOtherMissiles();
     }
 
-    // 1波4発が同時発射 → 密集や誘導での収束でミサイル同士がぶつかり、無条件 Explode で即自爆する
-    // （ログで 0.01s と 0.64s の PhysicsObject 同士衝突を確認）。ボスと同じ猶予時間(m_collisionRestoreDelay)の間だけ
-    // 生存中の他ミサイルとの衝突も無効化し、RestoreIgnoredCollisionsIfCleared で経過後に通常へ戻す。
-    private void IgnoreOtherMissilesDuringGrace()
+    // 1波4発が同時発射 → 密集や誘導での収束でミサイル同士がぶつかり、無条件 Explode で自爆する。
+    // ミサイル同士は攻撃対象ではないため、生成済みのミサイルとは破棄まで衝突させない。
+    private void IgnoreOtherMissiles()
     {
         if (m_collider == null) return;
 
@@ -502,7 +669,6 @@ public class EnemyMissile : MonoBehaviour, IMagneticResponse
             if (c == null || m_ignoredColliders.Contains(c)) continue;
 
             Physics.IgnoreCollision(m_collider, c, true);
-            m_ignoredColliders.Add(c);
         }
     }
 }

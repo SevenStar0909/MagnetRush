@@ -37,14 +37,26 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     [Tooltip("ONでミサイルを 上2発→左上/右上1発ずつ の順に撃つ。OFFなら従来通り前方へ撃つ")]
     [SerializeField] private bool m_fireLobMissiles = true;
 
-    [Tooltip("アーク弾の打ち上げ角度(度)。前方から上へ傾ける。大きいほど高く上がる")]
+    [Tooltip("分岐後の上ミサイル角度(度)。前方から上へ傾ける。90で真上")]
     [SerializeField] private float m_missileLobAngle = 45f;
 
-    [Tooltip("アーク弾が上昇してからプレイヤーへ向き直すまでの時間(秒)。長いほど高く上げてから落ちる")]
+    [Tooltip("発射口から控えめな角度で出てから、上/左右上の形に分岐し始めるまでの時間(秒)")]
     [SerializeField] private float m_missileLobRiseTime = 0.45f;
 
     [Tooltip("左右上ミサイルの横方向への開き角度(度)。0なら真上、90なら真横")]
     [SerializeField] private float m_missileSideLobAngle = 35f;
+
+    [Tooltip("発射口から出る瞬間だけ使う控えめな上向き角度(度)。分岐前の見た目用")]
+    [SerializeField] private float m_missileLaunchAngle = 12f;
+
+    [Tooltip("弧の頂点の高さ。大きいほどミサイル同士が空中で離れやすい")]
+    [SerializeField] private float m_missileArcHeight = 8f;
+
+    [Tooltip("分岐方向へ膨らませる距離。大きいほど横/前方に広い弧を描く")]
+    [SerializeField] private float m_missileArcSpreadDistance = 8f;
+
+    [Tooltip("上2発の弧を左右にずらす距離。0で同じライン")]
+    [SerializeField] private float m_missileArcLaneSpacing = 3f;
 
     [Tooltip("発射してからこの秒数はミサイルがボス本体に当たらない(発射直後の自爆防止)。経過後はボスにも当たる=磁力で撃ち返せる。0で即当たる")]
     [SerializeField] private float m_missileCollisionGrace = 3f;
@@ -685,16 +697,15 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     {
         if (m_missilePrefab == null) return;
 
-        float seekDelay = pattern == MissileWavePattern.Forward ? -1f : m_missileLobRiseTime;
-
         if (m_missileSpawnPoints == null || m_missileSpawnPoints.Length == 0)
         {
-            SpawnMissileAt(this.transform, Vector3.zero, ComputeMissileDirection(pattern, 0), seekDelay);
+            SpawnMissileAt(this.transform, Vector3.zero, pattern, 0, pattern == MissileWavePattern.LeftRightUp ? 2 : 1);
             if (pattern == MissileWavePattern.LeftRightUp)
-                SpawnMissileAt(this.transform, Vector3.zero, ComputeMissileDirection(pattern, 1), seekDelay);
+                SpawnMissileAt(this.transform, Vector3.zero, pattern, 1, 2);
             return;
         }
 
+        int spawnCount = m_missileSpawnPoints.Length;
         for (int i = 0; i < m_missileSpawnPoints.Length; i++)
         {
             Transform spawnPoint = m_missileSpawnPoints[i];
@@ -704,8 +715,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
             if (m_missileSpawnOffsets != null && i < m_missileSpawnOffsets.Length)
                 offset = m_missileSpawnOffsets[i];
 
-            Vector3 direction = ComputeMissileDirection(pattern, i);
-            SpawnMissileAt(spawnPoint, offset, direction, seekDelay);
+            SpawnMissileAt(spawnPoint, offset, pattern, i, spawnCount);
         }
     }
 
@@ -742,17 +752,64 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         return direction.sqrMagnitude > 0.0001f ? direction.normalized : Vector3.up;
     }
 
-    private void SpawnMissileAt(Transform spawnPoint, Vector3 localOffset, Vector3 direction, float seekDelayOverride)
+    private Vector3 ComputeLaunchDirection(Transform spawnPoint)
+    {
+        Vector3 bossForward = transform.forward;
+        if (bossForward.sqrMagnitude <= 0.0001f)
+            bossForward = Vector3.forward;
+
+        Vector3 fwd = spawnPoint != null ? spawnPoint.forward : bossForward;
+        if (fwd.sqrMagnitude <= 0.0001f)
+            fwd = bossForward;
+
+        // 左右でミラーされた発射口は forward が後ろ向きになることがある。
+        // その場合だけボス正面を使い、発射直後に背面へ飛ぶ見た目を防ぐ。
+        if (Vector3.Dot(Vector3.ProjectOnPlane(fwd, Vector3.up), Vector3.ProjectOnPlane(bossForward, Vector3.up)) < 0f)
+            fwd = bossForward;
+
+        float launchAngle = Mathf.Clamp(m_missileLaunchAngle, 0f, 89f) * Mathf.Deg2Rad;
+        return Vector3.RotateTowards(fwd.normalized, Vector3.up, launchAngle, 0f).normalized;
+    }
+
+    private float ComputeArcLaneOffset(MissileWavePattern pattern, int spawnIndex, int spawnCount)
+    {
+        if (pattern != MissileWavePattern.Up || spawnCount <= 1)
+            return 0f;
+
+        float center = (spawnCount - 1) * 0.5f;
+        return (spawnIndex - center) * m_missileArcLaneSpacing;
+    }
+
+    private void SpawnMissileAt(Transform spawnPoint, Vector3 localOffset, MissileWavePattern pattern, int spawnIndex, int spawnCount)
     {
         Vector3 spawnPos = spawnPoint.position + spawnPoint.TransformDirection(localOffset);
+        Vector3 formationDirection = ComputeMissileDirection(pattern, spawnIndex);
+        bool useArcFlight = pattern != MissileWavePattern.Forward;
+        Vector3 launchDirection = useArcFlight ? ComputeLaunchDirection(spawnPoint) : formationDirection;
 
-        if (direction.sqrMagnitude <= 0.0001f)
-            direction = spawnPoint.forward;
-        direction = direction.normalized;
+        if (launchDirection.sqrMagnitude <= 0.0001f)
+            launchDirection = spawnPoint.forward;
+        launchDirection = launchDirection.normalized;
 
-        Quaternion rotation = Quaternion.LookRotation(direction, Vector3.up);
+        Quaternion rotation = Quaternion.LookRotation(launchDirection, Vector3.up);
         EnemyMissile missile = Instantiate(m_missilePrefab, spawnPos, rotation);
-        missile.Initialize(m_player, direction, seekDelayOverride);
+        if (useArcFlight)
+        {
+            float laneOffset = ComputeArcLaneOffset(pattern, spawnIndex, spawnCount);
+            missile.InitializeArc(
+                m_player,
+                launchDirection,
+                formationDirection,
+                m_missileLobRiseTime,
+                m_missileArcHeight,
+                m_missileArcSpreadDistance,
+                laneOffset
+            );
+        }
+        else
+        {
+            missile.Initialize(m_player, launchDirection, -1f);
+        }
         // ミサイルは PhysicsObject なので発射元ボスの Pushbox 等と衝突してしまう。spawn 即爆発・自傷を防ぐ。
         missile.IgnoreCollisionsWith(gameObject, m_missileCollisionGrace);
     }
