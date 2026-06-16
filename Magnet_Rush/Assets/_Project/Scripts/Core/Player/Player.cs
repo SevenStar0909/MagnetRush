@@ -39,6 +39,9 @@ public class Player : Entity
     /// <summary>スタブ演出終了時に発火。カメラを通常追従へ戻す用。</summary>
     public static event Action OnStabFinisherEnd;
 
+    /// <summary>突きがボスに刺さった瞬間（ヒットVFXと同フレーム）に発火。カメラの着弾アップ＋スロー開始用。</summary>
+    public static event Action OnStabFinisherImpact;
+
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void ResetStatics()
     {
@@ -48,6 +51,7 @@ public class Player : Entity
         OnFallRespawnEnd = null;
         OnStabFinisherStart = null;
         OnStabFinisherEnd = null;
+        OnStabFinisherImpact = null;
     }
 
     protected override float Gravity => m_settings.gravity;
@@ -306,6 +310,9 @@ public class Player : Entity
     /// <summary>BossStabFinisherState から呼ぶ。カメラ演出の開始/終了を通知する。</summary>
     public void FireStabFinisherStart(Transform target, int variant) => OnStabFinisherStart?.Invoke(target, variant);
     public void FireStabFinisherEnd() => OnStabFinisherEnd?.Invoke();
+
+    /// <summary>StabAbility.OnStabHitEvent から呼ぶ。突き刺さりの瞬間をカメラへ通知する（着弾アップ＋スロー開始）。</summary>
+    public void FireStabFinisherImpact() => OnStabFinisherImpact?.Invoke();
 
     /// <summary>
     /// 通常 State 用の全許可ヘルパ。Idle / Move / Aim 等が呼ぶ。

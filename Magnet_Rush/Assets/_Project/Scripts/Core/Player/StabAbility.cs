@@ -64,6 +64,8 @@ public class StabAbility : Ability
             Vector3 hitPoint = m_bossTarget != null ? m_bossTarget.position : m_player.transform.position;
 
             SpawnStabHitVfx();
+            // VFX と同フレームでカメラへ着弾を通知＝この瞬間に着弾アップ＋スローを開始させる。
+            m_player.FireStabFinisherImpact();
 
             m_bossReceiver.OnStabHit(new StabHitData
             {
