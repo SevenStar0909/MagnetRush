@@ -346,6 +346,7 @@ MonoBehaviour:
   m_isActive: 0
   m_initialMass: Infinity
   m_immovable: 1
+  m_holdPositionAgainstDynamicObjects: 0
   m_centerOffset: {x: 0, y: 0, z: 0}
   m_useEdgeDetectionOutline: 0
 --- !u!114 &8774293733114710440
@@ -1430,8 +1431,8 @@ Transform:
   m_GameObject: {fileID: 6399212942176756622}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 18.7}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 11.59}
+  m_LocalScale: {x: 2.7549505, y: 2.7549505, z: 2.7549505}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 3809441685285971335}
@@ -4768,8 +4769,8 @@ MonoBehaviour:
   m_handMagnetizable: {fileID: 9114501031449292670}
   m_bossAI: {fileID: 8951133768723248270}
   m_boss: {fileID: 1849210394476134877}
-  m_colorN: {r: 1, g: 0.5, b: 0.5, a: 0.34509805}
-  m_colorS: {r: 0.5, g: 0.65, b: 1, a: 0.34509805}
+  m_colorN: {r: 1, g: 0.5, b: 0.5, a: 1}
+  m_colorS: {r: 0.5, g: 0.65, b: 1, a: 1}
   m_lineWidth: 0.035
   m_referenceBulletSettings: {fileID: 11400000, guid: 425ee2473071b7a4fa2afd4ccb6a162c, type: 2}
   m_chargeEffectN: {fileID: 1392514685208627377, guid: a85d063e0b66930408617a427b125910, type: 3}
@@ -4993,6 +4994,7 @@ MonoBehaviour:
   m_isActive: 0
   m_initialMass: Infinity
   m_immovable: 0
+  m_holdPositionAgainstDynamicObjects: 0
   m_centerOffset: {x: 0, y: 0, z: 0}
   m_useEdgeDetectionOutline: 0
 --- !u!114 &7376478091582785942
@@ -5303,6 +5305,7 @@ MonoBehaviour:
   m_isActive: 0
   m_initialMass: Infinity
   m_immovable: 0
+  m_holdPositionAgainstDynamicObjects: 0
   m_centerOffset: {x: 0, y: 0, z: 0}
   m_useEdgeDetectionOutline: 0
 --- !u!114 &6393997700562411918
