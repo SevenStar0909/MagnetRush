@@ -589,14 +589,14 @@ public class ProjectScanner : EditorWindow, IPreprocessBuildWithReport
         return char.ToUpper(s[0]) + s.Substring(1);
     }
 
-    void LogResultsToConsole()
+    void LogResultsToConsole(string context = "全チェック")
     {
         int errorCount = m_results.Count(r => r.severity == MessageType.Error);
         int warningCount = m_results.Count(r => r.severity == MessageType.Warning);
 
         if (errorCount == 0 && warningCount == 0)
         {
-            Debug.Log("[ProjectScanner] 全チェック完了。問題なし。");
+            Debug.Log($"[ProjectScanner] {context}完了。問題なし。");
             return;
         }
 
@@ -609,7 +609,7 @@ public class ProjectScanner : EditorWindow, IPreprocessBuildWithReport
                 Debug.LogWarning(msg, result.targetObject);
         }
 
-        Debug.Log($"[ProjectScanner] 完了: エラー {errorCount} 件 / 警告 {warningCount} 件");
+        Debug.Log($"[ProjectScanner] {context}完了: エラー {errorCount} 件 / 警告 {warningCount} 件");
     }
 
     static string BuildPath(GameObject go)
@@ -673,16 +673,22 @@ public class ProjectScanner : EditorWindow, IPreprocessBuildWithReport
         if (state != PlayModeStateChange.EnteredPlayMode) return;
 
         var scanner = CreateInstance<ProjectScanner>();
-        scanner.m_results.Clear();
-        scanner.ValidateTagsAndLayers();
-        scanner.ValidateOpenScenes();
-        scanner.ValidatePrefabs();
-        scanner.ValidateScriptableObjects();
-        scanner.ValidateCodeConventions();
-        scanner.ValidateNamingConventions();
-        scanner.ValidateBuildScenes();
-        scanner.LogResultsToConsole();
-        DestroyImmediate(scanner);
+        try
+        {
+            scanner.m_results.Clear();
+            scanner.ValidateTagsAndLayers();
+            scanner.ValidateOpenScenes();
+            scanner.ValidateBuildScenes();
+            scanner.LogResultsToConsole("PlayModeチェック");
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"[ProjectScanner] PlayModeチェック中にエラー: {e}");
+        }
+        finally
+        {
+            DestroyImmediate(scanner);
+        }
     }
 
 }
