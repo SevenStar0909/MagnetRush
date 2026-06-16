@@ -12,23 +12,44 @@ public class StabButtonPromptUI : MonoBehaviour
 
     [Header("Electric Effect")]
     [SerializeField] private bool m_showElectricEffect = true;
-    [SerializeField] private Color m_electricColor = new Color(1f, 0.86f, 0.05f, 0.95f);
-    [SerializeField] private float m_electricRadiusScale = 1.05f;
-    [SerializeField] private float m_electricLineWidth = 5f;
-    [SerializeField] private int m_electricArcCount = 3;
-    [SerializeField] private int m_electricSegmentsPerArc = 7;
-    [SerializeField] private float m_electricJitter = 14f;
-    [SerializeField] private float m_electricRefreshPerSecond = 18f;
-    [SerializeField] private float m_electricRotateSpeed = 50f;
+    [SerializeField] private GameObject m_electricEffectPrefab;
+    [SerializeField] private Color m_electricColor = new Color(0.1f, 0.55f, 1f, 0.95f);
+    [SerializeField] private float m_electricOverlayScale = 1.3f;
+    [SerializeField] private Vector2 m_electricOverlayOffset = Vector2.zero;
+    [SerializeField] private float m_electricEffectScale = 0.34f;
+    [SerializeField] private float m_electricThicknessScale = 2.2f;
+    [SerializeField] private int m_electricRingInstanceCount = 12;
+    [SerializeField] private float m_electricRingRadius = 1.55f;
+    [SerializeField] private float m_electricAngleVariation = 55f;
+    [SerializeField] private float m_electricTiltAngle = 28f;
+    [SerializeField] private float m_electricRingRotateSpeed = 35f;
+    [SerializeField] private float m_electricCameraSize = 3f;
+    [SerializeField] private int m_electricTextureSize = 256;
+    [SerializeField, Range(0, 31)] private int m_electricRenderLayer = 5;
+
+    [Header("Electric Edge")]
+    [SerializeField] private bool m_showElectricEdge = true;
+    [SerializeField] private int m_electricEdgeInstanceCount = 28;
+    [SerializeField] private float m_electricEdgeInnerRadius = 1.25f;
+    [SerializeField] private float m_electricEdgeOuterRadius = 1.85f;
+    [SerializeField] private float m_electricEdgeScale = 0.32f;
+    [SerializeField] private float m_electricEdgeJitter = 0.18f;
+    [SerializeField] private float m_electricEdgeAngleJitter = 80f;
+    [SerializeField] private float m_electricEdgeRefreshPerSecond = 18f;
 
     private StabAbility m_stab;
     private float m_nextRefreshTime;
-    private float m_nextElectricRefreshTime;
     private bool m_visible;
     private Vector3 m_baseScale = Vector3.one;
     private RectTransform m_rectTransform;
-    private RectTransform m_electricRoot;
-    private readonly List<Image> m_electricSegments = new();
+    private RectTransform m_electricOverlay;
+    private RawImage m_electricImage;
+    private Camera m_electricCamera;
+    private RenderTexture m_electricRenderTexture;
+    private GameObject m_electricEffectRoot;
+    private ParticleSystem[] m_electricParticles;
+    private float m_nextElectricEdgeRefreshTime;
+    private readonly List<Transform> m_electricEdgeInstances = new();
 
     private void Awake()
     {
@@ -39,6 +60,18 @@ public class StabButtonPromptUI : MonoBehaviour
         m_baseScale = transform.localScale;
         BuildElectricEffect();
         SetVisible(false);
+    }
+
+    private void OnDestroy()
+    {
+        if (m_electricRenderTexture != null)
+        {
+            m_electricRenderTexture.Release();
+            Destroy(m_electricRenderTexture);
+        }
+
+        if (m_electricCamera != null)
+            Destroy(m_electricCamera.gameObject);
     }
 
     private void Update()
@@ -73,8 +106,24 @@ public class StabButtonPromptUI : MonoBehaviour
         if (m_buttonImage != null)
             m_buttonImage.enabled = visible;
 
-        if (m_electricRoot != null)
-            m_electricRoot.gameObject.SetActive(visible && m_showElectricEffect);
+        bool showElectric = visible && m_showElectricEffect && m_electricImage != null;
+        if (m_electricImage != null)
+            m_electricImage.enabled = showElectric;
+
+        if (showElectric)
+        {
+            if (m_electricEffectRoot != null)
+                m_electricEffectRoot.SetActive(true);
+
+            PlayElectricEffect();
+        }
+        else
+        {
+            StopElectricEffect();
+
+            if (m_electricEffectRoot != null)
+                m_electricEffectRoot.SetActive(false);
+        }
 
         if (!visible)
             transform.localScale = m_baseScale;
@@ -94,107 +143,243 @@ public class StabButtonPromptUI : MonoBehaviour
 
     private void BuildElectricEffect()
     {
-        if (!m_showElectricEffect || m_electricRoot != null)
+        if (!m_showElectricEffect || m_electricEffectPrefab == null || m_electricOverlay != null)
             return;
 
-        GameObject root = new GameObject("ElectricEffect", typeof(RectTransform));
-        root.transform.SetParent(transform, false);
-        m_electricRoot = root.GetComponent<RectTransform>();
-        m_electricRoot.anchorMin = new Vector2(0.5f, 0.5f);
-        m_electricRoot.anchorMax = new Vector2(0.5f, 0.5f);
-        m_electricRoot.pivot = new Vector2(0.5f, 0.5f);
-        m_electricRoot.anchoredPosition = Vector2.zero;
-        m_electricRoot.sizeDelta = Vector2.zero;
-        m_electricRoot.SetAsFirstSibling();
+        GameObject overlay = new GameObject("ElectricEffectOverlay", typeof(RectTransform), typeof(RawImage));
+        overlay.transform.SetParent(transform, false);
+        m_electricOverlay = overlay.GetComponent<RectTransform>();
+        m_electricOverlay.anchorMin = new Vector2(0.5f, 0.5f);
+        m_electricOverlay.anchorMax = new Vector2(0.5f, 0.5f);
+        m_electricOverlay.pivot = new Vector2(0.5f, 0.5f);
+        m_electricOverlay.SetAsLastSibling();
 
-        int segmentCount = Mathf.Max(1, m_electricArcCount) * Mathf.Max(1, m_electricSegmentsPerArc);
-        for (int i = 0; i < segmentCount; i++)
+        m_electricImage = overlay.GetComponent<RawImage>();
+        m_electricImage.raycastTarget = false;
+        m_electricImage.color = Color.white;
+
+        int textureSize = Mathf.Clamp(m_electricTextureSize, 64, 1024);
+        m_electricRenderTexture = new RenderTexture(textureSize, textureSize, 16, RenderTextureFormat.ARGB32);
+        m_electricRenderTexture.name = "StabButtonPrompt_ElectricationRT";
+        m_electricRenderTexture.Create();
+        m_electricImage.texture = m_electricRenderTexture;
+
+        GameObject cameraObject = new GameObject("StabButtonPrompt_ElectricEffectCamera", typeof(Camera));
+        m_electricCamera = cameraObject.GetComponent<Camera>();
+        m_electricCamera.enabled = false;
+        m_electricCamera.clearFlags = CameraClearFlags.SolidColor;
+        m_electricCamera.backgroundColor = Color.clear;
+        m_electricCamera.orthographic = true;
+        m_electricCamera.nearClipPlane = 0.01f;
+        m_electricCamera.farClipPlane = 50f;
+        m_electricCamera.targetTexture = m_electricRenderTexture;
+        m_electricCamera.cullingMask = 1 << Mathf.Clamp(m_electricRenderLayer, 0, 31);
+        m_electricCamera.transform.SetPositionAndRotation(new Vector3(10000f, 10000f, -10000f), Quaternion.identity);
+
+        m_electricEffectRoot = new GameObject("YButton_ElectricationRing");
+        m_electricEffectRoot.transform.SetParent(m_electricCamera.transform, false);
+        m_electricEffectRoot.transform.localPosition = new Vector3(0f, 0f, 8f);
+        m_electricEffectRoot.transform.localRotation = Quaternion.identity;
+        m_electricEffectRoot.transform.localScale = Vector3.one;
+
+        int ringCount = Mathf.Clamp(m_electricRingInstanceCount, 1, 16);
+        float ringRadius = Mathf.Max(0f, m_electricRingRadius);
+        for (int i = 0; i < ringCount; i++)
         {
-            GameObject line = new GameObject($"ElectricLine_{i:00}", typeof(RectTransform), typeof(Image));
-            line.transform.SetParent(m_electricRoot, false);
-            Image image = line.GetComponent<Image>();
-            image.color = m_electricColor;
-            image.raycastTarget = false;
-            m_electricSegments.Add(image);
+            float angle = 360f / ringCount * i;
+            float radians = angle * Mathf.Deg2Rad;
+            GameObject effect = Instantiate(m_electricEffectPrefab, m_electricEffectRoot.transform);
+            effect.name = $"YButton_P_FX_Electrication_{i:00}";
+            effect.transform.localPosition = new Vector3(Mathf.Cos(radians) * ringRadius, Mathf.Sin(radians) * ringRadius, 0f);
+            effect.transform.localRotation = GetElectricRingRotation(i, angle);
+            effect.transform.localScale = Vector3.one * Mathf.Max(0.01f, m_electricEffectScale);
         }
 
-        m_electricRoot.gameObject.SetActive(false);
+        BuildElectricEdgeInstances();
+        SetLayerRecursive(m_electricEffectRoot, Mathf.Clamp(m_electricRenderLayer, 0, 31));
+        m_electricParticles = m_electricEffectRoot.GetComponentsInChildren<ParticleSystem>(true);
+        ApplyElectricColor();
+        UpdateElectricOverlayRect();
+        m_electricImage.enabled = false;
+        m_electricEffectRoot.SetActive(false);
     }
 
     private void UpdateElectricEffect()
     {
-        if (!m_visible || !m_showElectricEffect || m_electricRoot == null)
+        if (!m_visible || !m_showElectricEffect || m_electricImage == null || m_electricCamera == null)
             return;
 
-        m_electricRoot.Rotate(0f, 0f, m_electricRotateSpeed * Time.unscaledDeltaTime);
+        UpdateElectricOverlayRect();
+        m_electricCamera.orthographicSize = Mathf.Max(0.1f, m_electricCameraSize);
+        if (m_electricEffectRoot != null)
+            m_electricEffectRoot.transform.localRotation = m_electricEffectRoot.transform.localRotation * Quaternion.Euler(0f, 0f, m_electricRingRotateSpeed * Time.unscaledDeltaTime);
 
-        if (Time.unscaledTime < m_nextElectricRefreshTime)
-            return;
-
-        float refresh = Mathf.Max(1f, m_electricRefreshPerSecond);
-        m_nextElectricRefreshTime = Time.unscaledTime + 1f / refresh;
-        RefreshElectricSegments();
+        UpdateElectricEdge();
+        m_electricCamera.Render();
     }
 
-    private void RefreshElectricSegments()
+    private void UpdateElectricOverlayRect()
     {
-        if (m_rectTransform == null || m_electricSegments.Count == 0)
+        if (m_rectTransform == null || m_electricOverlay == null)
             return;
 
-        Vector2 size = m_rectTransform.rect.size;
-        float radius = Mathf.Max(size.x, size.y) * 0.5f * Mathf.Max(0.1f, m_electricRadiusScale);
-        int arcCount = Mathf.Max(1, m_electricArcCount);
-        int segmentsPerArc = Mathf.Max(1, m_electricSegmentsPerArc);
-        int lineIndex = 0;
+        Vector2 size = m_rectTransform.rect.size * Mathf.Max(0.1f, m_electricOverlayScale);
+        m_electricOverlay.anchoredPosition = m_electricOverlayOffset;
+        m_electricOverlay.sizeDelta = size;
+        m_electricOverlay.localScale = Vector3.one;
+    }
 
-        for (int arc = 0; arc < arcCount; arc++)
+    private void BuildElectricEdgeInstances()
+    {
+        if (!m_showElectricEdge || m_electricEffectPrefab == null || m_electricEffectRoot == null)
+            return;
+
+        int edgeCount = Mathf.Clamp(m_electricEdgeInstanceCount, 3, 64);
+        for (int i = 0; i < edgeCount; i++)
         {
-            float startAngle = (360f / arcCount) * arc + Random.Range(-18f, 18f);
-            float arcLength = Random.Range(70f, 115f);
+            GameObject effect = Instantiate(m_electricEffectPrefab, m_electricEffectRoot.transform);
+            effect.name = $"YButton_P_FX_Electrication_Edge_{i:00}";
+            effect.transform.localScale = Vector3.one * Mathf.Max(0.01f, m_electricEdgeScale);
+            m_electricEdgeInstances.Add(effect.transform);
+        }
 
-            Vector2 previous = PointOnElectricRing(startAngle, radius);
-            for (int segment = 0; segment < segmentsPerArc && lineIndex < m_electricSegments.Count; segment++)
+        RefreshElectricEdge(true);
+    }
+
+    private void UpdateElectricEdge()
+    {
+        if (!m_showElectricEdge || m_electricEdgeInstances.Count == 0)
+            return;
+
+        float refresh = Mathf.Max(1f, m_electricEdgeRefreshPerSecond);
+        if (Time.unscaledTime < m_nextElectricEdgeRefreshTime)
+            return;
+
+        m_nextElectricEdgeRefreshTime = Time.unscaledTime + 1f / refresh;
+        RefreshElectricEdge(false);
+    }
+
+    private void RefreshElectricEdge(bool force)
+    {
+        if (!force && (!m_visible || !m_showElectricEdge))
+            return;
+
+        int count = m_electricEdgeInstances.Count;
+        if (count == 0)
+            return;
+
+        float innerRadius = Mathf.Max(0f, m_electricEdgeInnerRadius);
+        float outerRadius = Mathf.Max(innerRadius, m_electricEdgeOuterRadius);
+        float jitter = Mathf.Max(0f, m_electricEdgeJitter);
+        float angleJitter = Mathf.Max(0f, m_electricEdgeAngleJitter);
+
+        for (int i = 0; i < count; i++)
+        {
+            Transform edge = m_electricEdgeInstances[i];
+            if (edge == null)
+                continue;
+
+            float baseAngle = 360f / count * i;
+            float angle = baseAngle + Random.Range(-angleJitter, angleJitter);
+            float radians = angle * Mathf.Deg2Rad;
+            float targetRadius = i % 2 == 0 ? outerRadius : innerRadius;
+            float radius = targetRadius + Random.Range(-jitter, jitter);
+            edge.localPosition = new Vector3(Mathf.Cos(radians) * radius, Mathf.Sin(radians) * radius, Random.Range(-0.08f, 0.08f));
+            edge.localRotation = GetElectricRingRotation(i, angle + Random.Range(-angleJitter, angleJitter));
+            edge.localScale = Vector3.one * Mathf.Max(0.01f, m_electricEdgeScale * Random.Range(0.75f, 1.35f));
+        }
+    }
+
+    private void PlayElectricEffect()
+    {
+        if (m_electricParticles == null)
+            return;
+
+        foreach (ParticleSystem particle in m_electricParticles)
+        {
+            if (particle == null)
+                continue;
+
+            particle.Play(true);
+        }
+    }
+
+    private void StopElectricEffect()
+    {
+        if (m_electricParticles == null)
+            return;
+
+        foreach (ParticleSystem particle in m_electricParticles)
+        {
+            if (particle == null)
+                continue;
+
+            particle.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        }
+    }
+
+    private void ApplyElectricColor()
+    {
+        if (m_electricParticles != null)
+        {
+            foreach (ParticleSystem particle in m_electricParticles)
             {
-                float t = (segment + 1f) / segmentsPerArc;
-                Vector2 next = PointOnElectricRing(startAngle + arcLength * t, radius);
-                Vector2 jitter = Random.insideUnitCircle * Mathf.Max(0f, m_electricJitter);
-                ApplyElectricLine(m_electricSegments[lineIndex], previous, next + jitter);
-                previous = next;
-                lineIndex++;
+                if (particle == null)
+                    continue;
+
+                ParticleSystem.MainModule main = particle.main;
+                main.startColor = m_electricColor;
+                main.startSizeMultiplier *= Mathf.Max(0.1f, m_electricThicknessScale);
             }
         }
 
-        for (; lineIndex < m_electricSegments.Count; lineIndex++)
-            m_electricSegments[lineIndex].enabled = false;
-    }
-
-    private static Vector2 PointOnElectricRing(float angleDegrees, float radius)
-    {
-        float rad = angleDegrees * Mathf.Deg2Rad;
-        return new Vector2(Mathf.Cos(rad), Mathf.Sin(rad)) * radius;
-    }
-
-    private void ApplyElectricLine(Image line, Vector2 start, Vector2 end)
-    {
-        if (line == null)
+        if (m_electricEffectRoot == null)
             return;
 
-        RectTransform rt = line.rectTransform;
-        Vector2 delta = end - start;
-        float length = delta.magnitude;
-        if (length <= 0.1f)
+        Renderer[] renderers = m_electricEffectRoot.GetComponentsInChildren<Renderer>(true);
+        foreach (Renderer effectRenderer in renderers)
         {
-            line.enabled = false;
-            return;
-        }
+            if (effectRenderer == null)
+                continue;
 
-        line.enabled = true;
-        line.color = m_electricColor;
-        rt.anchorMin = new Vector2(0.5f, 0.5f);
-        rt.anchorMax = new Vector2(0.5f, 0.5f);
-        rt.pivot = new Vector2(0.5f, 0.5f);
-        rt.anchoredPosition = (start + end) * 0.5f;
-        rt.sizeDelta = new Vector2(length, Mathf.Max(1f, m_electricLineWidth));
-        rt.localRotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(delta.y, delta.x) * Mathf.Rad2Deg);
+            if (effectRenderer is ParticleSystemRenderer particleRenderer)
+                particleRenderer.alignment = ParticleSystemRenderSpace.Local;
+
+            foreach (Material material in effectRenderer.materials)
+            {
+                if (material == null)
+                    continue;
+
+                if (material.HasProperty("_BaseColor"))
+                    material.SetColor("_BaseColor", m_electricColor);
+
+                if (material.HasProperty("_Color"))
+                    material.SetColor("_Color", m_electricColor);
+
+                if (material.HasProperty("_EmissionColor"))
+                    material.SetColor("_EmissionColor", m_electricColor);
+            }
+        }
+    }
+
+    private Quaternion GetElectricRingRotation(int index, float baseAngle)
+    {
+        float variation = Mathf.Max(0f, m_electricAngleVariation);
+        float[] offsets = { 0f, 90f, -90f, variation, -variation, 180f };
+        float z = baseAngle + offsets[index % offsets.Length];
+        float tilt = Mathf.Max(0f, m_electricTiltAngle);
+        float x = index % 2 == 0 ? tilt : -tilt;
+        float y = index % 3 == 0 ? -tilt * 0.5f : tilt * 0.5f;
+        return Quaternion.Euler(x, y, z);
+    }
+
+    private static void SetLayerRecursive(GameObject target, int layer)
+    {
+        if (target == null)
+            return;
+
+        target.layer = layer;
+        foreach (Transform child in target.transform)
+            SetLayerRecursive(child.gameObject, layer);
     }
 }

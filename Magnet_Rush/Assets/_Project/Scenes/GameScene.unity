@@ -303,6 +303,22 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 912345670100000004, guid: 37032c1edd1675b47b516a8b3d917f76, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 912345670100000005, guid: 37032c1edd1675b47b516a8b3d917f76, type: 3}
+      propertyPath: m_electricCameraSize
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 912345670100000005, guid: 37032c1edd1675b47b516a8b3d917f76, type: 3}
+      propertyPath: m_electricEffectScale
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 912345670100000005, guid: 37032c1edd1675b47b516a8b3d917f76, type: 3}
+      propertyPath: m_electricThicknessScale
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 5836681742755971000, guid: 37032c1edd1675b47b516a8b3d917f76, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0

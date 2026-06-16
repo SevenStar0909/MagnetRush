@@ -299,14 +299,28 @@ MonoBehaviour:
   m_pulseScaleAmount: 0.28
   m_pulseSnapPower: 2.4
   m_showElectricEffect: 1
-  m_electricColor: {r: 1, g: 0.86, b: 0.05, a: 0.95}
-  m_electricRadiusScale: 1.05
-  m_electricLineWidth: 5
-  m_electricArcCount: 3
-  m_electricSegmentsPerArc: 7
-  m_electricJitter: 14
-  m_electricRefreshPerSecond: 18
-  m_electricRotateSpeed: 50
+  m_electricEffectPrefab: {fileID: 5084856853744830301, guid: e066a806db08a85418d1bcf240a657b4, type: 3}
+  m_electricColor: {r: 0.1, g: 0.55, b: 1, a: 0.95}
+  m_electricOverlayScale: 1.3
+  m_electricOverlayOffset: {x: 0, y: 0}
+  m_electricEffectScale: 0.34
+  m_electricThicknessScale: 2.2
+  m_electricRingInstanceCount: 12
+  m_electricRingRadius: 1.55
+  m_electricAngleVariation: 55
+  m_electricTiltAngle: 28
+  m_electricRingRotateSpeed: 35
+  m_electricCameraSize: 3
+  m_electricTextureSize: 256
+  m_electricRenderLayer: 5
+  m_showElectricEdge: 1
+  m_electricEdgeInstanceCount: 28
+  m_electricEdgeInnerRadius: 1.25
+  m_electricEdgeOuterRadius: 1.85
+  m_electricEdgeScale: 0.32
+  m_electricEdgeJitter: 0.18
+  m_electricEdgeAngleJitter: 80
+  m_electricEdgeRefreshPerSecond: 18
 --- !u!1 &857511266202048897
 GameObject:
   m_ObjectHideFlags: 0
