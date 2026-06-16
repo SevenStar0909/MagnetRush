@@ -129,8 +129,8 @@ MonoBehaviour:
   - FallPlayerState, MagnetRush.Player, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - StabPlayerState, MagnetRush.Player, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - StabPlayerState, MagnetRush.Player, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-  - MagnetStickPlayerState, MagnetRush.Player, Version=0.0.0.0, Culture=neutral,
-    PublicKeyToken=null
+  - MagnetStickPlayerState, MagnetRush.Player, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  - BossStabFinisherState, MagnetRush.Player, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
 --- !u!114 &8415192833665430904
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -837,11 +837,11 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -2933139716659438605, guid: f06552fba20857b4ebab566556d4415e, type: 3}
-      propertyPath: 'm_Materials.Array.data[0]'
+      propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: 586ee20b6d8b32d4385e28297417a486, type: 2}
     - target: {fileID: -2933139716659438605, guid: f06552fba20857b4ebab566556d4415e, type: 3}
-      propertyPath: 'm_Materials.Array.data[1]'
+      propertyPath: m_Materials.Array.data[1]
       value: 
       objectReference: {fileID: 2100000, guid: 37abf5f11f4f436449ea2c1c037197e5, type: 2}
     - target: {fileID: 919132149155446097, guid: f06552fba20857b4ebab566556d4415e, type: 3}
