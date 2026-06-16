@@ -132,6 +132,7 @@ Transform:
   - {fileID: 8408626414812601395}
   - {fileID: 5593482957200654031}
   - {fileID: 3430188263162592626}
+  - {fileID: 693606294048666422}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1849210394476134877
@@ -1060,6 +1061,59 @@ Transform:
   - {fileID: 1842393909041147455}
   m_Father: {fileID: 9143151154395978059}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &3068167900348528723
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 693606294048666422}
+  - component: {fileID: 7651935554134231789}
+  m_Layer: 18
+  m_Name: StabBody
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &693606294048666422
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3068167900348528723}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 9143151154395978059}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &7651935554134231789
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3068167900348528723}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.92, y: 4.5, z: 2.2}
+  m_Center: {x: 0, y: 0.03, z: -1.85}
 --- !u!1 &4248555068340581981
 GameObject:
   m_ObjectHideFlags: 0
@@ -4809,6 +4863,62 @@ MonoBehaviour:
   m_counterCuePulseSpeed: 6
   m_counterCuePulseAmount: 0.08
   m_counterCueLocalOffset: {x: 0, y: 0, z: 0}
+--- !u!114 &3966792540574013720
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2584804830593947915}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bced0bea9b91a6440a0085a1ed88fd15, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Enemy::BossHandMagnetCaster
+  m_handMagnetizable: {fileID: 9114501031449292670}
+  m_bossAI: {fileID: 8951133768723248270}
+  m_boss: {fileID: 1849210394476134877}
+  m_colorN: {r: 1, g: 0.5, b: 0.5, a: 1}
+  m_colorS: {r: 0.5, g: 0.65, b: 1, a: 1}
+  m_lineWidth: 0.035
+  m_referenceBulletSettings: {fileID: 11400000, guid: 425ee2473071b7a4fa2afd4ccb6a162c, type: 2}
+  m_chargeEffectN: {fileID: 1392514685208627377, guid: a85d063e0b66930408617a427b125910, type: 3}
+  m_chargeEffectS: {fileID: 5771629677290899619, guid: 9bffa0e5a0c77ff4d8247ed370ebabe6, type: 3}
+  m_chargeDuration: 2
+  m_visualizerStartScale: 0.05
+  m_effectStartScale: 0.05
+  m_matchEffectEndScaleToMagnetRadius: 1
+  m_effectRadiusMultiplier: 2
+  m_effectEndScale: 20
+  m_effectGroundOffset: 0.05
+  m_destroyChargeEffectOnComplete: 1
+  m_delayMagnetUntilChargeComplete: 1
+  m_tintChargeEffect: 1
+  m_chargeCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  m_logCast: 1
 --- !u!1 &3805441978747365561 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 8767651658933856306, guid: 4209ff3e04242d249831366d7807a31b, type: 3}
@@ -5010,62 +5120,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: MagnetRush.Enemy::BossHandMagnetLink
   m_boneNameOverride: 
   m_outline: {fileID: 0}
---- !u!114 &3966792540574013720
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2584804830593947915}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bced0bea9b91a6440a0085a1ed88fd15, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: MagnetRush.Enemy::BossHandMagnetCaster
-  m_handMagnetizable: {fileID: 9114501031449292670}
-  m_bossAI: {fileID: 8951133768723248270}
-  m_boss: {fileID: 1849210394476134877}
-  m_colorN: {r: 1, g: 0.5, b: 0.5, a: 1}
-  m_colorS: {r: 0.5, g: 0.65, b: 1, a: 1}
-  m_lineWidth: 0.035
-  m_referenceBulletSettings: {fileID: 11400000, guid: 425ee2473071b7a4fa2afd4ccb6a162c, type: 2}
-  m_chargeEffectN: {fileID: 1392514685208627377, guid: a85d063e0b66930408617a427b125910, type: 3}
-  m_chargeEffectS: {fileID: 5771629677290899619, guid: 9bffa0e5a0c77ff4d8247ed370ebabe6, type: 3}
-  m_chargeDuration: 2
-  m_visualizerStartScale: 0.05
-  m_effectStartScale: 0.05
-  m_matchEffectEndScaleToMagnetRadius: 1
-  m_effectRadiusMultiplier: 2
-  m_effectEndScale: 20
-  m_effectGroundOffset: 0.05
-  m_destroyChargeEffectOnComplete: 1
-  m_delayMagnetUntilChargeComplete: 1
-  m_tintChargeEffect: 1
-  m_chargeCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  m_logCast: 1
 --- !u!1001 &5656691817322481352
 PrefabInstance:
   m_ObjectHideFlags: 0
