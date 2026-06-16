@@ -80,6 +80,9 @@ public class PlayerAnimator : MonoBehaviour
         { typeof(AimPlayerState),  (int)PlayerStateIndex.Aim        },
         { typeof(FallPlayerState), (int)PlayerStateIndex.Fall       },
         { typeof(StabPlayerState), (int)PlayerStateIndex.StabAttack },
+        // 演出ステートはひとまず StabAttack(5) として提示し、パイル(突き刺し)を再生させる。
+        // ジャンプ表現は後段でフェーズ別 State 駆動に差し替える。
+        { typeof(BossStabFinisherState), (int)PlayerStateIndex.StabAttack },
     };
 
     private static int GetStateIndex(System.Type type)
@@ -102,6 +105,7 @@ public class PlayerAnimator : MonoBehaviour
     private int m_hStab;
     private int m_hHit;
     private int m_hHitUpper;
+    private int m_lastFinisherPhaseIndex = int.MinValue;
 
     void Awake()
     {
@@ -272,6 +276,24 @@ public class PlayerAnimator : MonoBehaviour
             // 接地中は velocity.y が -SnapForce 固定なので externalVelocity.y を加算して
             // 実効的な垂直速度を Animator に渡す (Jump/Fall サブ遷移を磁力上昇でも駆動する)。
             m_animator.SetFloat(m_hVerticalSpeed, m_player.velocity.y + m_player.externalVelocity.y);
+        }
+
+        // 演出ステート: フェーズに応じて State Int / IsGrounded を上書きし、既存の AnyState 遷移
+        // (State==N + OnStateChanged) で 接近=Idle → 跳び上がり=Fall → 突き下ろし=StabAttack(パイル) を順に再生する。
+        if (m_states != null && m_states.current is BossStabFinisherState finisher)
+        {
+            m_animator.SetBool(m_hIsGrounded, !finisher.IsAirbornePhase);
+            int phaseIdx = finisher.AnimatorPhaseIndex;
+            if (phaseIdx != m_lastFinisherPhaseIndex)
+            {
+                m_lastFinisherPhaseIndex = phaseIdx;
+                m_animator.SetInteger(m_hState, phaseIdx);
+                m_animator.SetTrigger(m_hOnStateChanged);
+            }
+        }
+        else
+        {
+            m_lastFinisherPhaseIndex = int.MinValue;
         }
 
         bool aiming = m_aim != null && m_aim.IsAiming;

@@ -79,6 +79,8 @@ public class CameraSettingsApplier : MonoBehaviour
         Player.OnFallRespawnStart += OnFallRespawnStart;
         Player.OnFallRespawnEnd += OnFallRespawnEnd;
         MagneticContactDamage.OnEnemyDamageCameraShake += HandleEnemyDamageCameraShake;
+        Player.OnStabFinisherStart += OnStabFinisherStart;
+        Player.OnStabFinisherEnd += OnStabFinisherEnd;
         if (Player.Current != null) InitializeWithPlayer(Player.Current);
     }
 
@@ -89,6 +91,8 @@ public class CameraSettingsApplier : MonoBehaviour
         Player.OnFallRespawnStart -= OnFallRespawnStart;
         Player.OnFallRespawnEnd -= OnFallRespawnEnd;
         MagneticContactDamage.OnEnemyDamageCameraShake -= HandleEnemyDamageCameraShake;
+        Player.OnStabFinisherStart -= OnStabFinisherStart;
+        Player.OnStabFinisherEnd -= OnStabFinisherEnd;
         if (m_health != null) m_health.OnDie -= HandlePlayerDeath;
         if (m_playerMagnetizable != null) m_playerMagnetizable.OnRepulsionForce -= HandleRepulsionForce;
         ResetDamageShake();
@@ -175,6 +179,9 @@ public class CameraSettingsApplier : MonoBehaviour
     {
         // 死亡中は寄せ＋中央寄せを毎フレーム適用（Play中にInspector値を変えると即反映＝ライブ調整可）
         if (m_isDead && m_thirdPersonFollow != null) { UpdateDeathFraming(); UpdateDamageShake(); return; }
+
+        // スタブ演出中はプレイヤーのカメラ入力を止める（専用 finisher vcam のカットを乱さない）
+        if (m_inFinisher) return;
 
         // 凍結中は入力でピボットを回さない。落下→復帰の間カメラを静止させる
         if (m_isFrozen) { ResetDamageShake(); return; }
@@ -398,6 +405,11 @@ public class CameraSettingsApplier : MonoBehaviour
 
     private void OnFallRespawnStart() => Freeze(true);
     private void OnFallRespawnEnd() => Freeze(false);
+
+    // スタブ演出中フラグ。入力ロックのみに使う（vcam 切替は StabFinisherCamera が担当）。
+    private bool m_inFinisher;
+    private void OnStabFinisherStart(Transform target, int variant) => m_inFinisher = true;
+    private void OnStabFinisherEnd() => m_inFinisher = false;
 
     /// <summary>
     /// カメラを止める/再開する。止める間は追従対象を外して本体をその場に固定し、
