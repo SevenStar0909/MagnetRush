@@ -205,6 +205,122 @@ MonoBehaviour:
   m_dotSpriteN: {fileID: 21300000, guid: 2edb398adebf9fe4cb0118a2f9aeb251, type: 3}
   m_aimDistancePercent: 0.7
   m_transitionSpeed: 18
+--- !u!1 &912345670100000001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 912345670100000002}
+  - component: {fileID: 912345670100000003}
+  - component: {fileID: 912345670100000004}
+  - component: {fileID: 912345670100000005}
+  m_Layer: 5
+  m_Name: StabButtonPrompt
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &912345670100000002
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 912345670100000001}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3649604840432598615}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: -110}
+  m_SizeDelta: {x: 150, y: 150}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &912345670100000003
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 912345670100000001}
+  m_CullTransparentMesh: 1
+--- !u!114 &912345670100000004
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 912345670100000001}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 0
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: e82853a16f075ec4e8212f844a4b42f8, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 1
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!114 &912345670100000005
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 912345670100000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f20bfe503b745b4aaf9ab5d94a4d3f1, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::StabButtonPromptUI
+  m_buttonImage: {fileID: 912345670100000004}
+  m_refreshInterval: 0.05
+  m_pulseCyclesPerSecond: 4
+  m_pulseScaleAmount: 0.28
+  m_pulseSnapPower: 2.4
+  m_showElectricEffect: 1
+  m_electricEffectPrefab: {fileID: 5084856853744830301, guid: e066a806db08a85418d1bcf240a657b4, type: 3}
+  m_electricColor: {r: 0.1, g: 0.55, b: 1, a: 0.95}
+  m_electricOverlayScale: 1.3
+  m_electricOverlayOffset: {x: 0, y: 0}
+  m_electricEffectScale: 0.34
+  m_electricThicknessScale: 2.2
+  m_electricRingInstanceCount: 12
+  m_electricRingRadius: 1.55
+  m_electricAngleVariation: 55
+  m_electricTiltAngle: 28
+  m_electricRingRotateSpeed: 35
+  m_electricCameraSize: 3
+  m_electricTextureSize: 256
+  m_electricRenderLayer: 5
+  m_showElectricEdge: 1
+  m_electricEdgeInstanceCount: 28
+  m_electricEdgeInnerRadius: 1.25
+  m_electricEdgeOuterRadius: 1.85
+  m_electricEdgeScale: 0.32
+  m_electricEdgeJitter: 0.18
+  m_electricEdgeAngleJitter: 80
+  m_electricEdgeRefreshPerSecond: 18
 --- !u!1 &857511266202048897
 GameObject:
   m_ObjectHideFlags: 0
@@ -1248,6 +1364,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 7770518297848091918}
+  - {fileID: 912345670100000002}
   - {fileID: 2387208754698167448}
   - {fileID: 2888039112156132806}
   - {fileID: 6484409052559350547}

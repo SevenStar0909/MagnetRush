@@ -11,6 +11,22 @@ public class StabAbility : Ability
     private IStabReceiver m_bossReceiver;
     private bool m_warnedNoBossTag;
 
+    public bool CanStabNow
+    {
+        get
+        {
+            if (m_states == null || m_player == null) return false;
+            if (m_states.IsCurrentOfType<BossStabFinisherState>()) return false;
+            if (m_player.IsAbilityLocked(PlayerAbilityType.Stab)) return false;
+            if (m_player.Settings == null) return false;
+            if (!TryResolveBoss()) return false;
+            if (m_bossReceiver == null || !m_bossReceiver.CanReceiveStab) return false;
+            if (m_bossTarget == null) return false;
+
+            return Vector3.Distance(m_player.transform.position, m_bossTarget.position) <= m_player.Settings.stabRange;
+        }
+    }
+
     /// <summary>RB 入力でボススタン中＋接近時に StabPlayerState へ遷移する。</summary>
     public void Stab()
     {
