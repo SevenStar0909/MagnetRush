@@ -219,9 +219,12 @@ MonoBehaviour:
   m_animator: {fileID: 5724448596103820357}
   m_ai: {fileID: 8951133768723248270}
   m_attackHitboxes: {fileID: 116755455659821107}
-  m_boss: {fileID: 0}
+  m_boss: {fileID: 1849210394476134877}
   m_rushEffect: {fileID: 5132977627738312607}
   m_dustEffect: {fileID: 982530548752732595}
+  m_armImpactDustOffset: {x: 0, y: 0.05, z: -3}
+  m_matchArmImpactDustScaleToHitbox: 1
+  m_armImpactDustScaleMultiplier: 0.48
   m_enableDebugInput: 1
   m_attackName: Attack
   m_attackFinishedName: AttackFinished
