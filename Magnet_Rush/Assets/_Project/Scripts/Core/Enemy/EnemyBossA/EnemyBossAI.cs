@@ -97,6 +97,8 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     private bool m_wasInStaggerAnim;
     private bool m_staminaBreakEndRequested;
     private bool m_stabFinisherActive;
+    private bool m_postStabHoldPending;      // スタブ命中後、起き上がりを遅らせて崩れたまま伏せている間 true
+    private float m_postStabHoldTimer;       // その残り時間（秒）。0 で起き上がり（RecoverFromStab）
     // 演出開始〜終了まで持続する向きロック（命中で解除される m_stabFinisherActive と違い、立ち上がり中も維持）。
     private bool m_stabFinisherFacingLock;
     // 演出中の沈み込み防止。開始時の接地Yを保持し、LateUpdate で固定する（重力スナップ/崩れアニメ root motion を打ち消す）。
@@ -314,8 +316,19 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
 
     private void TickStaminaBreakTimer(float dt)
     {
-        if (m_stabFinisherActive) return; // 演出中は崩れ回復を止める（途中で立ち上がらせない）
         if (m_state != BossState.Stunned && m_state != BossState.Stagger) return;
+
+        // スタブ命中後の「ダウン保持」を最優先で処理する。演出ロック(m_stabFinisherActive)に関わらず時間を計り、
+        // 経過したら起き上がる。これが「刺した直後に起き上がるのが速すぎる」対策。
+        if (m_postStabHoldPending)
+        {
+            m_postStabHoldTimer = Mathf.Max(0f, m_postStabHoldTimer - dt);
+            if (m_postStabHoldTimer > 0f) return;
+            RecoverFromStab();
+            return;
+        }
+
+        if (m_stabFinisherActive) return; // 演出中は崩れ回復を止める（途中で立ち上がらせない）
         if (m_staminaBreakEndRequested) return;
 
         m_staminaBreakTimer = Mathf.Max(0f, m_staminaBreakTimer - dt);
@@ -711,8 +724,9 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     /// スタン値が満タン (Stamina.IsBroken) の間も true。満タンはスタブを当てるまで維持されるので、
     /// 崩れアニメが終わって取り逃しても、近づいてスタブを決めれば成立する（ソフトロック防止）。
     /// </summary>
-    public bool CanReceiveStab => m_state == BossState.Stunned || m_state == BossState.Stagger
-        || (m_stamina != null && m_stamina.IsBroken);
+    public bool CanReceiveStab => !m_postStabHoldPending
+        && (m_state == BossState.Stunned || m_state == BossState.Stagger
+        || (m_stamina != null && m_stamina.IsBroken));
 
     /// <summary>突き刺し目標。頭ボーン下の StabAnchor（Inspectorアサイン）。未設定なら本体 transform。</summary>
     public Transform StabAnchor => m_stabAnchor != null ? m_stabAnchor : transform;
@@ -764,16 +778,25 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     public void BeginStabFinisher() { m_stabFinisherActive = true; m_stabFinisherFacingLock = true; m_stabFinisherFrozenY = transform.position.y; }
     public void EndStabFinisher() { m_stabFinisherActive = false; m_stabFinisherFacingLock = false; }
 
-    // スタブ成功時：スタン値を0に戻し、スタン/よろけを終了して Idle へ。これ以上スタブできない＝1回のスタンにつき1回。
+    // スタブ成功時：スタン値を0に戻し、これ以上スタブできないようにする（1回のスタンにつき1回）。
+    // ただしすぐには起き上がらせず、postStabDownDuration の間ダウンを保持する（命中直後の起き上がりが速すぎる対策）。
+    // 実際の起き上がり（崩れ終了＋Idle復帰）は保持経過後に TickStaminaBreakTimer が RecoverFromStab で行う。
     private void EndBreakAfterStab()
     {
         if (m_stamina != null)
             m_stamina.ResetStamina();
 
-        EndBreakAnimations();
+        m_postStabHoldTimer = Mathf.Max(0f, m_settings != null ? m_settings.postStabDownDuration : 0f);
+        m_postStabHoldPending = true;
+    }
 
+    // スタブ命中後のダウン保持が経過したら起き上がる。崩れを終了して Idle へ戻す。
+    private void RecoverFromStab()
+    {
+        m_postStabHoldPending = false;
         m_staminaBreakEndRequested = true;
-        m_stabFinisherActive = false; // 命中したので演出ロック解除
+        m_stabFinisherActive = false; // 立ち上がったので演出ロック解除
+        EndBreakAnimations();
         ChangeState(BossState.Idle);
     }
 
