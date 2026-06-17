@@ -11,9 +11,9 @@ using UnityEngine.AI;
 /// 依存: EnemyBossBase, NavMeshAgent, EnemyBossBaseA_Animator
 /// </summary>
 [RequireComponent(typeof(EnemyBossBase))]
-public class EnemyBossAI : MonoBehaviour, IStabReceiver
+public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
 {
-    public enum BossState { Idle, AttackStance, AttackMotion, Rush, Missile, Stunned, Stagger }
+    public enum BossState { Idle, AttackStance, AttackMotion, Rush, Missile, Stunned, Stagger, Standing }
 
     [Header("References")]
     [SerializeField] private EnemyBossBaseA_Animator m_animator;
@@ -128,6 +128,8 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     public event Action OnStabHitSucceeded;   // スタブが成功したときに発火
 
     public BossState State => m_state;
+    public bool IsInvincibleState => m_state == BossState.Standing;
+    public bool CanTakeDamage(HitData hit) => !IsInvincibleState;
 
     public EnemyBossSettings Settings => m_settings;
 
@@ -148,8 +150,9 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
 
         if (m_agent != null)
         {
-            m_agent.updatePosition = false;
-            m_agent.updateRotation = false;
+            // Boss AI no longer uses NavMeshAgent; keep the component inert if it remains on old prefabs.
+            m_agent.enabled = false;
+            m_agent = null;
         }
     }
 
@@ -213,6 +216,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
             case BossState.Missile: TickMissile(dt); break;
             case BossState.Stunned: TickStunned(dt); break;
             case BossState.Stagger: TickStagger(dt); break;
+            case BossState.Standing: TickStanding(dt); break;
         }
     }
 
@@ -236,6 +240,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     private void HandleStaminaBreak()
     {
         if (m_animator == null) return;
+        if (IsInvincibleState) return;
 
         m_animator.TriggerBeInterrupted();
     }
@@ -245,7 +250,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     private void OnBodyHit(HitData hit)
     {
         if (m_stamina == null) return;
-        if (m_state == BossState.Stunned || m_state == BossState.Stagger) return; // 崩れ中は無視
+        if (IsBreakOrStandingState()) return;                                // 崩れ中は無視
         if (m_stamina.IsBroken) return;                                      // 満タン到達済み（崩れ処理中）。崩れ終了時にリセットされる
         if (hit.source == null) return;
         if (hit.source.transform.IsChildOf(transform)) return;               // 自分由来は無視
@@ -282,7 +287,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         bool inStunAnim = m_animator.IsStunned;
         // 既に Stunned/Stagger 中は再入場禁止。Animator のトランジション遅延中に IsStunned が true のまま残ると、
         // ChangeState(Idle) 後の次フレームで再検出されてループする
-        bool alreadyInBreak = m_state == BossState.Stunned || m_state == BossState.Stagger;
+        bool alreadyInBreak = IsBreakOrStandingState();
 
         if (!alreadyInBreak && inStunAnim && !m_wasInStunAnim)
         {
@@ -313,7 +318,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     {
         bool inStaggerAnim = m_animator.IsInStagger;
         // Stun と同じ理由でループ防止
-        bool alreadyInBreak = m_state == BossState.Stagger || m_state == BossState.Stunned;
+        bool alreadyInBreak = IsBreakOrStandingState();
 
         if (!alreadyInBreak && inStaggerAnim && !m_wasInStaggerAnim && !m_animator.IsStunned)
         {
@@ -351,7 +356,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
 
         m_staminaBreakEndRequested = true;
         EndBreakAnimations();
-        ChangeState(BossState.Idle);
+        ChangeState(BossState.Standing);
     }
 
     // 崩れ（Stun/Stagger）を終了させる退場トリガーを出す。m_state ではなく「実際に再生中のアニメ状態」を見て
@@ -391,7 +396,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         // 崩れ（Stun/Stagger）中だけ接地スナップを切る。崩れアニメで胴体が沈む間の下押しを止め、
         // 本体が地面にめり込むのを防ぐ。崩れを抜けた瞬間（Idle 等）に false へ戻して通常の接地に復帰する。
         if (m_boss != null)
-            m_boss.SuppressGroundSnap = next == BossState.Stunned || next == BossState.Stagger;
+            m_boss.SuppressGroundSnap = next == BossState.Stunned || next == BossState.Stagger || next == BossState.Standing;
 
         TryEmitInterruptShockWave(prev, next);
 
@@ -647,6 +652,15 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         // Stagger 中はプレイヤーに向き直らない（Stunned と同じ挙動）
     }
 
+    private void TickStanding(float dt)
+    {
+        m_boss.SlowDown(dt);
+        if (m_animator != null && (m_animator.IsStunned || m_animator.IsInStagger || m_animator.IsStanding))
+            return;
+
+        ChangeState(BossState.Idle);
+    }
+
     // === 公開コールバック (Animator → AI) ===
 
     /// <summary>AttackMotion clip 末尾の AnimEvent から呼ばれる。</summary>
@@ -826,9 +840,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     /// スタン値が満タン (Stamina.IsBroken) の間も true。満タンはスタブを当てるまで維持されるので、
     /// 崩れアニメが終わって取り逃しても、近づいてスタブを決めれば成立する（ソフトロック防止）。
     /// </summary>
-    public bool CanReceiveStab => !m_postStabHoldPending
-        && (m_state == BossState.Stunned || m_state == BossState.Stagger
-        || (m_stamina != null && m_stamina.IsBroken));
+    public bool CanReceiveStab => !m_postStabHoldPending && IsBreakState();
 
     /// <summary>突き刺し目標。頭ボーン下の StabAnchor（Inspectorアサイン）。未設定なら本体 transform。</summary>
     public Transform StabAnchor => m_stabAnchor != null ? m_stabAnchor : transform;
@@ -899,7 +911,17 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         m_staminaBreakEndRequested = true;
         m_stabFinisherActive = false; // 立ち上がったので演出ロック解除
         EndBreakAnimations();
-        ChangeState(BossState.Idle);
+        ChangeState(BossState.Standing);
+    }
+
+    private bool IsBreakOrStandingState()
+    {
+        return IsBreakState() || m_state == BossState.Standing;
+    }
+
+    private bool IsBreakState()
+    {
+        return m_state == BossState.Stunned || m_state == BossState.Stagger;
     }
 
     // === ヘルパ ===

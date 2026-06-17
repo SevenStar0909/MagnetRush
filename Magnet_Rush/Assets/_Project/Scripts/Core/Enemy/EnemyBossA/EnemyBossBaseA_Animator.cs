@@ -247,6 +247,16 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
         }
     }
 
+    public bool IsStanding
+    {
+        get
+        {
+            if (m_animator == null) return false;
+            int hash = m_animator.GetCurrentAnimatorStateInfo(0).shortNameHash;
+            return hash == s_hStunToStandState || hash == s_hStaggerToStandState;
+        }
+    }
+
     // ステート名をハッシュ化してキャッシュ。Animator内のステートと完全一致させる必要がある。
     private static readonly int s_hAttackStanceState = Animator.StringToHash("AttackStanceAnim");
     private static readonly int s_hAttackMotionState = Animator.StringToHash("AttackMotionAnim");
@@ -254,6 +264,8 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
     private static readonly int s_hAttackStunkeepState = Animator.StringToHash("StunkeepAnim");
     private static readonly int s_hAttackStaggerState = Animator.StringToHash("StaggerAnim");
     private static readonly int s_hAttackStaggerkeepState = Animator.StringToHash("StaggerkeepAnim");
+    private static readonly int s_hStunToStandState = Animator.StringToHash("StunToStand");
+    private static readonly int s_hStaggerToStandState = Animator.StringToHash("StaggerToStand");
     private static readonly int s_hRushState = Animator.StringToHash("RushAnim");
     private static readonly int s_hMissileState = Animator.StringToHash("MissileAnim");
 
