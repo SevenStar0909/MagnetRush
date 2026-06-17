@@ -57,26 +57,6 @@ public class StabFinisherSettings : ScriptableObject
         [Label("後ろへ振り向く時間（秒）")]
         [Tooltip("突き開始で後ろ(ボス前)へ振り向くのにかける時間。カメラの回り込みもこの間まで続く。0で即時スナップ")]
         public float turnDuration = 0.5f;
-
-        [Header("[演出カメラ（右回転＋寄り）]")]
-        [Label("カメラ開始の横角（度・ボス正面基準）")]
-        [Tooltip("演出開始時にプレイヤーをどの横方向から写すか")]
-        public float cameraBaseYaw = 0f;
-
-        [Label("右回転量（度・突きまでにこれだけ回り込む）")]
-        [Tooltip("突きに向けてカメラが回り込む角度。回る向きが逆ならマイナスにする")]
-        public float cameraOrbitDegrees = 60f;
-
-        [Label("カメラ開始距離（m）")]
-        [Tooltip("演出開始時のカメラ距離（遠い＝引き）")]
-        public float cameraStartDistance = 6f;
-
-        [Label("カメラ寄り距離（m・突きで最も寄る）")]
-        [Tooltip("突きの瞬間に到達する最短距離（近い＝アップ）")]
-        public float cameraEndDistance = 3f;
-
-        [Label("カメラ高さ（プレイヤー基準の上オフセットm）")]
-        public float cameraHeight = 1.5f;
     }
 
     [Label("Staggerポーズ用プロファイル")]
