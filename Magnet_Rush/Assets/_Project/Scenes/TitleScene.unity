@@ -1531,7 +1531,7 @@ MonoBehaviour:
   defaultRotation: {x: 64.213, y: 106.244, z: -10.443}
   minRotation: {x: -5, y: -1, z: 0}
   maxRotation: {x: 5, y: 1, z: 0}
-  speed: {x: 1, y: 1, z: 1}
+  speed: {x: 0.3, y: 0.3, z: 0.3}
 --- !u!1001 &324152570
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3355,7 +3355,7 @@ MonoBehaviour:
   defaultRotation: {x: 0, y: 0, z: -90}
   minRotation: {x: 60, y: 0, z: 0}
   maxRotation: {x: 120, y: 0, z: 0}
-  speed: {x: 0.63, y: 1, z: 1}
+  speed: {x: 0.2, y: 1, z: 1}
 --- !u!1 &983687708
 GameObject:
   m_ObjectHideFlags: 0
@@ -3942,7 +3942,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Flashing
   maxIntensity: 100
-  speed: 275
+  speed: 170
 --- !u!1 &1145747306
 GameObject:
   m_ObjectHideFlags: 0
@@ -4485,9 +4485,9 @@ Light:
   m_Enabled: 1
   serializedVersion: 12
   m_Type: 2
-  m_Color: {r: 1, g: 0.5276606, b: 0.4470588, a: 1}
-  m_Intensity: 10.05
-  m_Range: 6.72
+  m_Color: {r: 0.4792453, g: 0.18758097, b: 0.13653971, a: 1}
+  m_Intensity: 2.7440104
+  m_Range: 0.5
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
   m_CookieSize2D: {x: 0.5, y: 0.5}
@@ -4553,7 +4553,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Flashing
   maxIntensity: 100
-  speed: 265
+  speed: 150
 --- !u!1001 &1331224572
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4650,7 +4650,7 @@ MonoBehaviour:
   defaultRotation: {x: 0, y: 0, z: -90}
   minRotation: {x: 60, y: 0, z: 0}
   maxRotation: {x: 120, y: 0, z: 0}
-  speed: {x: 0.5, y: 1, z: 1}
+  speed: {x: 0.3, y: 1, z: 1}
 --- !u!1001 &1347513849
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6672,7 +6672,7 @@ MonoBehaviour:
   defaultRotation: {x: 0, y: 0, z: -90}
   minRotation: {x: 120, y: 0, z: 0}
   maxRotation: {x: 60, y: 0, z: 0}
-  speed: {x: 0.35, y: 1, z: 1}
+  speed: {x: 0.2, y: 1, z: 1}
 --- !u!1001 &2125463797
 PrefabInstance:
   m_ObjectHideFlags: 0
