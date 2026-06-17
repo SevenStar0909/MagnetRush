@@ -18,4 +18,21 @@ public class MagneticMoverSettings : ScriptableObject
     [Label("歩行に戻すのを試す最大回数")]
     [Tooltip("通常の歩行に戻すのを何回まで試すか")]
     public int maxRecoveryAttempts = 10;
+
+    [Header("[ビタ止め]")]
+    [Label("ビタ止めを有効にする")]
+    [Tooltip("磁力で壁・地面に押し付けられたら、その場でピタッと静止させる")]
+    public bool enableMagnetStick = true;
+
+    [Label("ビタ止めできる面のレイヤー")]
+    [Tooltip("ここに当たって押し付けられたら静止する面（Ground / Wall を指定）")]
+    public LayerMask magnetStickLayer;
+
+    [Label("面に張り付く距離（m）")]
+    [Tooltip("引かれた方向にこの距離まで面が近づいたら張り付く。小さいほどギリギリまで近づかないと止まらない")]
+    public float magnetStickCheckDistance = 0.15f;
+
+    [Label("張り付くのに必要な引き速度（m/s）")]
+    [Tooltip("これより遅い引き寄せでは張り付かない。弱い磁力でベタ止めしないための下限")]
+    public float magnetStickMinPullSpeed = 3f;
 }

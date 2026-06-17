@@ -73,6 +73,31 @@ public class BossAttackHitboxes : MonoBehaviour
         DisableRushHitbox();
     }
 
+    public bool TryGetArmHitboxDustPose(out Vector3 position, out float diameter)
+    {
+        position = default;
+        diameter = 0f;
+
+        if (m_armCollider == null)
+            return false;
+
+        Bounds bounds = m_armCollider.bounds;
+        if (bounds.size.sqrMagnitude <= Mathf.Epsilon)
+        {
+            GetCapsuleWorldPoints(m_armCollider, out Vector3 p0, out Vector3 p1, out float radius);
+            position = (p0 + p1) * 0.5f;
+            diameter = Mathf.Max(radius * 2f, Vector3.Distance(p0, p1) + radius * 2f);
+            return diameter > 0f;
+        }
+
+        position = new Vector3(bounds.center.x, bounds.min.y, bounds.center.z);
+        diameter = Mathf.Max(bounds.size.x, bounds.size.z);
+        if (diameter <= Mathf.Epsilon)
+            diameter = Mathf.Max(bounds.size.x, bounds.size.y, bounds.size.z);
+
+        return diameter > 0f;
+    }
+
     private void SetupCollider(CapsuleCollider attackCollider, bool isArm)
     {
         if (attackCollider == null)

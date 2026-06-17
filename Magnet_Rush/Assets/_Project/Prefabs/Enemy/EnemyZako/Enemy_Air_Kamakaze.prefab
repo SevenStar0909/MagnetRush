@@ -380,6 +380,7 @@ GameObject:
   - component: {fileID: 4325063793620339370}
   - component: {fileID: 1675817586269981184}
   - component: {fileID: 5789753094642808056}
+  - component: {fileID: 8741392391140202849}
   m_Layer: 9
   m_Name: Enemy_Air_Kamakaze
   m_TagString: Untagged
@@ -450,6 +451,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: MagnetRush.Enemy::EnemyAirKamikazeAi
   m_attackBox: {fileID: 3371804068742996250}
   m_animator: {fileID: 7410589952064792230}
+  m_obstacleMask:
+    serializedVersion: 2
+    m_Bits: 0
+  m_obstacleLookAhead: 4
+  m_obstacleProbeRadius: 0.7
+  m_obstacleAvoidanceWeight: 2.5
 --- !u!114 &7410589952064792230
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -574,6 +581,25 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Core::MagneticContactDamage
   m_settings: {fileID: 11400000, guid: 9f01ed40bc61deb4b9bf10679226afbc, type: 2}
+--- !u!114 &8741392391140202849
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7655374763120775714}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec3425370d2f4c145b0d9abb4b3cf3a7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Enemy::PropellerSpinner
+  m_speed: 1440
+  m_localAxis: {x: 1, y: 0, z: 0}
+  m_propellers:
+  - {fileID: 4171996554905987675}
+  - {fileID: 4926651996376332741}
+  - {fileID: 1623617018325925612}
+  - {fileID: 7366764896222075899}
 --- !u!1 &8029942397825399512
 GameObject:
   m_ObjectHideFlags: 0
@@ -875,6 +901,26 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 6096728488902875340}
   m_SourcePrefab: {fileID: 100100000, guid: a1250f53a64533d48a41b5c5b401b8f9, type: 3}
+--- !u!4 &1623617018325925612 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -1843002374328308117, guid: a1250f53a64533d48a41b5c5b401b8f9, type: 3}
+  m_PrefabInstance: {fileID: 8134741216973410439}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &4171996554905987675 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5260627447807671004, guid: a1250f53a64533d48a41b5c5b401b8f9, type: 3}
+  m_PrefabInstance: {fileID: 8134741216973410439}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &4926651996376332741 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3799511872606513474, guid: a1250f53a64533d48a41b5c5b401b8f9, type: 3}
+  m_PrefabInstance: {fileID: 8134741216973410439}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &7366764896222075899 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1646181859552365436, guid: a1250f53a64533d48a41b5c5b401b8f9, type: 3}
+  m_PrefabInstance: {fileID: 8134741216973410439}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &8606046238389876588 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: a1250f53a64533d48a41b5c5b401b8f9, type: 3}

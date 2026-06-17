@@ -224,26 +224,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 3237838587638888667, guid: 6b054d6dbebac8b49be1e9aed68e9497, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4801883723113897257, guid: 6b054d6dbebac8b49be1e9aed68e9497, type: 3}
-      propertyPath: m_additiveScenes.Array.size
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4801883723113897257, guid: 6b054d6dbebac8b49be1e9aed68e9497, type: 3}
-      propertyPath: 'm_additiveScenes.Array.data[0]'
-      value: Stage2_MAP
-      objectReference: {fileID: 0}
-    - target: {fileID: 4801883723113897257, guid: 6b054d6dbebac8b49be1e9aed68e9497, type: 3}
-      propertyPath: m_skipTitlePatterns.Array.size
-      value: 6
-      objectReference: {fileID: 0}
-    - target: {fileID: 4801883723113897257, guid: 6b054d6dbebac8b49be1e9aed68e9497, type: 3}
-      propertyPath: 'm_skipTitlePatterns.Array.data[5]'
-      value: GameScene
-      objectReference: {fileID: 0}
     - target: {fileID: 5587081181866657333, guid: 6b054d6dbebac8b49be1e9aed68e9497, type: 3}
       propertyPath: m_Name
       value: _Managers
@@ -251,10 +231,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 7317082606235403489, guid: 6b054d6dbebac8b49be1e9aed68e9497, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 989953339}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 6b054d6dbebac8b49be1e9aed68e9497, type: 3}
 --- !u!1001 &645861716
 PrefabInstance:
@@ -318,27 +295,6 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 177638, guid: 0abab5bb77339e4428787a870eb31bd3, type: 3}
   m_PrefabInstance: {fileID: 1759057002}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &989953333 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 7317082606235403489, guid: 6b054d6dbebac8b49be1e9aed68e9497, type: 3}
-  m_PrefabInstance: {fileID: 172596156}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &989953339
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 989953333}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fa26fb84373d77145ac93c09d1e4647f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: MagnetRush.UI::DeathEnemyScatter
-  m_retreatRadius: 14
-  m_retreatDelay: 0.6
-  m_retreatDuration: 3.2
-  m_faceTravelDirection: 1
 --- !u!1001 &1095209964
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -347,9 +303,21 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 3437399174579349591, guid: 37032c1edd1675b47b516a8b3d917f76, type: 3}
-      propertyPath: m_IsActive
+    - target: {fileID: 912345670100000004, guid: 37032c1edd1675b47b516a8b3d917f76, type: 3}
+      propertyPath: m_Enabled
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 912345670100000005, guid: 37032c1edd1675b47b516a8b3d917f76, type: 3}
+      propertyPath: m_electricCameraSize
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 912345670100000005, guid: 37032c1edd1675b47b516a8b3d917f76, type: 3}
+      propertyPath: m_electricEffectScale
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 912345670100000005, guid: 37032c1edd1675b47b516a8b3d917f76, type: 3}
+      propertyPath: m_electricThicknessScale
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 5836681742755971000, guid: 37032c1edd1675b47b516a8b3d917f76, type: 3}
       propertyPath: m_LocalPosition.x

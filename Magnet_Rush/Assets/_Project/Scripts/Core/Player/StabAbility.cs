@@ -11,10 +11,30 @@ public class StabAbility : Ability
     private IStabReceiver m_bossReceiver;
     private bool m_warnedNoBossTag;
 
+    public bool CanStabNow
+    {
+        get
+        {
+            if (m_states == null || m_player == null) return false;
+            if (m_states.IsCurrentOfType<BossStabFinisherState>()) return false;
+            if (m_player.IsAbilityLocked(PlayerAbilityType.Stab)) return false;
+            if (m_player.Settings == null) return false;
+            if (!TryResolveBoss()) return false;
+            if (m_bossReceiver == null || !m_bossReceiver.CanReceiveStab) return false;
+            if (m_bossTarget == null) return false;
+
+            return Vector3.Distance(m_player.transform.position, m_bossTarget.position) <= m_player.Settings.stabRange;
+        }
+    }
+
     /// <summary>RB 入力でボススタン中＋接近時に StabPlayerState へ遷移する。</summary>
     public void Stab()
     {
         if (!m_input.IsStabPressed) return;
+
+        // 既に演出中なら再解決・再突入しない（複数ボス時に対象ボスが切り替わるのを防ぐ）。
+        if (m_states.IsCurrentOfType<BossStabFinisherState>())
+        { ChannelLogger.LogGuardReturn("Stab", "スタブ演出中のため再突入しない"); return; }
 
         if (m_player.Settings == null)
         { ChannelLogger.LogGuardReturn("Stab", "PlayerSettings未設定"); return; }
@@ -29,7 +49,27 @@ public class StabAbility : Ability
         { ChannelLogger.LogGuardReturn("Stab", "ボスの距離がスタブ攻撃の範囲外"); return; }
 
         m_input.ConsumeStab();
-        m_states.Change<StabPlayerState>();
+
+        // ボスが自分の演出設定を持っていればそれを使う。無ければプレイヤー共通にフォールバック。
+        var bossSettings = m_bossReceiver != null ? m_bossReceiver.StabFinisherSettings : null;
+        var finisherSettings = bossSettings != null ? bossSettings : m_player.Settings.stabFinisherSettings;
+        if (finisherSettings == null || m_bossReceiver == null)
+        {
+            ChannelLogger.LogGuardReturn("Stab", "StabFinisherSettings未設定 or Receiver無し — 旧その場スタブにフォールバック");
+            m_states.Change<StabPlayerState>();
+            return;
+        }
+
+        var profile = finisherSettings.GetProfile(m_bossReceiver.StabChoreographyIndex);
+        var finisher = m_states.Get<BossStabFinisherState>();
+        if (finisher == null)
+        {
+            ChannelLogger.LogGuardReturn("Stab", "BossStabFinisherState未登録 — 旧その場スタブにフォールバック");
+            m_states.Change<StabPlayerState>();
+            return;
+        }
+        finisher.Setup(profile, m_bossReceiver);
+        m_states.Change<BossStabFinisherState>();
     }
 
     /// <summary>AnimEvent から呼ばれるヒット通知。突き刺しの瞬間に発火。</summary>
@@ -40,6 +80,8 @@ public class StabAbility : Ability
             Vector3 hitPoint = m_bossTarget != null ? m_bossTarget.position : m_player.transform.position;
 
             SpawnStabHitVfx();
+            // VFX と同フレームでカメラへ着弾を通知＝この瞬間に着弾アップ＋スローを開始させる。
+            m_player.FireStabFinisherImpact();
 
             m_bossReceiver.OnStabHit(new StabHitData
             {
@@ -68,13 +110,14 @@ public class StabAbility : Ability
         Object.Destroy(fx, settings.stabHitVfxLifetime);
     }
 
-    /// <summary>Boss を遅延解決。タグ未登録時もログ1回のみで安全に false を返す。</summary>
+    /// <summary>
+    /// 最寄りのボスを解決する。複数ボスでもプレイヤーに最も近い IStabReceiver 個体を選ぶ。
+    /// キャッシュしない（呼ぶたびに最寄りを取り直す）。タグ未登録時はログ1回のみで false。
+    /// </summary>
     private bool TryResolveBoss()
     {
-        if (m_bossTarget != null) return true;
-
-        GameObject bossObj;
-        try { bossObj = GameObject.FindWithTag("Boss"); }
+        GameObject[] bosses;
+        try { bosses = GameObject.FindGameObjectsWithTag("Boss"); }
         catch (UnityException)
         {
             if (!m_warnedNoBossTag)
@@ -85,9 +128,23 @@ public class StabAbility : Ability
             return false;
         }
 
-        if (bossObj == null) return false;
-        m_bossTarget = bossObj.transform;
-        m_bossReceiver = bossObj.GetComponent<IStabReceiver>();
+        if (bosses == null || bosses.Length == 0) return false;
+
+        Vector3 playerPos = m_player.transform.position;
+        float bestSqr = float.MaxValue;
+        GameObject best = null;
+        IStabReceiver bestReceiver = null;
+        foreach (var b in bosses)
+        {
+            var recv = b.GetComponent<IStabReceiver>();
+            if (recv == null) continue;
+            float sqr = (b.transform.position - playerPos).sqrMagnitude;
+            if (sqr < bestSqr) { bestSqr = sqr; best = b; bestReceiver = recv; }
+        }
+
+        if (best == null) return false;
+        m_bossTarget = best.transform;
+        m_bossReceiver = bestReceiver;
         return true;
     }
 }

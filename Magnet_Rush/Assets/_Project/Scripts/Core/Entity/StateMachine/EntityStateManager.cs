@@ -154,6 +154,12 @@ public abstract class EntityStateManager<T> : EntityStateManagerBase where T : E
         return type != null && m_states.ContainsKey(type);
     }
 
+    /// <summary>登録済みステートのインスタンスを型で取得する。未登録なら null。遷移前のセットアップに使う。</summary>
+    public TState Get<TState>() where TState : EntityState<T>
+    {
+        return m_states.TryGetValue(typeof(TState), out var s) ? s as TState : null;
+    }
+
     /// <summary>
     /// 文字列配列（クラス名 + アセンブリ名）から State リストを生成する。
     /// Inspector 駆動のサブクラスで GetStateList から呼ぶヘルパー。

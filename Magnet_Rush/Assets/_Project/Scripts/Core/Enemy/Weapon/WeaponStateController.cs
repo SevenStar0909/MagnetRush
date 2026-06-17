@@ -34,6 +34,7 @@ public class WeaponStateController : MonoBehaviour
 
     private Rigidbody m_rb;
     private Magnetizable m_magnetizable;
+    private MagneticDamageOwner m_damageOwner;
 
     private GameObject m_owner;
     private Transform m_ownerHand;
@@ -70,6 +71,9 @@ public class WeaponStateController : MonoBehaviour
     {
         m_rb = GetComponent<Rigidbody>();
         m_magnetizable = GetComponent<Magnetizable>();
+        m_damageOwner = GetComponent<MagneticDamageOwner>();
+        if (m_damageOwner == null)
+            m_damageOwner = gameObject.AddComponent<MagneticDamageOwner>();
 
         if (m_attackTrigger != null)
             m_attackTrigger.enabled = false;
@@ -164,6 +168,7 @@ public class WeaponStateController : MonoBehaviour
     {
         m_owner = m_pendingOwner;
         m_ownerHand = m_pendingHand;
+        m_damageOwner?.SetOwner(m_owner);
 
         m_pendingOwner = null;
         m_pendingHand = null;
@@ -198,6 +203,33 @@ public class WeaponStateController : MonoBehaviour
     public bool TryEquipTo(GameObject newOwner, Transform handSocket)
     {
         return TryStartEquip(newOwner, handSocket);
+    }
+
+    // 装備モーションも位置合わせもせず、今の親・姿勢のまま即座に所持状態にする。
+    // 武器を手ボーン(や飾り武器ノード)にあらかじめ重ねて配置しているケース用。
+    public void EquipInPlace(GameObject newOwner)
+    {
+        m_owner = newOwner;
+        m_ownerHand = transform.parent;
+        m_damageOwner?.SetOwner(m_owner);
+        m_pendingOwner = null;
+        m_pendingHand = null;
+        m_state = WeaponOwnerState.Owned;
+
+        if (m_rb != null)
+        {
+            if (!m_rb.isKinematic)
+            {
+                m_rb.linearVelocity = Vector3.zero;
+                m_rb.angularVelocity = Vector3.zero;
+            }
+            m_rb.isKinematic = true;
+        }
+
+        SetPhysicsCollidersEnabled(false);
+
+        if (m_attackTrigger != null)
+            m_attackTrigger.enabled = false;
     }
 
     public void Drop()

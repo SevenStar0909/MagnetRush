@@ -16,8 +16,18 @@ public class EnemyBossBase : Entity
     public EnemyBossSettings StatusData => m_statusData;
     public Transform Player => m_player;
 
+    /// <summary>
+    /// 崩れ（Stun/Stagger）中だけ true にすると接地スナップが切れる。EnemyBossAI が崩れ状態の出入りで切り替える。
+    /// 崩れアニメで胴体（Pelvis）が下がる数秒間、スナップの下押しが collide-and-slide をすり抜けて
+    /// 本体が地面にめり込むのを防ぐ。
+    /// </summary>
+    public bool SuppressGroundSnap { get; set; }
+
     protected override float Gravity => m_statusData != null ? m_statusData.gravity : base.Gravity;
-    protected override float SnapForce => m_statusData != null ? m_statusData.snapForce : base.SnapForce;
+
+    // 崩れ中はスナップ力を0にして下押しを止める（SuppressGroundSnap）。
+    protected override float SnapForce => SuppressGroundSnap ? 0f
+        : (m_statusData != null ? m_statusData.snapForce : base.SnapForce);
     protected override float ExternalDrag => m_statusData != null ? m_statusData.externalDrag : base.ExternalDrag;
     protected override float GroundCheckDistance => m_statusData != null ? m_statusData.groundCheckDistance : base.GroundCheckDistance;
     protected override LayerMask GroundLayer => (m_statusData != null && m_statusData.groundLayer != 0) ? m_statusData.groundLayer : base.GroundLayer;

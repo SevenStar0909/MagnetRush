@@ -18,6 +18,12 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     [Header("References")]
     [SerializeField] private EnemyBossBaseA_Animator m_animator;
 
+    [Tooltip("スタブの突き刺し目標。頭ボーン下に置いた空オブジェクト（StabAnchor）をアサインする")]
+    [SerializeField] private Transform m_stabAnchor;
+
+    [Tooltip("このボス専用のスタブ演出設定（数値＋カメラTimeline）。未設定ならプレイヤー共通設定を使う")]
+    [SerializeField] private StabFinisherSettings m_stabFinisherSettings;
+
     [Header("Missile")]
     [Tooltip("生成するミサイルPrefab")]
     [SerializeField] private EnemyMissile m_missilePrefab;
@@ -28,14 +34,29 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     [Tooltip("各生成位置のローカルオフセット。m_missileSpawnPoints と同じ順番で指定")]
     [SerializeField] private Vector3[] m_missileSpawnOffsets;
 
-    [Tooltip("ONで2発目のアニメイベントをアーク弾(上げてから狙う)にする。OFFで両方とも通常弾。発射数は変わらない(計4発)")]
+    [Tooltip("ONでミサイルを 上2発→左上/右上1発ずつ の順に撃つ。OFFなら従来通り前方へ撃つ")]
     [SerializeField] private bool m_fireLobMissiles = true;
 
-    [Tooltip("アーク弾の打ち上げ角度(度)。前方から上へ傾ける。大きいほど高く上がる")]
+    [Tooltip("分岐後の上ミサイル角度(度)。前方から上へ傾ける。90で真上")]
     [SerializeField] private float m_missileLobAngle = 45f;
 
-    [Tooltip("アーク弾が上昇してからプレイヤーへ向き直すまでの時間(秒)。長いほど高く上げてから落ちる")]
+    [Tooltip("発射口から控えめな角度で出てから、上/左右上の形に分岐し始めるまでの時間(秒)")]
     [SerializeField] private float m_missileLobRiseTime = 0.45f;
+
+    [Tooltip("左右上ミサイルの横方向への開き角度(度)。0なら真上、90なら真横")]
+    [SerializeField] private float m_missileSideLobAngle = 35f;
+
+    [Tooltip("発射口から出る瞬間だけ使う控えめな上向き角度(度)。分岐前の見た目用")]
+    [SerializeField] private float m_missileLaunchAngle = 12f;
+
+    [Tooltip("弧の頂点の高さ。大きいほどミサイル同士が空中で離れやすい")]
+    [SerializeField] private float m_missileArcHeight = 8f;
+
+    [Tooltip("分岐方向へ膨らませる距離。大きいほど横/前方に広い弧を描く")]
+    [SerializeField] private float m_missileArcSpreadDistance = 8f;
+
+    [Tooltip("上2発の弧を左右にずらす距離。0で同じライン")]
+    [SerializeField] private float m_missileArcLaneSpacing = 3f;
 
     [Tooltip("発射してからこの秒数はミサイルがボス本体に当たらない(発射直後の自爆防止)。経過後はボスにも当たる=磁力で撃ち返せる。0で即当たる")]
     [SerializeField] private float m_missileCollisionGrace = 3f;
@@ -59,8 +80,8 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     [Min(0f)]
     [SerializeField] private float m_shockUpwardlForce = 3f;
 
-    // 次の OnMissileFireEvent でアーク弾を撃つか。アニメの2イベントで 通常→アーク と交互に切り替える
-    private bool m_nextMissileIsLob;
+    // 次の OnMissileFireEvent で左右上ミサイルを撃つか。アニメの2イベントで 上→左右上 と切り替える
+    private bool m_nextMissileIsSideLob;
 
     [Header("Debug")]
     [SerializeField] private bool m_logStateChange = true;
@@ -90,6 +111,13 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     private bool m_wasInStunAnim;
     private bool m_wasInStaggerAnim;
     private bool m_staminaBreakEndRequested;
+    private bool m_stabFinisherActive;
+    private bool m_postStabHoldPending;      // スタブ命中後、起き上がりを遅らせて崩れたまま伏せている間 true
+    private float m_postStabHoldTimer;       // その残り時間（秒）。0 で起き上がり（RecoverFromStab）
+    // 演出開始〜終了まで持続する向きロック（命中で解除される m_stabFinisherActive と違い、立ち上がり中も維持）。
+    private bool m_stabFinisherFacingLock;
+    // 演出中の沈み込み防止。開始時の接地Yを保持し、LateUpdate で固定する（重力スナップ/崩れアニメ root motion を打ち消す）。
+    private float m_stabFinisherFrozenY;
 
     // Rush 中に Animator が一度でも IsInRush=true になったか。
     // 入り transition と exit transition を区別し、exit 時の player 追尾回転を抑制する。
@@ -185,6 +213,20 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
             case BossState.Missile: TickMissile(dt); break;
             case BossState.Stunned: TickStunned(dt); break;
             case BossState.Stagger: TickStagger(dt); break;
+        }
+    }
+
+    void LateUpdate()
+    {
+        // 演出中はボスを「刺される台」として安定させる。UpdateEntity(EnemyBossBase) の重力スナップや
+        // 崩れアニメの root motion で沈むのを防ぐため、開始時の接地Yに固定する。
+        // 演出外は毎フレーム来るので、ここはログを出さず静かに抜ける（RootMotionToController と同じ方針）。
+        if (!m_stabFinisherFacingLock) return;
+        Vector3 p = transform.position;
+        if (!Mathf.Approximately(p.y, m_stabFinisherFrozenY))
+        {
+            p.y = m_stabFinisherFrozenY;
+            transform.position = p;
         }
     }
 
@@ -290,6 +332,18 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     private void TickStaminaBreakTimer(float dt)
     {
         if (m_state != BossState.Stunned && m_state != BossState.Stagger) return;
+
+        // スタブ命中後の「ダウン保持」を最優先で処理する。演出ロック(m_stabFinisherActive)に関わらず時間を計り、
+        // 経過したら起き上がる。これが「刺した直後に起き上がるのが速すぎる」対策。
+        if (m_postStabHoldPending)
+        {
+            m_postStabHoldTimer = Mathf.Max(0f, m_postStabHoldTimer - dt);
+            if (m_postStabHoldTimer > 0f) return;
+            RecoverFromStab();
+            return;
+        }
+
+        if (m_stabFinisherActive) return; // 演出中は崩れ回復を止める（途中で立ち上がらせない）
         if (m_staminaBreakEndRequested) return;
 
         m_staminaBreakTimer = Mathf.Max(0f, m_staminaBreakTimer - dt);
@@ -334,6 +388,11 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         var prev = m_state;
         m_state = next;
 
+        // 崩れ（Stun/Stagger）中だけ接地スナップを切る。崩れアニメで胴体が沈む間の下押しを止め、
+        // 本体が地面にめり込むのを防ぐ。崩れを抜けた瞬間（Idle 等）に false へ戻して通常の接地に復帰する。
+        if (m_boss != null)
+            m_boss.SuppressGroundSnap = next == BossState.Stunned || next == BossState.Stagger;
+
         TryEmitInterruptShockWave(prev, next);
 
         if (next == BossState.Rush)
@@ -357,9 +416,9 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
             }
         }
 
-        // ミサイル攻撃の入り口でトグルをリセット（必ず 1発目=通常波 から始める）
+        // ミサイル攻撃の入り口でトグルをリセット（必ず 1発目=上波 から始める）
         if (next == BossState.Missile)
-            m_nextMissileIsLob = false;
+            m_nextMissileIsSideLob = false;
 
         // Rush 中に Stun/Stagger で割り込まれると Rush 側の Disable AnimEvent が発火せず
         // Wind/Dust が出続けるので、ブレイク入り口でも明示停止する
@@ -622,26 +681,36 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
             return;
         }
 
-        // アニメの2イベントで 1発目=通常波 / 2発目=アーク波 と交互に撃つ（発射数は元のまま 計4発）
-        bool lob = m_fireLobMissiles && m_nextMissileIsLob;
-        FireMissileWave(lob);
-        m_nextMissileIsLob = !m_nextMissileIsLob;
+        // アニメの2イベントで 1回目=上2発 / 2回目=左上1発+右上1発 と撃つ（計4発）
+        MissileWavePattern pattern = m_fireLobMissiles
+            ? (m_nextMissileIsSideLob ? MissileWavePattern.LeftRightUp : MissileWavePattern.Up)
+            : MissileWavePattern.Forward;
+
+        FireMissileWave(pattern);
+        m_nextMissileIsSideLob = !m_nextMissileIsSideLob;
     }
 
-    /// <summary>1波分。全発射点から通常弾 or アーク弾を1発ずつ撃つ。</summary>
-    private void FireMissileWave(bool lob)
+    private enum MissileWavePattern
+    {
+        Forward,
+        Up,
+        LeftRightUp
+    }
+
+    /// <summary>1波分。全発射点からパターンに応じた初期方向で1発ずつ撃つ。</summary>
+    private void FireMissileWave(MissileWavePattern pattern)
     {
         if (m_missilePrefab == null) return;
 
-        Vector3 direction = lob ? ComputeLobDirection() : transform.forward;
-        float seekDelay = lob ? m_missileLobRiseTime : -1f;
-
         if (m_missileSpawnPoints == null || m_missileSpawnPoints.Length == 0)
         {
-            SpawnMissileAt(this.transform, Vector3.zero, direction, seekDelay);
+            SpawnMissileAt(this.transform, Vector3.zero, pattern, 0, pattern == MissileWavePattern.LeftRightUp ? 2 : 1);
+            if (pattern == MissileWavePattern.LeftRightUp)
+                SpawnMissileAt(this.transform, Vector3.zero, pattern, 1, 2);
             return;
         }
 
+        int spawnCount = m_missileSpawnPoints.Length;
         for (int i = 0; i < m_missileSpawnPoints.Length; i++)
         {
             Transform spawnPoint = m_missileSpawnPoints[i];
@@ -651,29 +720,101 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
             if (m_missileSpawnOffsets != null && i < m_missileSpawnOffsets.Length)
                 offset = m_missileSpawnOffsets[i];
 
-            SpawnMissileAt(spawnPoint, offset, direction, seekDelay);
+            SpawnMissileAt(spawnPoint, offset, pattern, i, spawnCount);
         }
     }
 
-    /// <summary>アーク弾の初期方向。ボス正面を上へ m_missileLobAngle 度だけ傾ける。</summary>
-    private Vector3 ComputeLobDirection()
+    private Vector3 ComputeMissileDirection(MissileWavePattern pattern, int spawnIndex)
+    {
+        switch (pattern)
+        {
+            case MissileWavePattern.Up:
+                return ComputeUpDirection();
+
+            case MissileWavePattern.LeftRightUp:
+                return ComputeSideUpDirection(spawnIndex);
+
+            default:
+                return transform.forward;
+        }
+    }
+
+    /// <summary>上ミサイルの初期方向。ボス正面を上へ m_missileLobAngle 度だけ傾ける。</summary>
+    private Vector3 ComputeUpDirection()
     {
         Vector3 fwd = transform.forward;
         if (fwd.sqrMagnitude <= 0.0001f) fwd = Vector3.forward;
         return Vector3.RotateTowards(fwd, Vector3.up, m_missileLobAngle * Mathf.Deg2Rad, 0f).normalized;
     }
 
-    private void SpawnMissileAt(Transform spawnPoint, Vector3 localOffset, Vector3 direction, float seekDelayOverride)
+    /// <summary>左上/右上ミサイルの初期方向。</summary>
+    private Vector3 ComputeSideUpDirection(int spawnIndex)
+    {
+        float sideSign = spawnIndex % 2 == 0 ? -1f : 1f;
+        Vector3 side = transform.right * sideSign;
+        float angle = Mathf.Clamp(m_missileSideLobAngle, 0f, 89f) * Mathf.Deg2Rad;
+        Vector3 direction = Vector3.up * Mathf.Cos(angle) + side * Mathf.Sin(angle);
+        return direction.sqrMagnitude > 0.0001f ? direction.normalized : Vector3.up;
+    }
+
+    private Vector3 ComputeLaunchDirection(Transform spawnPoint)
+    {
+        Vector3 bossForward = transform.forward;
+        if (bossForward.sqrMagnitude <= 0.0001f)
+            bossForward = Vector3.forward;
+
+        Vector3 fwd = spawnPoint != null ? spawnPoint.forward : bossForward;
+        if (fwd.sqrMagnitude <= 0.0001f)
+            fwd = bossForward;
+
+        // 左右でミラーされた発射口は forward が後ろ向きになることがある。
+        // その場合だけボス正面を使い、発射直後に背面へ飛ぶ見た目を防ぐ。
+        if (Vector3.Dot(Vector3.ProjectOnPlane(fwd, Vector3.up), Vector3.ProjectOnPlane(bossForward, Vector3.up)) < 0f)
+            fwd = bossForward;
+
+        float launchAngle = Mathf.Clamp(m_missileLaunchAngle, 0f, 89f) * Mathf.Deg2Rad;
+        return Vector3.RotateTowards(fwd.normalized, Vector3.up, launchAngle, 0f).normalized;
+    }
+
+    private float ComputeArcLaneOffset(MissileWavePattern pattern, int spawnIndex, int spawnCount)
+    {
+        if (pattern != MissileWavePattern.Up || spawnCount <= 1)
+            return 0f;
+
+        float center = (spawnCount - 1) * 0.5f;
+        return (spawnIndex - center) * m_missileArcLaneSpacing;
+    }
+
+    private void SpawnMissileAt(Transform spawnPoint, Vector3 localOffset, MissileWavePattern pattern, int spawnIndex, int spawnCount)
     {
         Vector3 spawnPos = spawnPoint.position + spawnPoint.TransformDirection(localOffset);
+        Vector3 formationDirection = ComputeMissileDirection(pattern, spawnIndex);
+        bool useArcFlight = pattern != MissileWavePattern.Forward;
+        Vector3 launchDirection = useArcFlight ? ComputeLaunchDirection(spawnPoint) : formationDirection;
 
-        if (direction.sqrMagnitude <= 0.0001f)
-            direction = spawnPoint.forward;
-        direction = direction.normalized;
+        if (launchDirection.sqrMagnitude <= 0.0001f)
+            launchDirection = spawnPoint.forward;
+        launchDirection = launchDirection.normalized;
 
-        Quaternion rotation = Quaternion.LookRotation(direction, Vector3.up);
+        Quaternion rotation = Quaternion.LookRotation(launchDirection, Vector3.up);
         EnemyMissile missile = Instantiate(m_missilePrefab, spawnPos, rotation);
-        missile.Initialize(m_player, direction, seekDelayOverride);
+        if (useArcFlight)
+        {
+            float laneOffset = ComputeArcLaneOffset(pattern, spawnIndex, spawnCount);
+            missile.InitializeArc(
+                m_player,
+                launchDirection,
+                formationDirection,
+                m_missileLobRiseTime,
+                m_missileArcHeight,
+                m_missileArcSpreadDistance,
+                laneOffset
+            );
+        }
+        else
+        {
+            missile.Initialize(m_player, launchDirection, -1f);
+        }
         // ミサイルは PhysicsObject なので発射元ボスの Pushbox 等と衝突してしまう。spawn 即爆発・自傷を防ぐ。
         missile.IgnoreCollisionsWith(gameObject, m_missileCollisionGrace);
     }
@@ -685,8 +826,18 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
     /// スタン値が満タン (Stamina.IsBroken) の間も true。満タンはスタブを当てるまで維持されるので、
     /// 崩れアニメが終わって取り逃しても、近づいてスタブを決めれば成立する（ソフトロック防止）。
     /// </summary>
-    public bool CanReceiveStab => m_state == BossState.Stunned || m_state == BossState.Stagger
-        || (m_stamina != null && m_stamina.IsBroken);
+    public bool CanReceiveStab => !m_postStabHoldPending
+        && (m_state == BossState.Stunned || m_state == BossState.Stagger
+        || (m_stamina != null && m_stamina.IsBroken));
+
+    /// <summary>突き刺し目標。頭ボーン下の StabAnchor（Inspectorアサイン）。未設定なら本体 transform。</summary>
+    public Transform StabAnchor => m_stabAnchor != null ? m_stabAnchor : transform;
+
+    /// <summary>演出プロファイル選択。Stagger=0 / Stun=1。崩れでなければ 0。</summary>
+    public int StabChoreographyIndex => m_state == BossState.Stunned ? 1 : 0;
+
+    /// <summary>このボス専用のスタブ演出設定。未設定(null)ならプレイヤー共通設定にフォールバックさせる。</summary>
+    public StabFinisherSettings StabFinisherSettings => m_stabFinisherSettings;
 
     /// <summary>
     /// プレイヤーのスタブAnimEventから呼ばれる。HPバー1本分を一気に削る（クールダウン無視）。
@@ -725,15 +876,29 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
         EndBreakAfterStab();
     }
 
-    // スタブ成功時：スタン値を0に戻し、スタン/よろけを終了して Idle へ。これ以上スタブできない＝1回のスタンにつき1回。
+    /// <summary>フィニッシャー演出の開始/終了を受け取り、演出中の崩れ回復を止める。</summary>
+    public void BeginStabFinisher() { m_stabFinisherActive = true; m_stabFinisherFacingLock = true; m_stabFinisherFrozenY = transform.position.y; }
+    public void EndStabFinisher() { m_stabFinisherActive = false; m_stabFinisherFacingLock = false; }
+
+    // スタブ成功時：スタン値を0に戻し、これ以上スタブできないようにする（1回のスタンにつき1回）。
+    // ただしすぐには起き上がらせず、postStabDownDuration の間ダウンを保持する（命中直後の起き上がりが速すぎる対策）。
+    // 実際の起き上がり（崩れ終了＋Idle復帰）は保持経過後に TickStaminaBreakTimer が RecoverFromStab で行う。
     private void EndBreakAfterStab()
     {
         if (m_stamina != null)
             m_stamina.ResetStamina();
 
-        EndBreakAnimations();
+        m_postStabHoldTimer = Mathf.Max(0f, m_settings != null ? m_settings.postStabDownDuration : 0f);
+        m_postStabHoldPending = true;
+    }
 
+    // スタブ命中後のダウン保持が経過したら起き上がる。崩れを終了して Idle へ戻す。
+    private void RecoverFromStab()
+    {
+        m_postStabHoldPending = false;
         m_staminaBreakEndRequested = true;
+        m_stabFinisherActive = false; // 立ち上がったので演出ロック解除
+        EndBreakAnimations();
         ChangeState(BossState.Idle);
     }
 
@@ -746,6 +911,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver
 
     private void FacePlayer(float dt, float deadZoneDeg = 0f)
     {
+        if (m_stabFinisherFacingLock) return; // スタブ演出中(開始〜終了)はプレイヤーを追尾して回頭しない（命中後の立ち上がり中も維持）
         Vector3 look = m_player.position - transform.position;
         look.y = 0f;
         if (look.sqrMagnitude > 0.0001f)

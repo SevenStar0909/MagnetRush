@@ -53,6 +53,37 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 2.02, y: 1.49, z: 1.27}
   m_Center: {x: -1.77, y: 0.03, z: -0.01}
+--- !u!1 &407664664601223372
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5726356156711990154}
+  m_Layer: 0
+  m_Name: StabAnchor
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5726356156711990154
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 407664664601223372}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5742352773412887303}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &529854419887168867
 GameObject:
   m_ObjectHideFlags: 0
@@ -219,9 +250,12 @@ MonoBehaviour:
   m_animator: {fileID: 5724448596103820357}
   m_ai: {fileID: 8951133768723248270}
   m_attackHitboxes: {fileID: 116755455659821107}
-  m_boss: {fileID: 0}
+  m_boss: {fileID: 1849210394476134877}
   m_rushEffect: {fileID: 5132977627738312607}
   m_dustEffect: {fileID: 982530548752732595}
+  m_armImpactDustOffset: {x: 0, y: 0.05, z: -3}
+  m_matchArmImpactDustScaleToHitbox: 1
+  m_armImpactDustScaleMultiplier: 0.48
   m_enableDebugInput: 1
   m_attackName: Attack
   m_attackFinishedName: AttackFinished
@@ -268,6 +302,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Enemy::EnemyBossAI
   m_animator: {fileID: 1537800206930250247}
+  m_stabAnchor: {fileID: 5726356156711990154}
+  m_stabFinisherSettings: {fileID: 11400000, guid: cb977d2290347014cb9d9ece1b6f684b, type: 2}
   m_missilePrefab: {fileID: 5509490972982333118, guid: 747eac45c9df97d49b3ef2b43ae206d9, type: 3}
   m_missileSpawnPoints:
   - {fileID: 8662209342513077446}
@@ -277,7 +313,12 @@ MonoBehaviour:
   - {x: 0, y: 1.5, z: 0}
   m_fireLobMissiles: 1
   m_missileLobAngle: 90
-  m_missileLobRiseTime: 0.65
+  m_missileLobRiseTime: 0.12
+  m_missileSideLobAngle: 35
+  m_missileLaunchAngle: 12
+  m_missileArcHeight: 8
+  m_missileArcSpreadDistance: 8
+  m_missileArcLaneSpacing: 3
   m_missileCollisionGrace: 3
   m_shockAfterAttackStance: 1
   m_shockAfterAttackMotion: 1
@@ -345,6 +386,7 @@ MonoBehaviour:
   m_isActive: 0
   m_initialMass: Infinity
   m_immovable: 1
+  m_holdPositionAgainstDynamicObjects: 0
   m_centerOffset: {x: 0, y: 0, z: 0}
   m_useEdgeDetectionOutline: 0
 --- !u!114 &8774293733114710440
@@ -428,6 +470,7 @@ Transform:
   m_Children:
   - {fileID: 4084058534659399516}
   - {fileID: 4874342156676677225}
+  - {fileID: 3537696456043795040}
   m_Father: {fileID: 2621739881502880622}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1458422506426570559
@@ -1429,8 +1472,8 @@ Transform:
   m_GameObject: {fileID: 6399212942176756622}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 18.7}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 11.59}
+  m_LocalScale: {x: 2.7549505, y: 2.7549505, z: 2.7549505}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 3809441685285971335}
@@ -1770,6 +1813,59 @@ MonoBehaviour:
   m_EditorClassIdentifier: MagnetRush.Core::Hitbox
   m_health: {fileID: 971369539054672765}
   m_hitGroup: 1
+--- !u!1 &8047698887338227225
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3537696456043795040}
+  - component: {fileID: 9170499790876549175}
+  m_Layer: 18
+  m_Name: StabBody
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3537696456043795040
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8047698887338227225}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 11862925501177534}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &9170499790876549175
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8047698887338227225}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.92, y: 4.5, z: 2.2}
+  m_Center: {x: 0, y: 0.03, z: -1.85}
 --- !u!1 &8682870149202065196
 GameObject:
   m_ObjectHideFlags: 0
@@ -3996,6 +4092,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -5009818582642263366, guid: c3dfd9af8e7ee194187aa18dc68da177, type: 3}
       insertIndex: -1
       addedObject: {fileID: 11862925501177534}
+    - targetCorrespondingSourceObject: {fileID: 5884842893067277011, guid: c3dfd9af8e7ee194187aa18dc68da177, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5726356156711990154}
     - targetCorrespondingSourceObject: {fileID: -4592311537671613275, guid: c3dfd9af8e7ee194187aa18dc68da177, type: 3}
       insertIndex: -1
       addedObject: {fileID: 429695448736111959}
@@ -4561,6 +4660,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 9143151154395978059}
     m_Modifications:
     - target: {fileID: 3933864733537028253, guid: 1c5193f266b10884a8d11139f3d1b732, type: 3}
+      propertyPath: lengthInSec
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3933864733537028253, guid: 1c5193f266b10884a8d11139f3d1b732, type: 3}
       propertyPath: playOnAwake
       value: 0
       objectReference: {fileID: 0}
@@ -4569,16 +4672,28 @@ PrefabInstance:
       value: Dust
       objectReference: {fileID: 0}
     - target: {fileID: 8544815483120805857, guid: 1c5193f266b10884a8d11139f3d1b732, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 2.864333
+      objectReference: {fileID: 0}
+    - target: {fileID: 8544815483120805857, guid: 1c5193f266b10884a8d11139f3d1b732, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 2.864333
+      objectReference: {fileID: 0}
+    - target: {fileID: 8544815483120805857, guid: 1c5193f266b10884a8d11139f3d1b732, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 2.864333
+      objectReference: {fileID: 0}
+    - target: {fileID: 8544815483120805857, guid: 1c5193f266b10884a8d11139f3d1b732, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.0016098022
+      value: 1.93
       objectReference: {fileID: 0}
     - target: {fileID: 8544815483120805857, guid: 1c5193f266b10884a8d11139f3d1b732, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 5.97733
+      value: 1.58
       objectReference: {fileID: 0}
     - target: {fileID: 8544815483120805857, guid: 1c5193f266b10884a8d11139f3d1b732, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 2.90879
+      value: -3.95
       objectReference: {fileID: 0}
     - target: {fileID: 8544815483120805857, guid: 1c5193f266b10884a8d11139f3d1b732, type: 3}
       propertyPath: m_LocalRotation.w
@@ -4681,7 +4796,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7979327020922395008, guid: 4209ff3e04242d249831366d7807a31b, type: 3}
       propertyPath: m_Name
-      value: Hitbox
+      value: RightHandStunHitbox
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -4693,6 +4808,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 7979327020922395008, guid: 4209ff3e04242d249831366d7807a31b, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1107415245816965841}
+    - targetCorrespondingSourceObject: {fileID: 7979327020922395008, guid: 4209ff3e04242d249831366d7807a31b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3966792540574013720}
     - targetCorrespondingSourceObject: {fileID: 2314021898761952882, guid: 4209ff3e04242d249831366d7807a31b, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4963936875325702524}
@@ -4711,9 +4829,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 2314021898761952882, guid: 4209ff3e04242d249831366d7807a31b, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7376478091582785942}
-    - targetCorrespondingSourceObject: {fileID: 2314021898761952882, guid: 4209ff3e04242d249831366d7807a31b, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 3966792540574013720}
     - targetCorrespondingSourceObject: {fileID: 8767651658933856306, guid: 4209ff3e04242d249831366d7807a31b, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3263067800039960590}
@@ -4744,6 +4859,70 @@ MonoBehaviour:
   m_health: {fileID: 971369539054672765}
   m_animator: {fileID: 1537800206930250247}
   m_hitGroup: 1
+  m_showCounterCue: 1
+  m_counterCueTarget: {fileID: 0}
+  m_counterCueColor: {r: 1, g: 0.86, b: 0.05, a: 0.95}
+  m_counterCueShapeScale: 1.03
+  m_counterCueLineWidth: 0.8
+  m_counterCuePulseSpeed: 6
+  m_counterCuePulseAmount: 0.08
+  m_counterCueLocalOffset: {x: 0, y: 0, z: 0}
+--- !u!114 &3966792540574013720
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2584804830593947915}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bced0bea9b91a6440a0085a1ed88fd15, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Enemy::BossHandMagnetCaster
+  m_handMagnetizable: {fileID: 9114501031449292670}
+  m_bossAI: {fileID: 8951133768723248270}
+  m_boss: {fileID: 1849210394476134877}
+  m_colorN: {r: 1, g: 0.5, b: 0.5, a: 1}
+  m_colorS: {r: 0.5, g: 0.65, b: 1, a: 1}
+  m_lineWidth: 0.035
+  m_referenceBulletSettings: {fileID: 11400000, guid: 425ee2473071b7a4fa2afd4ccb6a162c, type: 2}
+  m_chargeEffectN: {fileID: 1392514685208627377, guid: a85d063e0b66930408617a427b125910, type: 3}
+  m_chargeEffectS: {fileID: 5771629677290899619, guid: 9bffa0e5a0c77ff4d8247ed370ebabe6, type: 3}
+  m_chargeDuration: 2
+  m_visualizerStartScale: 0.05
+  m_effectStartScale: 0.05
+  m_matchEffectEndScaleToMagnetRadius: 1
+  m_effectRadiusMultiplier: 2
+  m_effectEndScale: 20
+  m_effectGroundOffset: 0.05
+  m_destroyChargeEffectOnComplete: 1
+  m_delayMagnetUntilChargeComplete: 1
+  m_tintChargeEffect: 1
+  m_chargeCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  m_logCast: 1
 --- !u!1 &3805441978747365561 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 8767651658933856306, guid: 4209ff3e04242d249831366d7807a31b, type: 3}
@@ -4928,6 +5107,7 @@ MonoBehaviour:
   m_isActive: 0
   m_initialMass: Infinity
   m_immovable: 0
+  m_holdPositionAgainstDynamicObjects: 0
   m_centerOffset: {x: 0, y: 0, z: 0}
   m_useEdgeDetectionOutline: 0
 --- !u!114 &7376478091582785942
@@ -4944,25 +5124,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: MagnetRush.Enemy::BossHandMagnetLink
   m_boneNameOverride: 
   m_outline: {fileID: 0}
---- !u!114 &3966792540574013720
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7889848335474564857}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bced0bea9b91a6440a0085a1ed88fd15, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: MagnetRush.Enemy::BossHandMagnetCaster
-  m_handMagnetizable: {fileID: 9114501031449292670}
-  m_bossAI: {fileID: 8951133768723248270}
-  m_boss: {fileID: 1849210394476134877}
-  m_colorN: {r: 1, g: 0.2, b: 0.2, a: 0.8}
-  m_colorS: {r: 0.2, g: 0.4, b: 1, a: 0.8}
-  m_lineWidth: 0.05
-  m_logCast: 1
 --- !u!1001 &5656691817322481352
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5257,6 +5418,7 @@ MonoBehaviour:
   m_isActive: 0
   m_initialMass: Infinity
   m_immovable: 0
+  m_holdPositionAgainstDynamicObjects: 0
   m_centerOffset: {x: 0, y: 0, z: 0}
   m_useEdgeDetectionOutline: 0
 --- !u!114 &6393997700562411918
@@ -5282,16 +5444,28 @@ PrefabInstance:
     m_TransformParent: {fileID: 9143151154395978059}
     m_Modifications:
     - target: {fileID: 421074684365523220, guid: cb65d271ac4fc364dbd5e41655f33051, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1.6776
+      objectReference: {fileID: 0}
+    - target: {fileID: 421074684365523220, guid: cb65d271ac4fc364dbd5e41655f33051, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1.6776
+      objectReference: {fileID: 0}
+    - target: {fileID: 421074684365523220, guid: cb65d271ac4fc364dbd5e41655f33051, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1.6776
+      objectReference: {fileID: 0}
+    - target: {fileID: 421074684365523220, guid: cb65d271ac4fc364dbd5e41655f33051, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.51334
+      value: 0.64
       objectReference: {fileID: 0}
     - target: {fileID: 421074684365523220, guid: cb65d271ac4fc364dbd5e41655f33051, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1.45998
+      value: -1.94
       objectReference: {fileID: 0}
     - target: {fileID: 421074684365523220, guid: cb65d271ac4fc364dbd5e41655f33051, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 1.61105
+      value: 2.45
       objectReference: {fileID: 0}
     - target: {fileID: 421074684365523220, guid: cb65d271ac4fc364dbd5e41655f33051, type: 3}
       propertyPath: m_LocalRotation.w

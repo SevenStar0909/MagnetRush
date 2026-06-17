@@ -77,6 +77,8 @@ public class EnemyArenaGate : MonoBehaviour
     private Transform m_player;
     private bool m_playerWasOutside;
     private readonly List<Health> m_tracked = new();
+    private readonly HashSet<Health> m_defeated = new();
+    private readonly Dictionary<Health, Action> m_deathHandlers = new();
     private readonly List<GameObject> m_generatedWalls = new();
     private Material m_wallMaterialInstance;
     private Texture2D m_gridTexture;
@@ -165,6 +167,7 @@ public class EnemyArenaGate : MonoBehaviour
     private void Open()
     {
         m_state = ArenaState.Cleared;
+        UnsubscribeTrackedEnemies();
         EnableBarriers(false);
         ChannelLogger.Log("Enemy", "EnemyArenaGate: 範囲内の敵を全滅 → 壁を解除");
         m_onCleared?.Invoke();
@@ -173,14 +176,16 @@ public class EnemyArenaGate : MonoBehaviour
 
     private void CollectEnemies()
     {
+        UnsubscribeTrackedEnemies();
         m_tracked.Clear();
+        m_defeated.Clear();
 
         if (m_manualEnemies != null)
         {
             for (int i = 0; i < m_manualEnemies.Count; i++)
             {
                 Health h = m_manualEnemies[i];
-                if (h != null && !m_tracked.Contains(h))
+                if (h != null && !h.IsDead && !m_tracked.Contains(h))
                     m_tracked.Add(h);
             }
         }
@@ -199,6 +204,8 @@ public class EnemyArenaGate : MonoBehaviour
             if (IsExcluded(h)) continue;
             m_tracked.Add(h);
         }
+
+        SubscribeTrackedEnemies();
     }
 
     // プレイヤー（閉じ込める側）とボス（ステージの別ギミック）はアリーナの対象から外す。
@@ -224,10 +231,44 @@ public class EnemyArenaGate : MonoBehaviour
         for (int i = 0; i < m_tracked.Count; i++)
         {
             Health h = m_tracked[i];
-            if (h != null && !h.IsDead)
+            if (h != null && !h.IsDead && !m_defeated.Contains(h))
                 alive++;
         }
         return alive;
+    }
+
+    private void SubscribeTrackedEnemies()
+    {
+        for (int i = 0; i < m_tracked.Count; i++)
+        {
+            Health h = m_tracked[i];
+            if (h == null || m_deathHandlers.ContainsKey(h))
+                continue;
+
+            Action handler = () => MarkDefeated(h);
+            m_deathHandlers.Add(h, handler);
+            h.OnDie += handler;
+        }
+    }
+
+    private void UnsubscribeTrackedEnemies()
+    {
+        foreach (var kv in m_deathHandlers)
+        {
+            Health h = kv.Key;
+            if (h != null)
+                h.OnDie -= kv.Value;
+        }
+
+        m_deathHandlers.Clear();
+    }
+
+    private void MarkDefeated(Health h)
+    {
+        if (h == null)
+            return;
+
+        m_defeated.Add(h);
     }
 
     private void EnableBarriers(bool on)
@@ -381,6 +422,7 @@ public class EnemyArenaGate : MonoBehaviour
 
     private void OnDestroy()
     {
+        UnsubscribeTrackedEnemies();
         if (m_wallMaterialInstance != null) Destroy(m_wallMaterialInstance);
         if (m_gridTexture != null) Destroy(m_gridTexture);
     }

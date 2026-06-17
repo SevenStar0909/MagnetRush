@@ -22,6 +22,12 @@ public class BulletSettings : ScriptableObject
     [Label("レイキャスト最大距離")]
     [Tooltip("射撃レイキャストの最大距離")]
     public float raycastDistance = 200f;
+    [Label("照準補助半径（m）")]
+    [Tooltip("レティクル付近の敵やオブジェクトを拾いやすくするための判定半径")]
+    public float aimAssistRadius = 0.35f;
+    [Label("弾衝突半径（m）")]
+    [Tooltip("飛行中の弾が敵やオブジェクトに当たりやすくなる判定半径")]
+    public float collisionRadius = 0.18f;
 
     [Header("[磁力場]")]
     [Label("着弾時磁力場設定")]

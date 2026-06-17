@@ -42,11 +42,17 @@ public class PlayerAbilityLocker : MonoBehaviour
         OnLockChanged?.Invoke(ability, locked);
     }
 
-    /// <summary>全機能をロックする（移動とカメラは元々ロック対象外）。</summary>
+    /// <summary>
+    /// 全機能をロックする。移動とカメラは含めない（既存の「全ロック」ゾーンの挙動を変えないため）。
+    /// 移動・カメラを封じたい場合は SetLocked(Move/Camera, true) で個別に指定する。
+    /// </summary>
     public void LockAll()
     {
         foreach (PlayerAbilityType ability in Enum.GetValues(typeof(PlayerAbilityType)))
+        {
+            if (ability == PlayerAbilityType.Move || ability == PlayerAbilityType.Camera) continue;
             SetLocked(ability, true);
+        }
     }
 
     /// <summary>全機能のロックを解除する。</summary>

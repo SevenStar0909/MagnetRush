@@ -9,6 +9,15 @@ public interface IStabReceiver
     /// <summary>true のときだけ Player は StabPlayerState へ遷移できる。</summary>
     bool CanReceiveStab { get; }
 
+    /// <summary>突き刺しの目標 Transform（頭ボーン下のアンカー）。崩れポーズで頭が動いても追従する。</summary>
+    Transform StabAnchor { get; }
+
+    /// <summary>演出プロファイル選択用。0=Staggerポーズ / 1=Stunポーズ。</summary>
+    int StabChoreographyIndex { get; }
+
+    /// <summary>このボス専用のスタブ演出設定（数値＋カメラTimeline）。null ならプレイヤー共通設定にフォールバック。</summary>
+    StabFinisherSettings StabFinisherSettings { get; }
+
     /// <summary>突き刺し瞬間の AnimEvent から呼ばれる。実ダメージ処理を行う。</summary>
     void OnStabHit(StabHitData data);
 }

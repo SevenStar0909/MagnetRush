@@ -2,36 +2,40 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// レティクルUI。エイム状態でグループ切替、極性でスプライト切替、発射時に各ラインへキック配信。
+/// レティクルUI。通常時は等倍、エイム時は中心に向かって線を寄せて表示。極性でスプライト切替、発射時にキック配信。
 /// 依存: AimAbility, PoleAbility, PlayerEvents（Player Tag のオブジェクトから取得）
 /// </summary>
 public class ReticleUI : MonoBehaviour
 {
     [SerializeField] private ReticleSettings m_settings;
 
-    [Header("Aim (+) Group")]
-    [SerializeField] private GameObject m_aimGroup;
-    [SerializeField] private ReticleLine[] m_aimLines;
-    [SerializeField] private Image[] m_aimImages;
-    [SerializeField] private Sprite m_aimLineS;
-    [SerializeField] private Sprite m_aimLineN;
-
-    [Header("Hipfire (X) Group")]
-    [SerializeField] private GameObject m_hipfireGroup;
+    [Header("Reticle (X) Group")]
     [SerializeField] private ReticleLine[] m_hipfireLines;
     [SerializeField] private Image[] m_hipfireImages;
     [SerializeField] private Sprite m_hipfireLineS;
     [SerializeField] private Sprite m_hipfireLineN;
+
+    [Header("Center Dot")]
+    [SerializeField] private Image m_centerDotImage;
+    [SerializeField] private Sprite m_dotSpriteS;
+    [SerializeField] private Sprite m_dotSpriteN;
+
+    [Header("Aim Transition Settings")]
+    [Range(0f, 1f)]
+    [SerializeField] private float m_aimDistancePercent = 0.6f; // エイム時に中心までの距離の何%まで寄せるか (0で中心、1で通常位置)
+    [SerializeField] private float m_transitionSpeed = 15f;  // 寄せる/戻すアニメーションの速さ
 
     private AimAbility m_aimController;
     private PoleAbility m_poleController;
     private PlayerEvents m_playerEvents;
     private MagneticPole m_currentPole = MagneticPole.S;
 
+    private float m_currentAimAmount = 0f; // 0 (通常) ～ 1 (エイム)
+
     void Awake()
     {
         if (m_settings == null) { ChannelLogger.LogGuardReturn("UI", "ReticleSettings未設定"); return; }
-        ConfigureLines(m_aimLines);
+        // レティクル線に、キック設定だけでなくエイム時の寄せ設定も渡すように変更
         ConfigureLines(m_hipfireLines);
     }
 
@@ -56,7 +60,6 @@ public class ReticleUI : MonoBehaviour
         }
 
         UpdateSprites();
-        UpdateGroups();
     }
 
     void OnDestroy()
@@ -69,7 +72,8 @@ public class ReticleUI : MonoBehaviour
 
     void Update()
     {
-        UpdateGroups();
+        // 毎フレーム、エイムによる「寄せ具合」を計算して各ラインに伝える
+        UpdateAimTransition();
     }
 
     private void ConfigureLines(ReticleLine[] lines)
@@ -78,7 +82,8 @@ public class ReticleUI : MonoBehaviour
         foreach (var l in lines)
         {
             if (l != null)
-                l.Configure(m_settings.kickDistance, m_settings.maxKickDistance, m_settings.returnDuration, m_settings.returnCurve);
+                // ReticleLine の Configure メソッドの引数を拡張（または別のメソッドにする）して、エイム設定も渡す
+                l.Configure(m_settings.kickDistance, m_settings.maxKickDistance, m_settings.returnDuration, m_settings.returnCurve, m_aimDistancePercent);
         }
     }
 
@@ -90,11 +95,8 @@ public class ReticleUI : MonoBehaviour
 
     private void OnShoot()
     {
-        // 反転: エイム中(LT押下)は Hipfire(X) を表示しキックする
-        bool aiming = m_aimController != null && m_aimController.IsAiming;
-        var lines = aiming ? m_hipfireLines : m_aimLines;
-        if (lines == null) return;
-        foreach (var line in lines)
+        if (m_hipfireLines == null) return;
+        foreach (var line in m_hipfireLines)
         {
             if (line != null) line.Kick();
         }
@@ -102,20 +104,36 @@ public class ReticleUI : MonoBehaviour
 
     private void UpdateSprites()
     {
-        Sprite aimSprite = m_currentPole == MagneticPole.S ? m_aimLineS : m_aimLineN;
-        Sprite hipfireSprite = m_currentPole == MagneticPole.S ? m_hipfireLineS : m_hipfireLineN;
+        Sprite currentSprite = m_currentPole == MagneticPole.S ? m_hipfireLineS : m_hipfireLineN;
 
-        if (m_aimImages != null)
-            foreach (var img in m_aimImages) if (img != null) img.sprite = aimSprite;
         if (m_hipfireImages != null)
-            foreach (var img in m_hipfireImages) if (img != null) img.sprite = hipfireSprite;
+            foreach (var img in m_hipfireImages)
+                if (img != null) img.sprite = currentSprite;
+
+        if (m_centerDotImage != null)
+        {
+            Sprite currentDotSprite = m_currentPole == MagneticPole.S ? m_dotSpriteS : m_dotSpriteN;
+            m_centerDotImage.sprite = currentDotSprite;
+        }
     }
 
-    private void UpdateGroups()
+    /// <summary>
+    /// エイム状態に応じて、中心への「寄せ具合」を滑らかに計算し、すべてのラインに伝える
+    /// </summary>
+    private void UpdateAimTransition()
     {
-        // 反転: エイム中(LT押下)は Hipfire(X)、解放時は Aim(+) を表示
+        if (m_hipfireLines == null) return;
+
         bool aiming = m_aimController != null && m_aimController.IsAiming;
-        if (m_aimGroup != null) m_aimGroup.SetActive(!aiming);
-        if (m_hipfireGroup != null) m_hipfireGroup.SetActive(aiming);
+        float targetAmount = aiming ? 1f : 0f;
+
+        // 現在のエイム度合いから目標のエイム度合いへ滑らかに補間
+        m_currentAimAmount = Mathf.Lerp(m_currentAimAmount, targetAmount, Time.deltaTime * m_transitionSpeed);
+
+        // すべてのラインにエイム度合いを伝える
+        foreach (var line in m_hipfireLines)
+        {
+            if (line != null) line.SetAimAmount(m_currentAimAmount);
+        }
     }
 }

@@ -357,9 +357,12 @@ public class EntityController : MonoBehaviour
         {
             if (m_ignoredColliders.Contains(m_overlaps[i])) continue;
 
-            // 動的Rigidbodyはめり込み解決しない（押し処理で対応）
+            // 動的Rigidbody:
+            //  - 押せるエンティティ(ボス: m_canPushPhysicsObjects=true)はここをスキップし、collide-and-slide の push 処理で箱を押す。
+            //  - 押せないエンティティ(雑魚・プレイヤー)は continue せず下の ComputePenetration へ進み、
+            //    「箱を動かす代わりに自分が箱から退避」する＝箱を壁扱いして押さない（solid衝突は残るので接触ダメージは維持）。
             var overlapRb = m_overlaps[i].attachedRigidbody;
-            if (overlapRb != null && !overlapRb.isKinematic) continue;
+            if (overlapRb != null && !overlapRb.isKinematic && m_canPushPhysicsObjects) continue;
 
             // 自分が不動 Entity (ImmovableEntity) なら、他 Entity / オブジェクト (Rigidbody持ち) との重なりは displace スキップ。
             // 壁・地面など Rigidbody を持たない静的環境とのめり込みは引き続き解決する。

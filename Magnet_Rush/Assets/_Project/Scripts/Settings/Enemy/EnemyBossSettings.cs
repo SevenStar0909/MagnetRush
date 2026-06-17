@@ -124,6 +124,11 @@ public class EnemyBossSettings : ScriptableObject
     [Range(0f, 1f)]
     public float staggerMoveMultiplier = 0.5f;
 
+    [Label("スタブ命中後ダウンしたままの時間（秒）")]
+    [Tooltip("スタブが刺さった後、ボスが崩れたまま伏せている時間。これが短いと刺した直後にすぐ起き上がってしまう。経過後に起き上がってIdleへ戻る")]
+    [Min(0f)]
+    public float postStabDownDuration = 2.0f;
+
     [Header("[手の磁力範囲キャスト]")]
     [Label("手の磁力範囲半径（m）")]
     [Tooltip("AttackStance/AttackMotion 突入時、右手を中心にこの半径内の PhysicsObject と右手自身に同一の N/S をランダム付与する")]

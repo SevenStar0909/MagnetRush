@@ -70,6 +70,17 @@ public class PlayerSettings : ScriptableObject
     [Tooltip("カメラのピッチ上限（度）。正ほど上を向ける")]
     public float cameraPitchMax = 60f;
 
+    [Header("[磁力張り付き]")]
+    [Label("張り付き対象レイヤー")]
+    [Tooltip("磁力で引かれた時にビタ止めできる面のレイヤー（Ground/Wall を指定）")]
+    public LayerMask magnetStickLayer;
+    [Label("張り付き判定距離（m）")]
+    [Tooltip("引かれている方向のこの距離以内に壁・地面があると張り付く")]
+    public float magnetStickCheckDistance = 0.15f;
+    [Label("張り付きに必要な引き速度（m/s）")]
+    [Tooltip("磁力に引かれる速さがこの値以上の時だけ張り付く。弱い磁力では張り付かない")]
+    public float magnetStickMinPullSpeed = 3f;
+
     [Header("[射撃]")]
     [Label("発射位置の高さ（m）")]
     [Tooltip("弾の発射位置の高さ（プレイヤー足元からの距離）")]
@@ -97,6 +108,9 @@ public class PlayerSettings : ScriptableObject
     [Label("モーションタイムアウト（秒）")]
     [Tooltip("スタブモーションの強制復帰時間（秒）。AnimEvent OnStabMotionFinishedEvent の配線漏れ保険")]
     public float stabMotionMaxDuration = 1.5f;
+    [Label("スタブ演出設定")]
+    [Tooltip("ボススタブ・フィニッシャー演出の調整SO。未設定だと演出は使わず旧その場スタブにフォールバック")]
+    public StabFinisherSettings stabFinisherSettings;
 
     [Header("[エイム]")]
     [Label("解除猶予時間（秒）")]

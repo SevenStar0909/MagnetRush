@@ -33,6 +33,15 @@ public class Player : Entity
     /// <summary>落下リスポーン完了時に発火。カメラ追従を戻して新しい足場へカットする用。</summary>
     public static event Action OnFallRespawnEnd;
 
+    /// <summary>スタブ演出開始時に発火。引数=突き刺し目標Transform, 演出プロファイルindex。カメラ寄せ用。</summary>
+    public static event Action<Transform, int> OnStabFinisherStart;
+
+    /// <summary>スタブ演出終了時に発火。カメラを通常追従へ戻す用。</summary>
+    public static event Action OnStabFinisherEnd;
+
+    /// <summary>突きがボスに刺さった瞬間（ヒットVFXと同フレーム）に発火。カメラの着弾アップ＋スロー開始用。</summary>
+    public static event Action OnStabFinisherImpact;
+
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void ResetStatics()
     {
@@ -40,6 +49,9 @@ public class Player : Entity
         OnPlayerReady = null;
         OnFallRespawnStart = null;
         OnFallRespawnEnd = null;
+        OnStabFinisherStart = null;
+        OnStabFinisherEnd = null;
+        OnStabFinisherImpact = null;
     }
 
     protected override float Gravity => m_settings.gravity;
@@ -235,7 +247,8 @@ public class Player : Entity
     public static bool IsSlowMotion => Time.timeScale < k_SlowMotionThreshold;
 
     // === Ability ラッパー(State.OnStep から呼ばれる Facade API) ===
-    // チュートリアルの機能ロックはここで一括ゲートする（移動とカメラはラッパーを通らないので常に有効）
+    // チュートリアルの機能ロックはここで一括ゲートする。
+    // 移動は PlayerInputHandler.MoveInput、カメラは CameraSettingsApplier 側でゲートする（ラッパーを通らないため）
 
     /// <summary>指定機能がロック中か。PlayerAbilityLocker が無いシーンでは常にアンロック。</summary>
     public bool IsAbilityLocked(PlayerAbilityType ability)
@@ -294,6 +307,13 @@ public class Player : Entity
         stab.Stab();
     }
 
+    /// <summary>BossStabFinisherState から呼ぶ。カメラ演出の開始/終了を通知する。</summary>
+    public void FireStabFinisherStart(Transform target, int variant) => OnStabFinisherStart?.Invoke(target, variant);
+    public void FireStabFinisherEnd() => OnStabFinisherEnd?.Invoke();
+
+    /// <summary>StabAbility.OnStabHitEvent から呼ぶ。突き刺さりの瞬間をカメラへ通知する（着弾アップ＋スロー開始）。</summary>
+    public void FireStabFinisherImpact() => OnStabFinisherImpact?.Invoke();
+
     /// <summary>
     /// 通常 State 用の全許可ヘルパ。Idle / Move / Aim 等が呼ぶ。
     /// 各 Ability は内部で入力 peek + 発動条件をチェックして no-op 判定するため、
@@ -315,6 +335,10 @@ public class Player : Entity
         UpdateMagneticInfluence();
 
         bool isDying = states.IsCurrentOfType<DiePlayerState>();
+        // 死亡・スタブ演出中は自前で transform を動かすため共通物理ステップ(重力/衝突/磁力)をスキップする。
+        bool controlsOwnTransform = isDying || states.IsCurrentOfType<BossStabFinisherState>();
+        // 磁力張り付き中も重力・移動を完全停止（ビタ止め）するため物理ステップをスキップする。
+        bool isMagnetStuck = states.IsCurrentOfType<MagnetStickPlayerState>();
 
         // 能力呼び出しは各 State の OnStep が Player.TickAllAbilities() 経由で行う。
         // Stab/Die は OnStep を空にすることで自動的に全入力ロックされる。
@@ -324,7 +348,8 @@ public class Player : Entity
         {
             float dt = Mathf.Min(Time.deltaTime, Time.fixedDeltaTime * 3f);
             states.UpdateState(dt);
-            if (!isDying) UpdateEntity(dt);
+            // 死亡・スタブ演出中（controlsOwnTransform）と磁力張り付き中は重力・移動を完全停止する。
+            if (!controlsOwnTransform && !isMagnetStuck) UpdateEntity(dt);
         }
     }
 
@@ -334,9 +359,24 @@ public class Player : Entity
         if (!IsSlowMotion) return;
 
         bool isDying = states.IsCurrentOfType<DiePlayerState>();
+        bool controlsOwnTransform = isDying || states.IsCurrentOfType<BossStabFinisherState>();
+        bool isMagnetStuck = states.IsCurrentOfType<MagnetStickPlayerState>();
         float dt = Time.fixedDeltaTime;
         states.UpdateState(dt);
-        if (!isDying) UpdateEntity(dt);
+        if (!controlsOwnTransform && !isMagnetStuck) UpdateEntity(dt);
+    }
+
+    /// <summary>
+    /// 磁力で壁・地面にビタ止めできる状況か。
+    /// 磁化中に磁力で引かれていて、引かれる方向の至近距離に張り付き対象レイヤーの面がある時 true。
+    /// </summary>
+    public bool CanMagnetStick()
+    {
+        if (m_settings == null) return false;
+        if (magnetizable == null || !magnetizable.IsActive) return false;
+
+        return IsPulledIntoSurface(m_settings.magnetStickLayer,
+            m_settings.magnetStickCheckDistance, m_settings.magnetStickMinPullSpeed);
     }
 
     /// <summary>
