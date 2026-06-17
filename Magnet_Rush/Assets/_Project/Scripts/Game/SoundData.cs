@@ -9,6 +9,7 @@ public static class SoundData
     public static class CueSheet
     {
         public const string BGM = "BGM";
+        public const string SE = "SE";
         // 適時追加
     }
 
@@ -30,6 +31,9 @@ public static class SoundData
 
     public static class SE
     {
+        public const string PlayerShot = "PlayerShot";
+        public const string SelfShot = "SelfShot";
+        public const string MagField = "MagField";
         // 適時追加
     }
 
