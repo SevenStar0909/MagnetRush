@@ -19,6 +19,7 @@ public class MagneticMover : MonoBehaviour, IMagneticResponse
     }
 
     [SerializeField] private MagneticMoverSettings m_settings;
+    [SerializeField] private bool m_keepStuckUntilMagnetDeactivated;
 
     private Magnetizable m_magnetizable;
     private NavMeshAgent m_agent;
@@ -104,6 +105,12 @@ public class MagneticMover : MonoBehaviour, IMagneticResponse
         }
         else
         {
+            if (m_keepStuckUntilMagnetDeactivated && m_state == MoverState.Stuck && IsResponseActive)
+            {
+                m_heldActive = false;
+                return;
+            }
+
             RecoverFromMagnet();
         }
     }
@@ -129,13 +136,16 @@ public class MagneticMover : MonoBehaviour, IMagneticResponse
 #endif
 
         // ビタ止め中: 毎フレーム速度をゼロに保ち完全静止。
-        // 解除は「磁化が解けた」または「保持中でなく一定時間 磁力が来ていない」。
+        // 解除は基本「磁化が解けた」または「保持中でなく一定時間 磁力が来ていない」。
+        // m_keepStuckUntilMagnetDeactivated=true の対象は、磁化解除まで壁張り付きを維持する。
         // 保持(held)中は磁力源が消えたときの SetHoldActive(false) で剥がれる（早すぎる解除を防ぐ）。
         if (m_state == MoverState.Stuck)
         {
             ZeroVelocities();
             bool magnetGone = !IsResponseActive
-                || (!m_heldActive && Time.time - m_lastForceTime > m_settings.recoveryDelay);
+                || (!m_keepStuckUntilMagnetDeactivated
+                    && !m_heldActive
+                    && Time.time - m_lastForceTime > m_settings.recoveryDelay);
             if (magnetGone) RecoverFromMagnet();
             return;
         }

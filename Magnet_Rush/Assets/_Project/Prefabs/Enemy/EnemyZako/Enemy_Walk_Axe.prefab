@@ -499,6 +499,8 @@ MonoBehaviour:
   m_initialMass: 1
   m_immovable: 0
   m_holdPositionAgainstDynamicObjects: 1
+  m_holdPositionAgainstSameGroupEntities: 1
+  m_keepMagnetizedOnAttractContact: 1
   m_centerOffset: {x: 0, y: 0, z: 0}
   m_useEdgeDetectionOutline: 1
 --- !u!114 &5793265015369139466
@@ -514,6 +516,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Core::MagneticMover
   m_settings: {fileID: 11400000, guid: f3fde26729757804fa44d2860636c20d, type: 2}
+  m_keepStuckUntilMagnetDeactivated: 1
 --- !u!114 &4325063793620339370
 MonoBehaviour:
   m_ObjectHideFlags: 0
