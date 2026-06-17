@@ -10,6 +10,9 @@ public class SceneSelectUI : MonoBehaviour
     [Header("Preview Settings")]
     [SerializeField] private Transform m_previewSpawnPoint;
 
+    [Header("First Select Settings")]
+    [SerializeField] private Button m_firstSelectedButton; // 最初に選択されるボタン
+
     private GameObject m_currentPreviewInstance;
     private string m_lastSelectedMapName = "";
     private Coroutine m_previewCoroutine;
@@ -23,6 +26,20 @@ public class SceneSelectUI : MonoBehaviour
         StageData.Stage first = m_stageData.stages[0];
         if (first != null && !string.IsNullOrEmpty(first.mapSceneName))
             OnSelectStage(first.mapSceneName);
+
+        if (m_firstSelectedButton != null)
+        {
+            m_firstSelectedButton.Select();
+
+            // 【重要】コントローラー用に選択状態にしたことをEventSystemにも通知する
+            UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(m_firstSelectedButton.gameObject);
+
+            Debug.Log($"[Debug] シーン開始時に '{m_firstSelectedButton.name}' を初期選択しました。");
+        }
+        else
+        {
+            Debug.LogWarning("[Debug] 警告: 最初に選択するボタン（m_firstSelectedButton）がインスペクターで設定されていません。");
+        }
     }
 
     // --- 既存のコードはそのままで、クラスの中に以下のメソッドを追加・修正してください ---
