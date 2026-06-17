@@ -87,14 +87,14 @@ public class SimpleTutorial : MonoBehaviour
     {
         // --- メッセージ 1〜4 を自動で連続表示 ---
         currentStep = 2;
-        yield return StartCoroutine(TypeAndAutoAdvance("通信確認。\n担当オペレーターのA.R.I.Aです。\n以後よろしくね。"));        //1
-        yield return StartCoroutine(TypeAndAutoAdvance("ここは私たち警察の、訓練プログラムシミュレータ内の仮想空間。"));     //2
-        yield return StartCoroutine(TypeAndAutoAdvance("ここで実戦での動き方や、あなたのメイン装備についての理解を深めてもらうわ。"));   //3
-        yield return StartCoroutine(TypeAndAutoAdvance("早速はじめましょう。まずは左スティックと右スティックを動かして、周囲を警戒しつつ道なりに進んで。障害物はAボタンのジャンプで飛び越えるといいわ。"));    //4
+        yield return StartCoroutine(TypeAndAutoAdvance("通信確認\n担当オペレーターのA.R.I.Aです\n以後よろしくね"));        //1
+        yield return StartCoroutine(TypeAndAutoAdvance("ここは私たち警察の\n訓練プログラムシミュレータ内の仮想空間"));     //2
+        yield return StartCoroutine(TypeAndAutoAdvance("ここで実戦での動き方や\nあなたのメイン装備についての理解を深めてもらうわ"));   //3
+        yield return StartCoroutine(TypeAndAutoAdvance("早速はじめましょう\nまずは左スティックと右スティックを動かして\n周囲を警戒しつつ道なりに進んで\n障害物はAボタンのジャンプで飛び越えるといいわ"));    //4
 
         // --- 4つのメッセージが終わったら、移動・カメラ・ジャンプを解除 ---
         currentStep = 3;
-        tutorialText.text = "道なりに進む。"; // 次の目標を画面に残しておく
+        //tutorialText.text = "道なりに進む。"; // 次の目標を画面に残しておく
         SetPlayerMovementLock(false); // 移動系のロックを解除
 
         //判定待ちプレイヤーが図1のエリアに入るまで、ここでプログラムを一時停止して待つ
@@ -105,13 +105,13 @@ public class SimpleTutorial : MonoBehaviour
 
         currentStep = 4;
         // --- 図1付近に到達したら、メッセージ 5〜8 を自動表示 ---
-        yield return StartCoroutine(TypeAndAutoAdvance("OK、基本的な移動は問題ないようね。"));                                                                   //5
-        yield return StartCoroutine(TypeAndAutoAdvance("ではこれからあなたのメイン装備について説明するわ。\nこれからの任務の生命線よ、よく聞いておいてね。"));   //6
-        yield return StartCoroutine(TypeAndAutoAdvance("あなたの右腕の銃は、磁力の弾丸を打ち出して、命中したところから磁場を発生させる機能を備えているの。"));   //7
-        yield return StartCoroutine(TypeAndAutoAdvance("試しにLTボタンを長押ししながら右スティックで近くのクレートに狙いをつけて、RTボタンを押してみて。"));         //8
+        yield return StartCoroutine(TypeAndAutoAdvance("OK、基本的な移動は問題ないようね"));                                                                   //5
+        yield return StartCoroutine(TypeAndAutoAdvance("ではこれからあなたのメイン装備について説明するわ\nこれからの任務の生命線よ\nよく聞いておいてね"));   //6
+        yield return StartCoroutine(TypeAndAutoAdvance("あなたの右腕の銃は\n磁力の弾丸を打ち出して\n命中したところから磁場を発生させる機能を備えているの"));   //7
+        yield return StartCoroutine(TypeAndAutoAdvance("試しにLTボタンを長押ししながら\n右スティックで近くのクレートに狙いをつけて\nRTボタンを押してみて"));         //8
 
         currentStep = 5;
-        tutorialText.text = "クレートに射撃";
+        //tutorialText.text = "クレートに射撃";
         SetPlayerShootingLock(false); // 射撃のロックを解除
 
         // ここでクレートに磁極が付くのを待つ（currentStep を 5 にしてから待機する想定）
@@ -122,12 +122,12 @@ public class SimpleTutorial : MonoBehaviour
 
         currentStep = 6;
         SetPlayerShootingLock(true); // 射撃ロック
-        yield return StartCoroutine(TypeAndAutoAdvance("弾が発射されて、クレートからドームが展開されているでしょう？これは磁場が可視化されたものよ。"));                      //9
-        yield return StartCoroutine(TypeAndAutoAdvance("ところで磁力にはNとSの２つの磁極があるのは知ってるわね。同じ磁極同士なら反発し、異なる磁極同士なら引き寄せあう…"));  //10
-        yield return StartCoroutine(TypeAndAutoAdvance("実はあなたの銃はこのSとNの磁極を切り替える機能も備わっているの。RBボタンを押してみて。"));  //11
+        yield return StartCoroutine(TypeAndAutoAdvance("弾が発射されて\nクレートからドームが展開されているでしょう？\nこれは磁場が可視化されたものよ"));                      //9
+        yield return StartCoroutine(TypeAndAutoAdvance("ところで磁力にはNとSの２つの磁極があるのは知ってるわね\n同じ磁極同士なら反発し\n異なる磁極同士なら引き寄せあう…"));  //10
+        yield return StartCoroutine(TypeAndAutoAdvance("実はあなたの銃はこのSとNの磁極を切り替える機能も備わっているの\nRBボタンを押してみて"));  //11
 
         currentStep = 7;
-        tutorialText.text = "RBボタンで磁力を切り替えろ";
+        //tutorialText.text = "RBボタンで磁力を切り替えろ";
         SetPlayerSwitchMagnetLock(false); // 磁力切り替え解除の窓口
 
         while (currentStep == 7)
@@ -137,8 +137,8 @@ public class SimpleTutorial : MonoBehaviour
 
         currentStep = 8;
         SetPlayerSwitchMagnetLock(true); // 切り替えロック
-        yield return StartCoroutine(TypeAndAutoAdvance("右下のインタフェースが変わったのに気付いた？これであなたの弾で付与できる磁極を切り替えられるのよ。")); //12
-        yield return StartCoroutine(TypeAndAutoAdvance("じゃあそのままさっきとは別のクレートに向けて、銃を撃ってみましょう。")); //13
+        yield return StartCoroutine(TypeAndAutoAdvance("右下のインタフェースが変わったのに気付いた？\nこれであなたの弾で付与できる磁極を\n切り替えられるのよ")); //12
+        yield return StartCoroutine(TypeAndAutoAdvance("じゃあそのままさっきとは別のクレートに向けて\n銃を撃ってみましょう")); //13
 
         currentStep = 9;
         SetPlayerShootingLock(false); // 射撃ロック
@@ -151,8 +151,8 @@ public class SimpleTutorial : MonoBehaviour
         currentStep = 10;
         SetPlayerSwitchMagnetLock(true); // 切り替えロック
         SetPlayerShootingLock(true); // 射撃ロック
-        yield return StartCoroutine(TypeAndAutoAdvance("異なる磁極を付与したことでオブジェクト同士が引き合ったわね、成功よ。"));        //14
-        yield return StartCoroutine(TypeAndAutoAdvance("逆に反発を起こしたいときは、同じ磁極を付与すればOKよ。この機能を活用して、目の前の障害物を突破して進んでちょうだい。"));        //15
+        yield return StartCoroutine(TypeAndAutoAdvance("異なる磁極を付与したことでオブジェクト同士が引き合ったわね\n成功よ"));        //14
+        yield return StartCoroutine(TypeAndAutoAdvance("逆に反発を起こしたいときは\n同じ磁極を付与すればOKよ\nこの機能を活用して\n目の前の障害物を突破して進んでちょうだい"));        //15
         yield return StartCoroutine(TypeAndAutoAdvance("そうそう、右下のインタフェースはあなたの銃の残弾数も示しているの。"));        //16
         yield return StartCoroutine(TypeAndAutoAdvance("リロードしたくなったら、Xボタンを押すのよ。ただリロードすると、今の磁力がリセットされる点には注意して。"));        //17
 
