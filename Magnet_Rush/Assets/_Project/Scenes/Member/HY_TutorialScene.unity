@@ -4998,6 +4998,81 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: -7816311107100353059, guid: bd503c4216af0d947bd13632b85470e4, type: 3}
+--- !u!1 &379717120
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 379717121}
+  - component: {fileID: 379717123}
+  - component: {fileID: 379717122}
+  m_Layer: 0
+  m_Name: OperatorOverlay
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &379717121
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 379717120}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1636312360}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 430, y: 400}
+  m_SizeDelta: {x: 1100, y: 1000}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &379717122
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 379717120}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: 918aac465e9e89940a4396358a0a1da9, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 1
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &379717123
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 379717120}
+  m_CullTransparentMesh: 1
 --- !u!1001 &383429071
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5654,10 +5729,10 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\u9006\u306B\u53CD\u767A\u3092\u8D77\u3053\u3057\u305F\u3044\u3068\u304D\u306F\\n\u540C\u3058\u78C1\u6975\u3092\u4ED8\u4E0E\u3059\u308C\u3070OK\u3088\\n\u3053\u306E\u6A5F\u80FD\u3092\u6D3B\u7528\u3057\u3066\\n\u76EE\u306E\u524D\u306E\u969C\u5BB3\u7269\u3092\u7A81\u7834\u3057\u3066\u9032\u3093\u3067\u3061\u3087\u3046\u3060\u3044"
+  m_text: "\u3055\u3063\u304D\u3068\u540C\u3058\u3088\u3046\u306B\\n\u3053\u3044\u3064\u306B\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8\u3092\u5F15\u304D\u5BC4\u305B\u3066\\n\u601D\u3044\u3063\u304D\u308A\u3076\u3064\u3051\u3066\u3084\u308A\u306A\u3055\u3044\uFF01"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: d56d84dbee9bce44b8b6936ab567eb84, type: 2}
-  m_sharedMaterial: {fileID: 4046524975413341400, guid: d56d84dbee9bce44b8b6936ab567eb84, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 5ff1f82d14e0d9a4db7e6d6762430aeb, type: 2}
+  m_sharedMaterial: {fileID: 5234464196568088138, guid: 5ff1f82d14e0d9a4db7e6d6762430aeb, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -5681,8 +5756,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
-  m_fontSizeBase: 36
+  m_fontSize: 32
+  m_fontSizeBase: 32
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -5764,7 +5839,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -460, y: -40}
+  m_AnchoredPosition: {x: -460, y: -39.99994}
   m_SizeDelta: {x: 850, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &424557174 stripped
@@ -13608,7 +13683,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: MagnetRush.UI::SimpleTutorial
   tutorialText: {fileID: 423984594}
   textSpeed: 0.05
-  messageWaitTime: 2
+  messageWaitTime: 0.5
   playerTransform: {fileID: 436100884}
   approachDistance: 7.5
   tutorialCrates:
@@ -19614,6 +19689,9 @@ PrefabInstance:
     - {fileID: 310696424346017118, guid: b9dd3451f4fd5e048b518487552cc703, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 8223121169866025928, guid: b9dd3451f4fd5e048b518487552cc703, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 379717121}
     - targetCorrespondingSourceObject: {fileID: 8223121169866025928, guid: b9dd3451f4fd5e048b518487552cc703, type: 3}
       insertIndex: -1
       addedObject: {fileID: 423984597}
