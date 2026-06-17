@@ -27,26 +27,27 @@ public class ButtonScaleAnimation : MonoBehaviour, IPointerEnterHandler, IPointe
     [Header("Animation Settings")]
     [SerializeField] private float m_duration = 0.2f;  // アニメーション時間（共通）
 
+    private Image m_backgroundImage;   // ボタン自体の背景Image（自動取得用）
     private Coroutine m_animCoroutine; // スケールと色を一括管理するコルーチン
 
     private void Awake()
     {
-        // もしインスペクターで未設定なら、自分自身のImageを取得（バックアップ用）
+        // 親（自身）のImageコンポーネントを背景用として取得
+        m_backgroundImage = GetComponent<Image>();
+
+        // もしアイコンの指定がなければ、自分自身のImageを使い回す（エラー防止）
         if (m_iconImage == null)
         {
-            m_iconImage = GetComponent<Image>();
+            m_iconImage = m_backgroundImage;
         }
 
-        // 起動時は非選択状態（グレー・通常サイズ・通常アイコン画像）からスタートさせる
+        // 起動時は初期状態（グレー・通常サイズ・通常アイコン画像）からスタート
         transform.localScale = m_normalScale;
-        if (m_iconImage != null)
-        {
-            m_iconImage.color = m_deselectedColor;
+        ApplyColor(m_deselectedColor);
 
-            if (m_normalSprite != null)
-            {
-                m_iconImage.sprite = m_normalSprite;
-            }
+        if (m_iconImage != null && m_normalSprite != null)
+        {
+            m_iconImage.sprite = m_normalSprite;
         }
     }
 
@@ -108,11 +109,20 @@ public class ButtonScaleAnimation : MonoBehaviour, IPointerEnterHandler, IPointe
         m_animCoroutine = StartCoroutine(AnimateButton(targetScale, targetColor));
     }
 
-    /// <summary>サイズと色を同時にスムーズに変化させるコルーチン</summary>
+    /// <summary>背景とアイコンの色を直接適用するヘルパー</summary>
+    private void ApplyColor(Color color)
+    {
+        if (m_backgroundImage != null) m_backgroundImage.color = color;
+        if (m_iconImage != null && m_iconImage != m_backgroundImage) m_iconImage.color = color;
+    }
+
+    /// <summary>サイズと色（背景・アイコン両方）を同時にスムーズに変化させるコルーチン</summary>
     private IEnumerator AnimateButton(Vector3 targetScale, Color targetColor)
     {
         Vector3 startScale = transform.localScale;
-        Color startColor = m_iconImage != null ? m_iconImage.color : Color.white;
+
+        // 開始時の色を取得（背景を基準にする）
+        Color startColor = m_backgroundImage != null ? m_backgroundImage.color : Color.white;
         float elapsed = 0f;
 
         while (elapsed < m_duration)
@@ -120,22 +130,18 @@ public class ButtonScaleAnimation : MonoBehaviour, IPointerEnterHandler, IPointe
             elapsed += Time.deltaTime;
             float t = elapsed / m_duration;
 
-            // ボタン全体のサイズを変更（アイコンだけでなく枠ごと大きくしたい場合はtransformのままでOK）
+            // スケール補間
             transform.localScale = Vector3.Lerp(startScale, targetScale, t);
 
-            // アイコンの色のみをスムーズに補間
-            if (m_iconImage != null)
-            {
-                m_iconImage.color = Color.Lerp(startColor, targetColor, t);
-            }
+            // 色補間（背景とアイコン両方を同時にLerpさせる）
+            Color currentColor = Color.Lerp(startColor, targetColor, t);
+            ApplyColor(currentColor);
 
             yield return null;
         }
 
+        // 最終確定
         transform.localScale = targetScale;
-        if (m_iconImage != null)
-        {
-            m_iconImage.color = targetColor;
-        }
+        ApplyColor(targetColor);
     }
 }
