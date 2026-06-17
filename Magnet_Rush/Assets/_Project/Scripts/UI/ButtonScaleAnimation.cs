@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using UnityEngine.UI; // Imageコンポーネントを扱うために追加
+using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System.Collections;
 
@@ -8,26 +8,45 @@ public class ButtonScaleAnimation : MonoBehaviour, IPointerEnterHandler, IPointe
     private Vector3 m_normalScale = Vector3.one;
     [SerializeField] private Vector3 m_highlightedScale = new Vector3(1.1f, 1.1f, 1f);
 
+    [Header("Target UI Settings")]
+    [Tooltip("手前に乗っている、切り替えたいアイコンのImageをセットしてください")]
+    [SerializeField] private Image m_iconImage;
+
     [Header("Color Settings")]
     [SerializeField] private Color m_selectedColor = Color.white;          // 選択時（本来の鮮やかな色）
     [SerializeField] private Color m_deselectedColor = new Color(0.7f, 0.7f, 0.7f, 1f); // 非選択時（グレーっぽい色）
 
+    [Header("Sprite Settings")]
+    [SerializeField] private Sprite m_normalSprite;      // 通常時（選択されていない時）のアイコン画像
+    [SerializeField] private Sprite m_highlightedSprite; // 選択時（フォーカス・マウスオーバー時）のアイコン画像
+
+    [Header("Stage Camera Settings")]
+    [SerializeField] private SceneSelectUI m_sceneSelectUI;
+    [SerializeField] private string m_mapSceneName;
+
     [Header("Animation Settings")]
     [SerializeField] private float m_duration = 0.2f;  // アニメーション時間（共通）
 
-    private Image m_buttonImage;
     private Coroutine m_animCoroutine; // スケールと色を一括管理するコルーチン
 
     private void Awake()
     {
-        // 自身のImageコンポーネントを取得
-        m_buttonImage = GetComponent<Image>();
-
-        // 起動時は非選択状態（グレー・通常サイズ）からスタートさせる
-        transform.localScale = m_normalScale;
-        if (m_buttonImage != null)
+        // もしインスペクターで未設定なら、自分自身のImageを取得（バックアップ用）
+        if (m_iconImage == null)
         {
-            m_buttonImage.color = m_deselectedColor;
+            m_iconImage = GetComponent<Image>();
+        }
+
+        // 起動時は非選択状態（グレー・通常サイズ・通常アイコン画像）からスタートさせる
+        transform.localScale = m_normalScale;
+        if (m_iconImage != null)
+        {
+            m_iconImage.color = m_deselectedColor;
+
+            if (m_normalSprite != null)
+            {
+                m_iconImage.sprite = m_normalSprite;
+            }
         }
     }
 
@@ -35,29 +54,52 @@ public class ButtonScaleAnimation : MonoBehaviour, IPointerEnterHandler, IPointe
     public void OnPointerEnter(PointerEventData eventData)
     {
         ChannelLogger.LogGuardReturn("UI", "ボタンマウスオーバー");
+        ChangeSprite(m_highlightedSprite);
         StartAnimation(m_highlightedScale, m_selectedColor);
+        TriggerStageCamera();
     }
 
     /// <summary>マウス離脱時</summary>
     public void OnPointerExit(PointerEventData eventData)
     {
         ChannelLogger.LogGuardReturn("UI", "ボタンマウス離脱");
+        ChangeSprite(m_normalSprite);
         StartAnimation(m_normalScale, m_deselectedColor);
     }
 
     /// <summary>コントローラーで選択された時</summary>
     public void OnSelect(BaseEventData eventData)
     {
+        ChangeSprite(m_highlightedSprite);
         StartAnimation(m_highlightedScale, m_selectedColor);
+        TriggerStageCamera();
     }
 
     /// <summary>コントローラーで選択が外れた時</summary>
     public void OnDeselect(BaseEventData eventData)
     {
+        ChangeSprite(m_normalSprite);
         StartAnimation(m_normalScale, m_deselectedColor);
     }
 
-    /// <summary>アニメーションを一括で開始するヘルパーメソッド</summary>
+    private void TriggerStageCamera()
+    {
+        if (m_sceneSelectUI != null && !string.IsNullOrEmpty(m_mapSceneName))
+        {
+            m_sceneSelectUI.OnSelectStage(m_mapSceneName);
+        }
+    }
+
+    /// <summary>アイコンの画像をパッと切り替える</summary>
+    private void ChangeSprite(Sprite targetSprite)
+    {
+        if (m_iconImage != null && targetSprite != null)
+        {
+            m_iconImage.sprite = targetSprite;
+        }
+    }
+
+    /// <summary>アニメーションを一括で開始する</summary>
     private void StartAnimation(Vector3 targetScale, Color targetColor)
     {
         if (m_animCoroutine != null)
@@ -66,35 +108,34 @@ public class ButtonScaleAnimation : MonoBehaviour, IPointerEnterHandler, IPointe
         m_animCoroutine = StartCoroutine(AnimateButton(targetScale, targetColor));
     }
 
-    /// <summary>サイズと色を同時にスムーズに変化させる統合コルーチン</summary>
+    /// <summary>サイズと色を同時にスムーズに変化させるコルーチン</summary>
     private IEnumerator AnimateButton(Vector3 targetScale, Color targetColor)
     {
         Vector3 startScale = transform.localScale;
-        Color startColor = m_buttonImage != null ? m_buttonImage.color : Color.white;
+        Color startColor = m_iconImage != null ? m_iconImage.color : Color.white;
         float elapsed = 0f;
 
         while (elapsed < m_duration)
         {
             elapsed += Time.deltaTime;
-            float t = elapsed / m_duration; // 0 → 1 に変化
+            float t = elapsed / m_duration;
 
-            // サイズのスムーズな補間 (Lerp)
+            // ボタン全体のサイズを変更（アイコンだけでなく枠ごと大きくしたい場合はtransformのままでOK）
             transform.localScale = Vector3.Lerp(startScale, targetScale, t);
 
-            // 色のスムーズな補間 (Lerp)
-            if (m_buttonImage != null)
+            // アイコンの色のみをスムーズに補間
+            if (m_iconImage != null)
             {
-                m_buttonImage.color = Color.Lerp(startColor, targetColor, t);
+                m_iconImage.color = Color.Lerp(startColor, targetColor, t);
             }
 
             yield return null;
         }
 
-        // 最終値を確実に設定
         transform.localScale = targetScale;
-        if (m_buttonImage != null)
+        if (m_iconImage != null)
         {
-            m_buttonImage.color = targetColor;
+            m_iconImage.color = targetColor;
         }
     }
 }
