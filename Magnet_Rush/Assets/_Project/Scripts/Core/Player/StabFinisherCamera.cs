@@ -48,6 +48,13 @@ public class StabFinisherCamera : MonoBehaviour
     [Tooltip("揺れの速さ（Hz）。低いほど重いストローク（8〜12が目安）。高いと細かいプルプルになる")]
     [SerializeField] private float m_shakeFrequency = 10f;
 
+#if UNITY_EDITOR
+    [Header("[デバッグ] 向きをTimelineへ焼く（一時用・焼いたらOFF）")]
+    [Tooltip("ON で演出を1回再生すると、その間の自動ルックアットの向きをカメラ軌跡クリップに回転キーとして書き込む。焼き終えたら必ず OFF に戻す")]
+    [SerializeField] private bool m_captureRotationToClip;
+    private System.Collections.Generic.List<(double time, Quaternion local)> m_rotCapture;
+#endif
+
     private Animator m_animator;             // rig の Animator（Timeline トラックのバインド先）
     private PlayableAsset m_defaultTimeline; // boss が cameraTimeline を持たない時のフォールバック（初期アサイン）
     private double m_timelineDuration = 1.0; // Timeline 全体の尺（秒）。カメラ区間＋着弾後テール（引き／スロー）を含む。
@@ -131,6 +138,9 @@ public class StabFinisherCamera : MonoBehaviour
     // 演出終了: Timeline を止めて専用 Camera を非表示にし、Main Camera だけに戻す。
     private void OnStabFinisherEnd()
     {
+#if UNITY_EDITOR
+        WriteCapturedRotation();
+#endif
         m_active = false;
         m_player = null;
         m_target = null;
@@ -184,6 +194,9 @@ public class StabFinisherCamera : MonoBehaviour
         m_director.time = System.Math.Min(m_impactTime + m_frozenRealTimer, m_timelineDuration);
         m_director.Evaluate();
         AimAt(m_frozenFraming);
+#if UNITY_EDITOR
+        CaptureRotation();
+#endif
         AddImpactShake();
     }
 
@@ -210,6 +223,9 @@ public class StabFinisherCamera : MonoBehaviour
         m_director.time = t * m_impactTime;
         m_director.Evaluate();
         AimAt(FramingPoint());
+#if UNITY_EDITOR
+        CaptureRotation();
+#endif
     }
 
     // 注視点＝プレイヤー上方（m_lookAtHeight）と攻撃対象の間を m_targetBias で補間。俯瞰でも両者がフレームに収まる。
@@ -243,4 +259,83 @@ public class StabFinisherCamera : MonoBehaviour
         }
         m_timelineDuration = m_director.duration > 0.0 ? m_director.duration : m_impactTime;
     }
+
+#if UNITY_EDITOR
+    // [一時] 演出中の自動ルックアットの結果（子カメラの localRotation）をクリップ時刻ごとに記録する。
+    private void CaptureRotation()
+    {
+        if (!m_captureRotationToClip || m_finisherCamera == null || m_director == null) return;
+        if (m_rotCapture == null) m_rotCapture = new System.Collections.Generic.List<(double time, Quaternion local)>();
+        double tt = m_director.time;
+        Quaternion lr = m_finisherCamera.transform.localRotation;
+        if (m_rotCapture.Count > 0 && System.Math.Abs(m_rotCapture[m_rotCapture.Count - 1].time - tt) < 1e-4)
+            m_rotCapture[m_rotCapture.Count - 1] = (tt, lr);
+        else
+            m_rotCapture.Add((tt, lr));
+    }
+
+    // [一時] 記録した向きを、カメラ軌跡クリップに localEulerAnglesRaw 回転カーブとして書き込む。
+    private void WriteCapturedRotation()
+    {
+        if (!m_captureRotationToClip) return;
+        if (m_rotCapture == null || m_rotCapture.Count < 2)
+        { Debug.LogWarning("[StabFinisherCamera] 向きキャプチャが不足 — 焼き込みスキップ"); return; }
+
+        var ta = m_director.playableAsset as TimelineAsset;
+        AnimationClip clip = null;
+        if (ta != null)
+        {
+            foreach (var track in ta.GetOutputTracks())
+            {
+                if (!(track is AnimationTrack at)) continue;
+                if (at.infiniteClip != null) clip = at.infiniteClip;
+                else
+                    foreach (var c in at.GetClips())
+                        if (c.asset is AnimationPlayableAsset apa && apa.clip != null) { clip = apa.clip; break; }
+                if (clip != null) break;
+            }
+        }
+        if (clip == null) { Debug.LogWarning("[StabFinisherCamera] AnimationClip 取得失敗 — 焼き込み中止"); return; }
+
+        // 既存の位置カーブと同じ子へ書くため path を流用する。
+        string path = null;
+        foreach (var b in UnityEditor.AnimationUtility.GetCurveBindings(clip))
+            if (b.propertyName.StartsWith("m_LocalPosition")) { path = b.path; break; }
+        if (path == null) path = UnityEditor.AnimationUtility.CalculateTransformPath(m_finisherCamera.transform, m_animator.transform);
+
+        // localRotation(quat) → 連続オイラー(±180跨ぎを unwrap)。
+        int n = m_rotCapture.Count;
+        var kx = new Keyframe[n]; var ky = new Keyframe[n]; var kz = new Keyframe[n];
+        Vector3 prev = Vector3.zero;
+        for (int i = 0; i < n; i++)
+        {
+            Vector3 e = m_rotCapture[i].local.eulerAngles;
+            if (i == 0) prev = e;
+            e.x = UnwrapAngle(prev.x, e.x);
+            e.y = UnwrapAngle(prev.y, e.y);
+            e.z = UnwrapAngle(prev.z, e.z);
+            prev = e;
+            float ft = (float)m_rotCapture[i].time;
+            kx[i] = new Keyframe(ft, e.x); ky[i] = new Keyframe(ft, e.y); kz[i] = new Keyframe(ft, e.z);
+        }
+        var cx = new AnimationCurve(kx); var cy = new AnimationCurve(ky); var cz = new AnimationCurve(kz);
+        for (int i = 0; i < n; i++) { cx.SmoothTangents(i, 0f); cy.SmoothTangents(i, 0f); cz.SmoothTangents(i, 0f); }
+
+        var tr = typeof(Transform);
+        UnityEditor.AnimationUtility.SetEditorCurve(clip, UnityEditor.EditorCurveBinding.FloatCurve(path, tr, "localEulerAnglesRaw.x"), cx);
+        UnityEditor.AnimationUtility.SetEditorCurve(clip, UnityEditor.EditorCurveBinding.FloatCurve(path, tr, "localEulerAnglesRaw.y"), cy);
+        UnityEditor.AnimationUtility.SetEditorCurve(clip, UnityEditor.EditorCurveBinding.FloatCurve(path, tr, "localEulerAnglesRaw.z"), cz);
+        UnityEditor.EditorUtility.SetDirty(clip);
+        UnityEditor.AssetDatabase.SaveAssets();
+        Debug.Log("[StabFinisherCamera] 向き " + n + " キーを焼き込み完了 path=" + path + " clip=" + clip.name);
+        m_rotCapture = null;
+    }
+
+    private static float UnwrapAngle(float prev, float cur)
+    {
+        while (cur - prev > 180f) cur -= 360f;
+        while (cur - prev < -180f) cur += 360f;
+        return cur;
+    }
+#endif
 }
