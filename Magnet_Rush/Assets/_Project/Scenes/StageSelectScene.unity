@@ -1279,10 +1279,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1309302648}
   serializedVersion: 2
-
-  m_LocalRotation: {x: 0.013848916, y: 0.98659265, z: 0.16124406, w: -0.021062031}
-  m_LocalPosition: {x: 107.112785, y: 233.85078, z: -369.45917}
-
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1897,6 +1895,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: MagnetRush.Game::SceneSelectUI
   m_stageData: {fileID: 11400000, guid: 0e18b5cde6c07e44fb7a29f5e06e547e, type: 2}
   m_previewSpawnPoint: {fileID: 701740943}
+  m_firstSelectedButton: {fileID: 831616823}
 --- !u!1 &1946309131
 GameObject:
   m_ObjectHideFlags: 0
