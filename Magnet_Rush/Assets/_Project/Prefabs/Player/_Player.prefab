@@ -161,7 +161,7 @@ MonoBehaviour:
   m_effectPrefab: {fileID: 5084856853744830301, guid: e066a806db08a85418d1bcf240a657b4, type: 3}
   m_effectParent: {fileID: 890088630592913366}
   m_thresholdMode: 0
-  m_healthRatioThreshold: 0.25
+  m_healthRatioThreshold: 1
   m_healthValueThreshold: 10
   m_localPositionOffset: {x: 0, y: 0, z: 0}
   m_autoScaleToPlayerHeight: 1
@@ -170,7 +170,7 @@ MonoBehaviour:
   m_showWhileDead: 1
   m_bodyPartEffects:
   - m_label: "\u80F8"
-    m_enabled: 1
+    m_enabled: 0
     m_bone: 8
     m_anchorOverride: {fileID: 0}
     m_localPositionOffset: {x: 0, y: 0.2, z: 0}
@@ -179,7 +179,7 @@ MonoBehaviour:
     m_countMultiplier: 0.35
     m_sizeMultiplier: 6
   - m_label: "\u5DE6\u80A9"
-    m_enabled: 1
+    m_enabled: 0
     m_bone: 11
     m_anchorOverride: {fileID: 0}
     m_localPositionOffset: {x: -0.6, y: 0, z: 0}
@@ -188,7 +188,7 @@ MonoBehaviour:
     m_countMultiplier: 0.35
     m_sizeMultiplier: 3
   - m_label: "\u53F3\u80A9"
-    m_enabled: 1
+    m_enabled: 0
     m_bone: 12
     m_anchorOverride: {fileID: 0}
     m_localPositionOffset: {x: 0.44, y: 0.2, z: 1}
@@ -197,7 +197,7 @@ MonoBehaviour:
     m_countMultiplier: 0.35
     m_sizeMultiplier: 5
   - m_label: "\u5DE6\u8DB3"
-    m_enabled: 1
+    m_enabled: 0
     m_bone: 5
     m_anchorOverride: {fileID: 0}
     m_localPositionOffset: {x: -0.1, y: -0.4, z: 0}
@@ -206,7 +206,7 @@ MonoBehaviour:
     m_countMultiplier: 0.3
     m_sizeMultiplier: 3
   - m_label: "\u53F3\u8DB3"
-    m_enabled: 1
+    m_enabled: 0
     m_bone: 6
     m_anchorOverride: {fileID: 0}
     m_localPositionOffset: {x: 0.42, y: -0.85, z: 0}
@@ -231,6 +231,8 @@ MonoBehaviour:
   m_initialMass: 1
   m_immovable: 0
   m_holdPositionAgainstDynamicObjects: 0
+  m_holdPositionAgainstSameGroupEntities: 0
+  m_keepMagnetizedOnAttractContact: 0
   m_centerOffset: {x: 0, y: 0, z: 0}
   m_useEdgeDetectionOutline: 1
 --- !u!54 &4320032113719753399
@@ -330,6 +332,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: MagnetRush.Player::ShootingController
   m_bulletSettings: {fileID: 11400000, guid: 425ee2473071b7a4fa2afd4ccb6a162c, type: 2}
   m_firePoint: {fileID: 3638561556605212238}
+  m_selfFireEffectAnchor: {fileID: 1162132546054884071}
+  m_selfFireEffectLocalOffset: {x: 0, y: 0, z: 0}
+  m_selfFireEffectScaleMultiplier: 0.13
 --- !u!114 &460711517580896566
 MonoBehaviour:
   m_ObjectHideFlags: 0
