@@ -161,13 +161,22 @@ public class BossStabFinisherState : EntityState<Player>
                 m_hitDone = true;
                 if (m_receiver != null && m_receiver.CanReceiveStab) DoHit(player);
             }
-            // 離脱: 立ち上がり(StandUp)アニメで頭→起点へ戻る。突きポーズのまま戻らないように。
-            AnimatorPhaseIndex = (int)PlayerStateIndex.StandUp;
-            IsAirbornePhase = false;
+            // 離脱: 足場(頭の上)から起点へ「ひと跳びして着地」。頭から地面への落差が大きいので、
+            // 直線移動や弧を足すだけだと弧が埋もれて滑り落ちて見える。そこで頂点を必ず頭より上に作る
+            // 放物線にして、一度上へ蹴ってから加速落下させる（空中アニメ=Fall）。
+            AnimatorPhaseIndex = (int)PlayerStateIndex.Fall;
+            IsAirbornePhase = true;
             float k = Mathf.InverseLerp(m_tPlungeEnd, m_tRetreatEnd, t);
-            player.transform.position = Vector3.Lerp(m_hitPos, m_startPos, Smooth(k));
-            player.verticalVelocity = 0f;
-            // 突き時の傾き(LeanToward)を解除し、戻る方向(ボス前)を向いて起き上がる。
+            Vector3 flat = Vector3.Lerp(m_hitPos, m_startPos, k); // 水平は等速で起点へ
+            // 垂直は放物線 y = a*k^2 + b*k + y0。頂点を「高い方 + retreatArcHeight」に固定して必ず上へ跳ねさせる。
+            float y0 = m_hitPos.y;
+            float p = Mathf.Max(m_hitPos.y, m_startPos.y) - y0 + m_profile.retreatArcHeight;
+            float d = m_startPos.y - y0;
+            float b = 2f * p + 2f * Mathf.Sqrt(Mathf.Max(0f, p * (p - d)));
+            float a = d - b;
+            player.transform.position = new Vector3(flat.x, a * k * k + b * k + y0, flat.z);
+            player.verticalVelocity = 2f * a * k + b; // dy/dk の符号で 跳ね上がり(+)→落下(-)
+            // 突き時の傾き(LeanToward)を解除し、跳ぶ方向(起点)を向く。
             FaceTowards(player, m_startPos);
         }
         else

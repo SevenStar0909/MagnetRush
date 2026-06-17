@@ -28,6 +28,10 @@ public class StabFinisherSettings : ScriptableObject
         [Tooltip("跳び上がる頂点の高さ。大きいほど大きく跳ぶ")]
         public float arcApexHeight = 2.5f;
 
+        [Label("跳び降りの弧の高さ（m）")]
+        [Tooltip("突き終わりに頭から跳び降りるときの蹴り上げの高さ。0だとほぼ滑り落ち、大きいほど一度ぴょんと跳んでから着地する")]
+        public float retreatArcHeight = 1.5f;
+
         [Label("突き刺し方向のひねり（度）")]
         [Tooltip("頭に刺すときの体の向き微調整。寝てる/しゃがみで刺す角度を変える")]
         public float plungeYawOffset = 0f;
