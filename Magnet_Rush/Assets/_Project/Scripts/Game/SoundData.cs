@@ -34,6 +34,8 @@ public static class SoundData
         public const string PlayerShot = "PlayerShot";
         public const string SelfShot = "SelfShot";
         public const string MagField = "MagField";
+        public const string HitObject = "HitObject";
+        public const string TurretShot = "TurretShot";
         // 適時追加
     }
 
