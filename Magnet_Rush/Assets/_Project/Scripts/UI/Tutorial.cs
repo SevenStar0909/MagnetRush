@@ -87,10 +87,10 @@ public class SimpleTutorial : MonoBehaviour
     {
         // --- メッセージ 1〜4 を自動で連続表示 ---
         currentStep = 2;
-        yield return StartCoroutine(TypeAndAutoAdvance("通信確認\n担当オペレーターのA.R.I.Aです\n以後よろしくね"));        //1
+        yield return StartCoroutine(TypeAndAutoAdvance("<color=yellow>通信確認</color>\n担当オペレーターの<color=#FF4500>A.R.I.A</color>です\n以後よろしくね"));        //1
         yield return StartCoroutine(TypeAndAutoAdvance("ここは私たち警察の\n訓練プログラムシミュレータ内の仮想空間"));     //2
         yield return StartCoroutine(TypeAndAutoAdvance("ここで実戦での動き方や\nあなたのメイン装備についての理解を深めてもらうわ"));   //3
-        yield return StartCoroutine(TypeAndAutoAdvance("早速はじめましょう\nまずは左スティックと右スティックを動かして\n周囲を警戒しつつ道なりに進んで\n障害物はAボタンのジャンプで飛び越えるといいわ"));    //4
+        yield return StartCoroutine(TypeAndAutoAdvance("早速はじめましょう\nまずは左スティックと右スティックを動かして\n周囲を警戒しつつ道なりに進んで\n障害物はAボタンのジャンプで\n飛び越えるといいわ"));    //4
 
         // --- 4つのメッセージが終わったら、移動・カメラ・ジャンプを解除 ---
         currentStep = 3;
@@ -153,8 +153,8 @@ public class SimpleTutorial : MonoBehaviour
         SetPlayerShootingLock(true); // 射撃ロック
         yield return StartCoroutine(TypeAndAutoAdvance("異なる磁極を付与したことでオブジェクト同士が引き合ったわね\n成功よ"));        //14
         yield return StartCoroutine(TypeAndAutoAdvance("逆に反発を起こしたいときは\n同じ磁極を付与すればOKよ\nこの機能を活用して\n目の前の障害物を突破して進んでちょうだい"));        //15
-        yield return StartCoroutine(TypeAndAutoAdvance("そうそう、右下のインタフェースはあなたの銃の残弾数も示しているの。"));        //16
-        yield return StartCoroutine(TypeAndAutoAdvance("リロードしたくなったら、Xボタンを押すのよ。ただリロードすると、今の磁力がリセットされる点には注意して。"));        //17
+        yield return StartCoroutine(TypeAndAutoAdvance("そうそう\n右下のインタフェースは\nあなたの銃の残弾数も示しているの"));        //16
+        yield return StartCoroutine(TypeAndAutoAdvance("リロードしたくなったら\n<color=yellow>Xボタン</color>を押すのよ\nただリロードすると\n今の磁力がリセットされる点には注意して"));        //17
 
         currentStep = 11;
         SetPlayerSwitchMagnetLock(false); // 切り替えロック
@@ -169,8 +169,8 @@ public class SimpleTutorial : MonoBehaviour
         currentStep = 12;
         SetPlayerSwitchMagnetLock(true); // 切り替えロック
         SetPlayerShootingLock(true); // 射撃ロック
-        yield return StartCoroutine(TypeAndAutoAdvance("高い壁ね..、でも問題ないわ、あなたの銃の機能を応用すればね。"));        //18
-        yield return StartCoroutine(TypeAndAutoAdvance("実はあなたの銃には、あなた自身にもＮかＳの磁力を付与する機能があるの。LBを押してみて。"));        //19
+        yield return StartCoroutine(TypeAndAutoAdvance("高い壁ね..\nでも問題ないわ\nあなたの銃の機能を応用すればね"));        //18
+        yield return StartCoroutine(TypeAndAutoAdvance("実はあなたの銃には\nあなた自身にもＮかＳの磁力を\n付与する機能があるの\nLBを押してみて"));        //19
 
 
         currentStep = 13;
@@ -182,9 +182,9 @@ public class SimpleTutorial : MonoBehaviour
         }
 
         currentStep = 14;
-        yield return StartCoroutine(TypeAndAutoAdvance("見えるかしら？あなたの体からドームが展開されているでしょ？"));        //20
-        yield return StartCoroutine(TypeAndAutoAdvance("この間はあなた自身が、周りの磁力を与えた物体の動きへ影響を与えるようになるわ。"));        //21
-        yield return StartCoroutine(TypeAndAutoAdvance("それだけじゃなく、あなたが空中に居る間はあなた自身も磁力の影響を受けるようになるの。それを活かして、この壁を超えてみせて。"));        //22
+        yield return StartCoroutine(TypeAndAutoAdvance("見えるかしら？\nあなたの体からドームが展開されているでしょ？"));        //20
+        yield return StartCoroutine(TypeAndAutoAdvance("この間はあなた自身が\n周りの磁力を与えた物体の動きへ\n影響を与えるようになるわ"));        //21
+        yield return StartCoroutine(TypeAndAutoAdvance("それだけじゃなく\nあなたが空中に居る間はあなた自身も\n磁力の影響を受けるようになるの\nそれを活かして\nこの壁を超えてみせて"));        //22
         SetPlayerLockAll(false);
 
         currentStep = 14;
@@ -197,18 +197,18 @@ public class SimpleTutorial : MonoBehaviour
         SetPlayerLockAll(true);
         isZooming = true;
 
-        yield return StartCoroutine(TypeAndAutoAdvance("やるわね、もうかなり磁力を使いこなしているんじゃない？"));        //23
-        yield return StartCoroutine(TypeAndAutoAdvance("でも本番はここからよ。目の前の不気味なロボットが見える？"));        //24
-        yield return StartCoroutine(TypeAndAutoAdvance("これが私たちの街の安全を脅かす敵よ。あなたの任務におけるターゲットってところね。"));        //25
-        yield return StartCoroutine(TypeAndAutoAdvance("次はこの敵を相手に、戦闘のシミュレーションをしてみましょう。"));        //26
-        yield return StartCoroutine(TypeAndAutoAdvance("この敵は、巨大な斧を振り回してあなたを攻撃してくるわ。でも動きは遅いから、回避は簡単なはずよ。"));        //27
+        yield return StartCoroutine(TypeAndAutoAdvance("やるわね\nもうかなり磁力を使いこなしているんじゃない？"));        //23
+        yield return StartCoroutine(TypeAndAutoAdvance("でも本番はここからよ\n目の前の不気味なロボットが見える？"));        //24
+        yield return StartCoroutine(TypeAndAutoAdvance("これが私たちの街の安全を脅かす敵よ\nあなたの任務におけるターゲットってところね"));        //25
+        yield return StartCoroutine(TypeAndAutoAdvance("次はこの敵を相手に\n戦闘のシミュレーションをしてみましょう"));        //26
+        yield return StartCoroutine(TypeAndAutoAdvance("この敵は\n巨大な斧を振り回してあなたを攻撃してくるわ\nでも動きは遅いから\n回避は簡単なはずよ"));        //27
 
         isZooming = false;
 
         currentStep = 16;
         SetPlayerLockAll(false);
-        yield return StartCoroutine(TypeAndAutoAdvance("そしてあなたの銃はこの敵にも磁力を付与することができるの。"));        //28
-        yield return StartCoroutine(TypeAndAutoAdvance("さっきと同じようにこいつにオブジェクトを引き寄せて、思いっきりぶつけてやりなさい！"));        //29
+        yield return StartCoroutine(TypeAndAutoAdvance("そしてあなたの銃はこの敵にも\n磁力を付与することができるの"));        //28
+        yield return StartCoroutine(TypeAndAutoAdvance("さっきと同じように\nこいつにオブジェクトを引き寄せて\n思いっきりぶつけてやりなさい！"));        //29
 
         while (currentStep == 16)
         {
@@ -216,7 +216,7 @@ public class SimpleTutorial : MonoBehaviour
         }
 
         currentStep = 17;
-        yield return StartCoroutine(TypeAndAutoAdvance("流石ね、シミュレーションとはいえ見事な手際だわ。この調子で進んでいきましょう。"));        //30
+        yield return StartCoroutine(TypeAndAutoAdvance("流石ね\nシミュレーションとはいえ見事な手際だわ\nこの調子で進んでいきましょう"));        //30
 
         while (currentStep == 17)
         {
@@ -224,8 +224,8 @@ public class SimpleTutorial : MonoBehaviour
         }
 
         currentStep = 18;
-        yield return StartCoroutine(TypeAndAutoAdvance("気をつけて、タレットが設置されているわ。"));        //31
-        yield return StartCoroutine(TypeAndAutoAdvance("あのタレットはなかなかの脅威ね。でもあなたの磁力は何にでも付けることができる。タレットだって例外じゃないわ。それで狙いを誘導できるはずよ。"));        //32
+        yield return StartCoroutine(TypeAndAutoAdvance("気をつけて\nタレットが設置されているわ"));        //31
+        yield return StartCoroutine(TypeAndAutoAdvance("あのタレットはなかなかの脅威ね\nでもあなたの磁力は何にでも付けることができる\nタレットだって例外じゃないわ\nそれで狙いを誘導できるはずよ"));        //32
 
         while (currentStep == 18)
         {
@@ -233,8 +233,8 @@ public class SimpleTutorial : MonoBehaviour
         }
 
         currentStep = 19;
-        yield return StartCoroutine(TypeAndAutoAdvance("よくやったわ。今回のシミュレーションはここまでよ。"));        //33
-        yield return StartCoroutine(TypeAndAutoAdvance("これからあなたには実際の任務についてもらうわ。今回のシミュレーションの内容を忘れずに頑張ってね。"));        //34
+        yield return StartCoroutine(TypeAndAutoAdvance("よくやったわ\n今回のシミュレーションはここまでよ"));        //33
+        yield return StartCoroutine(TypeAndAutoAdvance("これからあなたには実際の任務についてもらうわ\n今回のシミュレーションの内容を忘れずに\n頑張ってね"));        //34
     }
 
     // ✍️ 1文字ずつ表示し、終わったら自動で数秒待つ機能
