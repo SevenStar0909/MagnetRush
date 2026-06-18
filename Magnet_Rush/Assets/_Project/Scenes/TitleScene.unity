@@ -1019,6 +1019,7 @@ GameObject:
   - component: {fileID: 147109451}
   - component: {fileID: 147109453}
   - component: {fileID: 147109452}
+  - component: {fileID: 147109454}
   m_Layer: 0
   m_Name: MAG_BIL_01 (2)
   m_TagString: Untagged
@@ -1099,6 +1100,45 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 147109450}
   m_Mesh: {fileID: -8075037077854424399, guid: 7dcda408d08e425478e49d4dbce0b368, type: 3}
+--- !u!114 &147109454
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 147109450}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9db3ea3d458a47f69fad8b446287bf0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TitleBuildingLightFlicker
+  m_targetRenderers:
+  - {fileID: 147109452}
+  m_includeChildrenWhenEmpty: 0
+  m_materialIndex: 0
+  m_baseEmissionColor: {r: 18, g: 20, b: 55, a: 1}
+  m_baseEmissionIntensity: 0.18
+  m_viewCamera: {fileID: 0}
+  m_windowLightCount: 26
+  m_gridColumns: 6
+  m_gridRows: 10
+  m_gridFill: {x: 0.48, y: 0.62}
+  m_windowSize: {x: 0.022, y: 0.018}
+  m_surfaceOffset: 0.4
+  m_windowColors:
+  - {r: 8, g: 7.5, b: 2.6, a: 1}
+  - {r: 2.6, g: 8, b: 9, a: 1}
+  - {r: 9, g: 2.8, b: 8, a: 1}
+  - {r: 3, g: 9, b: 4, a: 1}
+  - {r: 10, g: 4.5, b: 1.5, a: 1}
+  - {r: 5, g: 3, b: 10, a: 1}
+  m_maxSimultaneousLights: 3
+  m_blinkChance: 0.104
+  m_waitTimeRange: {x: 0.201, y: 0.201}
+  m_lightUpTimeRange: {x: 0.8, y: 0.8}
+  m_litHoldRange: {x: 1, y: 1}
+  m_fadeOutTimeRange: {x: 1, y: 1}
+  m_randomSeed: 0
 --- !u!1 &256965772
 GameObject:
   m_ObjectHideFlags: 0
@@ -5958,6 +5998,55 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 04101f11315b2b0478dfcb7c76412442, type: 3}
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Core::MagnetPropSleeper
+--- !u!1 &1853189695 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3142257078980685797, guid: 7dcda408d08e425478e49d4dbce0b368, type: 3}
+  m_PrefabInstance: {fileID: 2125463797}
+  m_PrefabAsset: {fileID: 0}
+--- !u!23 &1853189697 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -284954094128055165, guid: 7dcda408d08e425478e49d4dbce0b368, type: 3}
+  m_PrefabInstance: {fileID: 2125463797}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1853189699
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1853189695}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9db3ea3d458a47f69fad8b446287bf0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TitleBuildingLightFlicker
+  m_targetRenderers:
+  - {fileID: 1853189697}
+  m_includeChildrenWhenEmpty: 0
+  m_materialIndex: 0
+  m_baseEmissionColor: {r: 18, g: 20, b: 55, a: 1}
+  m_baseEmissionIntensity: 0.18
+  m_viewCamera: {fileID: 0}
+  m_windowLightCount: 26
+  m_gridColumns: 6
+  m_gridRows: 10
+  m_gridFill: {x: 0.48, y: 0.62}
+  m_windowSize: {x: 0.022, y: 0.018}
+  m_surfaceOffset: 0.4
+  m_windowColors:
+  - {r: 8, g: 7.5, b: 2.6, a: 1}
+  - {r: 2.6, g: 8, b: 9, a: 1}
+  - {r: 9, g: 2.8, b: 8, a: 1}
+  - {r: 3, g: 9, b: 4, a: 1}
+  - {r: 10, g: 4.5, b: 1.5, a: 1}
+  - {r: 5, g: 3, b: 10, a: 1}
+  m_maxSimultaneousLights: 3
+  m_blinkChance: 0.104
+  m_waitTimeRange: {x: 0.201, y: 0.201}
+  m_lightUpTimeRange: {x: 0.8, y: 0.8}
+  m_litHoldRange: {x: 1, y: 1}
+  m_fadeOutTimeRange: {x: 1, y: 1}
+  m_randomSeed: 0
 --- !u!1001 &1879175955
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6220,6 +6309,8 @@ GameObject:
   - component: {fileID: 2006915748}
   - component: {fileID: 2006915750}
   - component: {fileID: 2006915749}
+  - component: {fileID: 2006915751}
+  - component: {fileID: 2006915752}
   m_Layer: 0
   m_Name: MAG_BIL_01 (1)
   m_TagString: Untagged
@@ -6300,6 +6391,84 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2006915747}
   m_Mesh: {fileID: -8075037077854424399, guid: 7dcda408d08e425478e49d4dbce0b368, type: 3}
+--- !u!114 &2006915751
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2006915747}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9db3ea3d458a47f69fad8b446287bf0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TitleBuildingLightFlicker
+  m_targetRenderers:
+  - {fileID: 2006915749}
+  m_includeChildrenWhenEmpty: 0
+  m_materialIndex: 0
+  m_baseEmissionColor: {r: 18, g: 20, b: 55, a: 1}
+  m_baseEmissionIntensity: 0.18
+  m_viewCamera: {fileID: 0}
+  m_windowLightCount: 26
+  m_gridColumns: 6
+  m_gridRows: 10
+  m_gridFill: {x: 0.48, y: 0.62}
+  m_windowSize: {x: 0.022, y: 0.018}
+  m_surfaceOffset: 0.4
+  m_windowColors:
+  - {r: 8, g: 7.5, b: 2.6, a: 1}
+  - {r: 2.6, g: 8, b: 9, a: 1}
+  - {r: 9, g: 2.8, b: 8, a: 1}
+  - {r: 3, g: 9, b: 4, a: 1}
+  - {r: 10, g: 4.5, b: 1.5, a: 1}
+  - {r: 5, g: 3, b: 10, a: 1}
+  m_maxSimultaneousLights: 3
+  m_blinkChance: 0.104
+  m_waitTimeRange: {x: 0.201, y: 0.201}
+  m_lightUpTimeRange: {x: 0.8, y: 0.8}
+  m_litHoldRange: {x: 1, y: 1}
+  m_fadeOutTimeRange: {x: 1, y: 1}
+  m_randomSeed: 0
+--- !u!114 &2006915752
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2006915747}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9db3ea3d458a47f69fad8b446287bf0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TitleBuildingLightFlicker
+  m_targetRenderers:
+  - {fileID: 1853189697}
+  m_includeChildrenWhenEmpty: 0
+  m_materialIndex: 0
+  m_baseEmissionColor: {r: 18, g: 20, b: 55, a: 1}
+  m_baseEmissionIntensity: 0.18
+  m_viewCamera: {fileID: 0}
+  m_windowLightCount: 26
+  m_gridColumns: 6
+  m_gridRows: 10
+  m_gridFill: {x: 0.48, y: 0.62}
+  m_windowSize: {x: 0.022, y: 0.018}
+  m_surfaceOffset: 0.4
+  m_windowColors:
+  - {r: 8, g: 7.5, b: 2.6, a: 1}
+  - {r: 2.6, g: 8, b: 9, a: 1}
+  - {r: 9, g: 2.8, b: 8, a: 1}
+  - {r: 3, g: 9, b: 4, a: 1}
+  - {r: 10, g: 4.5, b: 1.5, a: 1}
+  - {r: 5, g: 3, b: 10, a: 1}
+  m_maxSimultaneousLights: 3
+  m_blinkChance: 0.104
+  m_waitTimeRange: {x: 0.201, y: 0.201}
+  m_lightUpTimeRange: {x: 0.8, y: 0.8}
+  m_litHoldRange: {x: 1, y: 1}
+  m_fadeOutTimeRange: {x: 1, y: 1}
+  m_randomSeed: 0
 --- !u!1 &2013419641
 GameObject:
   m_ObjectHideFlags: 0
@@ -6908,6 +7077,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 7dcda408d08e425478e49d4dbce0b368, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2125463799}
+    - targetCorrespondingSourceObject: {fileID: 3142257078980685797, guid: 7dcda408d08e425478e49d4dbce0b368, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1853189699}
     - targetCorrespondingSourceObject: {fileID: 3808790934652862054, guid: 7dcda408d08e425478e49d4dbce0b368, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1267246799}
