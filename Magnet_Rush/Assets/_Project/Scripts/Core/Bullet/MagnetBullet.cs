@@ -240,12 +240,14 @@ public class MagnetBullet : MonoBehaviour, IBulletProximity
     /// </summary>
     private void MagnetizeTarget(Collider target, Magnetizable targetMag)
     {
+        // 既に同じ敵へ磁力が付いている場合、古いドーム/着弾VFXを残さず上書きする。
+        targetMag.DeactivateWithFields();
         targetMag.SetPole(Pole);
 
         // MagnetField/Visualizer/VFX はすべて着弾Collider（ボーン/Hurtbox子等）側に出す。
         // フィールド中心がボーンに追従し、VFXと範囲が一致する。
         var hostGO = target.gameObject;
-        if (hostGO.GetComponent<MagnetField>() == null && m_settings != null && m_settings.bulletFieldSettings != null)
+        if (m_settings != null && m_settings.bulletFieldSettings != null)
         {
             var field = hostGO.AddComponent<MagnetField>();
             field.Initialize(Pole, m_settings.bulletFieldSettings);
