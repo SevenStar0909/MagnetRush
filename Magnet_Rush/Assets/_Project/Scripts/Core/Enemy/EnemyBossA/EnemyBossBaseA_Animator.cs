@@ -181,79 +181,88 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
 
     // Isとは
     // Animatorの現在の状態を取得するためのプロパティ。Animator内のステート名をハッシュ化して比較する。
-    public bool IsAttacking
+    public virtual bool IsAttacking
     {
         get
         {
             if (m_animator == null) return false;
             int hash = m_animator.GetCurrentAnimatorStateInfo(0).shortNameHash;
-            return hash == s_hAttackStanceState || hash == s_hAttackMotionState;
+            return IsState(hash, s_hAttackStanceState, s_hAttackMotionState);
         }
     }
 
-    public bool IsInAttackMotion
+    public virtual bool IsInAttackMotion
     {
         get
         {
             if (m_animator == null) return false;
-            return m_animator.GetCurrentAnimatorStateInfo(0).shortNameHash == s_hAttackMotionState;
+            return IsState(m_animator.GetCurrentAnimatorStateInfo(0).shortNameHash, s_hAttackMotionState);
         }
     }
 
-    public bool IsInAttackStance
+    public virtual bool IsInAttackStance
     {
         get
         {
             if (m_animator == null) return false;
-            return m_animator.GetCurrentAnimatorStateInfo(0).shortNameHash == s_hAttackStanceState;
+            return IsState(m_animator.GetCurrentAnimatorStateInfo(0).shortNameHash, s_hAttackStanceState);
         }
     }
 
-    public bool IsInRush
+    public virtual bool IsInRush
     {
         get
         {
             if (m_animator == null) return false;
-            return m_animator.GetCurrentAnimatorStateInfo(0).shortNameHash == s_hRushState;
+            return IsState(m_animator.GetCurrentAnimatorStateInfo(0).shortNameHash, s_hRushState);
         }
     }
 
-    public bool IsInMissile
+    public virtual bool IsInMissile
     {
         get
         {
             if (m_animator == null) return false;
-            return m_animator.GetCurrentAnimatorStateInfo(0).shortNameHash == s_hMissileState;
+            return IsState(m_animator.GetCurrentAnimatorStateInfo(0).shortNameHash, s_hMissileState);
         }
     }
 
-    public bool IsStunned
-    {
-        get
-        {
-            if (m_animator == null) return false;
-            int hash = m_animator.GetCurrentAnimatorStateInfo(0).shortNameHash;
-            return hash == s_hAttackStunState || hash == s_hAttackStunkeepState;
-        }
-    }
-
-    public bool IsInStagger
+    public virtual bool IsStunned
     {
         get
         {
             if (m_animator == null) return false;
             int hash = m_animator.GetCurrentAnimatorStateInfo(0).shortNameHash;
-            return hash == s_hAttackStaggerState || hash == s_hAttackStaggerkeepState;
+            return IsState(hash, s_hAttackStunState, s_hAttackStunkeepState);
         }
     }
 
-    public bool IsStanding
+    public virtual bool IsInStagger
     {
         get
         {
             if (m_animator == null) return false;
             int hash = m_animator.GetCurrentAnimatorStateInfo(0).shortNameHash;
-            return hash == s_hStunToStandState || hash == s_hStaggerToStandState;
+            return IsState(hash, s_hAttackStaggerState, s_hAttackStaggerkeepState);
+        }
+    }
+
+    public virtual bool IsStanding
+    {
+        get
+        {
+            if (m_animator == null) return false;
+            int hash = m_animator.GetCurrentAnimatorStateInfo(0).shortNameHash;
+            return IsState(hash, s_hStunToStandState, s_hStaggerToStandState);
+        }
+    }
+
+    public virtual bool IsIdle
+    {
+        get
+        {
+            if (m_animator == null) return false;
+            return IsState(m_animator.GetCurrentAnimatorStateInfo(0).shortNameHash, s_hIdleState);
         }
     }
 
@@ -266,8 +275,13 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
     private static readonly int s_hAttackStaggerkeepState = Animator.StringToHash("StaggerkeepAnim");
     private static readonly int s_hStunToStandState = Animator.StringToHash("StunToStand");
     private static readonly int s_hStaggerToStandState = Animator.StringToHash("StaggerToStand");
+    private static readonly int s_hIdleState = Animator.StringToHash("Idle");
     private static readonly int s_hRushState = Animator.StringToHash("RushAnim");
     private static readonly int s_hMissileState = Animator.StringToHash("MissileAnim");
+
+    protected int CurrentStateHash => m_animator != null ? m_animator.GetCurrentAnimatorStateInfo(0).shortNameHash : 0;
+    protected static bool IsState(int hash, int state) => hash == state;
+    protected static bool IsState(int hash, int stateA, int stateB) => hash == stateA || hash == stateB;
 
     // AnimationEvent で呼び出す関数群。攻撃の当たり判定の有効化/無効化や、AIへの通知を行う。
     public void EnableArmHitboxEvent()
