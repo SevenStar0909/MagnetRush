@@ -202,8 +202,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.2, y: 1.2, z: 0.3}
-  m_Center: {x: 0, y: 1, z: 0}
+  m_Size: {x: 1.2, y: 1.1, z: 0.3}
+  m_Center: {x: 0, y: 1.05, z: 0}
 --- !u!114 &5985960519269828675
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -529,8 +529,8 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1230192934864207643}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!136 &2834774298953285679
-CapsuleCollider:
+--- !u!65 &2834774298953285679
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -547,11 +547,9 @@ CapsuleCollider:
   m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 2
-  m_Height: 1.5
-  m_Direction: 1
-  m_Center: {x: 0, y: 1, z: 0}
+  serializedVersion: 3
+  m_Size: {x: 1.2, y: 1.1, z: 0.3}
+  m_Center: {x: 0, y: 1.05, z: 0}
 --- !u!1 &7806384027028353527
 GameObject:
   m_ObjectHideFlags: 0
@@ -725,6 +723,12 @@ MonoBehaviour:
   m_pole: 0
   m_isActive: 0
   m_initialMass: 1
+  m_immovable: 0
+  m_holdPositionAgainstDynamicObjects: 0
+  m_holdPositionAgainstSameGroupEntities: 0
+  m_keepMagnetizedOnAttractContact: 0
+  m_centerOffset: {x: 0, y: 0, z: 0}
+  m_useEdgeDetectionOutline: 1
 --- !u!114 &8190324584306041367
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -743,6 +747,8 @@ MonoBehaviour:
   - {fileID: 534112566515760242}
   - {fileID: 7600820157332703419}
   m_attackTrigger: {fileID: 2834774298953285679}
+  m_heldMagnetColliders:
+  - {fileID: 8602820057336631393}
   m_ownedLocalEulerOffset: {x: 0, y: -90, z: 0}
   m_state: 0
   m_equipMoveSpeed: 12

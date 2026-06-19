@@ -30,10 +30,10 @@ public class SceneSelectUI : MonoBehaviour
         if (m_firstSelectedButton != null)
         {
             m_firstSelectedButton.Select();
-
+            
             // 【重要】コントローラー用に選択状態にしたことをEventSystemにも通知する
             UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(m_firstSelectedButton.gameObject);
-
+            
             Debug.Log($"[Debug] シーン開始時に '{m_firstSelectedButton.name}' を初期選択しました。");
         }
         else
@@ -41,8 +41,6 @@ public class SceneSelectUI : MonoBehaviour
             Debug.LogWarning("[Debug] 警告: 最初に選択するボタン（m_firstSelectedButton）がインスペクターで設定されていません。");
         }
     }
-
-    // --- 既存のコードはそのままで、クラスの中に以下のメソッドを追加・修正してください ---
 
     /// <summary>
     /// 【インスペクター用窓口A】マウスオーバー・コントローラー選択時に呼び出す

@@ -32,6 +32,9 @@ public class EnemyWeaponHolder : MonoBehaviour
         && m_weapon.State == WeaponStateController.WeaponOwnerState.Owned
         && !m_isReEquipping;
 
+    /// <summary>装備中の武器に付いている攻撃判定。攻撃中だけ有効化される。</summary>
+    public Collider AttackTrigger => m_weapon != null ? m_weapon.AttackTrigger : null;
+
     /// <summary>落ちた武器を手元へ戻している途中か。</summary>
     public bool IsReEquipping => m_isReEquipping;
 
@@ -40,6 +43,18 @@ public class EnemyWeaponHolder : MonoBehaviour
 
     /// <summary>再装備できるか。磁化中・クールダウン中・所持中は false。</summary>
     public bool CanReEquip => m_weapon != null && m_weapon.CanBePickedUp;
+
+    public void BeginAttackWindow()
+    {
+        if (IsArmed)
+            m_weapon.BeginAttackWindow();
+    }
+
+    public void EndAttackWindow()
+    {
+        if (m_weapon != null)
+            m_weapon.EndAttackWindow();
+    }
 
     private void Awake()
     {
