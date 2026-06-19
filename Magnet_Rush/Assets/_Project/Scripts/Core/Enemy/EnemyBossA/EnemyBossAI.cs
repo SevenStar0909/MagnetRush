@@ -107,6 +107,8 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
 
     [Header("Rush or missile")]
     [SerializeField] private bool m_nextLongRangeAttackIsRush = true; // rushとmissileを交互に行うためのフラグ
+    [Min(0f)]
+    [SerializeField] private float m_rushKeepSeconds = 0f;
 
     private bool m_wasInStunAnim;
     private bool m_wasInStaggerAnim;
@@ -124,6 +126,8 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
     private bool m_rushHasStarted;
     // DisableWindEffectEvent 後は回復姿勢に入るため、Rush 移動を停止する。
     private bool m_rushMovementStopped;
+    private bool m_rushEndRequested;
+    private float m_rushKeepTimer;
 
     public event Action OnStabHitSucceeded;   // スタブが成功したときに発火
 
@@ -406,6 +410,8 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
             m_boss.lateralVelocity = Vector3.zero;
             m_rushHasStarted = false; // 入り transition フェーズへ。Animator が IsInRush=true に入った時点で true 化
             m_rushMovementStopped = false;
+            m_rushEndRequested = false;
+            m_rushKeepTimer = 0f;
         }
 
         if (next == BossState.Idle)
@@ -570,6 +576,8 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
 
     private void TickAttackMotion(float dt)
     {
+        if (m_animator.IsIdle) { ChangeState(BossState.Idle); return; }
+
         // 普通攻擊移動なし
         m_boss.SlowDown(dt);
         FacePlayer(dt, m_settings.attackMotionFaceDeadZoneDeg);
@@ -588,6 +596,10 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
                 // 入り transition 中は live のプレイヤー位置でターゲットを更新する
                 m_rushTargetPosition = m_player.position;
             }
+            else if (m_animator.IsIdle)
+            {
+                ChangeState(BossState.Idle);
+            }
             return;
         }
 
@@ -600,12 +612,20 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
                 ? toTarget.normalized
                 : transform.forward;
             m_rushHasStarted = true;
+            m_rushKeepTimer = 0f;
         }
 
         // Wind 終了後は回復姿勢中。慣性で滑らないよう、Rush の水平移動を停止する。
         if (m_rushMovementStopped)
         {
             m_boss.lateralVelocity = Vector3.zero;
+            return;
+        }
+
+        m_rushKeepTimer += dt;
+        if (ShouldEndRushKeep())
+        {
+            RequestRushEnd();
             return;
         }
 
@@ -626,6 +646,28 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
         m_boss.AccelerateToward(m_rushDirection, dt, m_settings.rushSpeedMultiplier);
     }
 
+    private bool ShouldEndRushKeep()
+    {
+        if (m_rushEndRequested || m_rushKeepSeconds <= 0f)
+            return false;
+
+        Vector3 toTarget = m_rushTargetPosition - transform.position;
+        toTarget.y = 0f;
+        float arriveDistance = m_settings != null ? Mathf.Max(0f, m_settings.stopDistance) : 0f;
+        if (toTarget.sqrMagnitude <= arriveDistance * arriveDistance)
+            return true;
+
+        return m_rushKeepTimer >= m_rushKeepSeconds;
+    }
+
+    private void RequestRushEnd()
+    {
+        m_rushEndRequested = true;
+        m_rushMovementStopped = true;
+        m_boss.lateralVelocity = Vector3.zero;
+        m_animator.TriggerAttackRushFinished();
+    }
+
     public void StopRushMovement()
     {
         if (m_state == BossState.Rush && m_rushHasStarted)
@@ -637,6 +679,8 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
 
     private void TickMissile(float dt)
     {
+        if (m_animator.IsIdle) { ChangeState(BossState.Idle); return; }
+
         m_boss.SlowDown(dt);
         FacePlayer(dt, m_settings.faceDeadZoneDeg);
     }
@@ -702,6 +746,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
 
         FireMissileWave(pattern);
         m_nextMissileIsSideLob = !m_nextMissileIsSideLob;
+        m_animator.TriggerMissileFinished();
     }
 
     private enum MissileWavePattern
@@ -716,7 +761,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
     {
         if (m_missilePrefab == null) return;
 
-        if (m_missileSpawnPoints == null || m_missileSpawnPoints.Length == 0)
+        if (!HasAnyMissileSpawnPoint())
         {
             SpawnMissileAt(this.transform, Vector3.zero, pattern, 0, pattern == MissileWavePattern.LeftRightUp ? 2 : 1);
             if (pattern == MissileWavePattern.LeftRightUp)
@@ -736,6 +781,20 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
 
             SpawnMissileAt(spawnPoint, offset, pattern, i, spawnCount);
         }
+    }
+
+    private bool HasAnyMissileSpawnPoint()
+    {
+        if (m_missileSpawnPoints == null || m_missileSpawnPoints.Length == 0)
+            return false;
+
+        for (int i = 0; i < m_missileSpawnPoints.Length; i++)
+        {
+            if (m_missileSpawnPoints[i] != null)
+                return true;
+        }
+
+        return false;
     }
 
     private Vector3 ComputeMissileDirection(MissileWavePattern pattern, int spawnIndex)
