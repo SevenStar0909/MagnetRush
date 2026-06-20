@@ -85,10 +85,11 @@ public class MagnetField : MonoBehaviour, IMagnetField
         var bridge = m_triggerGO.AddComponent<MagnetFieldTriggerBridge>();
         bridge.Initialize(this);
 
-        // 親GOのルートコライダーとの自己発火を物理エンジン側で除外する。
-        // Magnetizable 持ちオブジェクトに本フィールドが AddComponent された時、本体コライダーと
-        // 子トリガーが重なって OnTriggerEnter が誤発火する問題への対処（Layer Matrix では表現不能）
-        var parentColliders = transform.GetComponents<Collider>();
+        // 親GO・祖先のコライダーとの自己発火を物理エンジン側で除外する。
+        // Magnetizable 持ちオブジェクトに本フィールドが付く時、本体コライダーと子トリガーが
+        // 重なって OnTriggerEnter が誤発火する問題への対処（Layer Matrix では表現不能）。
+        // フィールドは着弾Colliderの子アンカーに乗るため、自身のGOだけでなく祖先まで遡って除外する。
+        var parentColliders = GetComponentsInParent<Collider>(true);
         for (int i = 0; i < parentColliders.Length; i++)
         {
             Physics.IgnoreCollision(m_triggerCollider, parentColliders[i], true);

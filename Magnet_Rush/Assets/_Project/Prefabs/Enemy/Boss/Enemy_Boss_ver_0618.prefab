@@ -268,7 +268,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7551b5694652a3745929c4946e21a1f1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Enemy::BossPerBoneOutline
-  m_sourceSMR: {fileID: 0}
+  m_sourceSMR: {fileID: 3780337650876427893}
   m_outlineMaterial: {fileID: 2100000, guid: 6bd78f8b7e61c9a41b83f3982790c7fe, type: 2}
   m_debugInitialPoles: []
 --- !u!114 &3680414266089737807
@@ -624,7 +624,7 @@ GameObject:
   - component: {fileID: 451591989034573317}
   - component: {fileID: 2260008209048045659}
   - component: {fileID: 7348117621468029301}
-  m_Layer: 9
+  m_Layer: 12
   m_Name: AttackBoxRush
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1481,7 +1481,7 @@ BoxCollider:
   m_Enabled: 1
   serializedVersion: 3
   m_Size: {x: 2.56, y: 4.98, z: 2.39}
-  m_Center: {x: 4.84, y: -0.07, z: -10.97}
+  m_Center: {x: 0.06875412, y: 0.5477253, z: -1.2501202}
 --- !u!65 &3130779534468571961
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1502,7 +1502,7 @@ BoxCollider:
   m_Enabled: 1
   serializedVersion: 3
   m_Size: {x: 3.53, y: 4.23, z: 7.6}
-  m_Center: {x: 4.87, y: 0.86, z: -13.88}
+  m_Center: {x: 0.09875572, y: 1.4777194, z: -4.160121}
 --- !u!54 &6297875464683914402
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1993,7 +1993,7 @@ BoxCollider:
   m_Enabled: 1
   serializedVersion: 3
   m_Size: {x: 2.56, y: 4.34, z: 4.16}
-  m_Center: {x: 4.84, y: 2.87, z: -18.39}
+  m_Center: {x: 0.028008245, y: -0.053439327, z: 0.015172258}
 --- !u!1 &3438466897332251901
 GameObject:
   m_ObjectHideFlags: 0
@@ -2502,7 +2502,7 @@ BoxCollider:
   m_Enabled: 1
   serializedVersion: 3
   m_Size: {x: 2.56, y: 4.98, z: 2.39}
-  m_Center: {x: 4.84, y: -0.07, z: -10.97}
+  m_Center: {x: 0.06875142, y: 0.5477211, z: -1.2501137}
 --- !u!65 &5211979925776914243
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -2523,7 +2523,7 @@ BoxCollider:
   m_Enabled: 1
   serializedVersion: 3
   m_Size: {x: 3.53, y: 4.23, z: 7.6}
-  m_Center: {x: 4.87, y: 0.86, z: -13.88}
+  m_Center: {x: 0.09874682, y: 1.4777205, z: -4.1601157}
 --- !u!1 &4317826069333987610
 GameObject:
   m_ObjectHideFlags: 0
@@ -3328,7 +3328,7 @@ BoxCollider:
   m_Enabled: 1
   serializedVersion: 3
   m_Size: {x: 2.56, y: 4.98, z: 2.39}
-  m_Center: {x: 4.84, y: -0.07, z: -10.97}
+  m_Center: {x: 0.06875126, y: 0.54772294, z: -1.2501137}
 --- !u!65 &6025991170662720761
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -3349,7 +3349,7 @@ BoxCollider:
   m_Enabled: 1
   serializedVersion: 3
   m_Size: {x: 3.53, y: 4.23, z: 7.6}
-  m_Center: {x: 4.87, y: 0.86, z: -13.88}
+  m_Center: {x: 0.09875184, y: 1.4777195, z: -4.1601152}
 --- !u!1 &5995645976228498139
 GameObject:
   m_ObjectHideFlags: 0
@@ -3573,7 +3573,7 @@ GameObject:
   - component: {fileID: 7884287201843435452}
   - component: {fileID: 214837557782222351}
   - component: {fileID: 7348117621468029302}
-  m_Layer: 9
+  m_Layer: 12
   m_Name: AttackBoxRightHand
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3879,7 +3879,7 @@ BoxCollider:
   m_Enabled: 1
   serializedVersion: 3
   m_Size: {x: 2.56, y: 4.34, z: 4.16}
-  m_Center: {x: 4.84, y: 2.87, z: -18.39}
+  m_Center: {x: 0.028008245, y: -0.053439327, z: 0.015172258}
 --- !u!1 &7273965625216074805
 GameObject:
   m_ObjectHideFlags: 0
@@ -4217,7 +4217,7 @@ Transform:
   m_GameObject: {fileID: 7860980816401909970}
   serializedVersion: 2
   m_LocalRotation: {x: -0.50362235, y: -0.4983688, z: 0.50125825, w: 0.49672255}
-  m_LocalPosition: {x: -18.420292, y: -4.770285, z: 2.8964992}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -4363,7 +4363,7 @@ Transform:
   m_GameObject: {fileID: 7929811111925892515}
   serializedVersion: 2
   m_LocalRotation: {x: -0.50362235, y: -0.4983688, z: 0.5012583, w: 0.49672243}
-  m_LocalPosition: {x: -9.720852, y: -4.7702847, z: -0.6100001}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -4590,7 +4590,7 @@ BoxCollider:
   m_Enabled: 1
   serializedVersion: 3
   m_Size: {x: 2.56, y: 4.34, z: 4.16}
-  m_Center: {x: 4.84, y: 2.87, z: -18.39}
+  m_Center: {x: 0.028008245, y: -0.053439327, z: 0.015172258}
 --- !u!54 &3603236052142554445
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -5109,6 +5109,18 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 9
       objectReference: {fileID: 0}
+    - target: {fileID: 5890606876994215176, guid: 1c2cca4e084967f4a93e23d311965809, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 3.58
+      objectReference: {fileID: 0}
+    - target: {fileID: 5890606876994215176, guid: 1c2cca4e084967f4a93e23d311965809, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5890606876994215176, guid: 1c2cca4e084967f4a93e23d311965809, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0
+      objectReference: {fileID: 0}
     - target: {fileID: 6101023286903136720, guid: 1c2cca4e084967f4a93e23d311965809, type: 3}
       propertyPath: m_Layer
       value: 9
@@ -5157,6 +5169,10 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 9
       objectReference: {fileID: 0}
+    - target: {fileID: 8538308270286845490, guid: 1c2cca4e084967f4a93e23d311965809, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: f053a034fe1983c42b290d2861ef62e1, type: 2}
     - target: {fileID: 9028302100017993848, guid: 1c2cca4e084967f4a93e23d311965809, type: 3}
       propertyPath: m_Layer
       value: 9
@@ -5291,6 +5307,11 @@ Transform:
 --- !u!4 &3639585289202090797 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -1114015578955392150, guid: 1c2cca4e084967f4a93e23d311965809, type: 3}
+  m_PrefabInstance: {fileID: 4758157675521120327}
+  m_PrefabAsset: {fileID: 0}
+--- !u!137 &3780337650876427893 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 8538308270286845490, guid: 1c2cca4e084967f4a93e23d311965809, type: 3}
   m_PrefabInstance: {fileID: 4758157675521120327}
   m_PrefabAsset: {fileID: 0}
 --- !u!4 &3842868702123979749 stripped

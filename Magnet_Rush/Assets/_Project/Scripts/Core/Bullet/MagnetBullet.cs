@@ -244,33 +244,49 @@ public class MagnetBullet : MonoBehaviour, IBulletProximity
         targetMag.DeactivateWithFields();
         targetMag.SetPole(Pole);
 
-        // MagnetField/Visualizer/VFX はすべて着弾Collider（ボーン/Hurtbox子等）側に出す。
-        // フィールド中心がボーンに追従し、VFXと範囲が一致する。
-        var hostGO = target.gameObject;
         if (m_settings != null && m_settings.bulletFieldSettings != null)
         {
-            var field = hostGO.AddComponent<MagnetField>();
+            // 磁場・Visualizer・着弾VFX は着弾Colliderの「実際の判定中心」に出す。
+            // Hurtbox は box.center で見た目側へ大きくオフセットされている場合があり
+            // （ボス右手は約12〜18m離れている）、対象GO原点に出すと手から離れた位置（肩付近）に
+            // 磁場・オーラが出てしまう。判定中心にアンカーを作り、Colliderの子にしてボーンに追従させる。
+            var anchor = new GameObject("MagnetFieldAnchor");
+            anchor.transform.SetParent(target.transform, false);
+            anchor.transform.position = ColliderCenter(target);
+
+            var field = anchor.AddComponent<MagnetField>();
             field.Initialize(Pole, m_settings.bulletFieldSettings);
 
             if (MagnetManager.Instance != null)
                 MagnetManager.Instance.RegisterField(field);
 
-            var visualizer = hostGO.AddComponent<MagnetFieldVisualizer>();
+            var visualizer = anchor.AddComponent<MagnetFieldVisualizer>();
             visualizer.Show(Pole, m_settings.bulletFieldSettings);
 
-            var effectInstance = SpawnImpactEffect(target.transform);
+            SpawnImpactEffect(anchor.transform);
 
-            // フィールド期限切れ → 対象の磁化解除 + Visualizer + エフェクト除去
+            // フィールド期限切れ → 対象の磁化解除 + アンカー（Visualizer/VFX を内包）破棄
             field.OnFieldExpired += () =>
             {
                 if (targetMag != null) targetMag.Deactivate();
-                if (visualizer != null) Destroy(visualizer);
-                if (effectInstance != null) Destroy(effectInstance);
+                if (anchor != null) Destroy(anchor);
             };
         }
 
         OnImpact?.Invoke();
         Destroy(gameObject);
+    }
+
+    /// <summary>Colliderのローカル中心(box.center等)をワールド座標で返す。GO原点ではなく実際の判定中心。</summary>
+    private static Vector3 ColliderCenter(Collider col)
+    {
+        switch (col)
+        {
+            case BoxCollider b: return col.transform.TransformPoint(b.center);
+            case SphereCollider s: return col.transform.TransformPoint(s.center);
+            case CapsuleCollider c: return col.transform.TransformPoint(c.center);
+            default: return col.bounds.center;
+        }
     }
 
     /// <summary>
