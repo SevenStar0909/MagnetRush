@@ -97,6 +97,7 @@ public class EnemyTurretShooter : MonoBehaviour
 
         Quaternion rotation = Quaternion.LookRotation(direction, Vector3.up);
         GameObject projectileObj = Instantiate(m_projectilePrefab, spawnPos, rotation);
+        SoundManager.Instance.Play(SoundData.CueSheet.SE, SoundData.SE.TurretShot); // SoundManagerを使ってSEを再生する
 
         EnemyBullet enemyBullet = projectileObj.GetComponent<EnemyBullet>();
         if (enemyBullet != null)

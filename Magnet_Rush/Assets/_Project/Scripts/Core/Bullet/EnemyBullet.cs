@@ -79,6 +79,7 @@ public class EnemyBullet : MonoBehaviour
             });
         }
 
+        SoundManager.Instance.Play(SoundData.CueSheet.SE, SoundData.SE.HitObject);
         Destroy(gameObject);
     }
 }
