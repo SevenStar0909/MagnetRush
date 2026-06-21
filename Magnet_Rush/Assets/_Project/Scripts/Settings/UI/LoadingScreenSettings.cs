@@ -24,6 +24,10 @@ public class LoadingScreenSettings : ScriptableObject
     public float fadeDuration = 0.3f;
 
     [Header("[動画再生]")]
+    [Label("動画を最後まで再生してから閉じる")]
+    [Tooltip("オンにすると、ロードが先に終わってもロード画面の動画が最後まで再生されてからシーンに切り替わる")]
+    public bool waitForVideoEnd = true;
+
     [Label("動画の音を鳴らす")]
     [Tooltip("オンにするとロード動画の音声が再生される")]
     public bool playVideoAudio = false;

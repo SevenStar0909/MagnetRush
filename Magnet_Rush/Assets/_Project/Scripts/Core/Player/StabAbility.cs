@@ -107,6 +107,9 @@ public class StabAbility : Ability
         if (settings.stabHitVfxScale > 0f && Mathf.Abs(settings.stabHitVfxScale - 1f) > 0.001f)
             fx.transform.localScale *= settings.stabHitVfxScale;
 
+        // VFX が出ている間だけ「効果だけ黒・他は白」演出を有効化する（VFX 破棄で自動解除）
+        fx.AddComponent<StabInkScreen>();
+
         Object.Destroy(fx, settings.stabHitVfxLifetime);
     }
 

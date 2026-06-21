@@ -25,6 +25,7 @@ public class BossStabFinisherState : EntityState<Player>
     private double m_duration;
     private bool m_hitDone;
     private StabFinisherCamera m_cutsceneCamera;
+    private TransformInterpolator[] m_transformInterpolators;
 
     /// <summary>PlayerAnimator 互換用。Timeline が体を直接駆動するので固定値でよい（突き扱い・接地扱い）。</summary>
     public int AnimatorPhaseIndex => (int)PlayerStateIndex.StabAttack;
@@ -45,6 +46,11 @@ public class BossStabFinisherState : EntityState<Player>
         m_hitDone = false;
         player.lateralVelocity = Vector3.zero;
         player.externalVelocity = Vector3.zero;
+
+        // 通常移動用の FixedUpdate 補間が、Timeline で動かすモデルを LateUpdate で上書きしないようにする。
+        m_transformInterpolators = player.GetComponentsInChildren<TransformInterpolator>(true);
+        foreach (var interpolator in m_transformInterpolators)
+            interpolator.SetSuspended(true);
 
         var cutscene = m_settings != null ? m_settings.finisherCutscene as TimelineAsset : null;
         if (cutscene == null || m_receiver == null)
@@ -112,7 +118,9 @@ public class BossStabFinisherState : EntityState<Player>
     {
         if (m_director == null) { ReturnToNormal(player); return; }
 
-        double t = timeSinceEntered;
+        // EntityState は OnStep 後に経過時間を加算するため、今回の dt を先に含めて評価する。
+        // 先頭フレームを二度表示せず、PlayerRoot と Camera を同じ再生位置へ進める。
+        double t = System.Math.Min(timeSinceEntered + dt, m_duration);
         EvaluateAt(player, t);
 
         float hitTime = m_settings != null ? m_settings.cutsceneHitTime : 1f;
@@ -145,6 +153,12 @@ public class BossStabFinisherState : EntityState<Player>
         }
         m_cutsceneCamera?.EndCutsceneCameraTracks();
         m_cutsceneCamera = null;
+        if (m_transformInterpolators != null)
+        {
+            foreach (var interpolator in m_transformInterpolators)
+                if (interpolator != null) interpolator.SetSuspended(false);
+            m_transformInterpolators = null;
+        }
         player.velocity = Vector3.zero;
         player.lateralVelocity = Vector3.zero;
         player.externalVelocity = Vector3.zero;

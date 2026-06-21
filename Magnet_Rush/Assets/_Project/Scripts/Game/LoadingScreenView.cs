@@ -17,6 +17,14 @@ public class LoadingScreenView : MonoBehaviour
 
     private LoadingScreenSettings m_settings;
     private RenderTexture m_videoTexture;
+    private bool m_isShowingVideo;
+    private bool m_videoFinished;
+
+    /// <summary>現在の背景が動画か（画像が選ばれた場合はfalse）</summary>
+    public bool IsShowingVideo => m_isShowingVideo;
+
+    /// <summary>動画が最後まで（1周）再生し終えたか</summary>
+    public bool VideoFinished => m_videoFinished;
 
     /// <summary>設定を受け取り非表示状態で初期化する。生成直後に必ず呼ぶ</summary>
     public void Initialize(LoadingScreenSettings settings)
@@ -89,13 +97,28 @@ public class LoadingScreenView : MonoBehaviour
         m_videoPlayer.audioOutputMode = m_settings.playVideoAudio
             ? VideoAudioOutputMode.Direct
             : VideoAudioOutputMode.None;
+
+        m_isShowingVideo = true;
+        m_videoFinished = false;
+        m_videoPlayer.loopPointReached -= OnVideoLoopPoint;
+        m_videoPlayer.loopPointReached += OnVideoLoopPoint;
         m_videoPlayer.Play();
     }
 
+    // 動画が末尾に到達（1周完了）したら記録する。ロード画面はこれを待ってから閉じる
+    private void OnVideoLoopPoint(VideoPlayer source) => m_videoFinished = true;
+
     private void StopVideo()
     {
-        if (m_videoPlayer != null && m_videoPlayer.isPlaying)
-            m_videoPlayer.Stop();
+        if (m_videoPlayer != null)
+        {
+            m_videoPlayer.loopPointReached -= OnVideoLoopPoint;
+            if (m_videoPlayer.isPlaying)
+                m_videoPlayer.Stop();
+        }
+
+        m_isShowingVideo = false;
+        m_videoFinished = false;
 
         if (m_videoTexture != null)
         {

@@ -173,6 +173,14 @@ public class SceneLoader : Singleton<SceneLoader>
             float minTime = m_loadingScreenSettings != null ? m_loadingScreenSettings.minDisplayTime : 0f;
             while (Time.unscaledTime - startTime < minTime)
                 yield return null;
+
+            // 背景が動画なら最後まで再生してから閉じる（minDisplayTimeで途中で切れるのを防ぐ）
+            if (m_loadingScreenSettings != null && m_loadingScreenSettings.waitForVideoEnd)
+            {
+                while (screen.IsShowingVideo && !screen.VideoFinished)
+                    yield return null;
+            }
+
             yield return screen.HideRoutine();
         }
 
