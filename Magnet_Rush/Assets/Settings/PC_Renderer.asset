@@ -21,6 +21,20 @@ MonoBehaviour:
   m_normalThreshold: 0.4
   m_outlineColorS: {r: 0.2, g: 0.4, b: 1, a: 1}
   m_outlineColorN: {r: 1, g: 0.2, b: 0.2, a: 1}
+--- !u!114 &-1298389796352261347
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ab7b060b58481d438180f11163e177f, type: 3}
+  m_Name: StabInkRenderFeature
+  m_EditorClassIdentifier: Assembly-CSharp::StabInkRenderFeature
+  m_Active: 1
+  m_compositeMaterial: {fileID: 2100000, guid: 25a1aaca56314824daf8cf888d748528, type: 2}
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -49,7 +63,9 @@ MonoBehaviour:
   - {fileID: 7833122117494664109}
   - {fileID: -8443036754923500381}
   - {fileID: 7771020950964772979}
-  m_RendererFeatureMap: 58cd000000000000a3cc37f5cd4ed48a73a05fdc6136d86b
+  - {fileID: 0}
+  - {fileID: -1298389796352261347}
+  m_RendererFeatureMap: ad6b866f10d7b46ca3cc37f5cd4ed48a73a05fdc6136d86b001d8fa54758b38a1d836e005c31fbed
   m_UseNativeRenderPass: 1
   xrSystemData: {fileID: 0}
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
