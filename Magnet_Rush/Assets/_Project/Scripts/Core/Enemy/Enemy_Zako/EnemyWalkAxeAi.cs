@@ -28,6 +28,7 @@ public class EnemyWalkAxeAi : MonoBehaviour
     private EnemyWalkBase m_enemyBase;
     private NavMeshAgent m_agent;
     private EnemySettings m_data;
+    private Collider m_activeAttackCollider;
     private Vector3 m_lastDirection;
     private float m_attackTimer;
     private bool m_isAttacking;
@@ -376,34 +377,48 @@ public class EnemyWalkAxeAi : MonoBehaviour
         SetMoving(false);
     }
 
+    private void LateUpdate()
+    {
+        if (m_activeAttackCollider != null && m_activeAttackCollider.enabled)
+            CheckAttackBoxOverlapAndDamage();
+    }
+
     private void SetAttackBoxActive(bool active)
     {
+        Collider weaponAttackCollider = GetWeaponAttackCollider();
+        bool useWeaponAttackCollider = active && weaponAttackCollider != null;
+
+        if (weaponAttackCollider != null)
+        {
+            weaponAttackCollider.gameObject.layer = PhysicsLayers.MeleeHitbox;
+            weaponAttackCollider.isTrigger = true;
+
+            if (useWeaponAttackCollider)
+                m_weaponHolder.BeginAttackWindow();
+            else
+                m_weaponHolder.EndAttackWindow();
+        }
+
         if (m_attackBox != null)
-            m_attackBox.enabled = active;
+            m_attackBox.enabled = active && !useWeaponAttackCollider;
 
         if (m_attackBoxMeshRenderer != null)
-            m_attackBoxMeshRenderer.enabled = active;
+            m_attackBoxMeshRenderer.enabled = active && !useWeaponAttackCollider;
+
+        m_activeAttackCollider = active
+            ? (useWeaponAttackCollider ? weaponAttackCollider : m_attackBox)
+            : null;
     }
 
     private void CheckAttackBoxOverlapAndDamage()
     {
-        // 攻撃判定を有効にした時点で、すでに対象が範囲内にいる場合、
-        // OnTriggerEnterだけでは検知できないことがあるため、手動で重なりを確認する
-        if (m_attackBox == null || !m_attackBox.enabled)
+        // 武器側Rigidbody配下のTriggerは本体へOnTriggerEnterが届かないことがあるため、
+        // 攻撃ウィンドウ中は手動Overlapでも当たりを拾う。
+        Collider attackCollider = m_activeAttackCollider != null ? m_activeAttackCollider : GetCurrentAttackCollider();
+        if (attackCollider == null || !attackCollider.enabled)
             return;
 
-        // CapsuleColliderの現在の範囲をOverlapCapsule用のワールド座標に変換する
-        GetCapsuleWorldPoints(m_attackBox, out Vector3 p0, out Vector3 p1, out float radius);
-
-        // 攻撃範囲内にいるPlayerとEnemyを直接検索する
-        int hitCount = Physics.OverlapCapsuleNonAlloc(
-            p0,
-            p1,
-            radius,
-            m_overlapResults,
-            PhysicsLayers.Bit(PhysicsLayers.Player) | PhysicsLayers.Bit(PhysicsLayers.Enemy),
-            QueryTriggerInteraction.Collide
-        );
+        int hitCount = OverlapAttackCollider(attackCollider);
 
         // 範囲内にいた対象へダメージ処理を行う
         for (int i = 0; i < hitCount; i++)
@@ -415,6 +430,73 @@ public class EnemyWalkAxeAi : MonoBehaviour
 
             TryApplyDamage(col);
         }
+    }
+
+    private Collider GetCurrentAttackCollider()
+    {
+        Collider weaponAttackCollider = GetWeaponAttackCollider();
+        return weaponAttackCollider != null ? weaponAttackCollider : m_attackBox;
+    }
+
+    private Collider GetWeaponAttackCollider()
+    {
+        if (m_weaponHolder == null || !m_weaponHolder.IsArmed)
+            return null;
+
+        return m_weaponHolder.AttackTrigger;
+    }
+
+    private int OverlapAttackCollider(Collider attackCollider)
+    {
+        int targetMask = PhysicsLayers.Bit(PhysicsLayers.Player) | PhysicsLayers.Bit(PhysicsLayers.Enemy);
+
+        if (attackCollider is CapsuleCollider capsule)
+        {
+            GetCapsuleWorldPoints(capsule, out Vector3 p0, out Vector3 p1, out float radius);
+            return Physics.OverlapCapsuleNonAlloc(
+                p0,
+                p1,
+                radius,
+                m_overlapResults,
+                targetMask,
+                QueryTriggerInteraction.Collide
+            );
+        }
+
+        if (attackCollider is BoxCollider box)
+        {
+            GetBoxWorldShape(box, out Vector3 center, out Vector3 halfExtents, out Quaternion rotation);
+            return Physics.OverlapBoxNonAlloc(
+                center,
+                halfExtents,
+                m_overlapResults,
+                rotation,
+                targetMask,
+                QueryTriggerInteraction.Collide
+            );
+        }
+
+        if (attackCollider is SphereCollider sphere)
+        {
+            GetSphereWorldShape(sphere, out Vector3 center, out float radius);
+            return Physics.OverlapSphereNonAlloc(
+                center,
+                radius,
+                m_overlapResults,
+                targetMask,
+                QueryTriggerInteraction.Collide
+            );
+        }
+
+        Bounds bounds = attackCollider.bounds;
+        return Physics.OverlapBoxNonAlloc(
+            bounds.center,
+            bounds.extents,
+            m_overlapResults,
+            Quaternion.identity,
+            targetMask,
+            QueryTriggerInteraction.Collide
+        );
     }
 
     private static void GetCapsuleWorldPoints(CapsuleCollider capsule, out Vector3 p0, out Vector3 p1, out float radius)
@@ -462,9 +544,30 @@ public class EnemyWalkAxeAi : MonoBehaviour
         p1 = center - axis * halfLine;
     }
 
+    private static void GetBoxWorldShape(BoxCollider box, out Vector3 center, out Vector3 halfExtents, out Quaternion rotation)
+    {
+        Transform t = box.transform;
+        Vector3 scale = t.lossyScale;
+        center = t.TransformPoint(box.center);
+        halfExtents = new Vector3(
+            box.size.x * Mathf.Abs(scale.x) * 0.5f,
+            box.size.y * Mathf.Abs(scale.y) * 0.5f,
+            box.size.z * Mathf.Abs(scale.z) * 0.5f
+        );
+        rotation = t.rotation;
+    }
+
+    private static void GetSphereWorldShape(SphereCollider sphere, out Vector3 center, out float radius)
+    {
+        Transform t = sphere.transform;
+        Vector3 scale = t.lossyScale;
+        center = t.TransformPoint(sphere.center);
+        radius = sphere.radius * Mathf.Max(Mathf.Abs(scale.x), Mathf.Abs(scale.y), Mathf.Abs(scale.z));
+    }
+
     private void OnTriggerEnter(Collider other)
     {
-        if (m_attackBox == null || !m_attackBox.enabled)
+        if (m_activeAttackCollider != m_attackBox || m_attackBox == null || !m_attackBox.enabled)
             return;
 
         TryApplyDamage(other);

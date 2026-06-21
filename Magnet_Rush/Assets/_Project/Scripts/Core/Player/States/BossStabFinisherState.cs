@@ -1,265 +1,169 @@
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Playables;
+using UnityEngine.Timeline;
 
 /// <summary>
-/// ボススタブ・フィニッシャー演出ステート。間合い詰め→跳び乗り→頭に突き刺し→離脱を
-/// コード駆動の弧で実行する。演出中は Player.Update が UpdateEntity をスキップするため、
-/// このステートが transform.position を直接動かす。崩れポーズ（Stagger/Stun）で
-/// StabFinisherSettings のプロファイルを分岐する。
+/// ボススタブ・フィニッシャー演出ステート（Timeline 駆動）。
+/// プランナーが録画した演出 Timeline（StabFinisherSettings.finisherCutscene）を実行時に再生し、
+/// プレイヤーの移動軌跡（PlayerRoot トラック）と体アニメ（Player トラック）をそのまま流す。
+/// 録画は world 座標なので、録画時のボス位置との差分だけ演出全体をずらして実ボスへ合わせる。
+/// Camera/Activation トラックも同じ Timeline から実行時カメラへバインドし、Sceneプレビューと同じ構図を再生する。
+/// Camera トラックが無い場合だけ StabFinisherCamera の別 Timeline へフォールバックする。
+/// ヒットは AnimationTrack 経由だとクリップの AnimEvent が発火しないため、時間指定で発火する。
+/// 演出中は Player.Update が UpdateEntity をスキップするため、本ステート（director）が transform を駆動する。
 /// 基底: EntityState&lt;Player&gt;
 /// </summary>
 public class BossStabFinisherState : EntityState<Player>
 {
-    private StabFinisherSettings.Profile m_profile;
-    private Transform m_anchor;
+    private StabFinisherSettings m_settings;
     private IStabReceiver m_receiver;
     private EnemyBossAI m_bossAi;
 
-    private Vector3 m_startPos;
-    private Vector3 m_standPos;
-    private Vector3 m_hitPos;
-    private Collider m_footholdCol;
-    private float m_footOffset;
+    private PlayableDirector m_director;
+    private Vector3 m_offset;
+    private double m_duration;
     private bool m_hitDone;
-    private Quaternion m_preTurnRot;
-    private bool m_turnCaptured;
+    private StabFinisherCamera m_cutsceneCamera;
 
-    private float m_tApproachEnd;
-    private float m_tLeapEnd;
-    private float m_tPlungeEnd;
-    private float m_tRetreatEnd;
+    /// <summary>PlayerAnimator 互換用。Timeline が体を直接駆動するので固定値でよい（突き扱い・接地扱い）。</summary>
+    public int AnimatorPhaseIndex => (int)PlayerStateIndex.StabAttack;
 
-    /// <summary>現在フェーズに対応する Animator の State Int。PlayerAnimator が拾って遷移させる（接近=Idle/跳躍=Fall/突き=StabAttack）。</summary>
-    public int AnimatorPhaseIndex { get; private set; }
+    /// <summary>PlayerAnimator 互換用。Timeline 駆動中は接地扱いにする。</summary>
+    public bool IsAirbornePhase => false;
 
-    /// <summary>このフェーズが空中扱いか（跳び上がり中）。PlayerAnimator が IsGrounded に反映する。</summary>
-    public bool IsAirbornePhase { get; private set; }
-
-    /// <summary>StabAbility から演出データを渡す。Change 前に呼ぶこと。</summary>
+    /// <summary>StabAbility から演出データを渡す。Change 前に呼ぶこと。profile は Timeline 駆動では使わない。</summary>
     public void Setup(StabFinisherSettings.Profile profile, IStabReceiver receiver)
     {
-        m_profile = profile;
         m_receiver = receiver;
+        m_settings = receiver != null ? receiver.StabFinisherSettings : null;
         m_bossAi = receiver as EnemyBossAI;
     }
 
     protected override void OnEnter(Player player)
     {
         m_hitDone = false;
-        m_turnCaptured = false;
-        m_startPos = player.transform.position;
-        AnimatorPhaseIndex = (int)PlayerStateIndex.Idle;
-        IsAirbornePhase = false;
         player.lateralVelocity = Vector3.zero;
         player.externalVelocity = Vector3.zero;
 
-        if (m_profile == null || m_receiver == null || m_receiver.StabAnchor == null)
+        var cutscene = m_settings != null ? m_settings.finisherCutscene as TimelineAsset : null;
+        if (cutscene == null || m_receiver == null)
         {
-            ChannelLogger.LogGuardReturn("Stab", "演出データ不足 — 即ヒットにフォールバック");
+            ChannelLogger.LogGuardReturn("Stab", "演出 Timeline 未設定 — 即ヒットにフォールバック");
             DoHit(player);
             ReturnToNormal(player);
             return;
         }
 
-        m_anchor = m_receiver.StabAnchor;
-
-        // ボス基準の水平な右/前ベクトル。瞬間移動先・踏み切り位置はこの座標系で置く。
+        // 録画時ボス位置との差分だけ演出全体をずらして実ボスへ合わせる
         Transform bossT = ((MonoBehaviour)m_receiver).transform;
-        Vector3 bossPos = bossT.position;
-        Vector3 bossRight = bossT.right; bossRight.y = 0f;
-        bossRight = bossRight.sqrMagnitude > 0.0001f ? bossRight.normalized : Vector3.right;
-        Vector3 bossFwd = bossT.forward; bossFwd.y = 0f;
-        bossFwd = bossFwd.sqrMagnitude > 0.0001f ? bossFwd.normalized : Vector3.forward;
-        float groundY = m_startPos.y;
+        m_offset = bossT.position - m_settings.cutsceneAuthoringBossPosition;
 
-        // 瞬間移動先＝ボスの右斜め（走り出し位置）。
-        Vector3 rs = m_profile.runStartOffset;
-        m_startPos = bossPos + bossRight * rs.x + bossFwd * rs.z;
-        m_startPos.y = groundY;
+        // バインド対象の Animator: body=モデル側 / root=_Player 自身（軌跡用・無ければ追加）
+        Animator bodyAnim = null;
+        foreach (var a in player.GetComponentsInChildren<Animator>(true))
+        {
+            if (a.gameObject != player.gameObject) { bodyAnim = a; break; }
+        }
+        var rootAnim = player.GetComponent<Animator>();
+        if (rootAnim == null) rootAnim = player.gameObject.AddComponent<Animator>();
 
-        // 走り寄って跳ぶ位置（踏み切り）。
-        Vector3 jo = m_profile.jumpOffOffset;
-        m_standPos = bossPos + bossRight * jo.x + bossFwd * jo.z;
-        m_standPos.y = groundY;
+        // 実行時 director を生成。Manual 評価で本ステートが毎フレーム時間を進める
+        m_director = new GameObject("StabFinisherCutsceneDirector").AddComponent<PlayableDirector>();
+        m_director.playableAsset = cutscene;
+        m_director.timeUpdateMode = DirectorUpdateMode.Manual;
+        m_director.extrapolationMode = DirectorWrapMode.Hold;
 
-        // 跳び乗り先（頭/足場）= StabFoothold レイヤーのコライダー。着地点は上面中央＋足オフセット、毎フレーム再計算。
-        m_footholdCol = ResolveFootholdCollider();
-        m_footOffset = PlayerFootToPivot(player);
-        m_hitPos = FootholdTarget();
+        var cameraActivationTracks = new List<ActivationTrack>();
+        var cameraAnimationTracks = new List<AnimationTrack>();
+        foreach (var track in cutscene.GetOutputTracks())
+        {
+            if (track.name == "Player") m_director.SetGenericBinding(track, bodyAnim);
+            else if (track.name == "PlayerRoot") m_director.SetGenericBinding(track, rootAnim);
+            else if (track is ActivationTrack activationTrack) cameraActivationTracks.Add(activationTrack);
+            else if (track is AnimationTrack animationTrack) cameraAnimationTracks.Add(animationTrack);
+        }
 
-        // 右斜めへ瞬間移動 → 走り寄り → 跳び乗り → 突き。離脱は右斜めへ戻る。
-        player.transform.position = m_startPos;
-        FaceTowards(player, m_standPos);
+        // Scene上の StabFinisherDirector と同じ Camera/Activation トラックを同じ順番で実行時rigへ割り当てる。
+        int cameraCount = Mathf.Min(cameraActivationTracks.Count, cameraAnimationTracks.Count);
+        m_cutsceneCamera = StabFinisherCamera.Current;
+        if (cameraCount > 0 && m_cutsceneCamera != null && m_cutsceneCamera.PrepareCutsceneCameraTracks(cameraCount))
+        {
+            for (int i = 0; i < cameraCount; i++)
+            {
+                m_director.SetGenericBinding(cameraActivationTracks[i], m_cutsceneCamera.GetCutsceneCameraRig(i));
+                m_director.SetGenericBinding(cameraAnimationTracks[i], m_cutsceneCamera.GetCutsceneCameraAnimator(i));
+            }
+        }
+        else
+        {
+            // Cameraトラックが無い／専用Cameraが見つからない場合は既存のカメラTimelineを使う。
+            m_cutsceneCamera = null;
+        }
 
-        // 走りフェーズを最初のフレームから出す（State=Move＋走り速度をここでセット）。OnStep を待たないので開始直後から走り(歩き)が再生される。
-        AnimatorPhaseIndex = (int)PlayerStateIndex.Move;
-        player.lateralVelocity = (m_standPos - m_startPos) / Mathf.Max(0.01f, m_profile.approachDuration);
-
-        m_tApproachEnd = m_profile.approachDuration;
-        m_tLeapEnd = m_tApproachEnd + m_profile.leapDuration;
-        m_tPlungeEnd = m_tLeapEnd + m_profile.plungeDuration;
-        m_tRetreatEnd = m_tPlungeEnd + m_profile.retreatDuration;
+        m_duration = cutscene.duration;
+        EvaluateAt(player, 0.0);
 
         m_bossAi?.BeginStabFinisher();
-        player.FireStabFinisherStart(m_anchor, m_receiver.StabChoreographyIndex);
+        player.FireStabFinisherStart(m_receiver.StabAnchor, m_receiver.StabChoreographyIndex);
     }
 
     protected override void OnStep(Player player, float dt)
     {
-        if (m_profile == null) { ReturnToNormal(player); return; }
+        if (m_director == null) { ReturnToNormal(player); return; }
 
-        float t = timeSinceEntered;
+        double t = timeSinceEntered;
+        EvaluateAt(player, t);
 
-        // 足場（ボーン配下）が動いても追従するよう、毎フレーム着地先を更新する。
-        if (m_footholdCol != null) m_hitPos = FootholdTarget();
+        float hitTime = m_settings != null ? m_settings.cutsceneHitTime : 1f;
+        if (!m_hitDone && t >= hitTime)
+        {
+            m_hitDone = true;
+            if (m_receiver != null && m_receiver.CanReceiveStab) DoHit(player);
+        }
 
-        if (t <= m_tApproachEnd)
-        {
-            // 走り寄り: 右斜めの起点→踏み切り位置。Run アニメ。
-            AnimatorPhaseIndex = (int)PlayerStateIndex.Move;
-            IsAirbornePhase = false;
-            float k = Mathf.InverseLerp(0f, m_tApproachEnd, t);
-            player.transform.position = Vector3.Lerp(m_startPos, m_standPos, Smooth(k));
-            // 走りアニメ用に水平速度を渡す（PlayerAnimator が MoveSpeed に反映）。transform は別駆動なので二重移動なし。
-            player.lateralVelocity = (m_standPos - m_startPos) / Mathf.Max(0.01f, m_tApproachEnd);
-            player.verticalVelocity = 0f;
-            FaceTowards(player, m_standPos);
-        }
-        else if (t <= m_tLeapEnd)
-        {
-            // 跳び乗り: 構え位置→頭へ放物線（上って下る）。終端で頭に着地。VerticalSpeed で Jump→Fall を出す。
-            AnimatorPhaseIndex = (int)PlayerStateIndex.Fall;
-            IsAirbornePhase = true;
-            float k = Mathf.InverseLerp(m_tApproachEnd, m_tLeapEnd, t);
-            Vector3 ground = Vector3.Lerp(m_standPos, m_hitPos, k);
-            float arc = Mathf.Sin(k * Mathf.PI) * m_profile.arcApexHeight;
-            player.transform.position = ground + Vector3.up * arc;
-            player.verticalVelocity = Mathf.Cos(k * Mathf.PI) * m_profile.arcApexHeight * 2f; // 上昇(+)→下降(-)
-            FaceTowards(player, m_hitPos);
-        }
-        else if (t <= m_tPlungeEnd)
-        {
-            // 突き刺し: 頭の位置でパイルを最後まで再生。ヒット/VFX はパイルクリップの AnimEvent が正しいフレームで発火する。
-            AnimatorPhaseIndex = (int)PlayerStateIndex.StabAttack;
-            IsAirbornePhase = false;
-            // 突き開始時の向き(跳び乗り後＝頭向き)を1回だけ記録。ここから後ろ向きへ補間する。
-            if (!m_turnCaptured) { m_preTurnRot = player.transform.rotation; m_turnCaptured = true; }
-            // 突きの瞬間、足場の上から頭(StabAnchor)側へ寄せる。
-            Vector3 headPos = m_anchor != null ? m_anchor.position : m_hitPos;
-            player.transform.position = Vector3.Lerp(m_hitPos, headPos, m_profile.plungeHeadPull);
-            player.verticalVelocity = 0f;
-            // 最終の向き(後ろ向き＋頭側へ傾け)を作り、turnDuration かけてなめらかに振り向く（スナップ廃止）。
-            FaceTowards(player, m_standPos);
-            LeanToward(player, headPos, m_profile.plungeLeanDegrees);
-            float turnK = Mathf.Clamp01((t - m_tLeapEnd) / Mathf.Max(0.01f, m_profile.turnDuration));
-            player.transform.rotation = Quaternion.Slerp(m_preTurnRot, player.transform.rotation, Smooth(turnK));
-        }
-        else if (t <= m_tRetreatEnd)
-        {
-            // 保険: AnimEvent でヒットが入っていなければ（ボスがまだ崩れたまま）1回だけ叩く。
-            if (!m_hitDone)
-            {
-                m_hitDone = true;
-                if (m_receiver != null && m_receiver.CanReceiveStab) DoHit(player);
-            }
-            // 離脱: 足場(頭の上)から起点へ「ひと跳びして着地」。頭から地面への落差が大きいので、
-            // 直線移動や弧を足すだけだと弧が埋もれて滑り落ちて見える。そこで頂点を必ず頭より上に作る
-            // 放物線にして、一度上へ蹴ってから加速落下させる（空中アニメ=Fall）。
-            AnimatorPhaseIndex = (int)PlayerStateIndex.Fall;
-            IsAirbornePhase = true;
-            float k = Mathf.InverseLerp(m_tPlungeEnd, m_tRetreatEnd, t);
-            Vector3 flat = Vector3.Lerp(m_hitPos, m_startPos, k); // 水平は等速で起点へ
-            // 垂直は放物線 y = a*k^2 + b*k + y0。頂点を「高い方 + retreatArcHeight」に固定して必ず上へ跳ねさせる。
-            float y0 = m_hitPos.y;
-            float p = Mathf.Max(m_hitPos.y, m_startPos.y) - y0 + m_profile.retreatArcHeight;
-            float d = m_startPos.y - y0;
-            float b = 2f * p + 2f * Mathf.Sqrt(Mathf.Max(0f, p * (p - d)));
-            float a = d - b;
-            player.transform.position = new Vector3(flat.x, a * k * k + b * k + y0, flat.z);
-            player.verticalVelocity = 2f * a * k + b; // dy/dk の符号で 跳ね上がり(+)→落下(-)
-            // 突き時の傾き(LeanToward)を解除し、跳ぶ方向(起点)を向く。
-            FaceTowards(player, m_startPos);
-        }
-        else
-        {
-            ReturnToNormal(player);
-        }
+        if (t >= m_duration) ReturnToNormal(player);
+    }
+
+    // Timeline を指定時間で評価し、録画 world 座標にボス相対オフセットを足して実ボスへ合わせる。
+    // director.Evaluate は _Player を録画の絶対座標に置くため、毎フレーム評価後に差分を足す（累積はしない）。
+    private void EvaluateAt(Player player, double time)
+    {
+        m_director.time = time;
+        m_director.Evaluate();
+        player.transform.position += m_offset;
+        m_cutsceneCamera?.ApplyCutsceneCameraOffset(m_offset);
     }
 
     protected override void OnExit(Player player)
     {
-        player.transform.position = new Vector3(m_startPos.x, player.transform.position.y, m_startPos.z);
+        if (m_director != null)
+        {
+            m_director.Stop();
+            Object.Destroy(m_director.gameObject);
+            m_director = null;
+        }
+        m_cutsceneCamera?.EndCutsceneCameraTracks();
+        m_cutsceneCamera = null;
         player.velocity = Vector3.zero;
         player.lateralVelocity = Vector3.zero;
         player.externalVelocity = Vector3.zero;
-        // 突き時の傾き(LeanToward)を持ち越さない。水平(ヨーのみ)の起き上がった向きに戻す。
+
+        // 突き時の傾きを持ち越さない。水平（ヨーのみ）の起き上がった向きへ戻す。
         Vector3 flatFwd = player.transform.forward;
         flatFwd.y = 0f;
         if (flatFwd.sqrMagnitude > 0.0001f)
             player.transform.rotation = Quaternion.LookRotation(flatFwd.normalized, Vector3.up);
+
         m_bossAi?.EndStabFinisher();
         player.FireStabFinisherEnd();
     }
 
-    // 既存のダメージ＋VFX＋FireStab(StabアニメTrigger)＋receiver.OnStabHit を再利用する。
+    // 既存のダメージ＋VFX＋receiver.OnStabHit を再利用する（StabAbility.OnStabHitEvent が着弾通知も担う）。
     private void DoHit(Player player)
     {
         player.stab.OnStabHitEvent();
     }
-
-    // StabFoothold レイヤーのコライダー（ボスの子・プレイヤーが乗る足場）を探して返す。無ければ null。
-    private Collider ResolveFootholdCollider()
-    {
-        var bossMb = m_receiver as MonoBehaviour;
-        if (bossMb == null) return null;
-        int layer = LayerMask.NameToLayer("StabFoothold");
-        if (layer < 0) return null;
-        foreach (var col in bossMb.GetComponentsInChildren<Collider>(true))
-        {
-            if (col.gameObject.layer == layer) return col;
-        }
-        return null;
-    }
-
-    // 跳び乗り先のワールド座標。足場コライダーの上面中央＋足→ピボット分（プレイヤーが上に立つ）。無ければ頭(StabAnchor)。
-    private Vector3 FootholdTarget()
-    {
-        if (m_footholdCol == null) return m_anchor != null ? m_anchor.position : Vector3.zero;
-        Bounds b = m_footholdCol.bounds;
-        return new Vector3(b.center.x, b.max.y + m_footOffset, b.center.z);
-    }
-
-    // プレイヤーのピボットから足元までの距離（ピボットを足場上面に置くための上オフセット）。
-    private static float PlayerFootToPivot(Player player)
-    {
-        var cap = player.GetComponentInChildren<CapsuleCollider>(true);
-        if (cap == null) return 1f;
-        float scaleY = Mathf.Abs(cap.transform.lossyScale.y);
-        return Mathf.Max(0f, (cap.height * 0.5f - cap.center.y) * scaleY);
-    }
-
-    private void FaceTowards(Player player, Vector3 worldTarget)
-    {
-        Vector3 dir = worldTarget - player.transform.position;
-        dir.y = 0f;
-        if (dir.sqrMagnitude < 0.0001f) return;
-        Quaternion look = Quaternion.LookRotation(dir.normalized, Vector3.up)
-            * Quaternion.Euler(0f, m_profile.plungeYawOffset, 0f);
-        player.transform.rotation = look;
-    }
-
-    // 上体を target 方向へ傾ける近似（FaceTowards 後に呼ぶ）。全身が中心まわりに pitch する。
-    // target が前(forward)側なら前傾、背面側なら後傾で、その方向へ倒す。
-    private void LeanToward(Player player, Vector3 target, float degrees)
-    {
-        if (Mathf.Abs(degrees) < 0.01f) return;
-        Vector3 to = target - player.transform.position;
-        to.y = 0f;
-        if (to.sqrMagnitude < 0.0001f) return;
-        float sign = Vector3.Dot(player.transform.forward, to.normalized) >= 0f ? 1f : -1f;
-        player.transform.rotation *= Quaternion.Euler(sign * Mathf.Abs(degrees), 0f, 0f);
-    }
-
-    private static float Smooth(float k) => Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(k));
 
     private void ReturnToNormal(Player player)
     {

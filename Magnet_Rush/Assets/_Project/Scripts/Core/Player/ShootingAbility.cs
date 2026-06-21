@@ -14,12 +14,20 @@ public class ShootingAbility : Ability
     [SerializeField] private BulletSettings m_bulletSettings;
     [SerializeField] private Transform m_firePoint;
 
+    [Header("Self Fire Effect")]
+    [SerializeField] private Transform m_selfFireEffectAnchor;
+    [SerializeField] private Vector3 m_selfFireEffectLocalOffset = Vector3.up;
+    [SerializeField] private float m_selfFireEffectScaleMultiplier = 1f;
+
     private Camera m_mainCamera;
     private Magnetizable m_magnetizable;
     private PoleAbility m_pole;
     private AimAbility m_aim;
+    private MagnetField m_selfFireField;
+    private GameObject m_selfFireFieldHost;
 
     private const float k_ForwardDotThreshold = 0.1f;
+    private const string k_SelfFireFieldHostName = "SelfMagnetFieldHost";
 
     protected override void Awake()
     {
@@ -89,6 +97,7 @@ public class ShootingAbility : Ability
         }
 
         m_events.FireShoot();
+        SoundManager.Instance.Play(SoundData.CueSheet.SE, SoundData.SE.PlayerShot); // サウンド再生
     }
 
     /// <summary>A / F 入力があればセルフファイア（自己磁化）。毎フレーム呼ぶ。</summary>
@@ -107,16 +116,23 @@ public class ShootingAbility : Ability
         var fieldSettings = m_bulletSettings.bulletFieldSettings;
         if (fieldSettings != null)
         {
-            var existing = GetComponent<MagnetField>();
-            if (existing == null)
+            if (m_selfFireField == null)
             {
-                var field = gameObject.AddComponent<MagnetField>();
+                Transform effectParent = m_selfFireEffectAnchor != null ? m_selfFireEffectAnchor : transform;
+                m_selfFireFieldHost = new GameObject(k_SelfFireFieldHostName);
+                m_selfFireFieldHost.transform.SetParent(effectParent, false);
+                m_selfFireFieldHost.transform.localPosition = m_selfFireEffectLocalOffset;
+                m_selfFireFieldHost.transform.localRotation = Quaternion.identity;
+                m_selfFireFieldHost.transform.localScale = Vector3.one;
+
+                var field = m_selfFireFieldHost.AddComponent<MagnetField>();
                 field.Initialize(m_pole.CurrentPole, fieldSettings);
+                m_selfFireField = field;
 
                 if (MagnetManager.Instance != null)
                     MagnetManager.Instance.RegisterField(field);
 
-                var visualizer = gameObject.AddComponent<MagnetFieldVisualizer>();
+                var visualizer = m_selfFireFieldHost.AddComponent<MagnetFieldVisualizer>();
                 visualizer.Show(m_pole.CurrentPole, fieldSettings);
 
                 GameObject effectPrefab = m_pole.CurrentPole == MagneticPole.S
@@ -125,15 +141,24 @@ public class ShootingAbility : Ability
                 GameObject effectInstance = null;
                 if (effectPrefab != null)
                 {
-                    effectInstance = Instantiate(effectPrefab, transform);
+                    effectInstance = Instantiate(effectPrefab, m_selfFireFieldHost.transform);
                     effectInstance.transform.localPosition = Vector3.zero;
+                    effectInstance.transform.localRotation = Quaternion.identity;
+                    effectInstance.transform.localScale = WorldScale(
+                        Mathf.Max(0f, m_bulletSettings.impactEffectScale * m_selfFireEffectScaleMultiplier),
+                        m_selfFireFieldHost.transform);
                 }
 
                 field.OnFieldExpired += () =>
                 {
                     m_magnetizable.Deactivate();
-                    if (visualizer != null) Destroy(visualizer);
-                    if (effectInstance != null) Destroy(effectInstance);
+                    m_selfFireField = null;
+                    if (m_selfFireFieldHost != null) Destroy(m_selfFireFieldHost);
+                    else
+                    {
+                        if (visualizer != null) Destroy(visualizer);
+                        if (effectInstance != null) Destroy(effectInstance);
+                    }
                 };
             }
         }
@@ -142,6 +167,7 @@ public class ShootingAbility : Ability
             BulletManager.Instance.IncrementShotCount();
 
         m_events.FireSelfShoot();
+        SoundManager.Instance.Play(SoundData.CueSheet.SE, SoundData.SE.SelfShot); // サウンド再生
     }
 
     /// <summary>X 入力があればリロード（全弾クリア）。毎フレーム呼ぶ。</summary>
@@ -190,5 +216,15 @@ public class ShootingAbility : Ability
             return true;
 
         return Physics.Raycast(origin, direction, out hit, maxDist, layerMask, QueryTriggerInteraction.Collide);
+    }
+
+    private static Vector3 WorldScale(float size, Transform parent)
+    {
+        Vector3 l = parent.lossyScale;
+        return new Vector3(
+            Mathf.Abs(l.x) > 0.001f ? size / l.x : size,
+            Mathf.Abs(l.y) > 0.001f ? size / l.y : size,
+            Mathf.Abs(l.z) > 0.001f ? size / l.z : size
+        );
     }
 }

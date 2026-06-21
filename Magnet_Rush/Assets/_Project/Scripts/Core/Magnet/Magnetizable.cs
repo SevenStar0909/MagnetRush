@@ -20,6 +20,12 @@ public class Magnetizable : MonoBehaviour, IMagnetPoleProvider
     [Tooltip("箱など有限質量の物理オブジェクトと引き合う時、自分は動かず相手だけを引き寄せる。壁や着弾弾など固定磁力源には従来どおり引き寄せられる。")]
     [SerializeField] private bool m_holdPositionAgainstDynamicObjects;
 
+    [Tooltip("同じHitGroupのEntityと磁力で反応する時、自分は動かず相手だけを動かす。AxeEnemyを敵同士の磁力で中央に寄せないための設定。")]
+    [SerializeField] private bool m_holdPositionAgainstSameGroupEntities;
+
+    [Tooltip("異極接触時の自動磁力解除と弾き飛ばしを無効化する。壁に押し付けられた敵を磁化解除まで張り付かせるための設定。")]
+    [SerializeField] private bool m_keepMagnetizedOnAttractContact;
+
     [Tooltip("磁力中心をGOからローカル空間でずらす。Collider.centerと同じ感覚。回転は装着GOに追従。\n距離・力計算・PD保持などMagnetizable同士のやり取りはこの位置で行う。")]
     [SerializeField] private Vector3 m_centerOffset = Vector3.zero;
 
@@ -34,6 +40,12 @@ public class Magnetizable : MonoBehaviour, IMagnetPoleProvider
 
     /// <summary>有限質量の物理オブジェクト相手には自分を動かさず、相手側だけを引き寄せる。</summary>
     public bool HoldPositionAgainstDynamicObjects => m_holdPositionAgainstDynamicObjects;
+
+    /// <summary>同じHitGroupのEntity相手には自分を動かさず、相手側だけを動かす。</summary>
+    public bool HoldPositionAgainstSameGroupEntities => m_holdPositionAgainstSameGroupEntities;
+
+    /// <summary>異極接触時の自動解除・弾き飛ばしを行わず、磁化状態を維持する。</summary>
+    public bool KeepMagnetizedOnAttractContact => m_keepMagnetizedOnAttractContact;
 
     /// <summary>箱・武器など、磁力で動かせる有限質量の物理オブジェクトか。</summary>
     public bool IsFiniteDynamicPhysicsObject =>
@@ -89,6 +101,7 @@ public class Magnetizable : MonoBehaviour, IMagnetPoleProvider
     private MaterialPropertyBlock m_mpb;
     private Collider m_collider;
     private MagnetField m_cachedField;
+    private IHittable m_cachedHittable;
     private RigidbodyConstraints m_savedConstraints;
     private bool m_isSettling;
     private float m_settlingTimer;
@@ -111,12 +124,28 @@ public class Magnetizable : MonoBehaviour, IMagnetPoleProvider
     /// <summary>MagnetFieldが自身を登録する。</summary>
     public void SetField(MagnetField field) => m_cachedField = field;
 
+    public bool TryGetHitGroup(out HitGroup hitGroup)
+    {
+        if (m_cachedHittable == null)
+            m_cachedHittable = GetComponentInChildren<IHittable>(true);
+
+        if (m_cachedHittable != null)
+        {
+            hitGroup = m_cachedHittable.HitGroup;
+            return true;
+        }
+
+        hitGroup = default;
+        return false;
+    }
+
     void Awake()
     {
         m_rb = GetComponent<Rigidbody>();
         m_magnetTarget = GetComponent<IMagnetTarget>();
         m_magneticResponse = GetComponent<IMagneticResponse>();
         m_cachedEntity = GetComponent<Entity>();
+        m_cachedHittable = GetComponentInChildren<IHittable>(true);
         m_renderers = GetComponentsInChildren<Renderer>(true);
         m_collider = GetComponent<Collider>();
         m_mpb = new MaterialPropertyBlock();

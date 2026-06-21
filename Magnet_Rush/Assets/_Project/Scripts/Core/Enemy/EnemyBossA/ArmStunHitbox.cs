@@ -17,6 +17,7 @@ public sealed class ArmStunHitbox : MonoBehaviour, IHittable
 
     [SerializeField] private Health m_health;
     [SerializeField] private EnemyBossBaseA_Animator m_animator;
+    [SerializeField] private EnemyBossAI m_bossAI;
 
     [SerializeField]
     [Tooltip("ヒット解決上の所属グループ。ボスなので通常 Enemy")]
@@ -79,6 +80,9 @@ public sealed class ArmStunHitbox : MonoBehaviour, IHittable
         if (m_animator == null)
             m_animator = GetComponentInParent<EnemyBossBaseA_Animator>();
 
+        if (m_bossAI == null)
+            m_bossAI = GetComponentInParent<EnemyBossAI>();
+
         if (m_health == null)
             ChannelLogger.LogError("EnemyBossA", $"[ArmStunHitbox] {name}: Health 未取得");
         if (m_animator == null)
@@ -125,6 +129,9 @@ public sealed class ArmStunHitbox : MonoBehaviour, IHittable
         }
 
         // HPダメージは全状態で適用
+        if (m_bossAI != null && m_bossAI.IsInvincibleState)
+            return;
+
         m_health.Damage(hit.damage);
 
         // 振り下ろし攻撃中（AttackStance/AttackMotion）に手へ当たった＝逆極カウンター成立。

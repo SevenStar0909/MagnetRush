@@ -274,7 +274,7 @@ NavMeshAgent:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 529854419887168867}
-  m_Enabled: 1
+  m_Enabled: 0
   m_AgentTypeID: -1372625422
   m_Radius: 0.5
   m_Speed: 3.5
@@ -387,6 +387,8 @@ MonoBehaviour:
   m_initialMass: Infinity
   m_immovable: 1
   m_holdPositionAgainstDynamicObjects: 0
+  m_holdPositionAgainstSameGroupEntities: 0
+  m_keepMagnetizedOnAttractContact: 0
   m_centerOffset: {x: 0, y: 0, z: 0}
   m_useEdgeDetectionOutline: 0
 --- !u!114 &8774293733114710440
@@ -3299,6 +3301,10 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 9
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: c3dfd9af8e7ee194187aa18dc68da177, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1303023567276017412, guid: c3dfd9af8e7ee194187aa18dc68da177, type: 3}
       propertyPath: m_LocalPosition.z
       value: -1.9326763e-14
@@ -4858,6 +4864,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: MagnetRush.Enemy::ArmStunHitbox
   m_health: {fileID: 971369539054672765}
   m_animator: {fileID: 1537800206930250247}
+  m_bossAI: {fileID: 0}
   m_hitGroup: 1
   m_showCounterCue: 1
   m_counterCueTarget: {fileID: 0}
@@ -5108,6 +5115,8 @@ MonoBehaviour:
   m_initialMass: Infinity
   m_immovable: 0
   m_holdPositionAgainstDynamicObjects: 0
+  m_holdPositionAgainstSameGroupEntities: 0
+  m_keepMagnetizedOnAttractContact: 0
   m_centerOffset: {x: 0, y: 0, z: 0}
   m_useEdgeDetectionOutline: 0
 --- !u!114 &7376478091582785942
@@ -5419,6 +5428,8 @@ MonoBehaviour:
   m_initialMass: Infinity
   m_immovable: 0
   m_holdPositionAgainstDynamicObjects: 0
+  m_holdPositionAgainstSameGroupEntities: 0
+  m_keepMagnetizedOnAttractContact: 0
   m_centerOffset: {x: 0, y: 0, z: 0}
   m_useEdgeDetectionOutline: 0
 --- !u!114 &6393997700562411918

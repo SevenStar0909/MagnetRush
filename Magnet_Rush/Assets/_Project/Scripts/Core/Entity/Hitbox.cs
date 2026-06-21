@@ -7,9 +7,15 @@ using UnityEngine;
 /// Stamina 等の追加効果は専用 Hitbox 派生（ArmStunHitbox 等）で扱う。
 /// 攻撃側は other.GetComponentInParent&lt;IHittable&gt;() で必ず到達できる。
 /// </summary>
+public interface IDamageGuard
+{
+    bool CanTakeDamage(HitData hit);
+}
+
 public class Hitbox : MonoBehaviour, IHittable
 {
     [SerializeField] private Health m_health;
+    private IDamageGuard m_damageGuard;
 
     [SerializeField]
     [Tooltip("ヒット解決上の所属グループ。Player/Enemy/Physics。攻撃側と同グループならダメージを弾く")]
@@ -24,6 +30,8 @@ public class Hitbox : MonoBehaviour, IHittable
     {
         if (m_health == null)
             m_health = GetComponentInParent<Health>();
+
+        m_damageGuard = GetComponentInParent<IDamageGuard>();
     }
 
     public void OnHit(HitData hit)
@@ -33,6 +41,9 @@ public class Hitbox : MonoBehaviour, IHittable
             ChannelLogger.LogGuardReturn("Entity", "Health未設定");
             return;
         }
+
+        if (m_damageGuard != null && !m_damageGuard.CanTakeDamage(hit))
+            return;
 
         m_health.Damage(hit.damage);
         OnHitEvent?.Invoke(hit);

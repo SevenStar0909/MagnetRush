@@ -21,6 +21,7 @@ public class WeaponStateController : MonoBehaviour
     [SerializeField] private Transform m_gripPoint;
     [SerializeField] private Collider[] m_physicsColliders;
     [SerializeField] private Collider m_attackTrigger;
+    [SerializeField] private Collider[] m_heldMagnetColliders;
 
     [Header("Owned Pose")]
     [SerializeField] private Vector3 m_ownedLocalEulerOffset = new Vector3(0f, -90f, 0f);
@@ -35,6 +36,9 @@ public class WeaponStateController : MonoBehaviour
     private Rigidbody m_rb;
     private Magnetizable m_magnetizable;
     private MagneticDamageOwner m_damageOwner;
+    private Collider[] m_heldDisabledColliders;
+    private bool[] m_heldDisabledColliderInitialEnabled;
+    private bool[] m_heldMagnetColliderInitialIsTrigger;
 
     private GameObject m_owner;
     private Transform m_ownerHand;
@@ -75,8 +79,17 @@ public class WeaponStateController : MonoBehaviour
         if (m_damageOwner == null)
             m_damageOwner = gameObject.AddComponent<MagneticDamageOwner>();
 
+        CacheHeldDisabledColliders();
+        CacheHeldMagnetColliders();
+
         if (m_attackTrigger != null)
             m_attackTrigger.enabled = false;
+
+        if (m_state != WeaponOwnerState.Unowned)
+        {
+            SetHeldDisabledCollidersEnabled(false);
+            SetHeldMagnetCollidersForHeld(true);
+        }
     }
 
     private void Update()
@@ -111,6 +124,8 @@ public class WeaponStateController : MonoBehaviour
         }
 
         SetPhysicsCollidersEnabled(false);
+        SetHeldDisabledCollidersEnabled(false);
+        SetHeldMagnetCollidersForHeld(true);
 
         if (m_attackTrigger != null)
             m_attackTrigger.enabled = false;
@@ -191,6 +206,9 @@ public class WeaponStateController : MonoBehaviour
 
         if (m_attackTrigger != null)
             m_attackTrigger.enabled = false;
+
+        SetHeldDisabledCollidersEnabled(false);
+        SetHeldMagnetCollidersForHeld(true);
     }
 
     public void CancelEquip()
@@ -227,6 +245,8 @@ public class WeaponStateController : MonoBehaviour
         }
 
         SetPhysicsCollidersEnabled(false);
+        SetHeldDisabledCollidersEnabled(false);
+        SetHeldMagnetCollidersForHeld(true);
 
         if (m_attackTrigger != null)
             m_attackTrigger.enabled = false;
@@ -256,6 +276,8 @@ public class WeaponStateController : MonoBehaviour
         }
 
         SetPhysicsCollidersEnabled(true);
+        SetHeldDisabledCollidersEnabled(true);
+        SetHeldMagnetCollidersForHeld(false);
 
         if (m_attackTrigger != null)
             m_attackTrigger.enabled = false;
@@ -328,6 +350,96 @@ public class WeaponStateController : MonoBehaviour
         {
             if (m_physicsColliders[i] != null)
                 m_physicsColliders[i].enabled = enabled;
+        }
+    }
+
+    private void CacheHeldDisabledColliders()
+    {
+        Collider[] colliders = GetComponentsInChildren<Collider>(true);
+        int count = 0;
+        for (int i = 0; i < colliders.Length; i++)
+        {
+            Collider col = colliders[i];
+            if (col != null && col != m_attackTrigger && !IsHeldMagnetCollider(col))
+                count++;
+        }
+
+        m_heldDisabledColliders = new Collider[count];
+        m_heldDisabledColliderInitialEnabled = new bool[count];
+
+        int index = 0;
+        for (int i = 0; i < colliders.Length; i++)
+        {
+            Collider col = colliders[i];
+            if (col == null || col == m_attackTrigger || IsHeldMagnetCollider(col))
+                continue;
+
+            m_heldDisabledColliders[index] = col;
+            m_heldDisabledColliderInitialEnabled[index] = col.enabled;
+            index++;
+        }
+    }
+
+    private void SetHeldDisabledCollidersEnabled(bool enabled)
+    {
+        if (m_heldDisabledColliders == null)
+            return;
+
+        for (int i = 0; i < m_heldDisabledColliders.Length; i++)
+        {
+            Collider col = m_heldDisabledColliders[i];
+            if (col == null)
+                continue;
+
+            col.enabled = enabled && m_heldDisabledColliderInitialEnabled[i];
+        }
+    }
+
+    private void CacheHeldMagnetColliders()
+    {
+        if (m_heldMagnetColliders == null)
+            return;
+
+        m_heldMagnetColliderInitialIsTrigger = new bool[m_heldMagnetColliders.Length];
+        for (int i = 0; i < m_heldMagnetColliders.Length; i++)
+        {
+            Collider col = m_heldMagnetColliders[i];
+            if (col != null)
+                m_heldMagnetColliderInitialIsTrigger[i] = col.isTrigger;
+        }
+    }
+
+    private bool IsHeldMagnetCollider(Collider collider)
+    {
+        if (collider == null || m_heldMagnetColliders == null)
+            return false;
+
+        for (int i = 0; i < m_heldMagnetColliders.Length; i++)
+        {
+            if (m_heldMagnetColliders[i] == collider)
+                return true;
+        }
+
+        return false;
+    }
+
+    private void SetHeldMagnetCollidersForHeld(bool held)
+    {
+        if (m_heldMagnetColliders == null)
+            return;
+
+        for (int i = 0; i < m_heldMagnetColliders.Length; i++)
+        {
+            Collider col = m_heldMagnetColliders[i];
+            if (col == null)
+                continue;
+
+            col.enabled = true;
+            col.isTrigger = held
+                ? true
+                : m_heldMagnetColliderInitialIsTrigger != null
+                    && i < m_heldMagnetColliderInitialIsTrigger.Length
+                    && m_heldMagnetColliderInitialIsTrigger[i];
         }
     }
 

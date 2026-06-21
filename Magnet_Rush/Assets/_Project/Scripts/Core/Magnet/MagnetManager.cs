@@ -321,6 +321,15 @@ public class MagnetManager : Singleton<MagnetManager>
             return;
         }
 
+        // AxeEnemy など「同じ陣営のEntity相手には自分を動かさない」対象。
+        // 敵同士の磁力でAxeが中央へ寄らないようにし、相手側だけを吸引/反発させる。
+        if ((isOpposite || isSame)
+            && TryGetSameGroupEntityMovementOverride(a, b, out Magnetizable entityAnchor, out Magnetizable entityMover))
+        {
+            ApplyOneSidedEntityForce(entityAnchor, entityMover, isOpposite, forceMagnitude);
+            return;
+        }
+
         // Entity 絡みの異極ペアが holdEngageDistance 内なら PD ホルダー経路に分岐（通常引力はスキップ）
         bool entityInvolved = a.CachedEntity != null || b.CachedEntity != null;
         if (isOpposite && entityInvolved && distance <= m_settings.holdEngageDistance)
@@ -405,6 +414,11 @@ public class MagnetManager : Singleton<MagnetManager>
         if (a == null || b == null) return;
         if (a.Pole == MagneticPole.None || b.Pole == MagneticPole.None) return;
         if (a.Pole == b.Pole) return;
+        if (a.KeepMagnetizedOnAttractContact || b.KeepMagnetizedOnAttractContact)
+        {
+            ChannelLogger.Log("Magnet", $"[ContactBurst] {a.name} <-> {b.name} は接触後も磁力維持");
+            return;
+        }
 
         Vector3 delta = b.Position - a.Position;
         Vector3 dirAtoB = delta.sqrMagnitude > 0.0001f
@@ -464,6 +478,71 @@ public class MagnetManager : Singleton<MagnetManager>
         anchor = null;
         mover = null;
         return false;
+    }
+
+    private static bool TryGetSameGroupEntityMovementOverride(
+        Magnetizable a,
+        Magnetizable b,
+        out Magnetizable anchor,
+        out Magnetizable mover)
+    {
+        if (TryUseSameGroupEntityAnchor(a, b))
+        {
+            anchor = a;
+            mover = b;
+            return true;
+        }
+
+        if (TryUseSameGroupEntityAnchor(b, a))
+        {
+            anchor = b;
+            mover = a;
+            return true;
+        }
+
+        anchor = null;
+        mover = null;
+        return false;
+    }
+
+    private static bool TryUseSameGroupEntityAnchor(Magnetizable candidateAnchor, Magnetizable candidateMover)
+    {
+        if (candidateAnchor == null || candidateMover == null)
+            return false;
+
+        if (!candidateAnchor.HoldPositionAgainstSameGroupEntities)
+            return false;
+
+        if (candidateAnchor.CachedEntity == null || candidateMover.CachedEntity == null)
+            return false;
+
+        if (candidateMover.HoldPositionAgainstSameGroupEntities)
+            return false;
+
+        if (!candidateAnchor.TryGetHitGroup(out HitGroup anchorGroup)
+            || !candidateMover.TryGetHitGroup(out HitGroup moverGroup))
+            return false;
+
+        return anchorGroup == moverGroup;
+    }
+
+    private static void ApplyOneSidedEntityForce(
+        Magnetizable anchor,
+        Magnetizable mover,
+        bool isOpposite,
+        float forceMagnitude)
+    {
+        Vector3 anchorToMover = mover.Position - anchor.Position;
+        if (anchorToMover.sqrMagnitude <= 0.0001f)
+            anchorToMover = mover.transform.position - anchor.transform.position;
+
+        if (anchorToMover.sqrMagnitude <= 0.0001f)
+            anchorToMover = Vector3.up;
+
+        Vector3 force = (isOpposite ? -anchorToMover.normalized : anchorToMover.normalized) * forceMagnitude;
+        mover.ApplyForce(force, anchor.Position);
+        if (!isOpposite)
+            mover.NotifyRepulsionForce(force);
     }
 
     /// <summary>
