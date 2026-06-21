@@ -25267,6 +25267,10 @@ PrefabInstance:
       propertyPath: Target.TrackingTarget
       value: 
       objectReference: {fileID: 645861718}
+    - target: {fileID: 1907254804204467363, guid: 38fb4253b5b550c4489404a3d2455b51, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2129481569020194154, guid: 38fb4253b5b550c4489404a3d2455b51, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -25307,9 +25311,17 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2179079827012162132, guid: 38fb4253b5b550c4489404a3d2455b51, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3441050260524941288, guid: 38fb4253b5b550c4489404a3d2455b51, type: 3}
       propertyPath: m_Name
       value: StabFinisherRig
+      objectReference: {fileID: 0}
+    - target: {fileID: 3611041599466961105, guid: 38fb4253b5b550c4489404a3d2455b51, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6835404923145018549, guid: 38fb4253b5b550c4489404a3d2455b51, type: 3}
       propertyPath: m_SceneBindings.Array.data[0].value
@@ -25490,8 +25502,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6460251227959511616}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.1382374, y: -0.19529071, z: 0.027815484, w: 0.9705557}
-  m_LocalPosition: {x: -11.27, y: 2.7635288, z: -4.816584}
+  m_LocalRotation: {x: -0.0657225, y: 0.9635697, z: -0.23997907, w: -0.09810306}
+  m_LocalPosition: {x: -38.429672, y: -3.1922874, z: 28.317955}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -25743,7 +25755,7 @@ Camera:
     height: 1
   near clip plane: 0.1
   far clip plane: 5000
-  field of view: 60
+  field of view: 40
   orthographic: 0
   orthographic size: 10
   m_Depth: -1
