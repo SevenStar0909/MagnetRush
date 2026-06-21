@@ -4,7 +4,8 @@ using UnityEngine.Playables;
 /// <summary>
 /// TimeScaleTrack のミキサー。各クリップの重み（両端イーズ込み）で Time.timeScale を 1↔slow に補間する。
 /// 物理のガタつきを抑えるため Time.fixedDeltaTime も倍率に合わせて伸縮し、効いていない時は等速へ戻す。
-/// Edit モードでは Time.timeScale を一切触らない（TimeManager.asset に焼き付く事故を防ぐ＝タイムラインのプレビューでも止めない）。
+/// Edit モードでは Time.timeScale を一切触らない。Scene上のTimelineプレビュー速度は
+/// Editor/TimeScaleTimelinePreview がPlayableGraphの速度だけを変更し、プロジェクト設定を汚さず再現する。
 /// </summary>
 public class TimeScaleMixerBehaviour : PlayableBehaviour
 {

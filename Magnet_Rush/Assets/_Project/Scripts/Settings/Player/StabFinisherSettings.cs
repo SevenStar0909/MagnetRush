@@ -70,11 +70,11 @@ public class StabFinisherSettings : ScriptableObject
     public Profile stun = new Profile();
 
     [Label("演出カメラの Timeline（このボス専用・未設定なら共通デフォルト）")]
-    [Tooltip("FinisherCamera の寄り/回り込みをアニメートする Timeline。ボスごとに差し替えられる")]
+    [Tooltip("FinisherCamera の寄り/回り込み専用 Timeline。ボスごとに差し替えられる。TimeScaleTrack はここではなく finisherCutscene 側へ置く")]
     public PlayableAsset cameraTimeline;
 
     [Label("プレイヤー演出 Timeline（録画した軌跡＋体）。設定すると Timeline 駆動になる")]
-    [Tooltip("StabFinisherCutscene 等。PlayerRoot=移動軌跡 / Player=体アニメ。Camera トラックは使わない（StabFinisherCamera が担当）")]
+    [Tooltip("StabFinisherCutscene 等。PlayerRoot=移動軌跡 / Player=体アニメ / Stab Slow=演出全体のスロー。Camera トラックは使わない（StabFinisherCamera が担当）")]
     public PlayableAsset finisherCutscene;
 
     [Label("録画時のボス位置（演出をこのボス相対へずらす基準）")]

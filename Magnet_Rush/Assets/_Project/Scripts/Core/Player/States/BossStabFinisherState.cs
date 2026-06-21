@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.Timeline;
@@ -7,7 +8,8 @@ using UnityEngine.Timeline;
 /// プランナーが録画した演出 Timeline（StabFinisherSettings.finisherCutscene）を実行時に再生し、
 /// プレイヤーの移動軌跡（PlayerRoot トラック）と体アニメ（Player トラック）をそのまま流す。
 /// 録画は world 座標なので、録画時のボス位置との差分だけ演出全体をずらして実ボスへ合わせる。
-/// カメラは StabFinisherCamera（別 Timeline）に任せ、Camera トラックはバインドしない。
+/// Camera/Activation トラックも同じ Timeline から実行時カメラへバインドし、Sceneプレビューと同じ構図を再生する。
+/// Camera トラックが無い場合だけ StabFinisherCamera の別 Timeline へフォールバックする。
 /// ヒットは AnimationTrack 経由だとクリップの AnimEvent が発火しないため、時間指定で発火する。
 /// 演出中は Player.Update が UpdateEntity をスキップするため、本ステート（director）が transform を駆動する。
 /// 基底: EntityState&lt;Player&gt;
@@ -22,6 +24,7 @@ public class BossStabFinisherState : EntityState<Player>
     private Vector3 m_offset;
     private double m_duration;
     private bool m_hitDone;
+    private StabFinisherCamera m_cutsceneCamera;
 
     /// <summary>PlayerAnimator 互換用。Timeline が体を直接駆動するので固定値でよい（突き扱い・接地扱い）。</summary>
     public int AnimatorPhaseIndex => (int)PlayerStateIndex.StabAttack;
@@ -71,11 +74,31 @@ public class BossStabFinisherState : EntityState<Player>
         m_director.timeUpdateMode = DirectorUpdateMode.Manual;
         m_director.extrapolationMode = DirectorWrapMode.Hold;
 
+        var cameraActivationTracks = new List<ActivationTrack>();
+        var cameraAnimationTracks = new List<AnimationTrack>();
         foreach (var track in cutscene.GetOutputTracks())
         {
             if (track.name == "Player") m_director.SetGenericBinding(track, bodyAnim);
             else if (track.name == "PlayerRoot") m_director.SetGenericBinding(track, rootAnim);
-            // Camera トラックは未バインド（StabFinisherCamera が担当）
+            else if (track is ActivationTrack activationTrack) cameraActivationTracks.Add(activationTrack);
+            else if (track is AnimationTrack animationTrack) cameraAnimationTracks.Add(animationTrack);
+        }
+
+        // Scene上の StabFinisherDirector と同じ Camera/Activation トラックを同じ順番で実行時rigへ割り当てる。
+        int cameraCount = Mathf.Min(cameraActivationTracks.Count, cameraAnimationTracks.Count);
+        m_cutsceneCamera = StabFinisherCamera.Current;
+        if (cameraCount > 0 && m_cutsceneCamera != null && m_cutsceneCamera.PrepareCutsceneCameraTracks(cameraCount))
+        {
+            for (int i = 0; i < cameraCount; i++)
+            {
+                m_director.SetGenericBinding(cameraActivationTracks[i], m_cutsceneCamera.GetCutsceneCameraRig(i));
+                m_director.SetGenericBinding(cameraAnimationTracks[i], m_cutsceneCamera.GetCutsceneCameraAnimator(i));
+            }
+        }
+        else
+        {
+            // Cameraトラックが無い／専用Cameraが見つからない場合は既存のカメラTimelineを使う。
+            m_cutsceneCamera = null;
         }
 
         m_duration = cutscene.duration;
@@ -109,6 +132,7 @@ public class BossStabFinisherState : EntityState<Player>
         m_director.time = time;
         m_director.Evaluate();
         player.transform.position += m_offset;
+        m_cutsceneCamera?.ApplyCutsceneCameraOffset(m_offset);
     }
 
     protected override void OnExit(Player player)
@@ -119,6 +143,8 @@ public class BossStabFinisherState : EntityState<Player>
             Object.Destroy(m_director.gameObject);
             m_director = null;
         }
+        m_cutsceneCamera?.EndCutsceneCameraTracks();
+        m_cutsceneCamera = null;
         player.velocity = Vector3.zero;
         player.lateralVelocity = Vector3.zero;
         player.externalVelocity = Vector3.zero;

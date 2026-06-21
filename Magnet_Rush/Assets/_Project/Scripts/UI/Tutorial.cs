@@ -1,23 +1,60 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using UnityEngine.InputSystem;
 
 public class SimpleTutorial : MonoBehaviour
 {
+    [Header("=== 必須オブジェクト登録 ===")]
     public TextMeshProUGUI tutorialText;
-    public float textSpeed = 0.05f;
-    public float messageWaitTime = 2.0f; // 文字が出終わったあと、次の文字に進むまでの待ち時間（2秒）
+    public GameObject commentBoardObject;
 
+    [Header("=== 全体共通設定 ===")]
+    public float defaultTextSpeed = 0.05f; // 👈【追加】すべてのセリフで共通の流れる速さ（1箇所で一括管理）
+
+    [System.Serializable]
+    public class TutorialStepData
+    {
+        [TextArea(3, 10)]
+        public string message = "ここにセリフを入力";
+        public float messageWaitTime = 2.0f;  // 出終わったあとの表示（待ち）時間
+        public bool hideBoardAfterThis = false;
+    }
+
+    [Header("=== 💬 チュートリアルセリフ一覧（数を自由に増減できます） ===")]
+    [Header("===チュートリアルステージ開始後すぐ ===")]
+    public List<TutorialStepData> phase1_Opening;         // 元のセリフ 1〜4
+    [Header("=== 図１の部分まで進んだら ===")]
+    public List<TutorialStepData> phase2_Zone1Reached;    // 元のセリフ 5〜8
+    [Header("=== No.8表示後にRTボタンが押されたら ===")]
+    public List<TutorialStepData> phase3_CrateShot;       // 元のセリフ 9〜11
+    [Header("=== No.11表示後にRBボタンが押されたら ===")]
+    public List<TutorialStepData> phase4_MagnetSwitched;  // 元のセリフ 12〜13
+    [Header("=== No.13表示後にRTボタンが押されたら ===")]
+    public List<TutorialStepData> phase5_CratesConnected; // 元のセリフ 14〜17
+    [Header("=== 図2の部分まで進んだら ===")]
+    public List<TutorialStepData> phase6_WallReached;     // 元のセリフ 18〜19
+    [Header("=== No.19表示後にLBボタンが押されたら ===")]
+    public List<TutorialStepData> phase7_WallClimbed;     // 元のセリフ 20〜22
+    [Header("=== 図3の部分まで進んだら ===")]
+    public List<TutorialStepData> phase8_EnemySpotted;    // 元のセリフ 23〜27
+    [Header("=== 戦闘開始中に表示 ===")]
+    public List<TutorialStepData> phase9_BattleStart;     // 元のセリフ 28〜29
+    [Header("=== 敵を撃破したら ===")]
+    public List<TutorialStepData> phase10_EnemyDefeated;  // 元のセリフ 30
+    [Header("=== 図4の部分まで進んだら ===")]
+    public List<TutorialStepData> phase11_TurretSpotted;  // 元のセリフ 31〜32
+    [Header("=== 図5の部分まで進んだら ===")]
+    public List<TutorialStepData> phase12_Outro;          // 元のセリフ 33〜34
+
+    [Header("=== ゲーム進行用の設定 ===")]
     public Transform playerTransform;     // 👈 プレイヤーのTransform
-
-    public float approachDistance = 7.5f; // 👈 何メートルまで近づいたら合格にするか（初期値は7.5マス分）
-
     // 監視用のクレート3つをインスペクターで登録しておく
     public GameObject[] tutorialCrates;
-
     public GameObject tutorialEnemy;
 
+    [Header("=== 🎥 カメラズーム用の変数 ===")]
     // ==== 🎥 カメラズーム用の変数を追加 ====
     public Camera mainCamera;       // シーン上のメインカメラを登録する用
     public float zoomFOV = 30f;     // ズームした時の視野角（小さいほどドアップになります）
@@ -85,16 +122,13 @@ public class SimpleTutorial : MonoBehaviour
     // チュートリアルの進行管理（一本道のレール）
     private IEnumerator TutorialSequenceRoutine()
     {
-        // --- メッセージ 1〜4 を自動で連続表示 ---
+        // --- フェーズ 1: 開幕のおしゃべり ---
         currentStep = 2;
-        yield return StartCoroutine(TypeAndAutoAdvance("通信確認。\n担当オペレーターのA.R.I.Aです。\n以後よろしくね。"));        //1
-        yield return StartCoroutine(TypeAndAutoAdvance("ここは私たち警察の、訓練プログラムシミュレータ内の仮想空間。"));     //2
-        yield return StartCoroutine(TypeAndAutoAdvance("ここで実戦での動き方や、あなたのメイン装備についての理解を深めてもらうわ。"));   //3
-        yield return StartCoroutine(TypeAndAutoAdvance("早速はじめましょう。まずは左スティックと右スティックを動かして、周囲を警戒しつつ道なりに進んで。障害物はAボタンのジャンプで飛び越えるといいわ。"));    //4
+        yield return StartCoroutine(PlayPhaseRoutine(phase1_Opening));
 
         // --- 4つのメッセージが終わったら、移動・カメラ・ジャンプを解除 ---
         currentStep = 3;
-        tutorialText.text = "道なりに進む。"; // 次の目標を画面に残しておく
+        //tutorialText.text = "道なりに進む。"; // 次の目標を画面に残しておく
         SetPlayerMovementLock(false); // 移動系のロックを解除
 
         //判定待ちプレイヤーが図1のエリアに入るまで、ここでプログラムを一時停止して待つ
@@ -104,14 +138,10 @@ public class SimpleTutorial : MonoBehaviour
         }
 
         currentStep = 4;
-        // --- 図1付近に到達したら、メッセージ 5〜8 を自動表示 ---
-        yield return StartCoroutine(TypeAndAutoAdvance("OK、基本的な移動は問題ないようね。"));                                                                   //5
-        yield return StartCoroutine(TypeAndAutoAdvance("ではこれからあなたのメイン装備について説明するわ。\nこれからの任務の生命線よ、よく聞いておいてね。"));   //6
-        yield return StartCoroutine(TypeAndAutoAdvance("あなたの右腕の銃は、磁力の弾丸を打ち出して、命中したところから磁場を発生させる機能を備えているの。"));   //7
-        yield return StartCoroutine(TypeAndAutoAdvance("試しにLTボタンを長押ししながら右スティックで近くのクレートに狙いをつけて、RTボタンを押してみて。"));         //8
+        // --- フェーズ 2: 図1付近に到達 ---
+        yield return StartCoroutine(PlayPhaseRoutine(phase2_Zone1Reached));
 
         currentStep = 5;
-        tutorialText.text = "クレートに射撃";
         SetPlayerShootingLock(false); // 射撃のロックを解除
 
         // ここでクレートに磁極が付くのを待つ（currentStep を 5 にしてから待機する想定）
@@ -120,14 +150,13 @@ public class SimpleTutorial : MonoBehaviour
             yield return null;
         }
 
+        // --- フェーズ 3: クレート射撃後 ---
         currentStep = 6;
         // 一度解除した射撃はそのまま使えるようにする（教えるための再ロックはしない）
-        yield return StartCoroutine(TypeAndAutoAdvance("弾が発射されて、クレートからドームが展開されているでしょう？これは磁場が可視化されたものよ。"));                      //9
-        yield return StartCoroutine(TypeAndAutoAdvance("ところで磁力にはNとSの２つの磁極があるのは知ってるわね。同じ磁極同士なら反発し、異なる磁極同士なら引き寄せあう…"));  //10
-        yield return StartCoroutine(TypeAndAutoAdvance("実はあなたの銃はこのSとNの磁極を切り替える機能も備わっているの。RBボタンを押してみて。"));  //11
+        yield return StartCoroutine(PlayPhaseRoutine(phase3_CrateShot));
 
+        // 磁力切り替え解除してRB待ち
         currentStep = 7;
-        tutorialText.text = "RBボタンで磁力を切り替えろ";
         SetPlayerSwitchMagnetLock(false); // 磁力切り替え解除の窓口
 
         while (currentStep == 7)
@@ -135,11 +164,12 @@ public class SimpleTutorial : MonoBehaviour
             yield return null;
         }
 
+        // --- フェーズ 4: RBボタンでの磁力切り替え後 ---
         currentStep = 8;
         // 一度解除した磁極切替はそのまま使えるようにする（教えるための再ロックはしない）
-        yield return StartCoroutine(TypeAndAutoAdvance("右下のインタフェースが変わったのに気付いた？これであなたの弾で付与できる磁極を切り替えられるのよ。")); //12
-        yield return StartCoroutine(TypeAndAutoAdvance("じゃあそのままさっきとは別のクレートに向けて、銃を撃ってみましょう。")); //13
+        yield return StartCoroutine(PlayPhaseRoutine(phase4_MagnetSwitched));
 
+        // 射撃ロック解除して引き合い待ち
         currentStep = 9;
         SetPlayerShootingLock(false); // 射撃ロック
 
@@ -148,12 +178,10 @@ public class SimpleTutorial : MonoBehaviour
             yield return null;
         }
 
+        // --- フェーズ 5: クレート結合後 ---
         currentStep = 10;
         // 射撃・磁極切替は解除済みのまま（再ロックしない）
-        yield return StartCoroutine(TypeAndAutoAdvance("異なる磁極を付与したことでオブジェクト同士が引き合ったわね、成功よ。"));        //14
-        yield return StartCoroutine(TypeAndAutoAdvance("逆に反発を起こしたいときは、同じ磁極を付与すればOKよ。この機能を活用して、目の前の障害物を突破して進んでちょうだい。"));        //15
-        yield return StartCoroutine(TypeAndAutoAdvance("そうそう、右下のインタフェースはあなたの銃の残弾数も示しているの。"));        //16
-        yield return StartCoroutine(TypeAndAutoAdvance("リロードしたくなったら、Xボタンを押すのよ。ただリロードすると、今の磁力がリセットされる点には注意して。"));        //17
+        yield return StartCoroutine(PlayPhaseRoutine(phase5_CratesConnected));
 
         currentStep = 11;
         // 仕様⑩: 自分への磁力(LB)以外のすべての機能を解除（リロードもここで解禁）
@@ -165,91 +193,113 @@ public class SimpleTutorial : MonoBehaviour
             yield return null;
         }
 
+        // --- フェーズ 6: 高い壁の前に到着 ---
         currentStep = 12;
         // 解除済みの機能はそのまま（図2でも再ロックしない）
-        yield return StartCoroutine(TypeAndAutoAdvance("高い壁ね..、でも問題ないわ、あなたの銃の機能を応用すればね。"));        //18
+        yield return StartCoroutine(PlayPhaseRoutine(phase6_WallReached));
 
         // 仕様⑫: メッセージ19「LBを押してみて」の表示と同時に自分磁力(LB)を解禁し、検知も有効化する
         SetPlayerSelfMagnetLock(false);
         currentStep = 13;
-        yield return StartCoroutine(TypeAndAutoAdvance("実はあなたの銃には、あなた自身にもＮかＳの磁力を付与する機能があるの。LBを押してみて。"));        //19
 
         while (currentStep == 13)
         {
             yield return null;
         }
 
+        // --- フェーズ 7: 自分に磁力付与後 〜 壁超え待ち ---
         currentStep = 14;
-        yield return StartCoroutine(TypeAndAutoAdvance("見えるかしら？あなたの体からドームが展開されているでしょ？"));        //20
-        yield return StartCoroutine(TypeAndAutoAdvance("この間はあなた自身が、周りの磁力を与えた物体の動きへ影響を与えるようになるわ。"));        //21
-        yield return StartCoroutine(TypeAndAutoAdvance("それだけじゃなく、あなたが空中に居る間はあなた自身も磁力の影響を受けるようになるの。それを活かして、この壁を超えてみせて。"));        //22
+        yield return StartCoroutine(PlayPhaseRoutine(phase7_WallClimbed));      //22
         SetPlayerLockAll(false);
 
-        currentStep = 14;
         while (currentStep == 14)
         {
             yield return null;
         }
 
+        // --- フェーズ 8: 壁の向こう（ロボット発見） ---
         currentStep = 15;
         SetPlayerLockAll(true);
         isZooming = true;
 
-        yield return StartCoroutine(TypeAndAutoAdvance("やるわね、もうかなり磁力を使いこなしているんじゃない？"));        //23
-        yield return StartCoroutine(TypeAndAutoAdvance("でも本番はここからよ。目の前の不気味なロボットが見える？"));        //24
-        yield return StartCoroutine(TypeAndAutoAdvance("これが私たちの街の安全を脅かす敵よ。あなたの任務におけるターゲットってところね。"));        //25
-        yield return StartCoroutine(TypeAndAutoAdvance("次はこの敵を相手に、戦闘のシミュレーションをしてみましょう。"));        //26
-        yield return StartCoroutine(TypeAndAutoAdvance("この敵は、巨大な斧を振り回してあなたを攻撃してくるわ。でも動きは遅いから、回避は簡単なはずよ。"));        //27
+        yield return StartCoroutine(PlayPhaseRoutine(phase8_EnemySpotted));
 
         isZooming = false;
 
+        // --- フェーズ 9: 戦闘開始のアドバイス ---
         currentStep = 16;
         SetPlayerLockAll(false);
-        yield return StartCoroutine(TypeAndAutoAdvance("そしてあなたの銃はこの敵にも磁力を付与することができるの。"));        //28
-        yield return StartCoroutine(TypeAndAutoAdvance("さっきと同じようにこいつにオブジェクトを引き寄せて、思いっきりぶつけてやりなさい！"));        //29
+        yield return StartCoroutine(PlayPhaseRoutine(phase9_BattleStart));
 
+        // 敵の死亡待ち
         while (currentStep == 16)
         {
             yield return null;
         }
 
+        // --- フェーズ 10: 敵撃破後 ---
         currentStep = 17;
-        yield return StartCoroutine(TypeAndAutoAdvance("流石ね、シミュレーションとはいえ見事な手際だわ。この調子で進んでいきましょう。"));        //30
+        yield return StartCoroutine(PlayPhaseRoutine(phase10_EnemyDefeated));
 
+        // ゾーン4（タレット前）への移動待ち
         while (currentStep == 17)
         {
             yield return null;
         }
 
+        // --- フェーズ 11: タレット発見 ---
         currentStep = 18;
-        yield return StartCoroutine(TypeAndAutoAdvance("気をつけて、タレットが設置されているわ。"));        //31
-        yield return StartCoroutine(TypeAndAutoAdvance("あのタレットはなかなかの脅威ね。でもあなたの磁力は何にでも付けることができる。タレットだって例外じゃないわ。それで狙いを誘導できるはずよ。"));        //32
+        yield return StartCoroutine(PlayPhaseRoutine(phase11_TurretSpotted));
 
+        // ゾーン5（ゴールエリア）への移動待ち
         while (currentStep == 18)
         {
             yield return null;
         }
 
+        // --- フェーズ 12: ゴール・シミュレーション終了 ---
         currentStep = 19;
-        yield return StartCoroutine(TypeAndAutoAdvance("よくやったわ。今回のシミュレーションはここまでよ。"));        //33
-        yield return StartCoroutine(TypeAndAutoAdvance("これからあなたには実際の任務についてもらうわ。今回のシミュレーションの内容を忘れずに頑張ってね。"));        //34
+        yield return StartCoroutine(PlayPhaseRoutine(phase12_Outro));
     }
 
-    // ✍️ 1文字ずつ表示し、終わったら自動で数秒待つ機能
-    private IEnumerator TypeAndAutoAdvance(string message)
+    //【追加】1つのフェーズ内のセリフを連続再生する汎用関数
+    private IEnumerator PlayPhaseRoutine(List<TutorialStepData> phaseSteps)
+    {
+        if (phaseSteps == null || phaseSteps.Count == 0) yield break;
+
+        foreach (var step in phaseSteps)
+        {
+            // 💡 セリフが始まるので、ボードを表示する（消えていた場合自動で復活します）
+            if (commentBoardObject != null) commentBoardObject.SetActive(true);
+
+            // タイピング演出へデータを渡して再生
+            yield return StartCoroutine(TypeAndAutoAdvance(step.message, defaultTextSpeed, step.messageWaitTime));
+
+            // 💡 待ち時間が終わった後、もし「隠す」チェックがONならボードを非表示にする
+            if (step.hideBoardAfterThis)
+            {
+                if (commentBoardObject != null) commentBoardObject.SetActive(false);
+                if (tutorialText != null) tutorialText.text = "";
+            }
+        }
+    }
+
+    // ✍️ リッチテキスト対応・個別速度・時間対応版のタイピング演出
+    private IEnumerator TypeAndAutoAdvance(string message, float speed, float waitTime)
     {
         tutorialText.text = message;
+        tutorialText.ForceMeshUpdate();
+
+        int totalVisibleCharacters = tutorialText.textInfo.characterCount;
         tutorialText.maxVisibleCharacters = 0;
 
-        // タイピング演出
-        for (int i = 0; i <= message.Length; i++)
+        for (int i = 0; i <= totalVisibleCharacters; i++)
         {
             tutorialText.maxVisibleCharacters = i;
-            yield return new WaitForSeconds(textSpeed);
+            yield return new WaitForSeconds(speed);
         }
 
-        // ボタン入力は待たずに、設定した秒数（2秒）だけ自動で待機して次に進む
-        yield return new WaitForSeconds(messageWaitTime);
+        yield return new WaitForSeconds(waitTime);
     }
 
     // 外部から呼ばれる「磁力が付与されたよ」の通知
