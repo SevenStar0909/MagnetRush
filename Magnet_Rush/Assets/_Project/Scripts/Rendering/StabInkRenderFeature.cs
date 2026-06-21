@@ -94,7 +94,7 @@ public class StabInkRenderFeature : ScriptableRendererFeature
                 {
                     var cmd = CommandBufferHelpers.GetNativeCommandBuffer(ctx.cmd);
                     cmd.SetRenderTarget(data.maskRT);
-                    cmd.ClearRenderTarget(false, true, Color.white);   // 白背景の上に効果を合成する＝後ろの景色は出さない（透けさせない）
+                    cmd.ClearRenderTarget(false, true, Color.clear);   // 効果だけを黒地に描く＝効果の濃さ(アルファ＋明るさ)を取り出す
                     cmd.DrawRendererList(data.rendererList);
                     cmd.SetGlobalTexture("_StabInkMask", data.maskRT);
                 });
