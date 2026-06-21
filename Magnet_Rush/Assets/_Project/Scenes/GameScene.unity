@@ -263,7 +263,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 6b054d6dbebac8b49be1e9aed68e9497, type: 3}
-
 --- !u!1001 &549371212
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -281,7 +280,7 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3780337650876427893, guid: 3fd9001ab0f166641b30a07eef64d701, type: 3}
-      propertyPath: 'm_Materials.Array.data[0]'
+      propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: f053a034fe1983c42b290d2861ef62e1, type: 2}
     - target: {fileID: 9143151154395978059, guid: 3fd9001ab0f166641b30a07eef64d701, type: 3}
@@ -329,7 +328,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 3fd9001ab0f166641b30a07eef64d701, type: 3}
-
 --- !u!1001 &645861716
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -415,6 +413,58 @@ PrefabInstance:
     - target: {fileID: 912345670100000005, guid: 37032c1edd1675b47b516a8b3d917f76, type: 3}
       propertyPath: m_electricThicknessScale
       value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 915218775064386821, guid: 37032c1edd1675b47b516a8b3d917f76, type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+    - target: {fileID: 915218775064386821, guid: 37032c1edd1675b47b516a8b3d917f76, type: 3}
+      propertyPath: m_isOrthographic
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 915218775064386821, guid: 37032c1edd1675b47b516a8b3d917f76, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+    - target: {fileID: 915218775064386821, guid: 37032c1edd1675b47b516a8b3d917f76, type: 3}
+      propertyPath: m_ActiveFontFeatures.Array.size
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2096476081915532264, guid: 37032c1edd1675b47b516a8b3d917f76, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4416840551889594253, guid: 37032c1edd1675b47b516a8b3d917f76, type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+    - target: {fileID: 4416840551889594253, guid: 37032c1edd1675b47b516a8b3d917f76, type: 3}
+      propertyPath: m_isOrthographic
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4416840551889594253, guid: 37032c1edd1675b47b516a8b3d917f76, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+    - target: {fileID: 4416840551889594253, guid: 37032c1edd1675b47b516a8b3d917f76, type: 3}
+      propertyPath: m_ActiveFontFeatures.Array.size
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5356281928095708631, guid: 37032c1edd1675b47b516a8b3d917f76, type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+    - target: {fileID: 5356281928095708631, guid: 37032c1edd1675b47b516a8b3d917f76, type: 3}
+      propertyPath: m_isOrthographic
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5356281928095708631, guid: 37032c1edd1675b47b516a8b3d917f76, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+    - target: {fileID: 5356281928095708631, guid: 37032c1edd1675b47b516a8b3d917f76, type: 3}
+      propertyPath: m_ActiveFontFeatures.Array.size
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5836681742755971000, guid: 37032c1edd1675b47b516a8b3d917f76, type: 3}
       propertyPath: m_LocalPosition.x
@@ -912,6 +962,7 @@ GameObject:
   - component: {fileID: 2042524185}
   - component: {fileID: 2042524184}
   - component: {fileID: 2042524186}
+  - component: {fileID: 2042524187}
   m_Layer: 0
   m_Name: DebugBossStunButton
   m_TagString: Untagged
@@ -960,6 +1011,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 376629c1997804a4089693c1e3a7327f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DebugGameClearButton
+--- !u!114 &2042524187
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2042524183}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 42de2c061de4b4f43aad8176586bfdb2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DebugGameOverButton
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
