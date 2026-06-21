@@ -9,6 +9,9 @@ using UnityEngine.InputSystem;
 [DefaultExecutionOrder(-100)]
 public class GameManager : Singleton<GameManager>
 {
+    private const string Stage2MapSceneName = "Stage2_MAP";
+    private const string BossPositionObjectName = "BossPosition";
+
     private void OnEnable()
     {
         SceneManager.sceneLoaded += OnSceneLoaded;
@@ -41,6 +44,7 @@ public class GameManager : Singleton<GameManager>
         if (Keyboard.current == null) return;
         if (Keyboard.current.f5Key.wasPressedThisFrame) Restart();
         if (Keyboard.current.digit1Key.wasPressedThisFrame) TeleportToStart();
+        if (Keyboard.current.bKey.wasPressedThisFrame) TeleportToBossPosition();
     }
 
     /// <summary>シーンリロードでゲームをリスタートする。</summary>
@@ -53,15 +57,42 @@ public class GameManager : Singleton<GameManager>
     /// <summary>プレイヤーをスポーン地点に移動する。</summary>
     public void TeleportToStart()
     {
+        TeleportPlayer(GetSpawnPosition());
+    }
+
+    /// <summary>Stage2_MAP の BossPosition にプレイヤーを移動する。</summary>
+    public void TeleportToBossPosition()
+    {
+        var stage2Map = SceneManager.GetSceneByName(Stage2MapSceneName);
+        if (!stage2Map.IsValid() || !stage2Map.isLoaded) return;
+
+        Transform bossPosition = null;
+        foreach (var rootObject in stage2Map.GetRootGameObjects())
+        {
+            foreach (var child in rootObject.GetComponentsInChildren<Transform>(true))
+            {
+                if (child.name != BossPositionObjectName) continue;
+                bossPosition = child;
+                break;
+            }
+
+            if (bossPosition != null) break;
+        }
+
+        if (bossPosition == null) { ChannelLogger.LogGuardReturn("Game", "BossPosition未発見"); return; }
+        TeleportPlayer(bossPosition.position);
+    }
+
+    private void TeleportPlayer(Vector3 position)
+    {
         // Player タグは _Player(root) と Hurtbox(子) の両方に付いているので transform.root で寄せる
         var tagged = GameObject.FindWithTag(GameTags.Player);
         if (tagged == null) { ChannelLogger.LogGuardReturn("Game", "Playerタグ未発見"); return; }
         var root = tagged.transform.root;
-        var spawn = GetSpawnPosition();
-        root.position = spawn;
+        root.position = position;
         var rb = root.GetComponent<Rigidbody>();
         if (rb == null) return;
-        rb.position = spawn;
+        rb.position = position;
         if (!rb.isKinematic)
         {
             rb.linearVelocity = Vector3.zero;

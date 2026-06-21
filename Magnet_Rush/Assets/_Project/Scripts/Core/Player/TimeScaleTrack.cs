@@ -5,6 +5,8 @@ using UnityEngine.Timeline;
 /// <summary>
 /// 時間倍率（Time.timeScale）を Timeline 上のクリップで制御するトラック。
 /// スタブ演出の着弾スローを「タイムライン上のバー」として編集できるようにするためのもの。
+/// StabFinisherDirector が再生するトップレベルの StabFinisherCutscene に置く。
+/// FinisherCameraRig 内の子 Director は親 Director から自動再生されないため、そこには置かない。
 /// クリップが効いていない区間は等速（1）に戻す。実適用は TimeScaleMixerBehaviour。
 /// </summary>
 [TrackColor(0.4f, 0.6f, 1f)]

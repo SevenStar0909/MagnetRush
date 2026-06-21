@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.Timeline;
@@ -8,8 +9,9 @@ using UnityEngine.Timeline;
 /// rig を毎フレームのプレイヤー位置に置き（向きは開始時に固定したプレイヤー向き＝オービット基準）、
 /// その rig ローカル空間で Timeline を director で評価する。カメラのポーズ（位置・向き・FOV）は
 /// 子 FinisherCamera へのローカル Animation トラックにキーフレームで持つ（プランナーが Timeline で編集可能）。
-/// director は Manual モードで、走り込み〜着弾の進行に合わせて time を進めて Evaluate する
-/// （＝コード駆動の尺は保ちつつ、カメラ・スロー・Signal など全トラックを1つの Timeline で鳴らせる）。
+/// director は Manual モードで、走り込み〜着弾の進行に合わせて time を進めて Evaluate する。
+/// この Timeline はカメラ専用。演出全体の任意時刻に置く Stab Slow は、トップレベルの
+/// StabFinisherCutscene 側へ配置する（Camera Rig 内の子 Director は親 Director から再生されないため）。
 /// 突きの振り向きでオービット基準が回らないよう、rig の向きは開始時に一度だけ固定する。
 /// 着弾でカメラを止めて（仕様の「ピタッと止まる」）最後の構図を余韻として保持する。
 /// 専用 Camera は depth を Main より高くしてあるので、有効化した瞬間に上に描画＝瞬間カット。
@@ -18,6 +20,8 @@ using UnityEngine.Timeline;
 [DefaultExecutionOrder(-200)]
 public class StabFinisherCamera : MonoBehaviour
 {
+    public static StabFinisherCamera Current { get; private set; }
+
     [Header("演出カメラ参照")]
     [Tooltip("演出中だけ表示する専用 Camera（Main より depth を高くして上に描画＝瞬間カット）。idle 時は GameObject 非アクティブ")]
     [SerializeField] private Camera m_finisherCamera;
@@ -28,7 +32,7 @@ public class StabFinisherCamera : MonoBehaviour
     [Tooltip("追従の中心をプレイヤー足元からどれだけ上げるか（m）。球面オフセットはこの中心まわりに回る。プレイヤーの胴中心あたりが目安")]
     [SerializeField] private float m_playerAnchorHeight = 1f;
 
-    [Tooltip("Timeline 上で「突き着弾」に当たる時刻（秒）。ここまで(0〜)を走り込み〜着弾の尺に割り当て、それ以降(〜尺末)は実時間テール＝着弾後の引き／スローに使う。着弾スロークリップの開始と揃える")]
+    [Tooltip("カメラTimeline上で「突き着弾」に当たる時刻（秒）。ここまでを走り込み〜着弾へ割り当て、それ以降を着弾後の引きに使う。Stab Slowの時刻はトップレベルのfinisherCutscene側で指定する")]
     [SerializeField] private float m_impactTime = 1f;
 
     [Header("着弾シェイク（縦主軸・重い一撃／引きに加算）")]
@@ -43,8 +47,8 @@ public class StabFinisherCamera : MonoBehaviour
 
     private Animator m_animator;             // rig の Animator（Timeline トラックのバインド先）
     private PlayableAsset m_defaultTimeline; // boss が cameraTimeline を持たない時のフォールバック（初期アサイン）
-    private double m_timelineDuration = 1.0; // Timeline 全体の尺（秒）。カメラ区間＋着弾後テール（引き／スロー）を含む。
-    private float m_frozenRealTimer;         // 着弾後の経過（実時間）。テール（引き・スローの戻りなど）を進めるのに使う。
+    private double m_timelineDuration = 1.0; // カメラ Timeline 全体の尺（秒）。カメラ区間＋着弾後テール（引き）を含む。
+    private float m_frozenRealTimer;         // 着弾後の経過（実時間）。テールの引きを進めるのに使う。
     private Transform m_player;              // 追従対象（プレイヤー本体）
     private Quaternion m_orbitFrame;         // 開始時に固定したプレイヤーの水平向き＝オービットの基準（rig の回転）
     private float m_timer;
@@ -54,9 +58,23 @@ public class StabFinisherCamera : MonoBehaviour
     private float m_shakeTimer;              // 着弾シェイクの経過時間
     private Vector3 m_frozenRigPos;          // 着弾で固定した rig のワールド位置（カメラはここを基準に引いていく）
     private Quaternion m_frozenRigRot;       // 着弾で固定した rig のワールド回転
+    private readonly List<GameObject> m_timelineCameraRigs = new();
+    private readonly List<Animator> m_timelineCameraAnimators = new();
+    private bool m_usesCutsceneCameraTracks;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetStatics() => Current = null;
 
     void OnEnable()
     {
+        // _Camera.prefab に旧構成の FinisherCameraRig が重複していても、イベント購読と描画を二重化しない。
+        if (Current != null && Current != this)
+        {
+            enabled = false;
+            return;
+        }
+        Current = this;
+
         m_animator = GetComponent<Animator>();
         if (m_director != null)
         {
@@ -70,14 +88,21 @@ public class StabFinisherCamera : MonoBehaviour
 
     void OnDisable()
     {
+        if (Current != this) return;
+
         Player.OnStabFinisherStart -= OnStabFinisherStart;
         Player.OnStabFinisherEnd -= OnStabFinisherEnd;
         Player.OnStabFinisherImpact -= OnStabFinisherImpact;
+        EndCutsceneCameraTracks();
+        Current = null;
     }
 
     // 演出開始: 追従対象とオービット基準を固定し、Timeline を割り当てて専用 Camera を表示、先頭で初期ポーズを確定する。
     private void OnStabFinisherStart(Transform target, int variant)
     {
+        // StabFinisherCutscene に Camera/Activation トラックがある場合は、そちらを正とする。
+        if (m_usesCutsceneCameraTracks) return;
+
         if (m_finisherCamera == null)
         { ChannelLogger.LogGuardReturn("Stab", "finisher Camera が未設定 — 演出カメラなし"); return; }
         if (m_director == null)
@@ -121,23 +146,31 @@ public class StabFinisherCamera : MonoBehaviour
     // 演出終了: Timeline を止めて専用 Camera を非表示にし、Main Camera だけに戻す。
     private void OnStabFinisherEnd()
     {
+        if (m_usesCutsceneCameraTracks)
+        {
+            EndCutsceneCameraTracks();
+            return;
+        }
+
         m_active = false;
         m_player = null;
         if (m_director != null) m_director.Stop();
         if (m_finisherCamera != null) m_finisherCamera.gameObject.SetActive(false);
     }
 
-    // 突きがボスに刺さった瞬間（ヒットVFXと同フレーム）に呼ばれる。ここで着弾アップ＋スローを即開始する。
+    // 突きがボスに刺さった瞬間（ヒットVFXと同フレーム）に呼ばれる。ここで着弾構図へ切り替える。
     // 走り込み〜着弾の尺（m_pathDuration）に依存せず、実際のヒットにフレーム同期させるための入口。
     private void OnStabFinisherImpact()
     {
+        if (m_usesCutsceneCameraTracks) return;
+
         if (!m_active)
         { ChannelLogger.LogGuardReturn("Stab", "演出中でないスタブ着弾通知 — 演出カメラは無視"); return; }
         if (m_frozen) return; // 既にフリーズ済み（保険が先に走った等）。多重は無視。
         FreezeAtImpact();
     }
 
-    // 着弾でフリーズ＝rig を着弾点で固定し、以降カメラはテールの軌跡（引き）＋スローで動かす。
+    // 着弾でフリーズ＝rig を着弾点で固定し、以降カメラはテールの軌跡（引き）で動かす。
     // まず着弾の構図（impact キー＝t=1）へ確定してから固定する（途中で来ても突き放しの構図に到達させる）。
     private void FreezeAtImpact()
     {
@@ -166,7 +199,7 @@ public class StabFinisherCamera : MonoBehaviour
         }
 
         // 着弾後: rig は着弾点に固定したまま（プレイヤーの離脱は追わない）、Timeline を実時間で進め続ける。
-        // テールのカメラ軌跡・向き（Timeline のキー）とスローを鳴らし、最後に縦シェイクを引きの上へ加算する。
+        // テールのカメラ軌跡・向き（Timeline のキー）を鳴らし、最後に縦シェイクを引きの上へ加算する。
         transform.SetPositionAndRotation(m_frozenRigPos, m_frozenRigRot);
         m_frozenRealTimer += Time.unscaledDeltaTime;
         m_director.time = System.Math.Min(m_impactTime + m_frozenRealTimer, m_timelineDuration);
@@ -212,5 +245,68 @@ public class StabFinisherCamera : MonoBehaviour
                 if (track is AnimationTrack) m_director.SetGenericBinding(track, m_animator);
         }
         m_timelineDuration = m_director.duration > 0.0 ? m_director.duration : m_impactTime;
+    }
+
+    /// <summary>
+    /// トップレベルの StabFinisherCutscene に記録された複数カメラを再生するため、
+    /// 専用 Camera の描画設定を複製した一時 rig を用意する。Camera の姿勢/FOV/Active は
+    /// 呼び出し側が同 Timeline の AnimationTrack / ActivationTrack をバインドして駆動する。
+    /// </summary>
+    public bool PrepareCutsceneCameraTracks(int count)
+    {
+        EndCutsceneCameraTracks();
+        if (count <= 0 || m_finisherCamera == null) return false;
+
+        m_usesCutsceneCameraTracks = true;
+        m_active = false;
+        m_finisherCamera.gameObject.SetActive(false);
+
+        for (int i = 0; i < count; i++)
+        {
+            var rig = new GameObject($"StabFinisherTimelineCamera ({i + 1})");
+            var animator = rig.AddComponent<Animator>();
+
+            // 元の専用Cameraを複製することで、URP・Depth・CullingMask等をSceneプレビューと同条件にする。
+            var cameraObject = Instantiate(m_finisherCamera.gameObject, rig.transform, false);
+            cameraObject.name = "FinisherCamera"; // AnimationClip の path と一致させる。
+            cameraObject.SetActive(true);
+
+            // 全rigを初期非表示にし、有効なActivationTrackだけが必要な時間帯にONへする。
+            // ミュートされたActivationTrackのカメラが描画へ混ざるのを防ぐ。
+            rig.SetActive(false);
+
+            m_timelineCameraRigs.Add(rig);
+            m_timelineCameraAnimators.Add(animator);
+        }
+
+        return true;
+    }
+
+    public GameObject GetCutsceneCameraRig(int index)
+        => index >= 0 && index < m_timelineCameraRigs.Count ? m_timelineCameraRigs[index] : null;
+
+    public Animator GetCutsceneCameraAnimator(int index)
+        => index >= 0 && index < m_timelineCameraAnimators.Count ? m_timelineCameraAnimators[index] : null;
+
+    /// <summary>録画時ボス位置との差分を全カメラへ加える。Timeline評価後に毎フレーム呼ぶため累積しない。</summary>
+    public void ApplyCutsceneCameraOffset(Vector3 offset)
+    {
+        for (int i = 0; i < m_timelineCameraRigs.Count; i++)
+        {
+            var rig = m_timelineCameraRigs[i];
+            if (rig != null) rig.transform.position += offset;
+        }
+    }
+
+    public void EndCutsceneCameraTracks()
+    {
+        for (int i = 0; i < m_timelineCameraRigs.Count; i++)
+        {
+            if (m_timelineCameraRigs[i] != null) Destroy(m_timelineCameraRigs[i]);
+        }
+        m_timelineCameraRigs.Clear();
+        m_timelineCameraAnimators.Clear();
+        m_usesCutsceneCameraTracks = false;
+        if (m_finisherCamera != null) m_finisherCamera.gameObject.SetActive(false);
     }
 }
