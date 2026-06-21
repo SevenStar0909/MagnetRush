@@ -158,6 +158,31 @@ public class SceneLoader : Singleton<SceneLoader>
             yield break;
         }
 
+        // 活性化（Awake/OnEnable/NavMesh構築等の重いスパイク）を演出中は止めておく。
+        // 動画再生中にこのスパイクが乗ると描画フレームが飛んでカクつくため、見せ切ってから活性化する
+        op.allowSceneActivation = false;
+
+        // 活性化待ちのバックグラウンドロードはprogressが0.9で頭打ちになる。
+        // ここまではフレームに分散されるので比較的滑らかで、動画再生と競合しにくい
+        while (op.progress < 0.9f)
+            yield return null;
+
+        if (screen != null)
+        {
+            float minTime = m_loadingScreenSettings != null ? m_loadingScreenSettings.minDisplayTime : 0f;
+            while (Time.unscaledTime - startTime < minTime)
+                yield return null;
+
+            // 背景が動画なら最後まで再生してから活性化する（minDisplayTimeで途中で切れるのを防ぐ）
+            if (m_loadingScreenSettings != null && m_loadingScreenSettings.waitForVideoEnd)
+            {
+                while (screen.IsShowingVideo && !screen.VideoFinished)
+                    yield return null;
+            }
+        }
+
+        // 演出を見せ切ってから活性化。重いスパイクは不透明なロード画面の裏で起こす
+        op.allowSceneActivation = true;
         while (!op.isDone)
             yield return null;
 
@@ -169,12 +194,7 @@ public class SceneLoader : Singleton<SceneLoader>
         }
 
         if (screen != null)
-        {
-            float minTime = m_loadingScreenSettings != null ? m_loadingScreenSettings.minDisplayTime : 0f;
-            while (Time.unscaledTime - startTime < minTime)
-                yield return null;
             yield return screen.HideRoutine();
-        }
 
         m_isLoading = false;
     }
