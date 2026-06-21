@@ -29,6 +29,26 @@ public class TransformInterpolator : MonoBehaviour
 
     private Vector3 m_originalLocalPos;
     private Quaternion m_originalLocalRot;
+    private bool m_isSuspended;
+
+    /// <summary>
+    /// Timeline などが描画フレームごとに対象を直接駆動する間、FixedUpdate 用の補間を停止する。
+    /// 停止時は補間で付いたローカル差分を即座に戻し、再開時は現在姿勢から補間履歴を作り直す。
+    /// </summary>
+    public void SetSuspended(bool suspended)
+    {
+        if (m_isSuspended == suspended) return;
+
+        m_isSuspended = suspended;
+        transform.localPosition = m_originalLocalPos;
+        transform.localRotation = m_originalLocalRot;
+
+        if (!suspended && m_target != null)
+        {
+            m_prevPos = m_currPos = m_target.position;
+            m_prevRot = m_currRot = m_target.rotation;
+        }
+    }
 
     void Awake()
     {
@@ -57,6 +77,7 @@ public class TransformInterpolator : MonoBehaviour
     void FixedUpdate()
     {
         if (m_target == null) { ChannelLogger.LogGuardReturn("Player", "TransformInterpolator.FixedUpdate: target なし"); return; }
+        if (m_isSuspended) return;
         m_prevPos = m_currPos;
         m_prevRot = m_currRot;
         m_currPos = m_target.position;
@@ -66,6 +87,7 @@ public class TransformInterpolator : MonoBehaviour
     void LateUpdate()
     {
         if (m_target == null) { ChannelLogger.LogGuardReturn("Player", "TransformInterpolator.LateUpdate: target なし"); return; }
+        if (m_isSuspended) return;
 
         if (Time.timeScale >= k_SlowMotionThreshold)
         {
