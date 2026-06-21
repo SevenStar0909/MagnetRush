@@ -85,6 +85,10 @@ public class StabFinisherSettings : ScriptableObject
     [Tooltip("演出開始から何秒でボスにダメージ＋VFX を出すか。突きが刺さる瞬間に合わせる")]
     public float cutsceneHitTime = 2.5f;
 
+    [Label("着弾エフェクト（突きが刺さった瞬間に出す）")]
+    [Tooltip("突きがボスに刺さった瞬間に出すエフェクトのプレハブ。StabFinisherCutscene の Stab Explosion トラックが再生を進めるので、スロー中でも止まらず最後まで再生される")]
+    public GameObject finisherImpactEffect;
+
     /// <summary>崩れ種別インデックス（0=Stagger / 1=Stun）に対応するプロファイルを返す。範囲外は stagger。</summary>
     public Profile GetProfile(int choreographyIndex)
     {

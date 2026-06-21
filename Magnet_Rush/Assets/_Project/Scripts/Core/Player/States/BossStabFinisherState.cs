@@ -26,6 +26,11 @@ public class BossStabFinisherState : EntityState<Player>
     private bool m_hitDone;
     private StabFinisherCamera m_cutsceneCamera;
     private TransformInterpolator[] m_transformInterpolators;
+    private GameObject m_impactEffect;
+
+    // StabFinisherCutscene の Stab Explosion（Control）トラックが着弾エフェクトを解決するための公開参照名。
+    // 実行時にここへ生成インスタンスをバインドすると、Manual評価でも Particle が director 時刻で進む（スロー中も止まらない）。
+    private const string k_ImpactEffectExposedName = "StabExplosionSource";
 
     /// <summary>PlayerAnimator 互換用。Timeline が体を直接駆動するので固定値でよい（突き扱い・接地扱い）。</summary>
     public int AnimatorPhaseIndex => (int)PlayerStateIndex.StabAttack;
@@ -107,6 +112,16 @@ public class BossStabFinisherState : EntityState<Player>
             m_cutsceneCamera = null;
         }
 
+        // 着弾エフェクトを刺し位置に生成して Control トラックへバインドする。
+        // 生成時は非アクティブ（Control クリップが着弾時刻に有効化＋Particle を駆動し、終了で非アクティブへ戻す）。
+        if (m_settings.finisherImpactEffect != null)
+        {
+            Vector3 impactPos = m_receiver.StabAnchor != null ? m_receiver.StabAnchor.position : bossT.position;
+            m_impactEffect = Object.Instantiate(m_settings.finisherImpactEffect, impactPos, Quaternion.identity);
+            m_impactEffect.SetActive(false);
+            m_director.SetReferenceValue(k_ImpactEffectExposedName, m_impactEffect);
+        }
+
         m_duration = cutscene.duration;
         EvaluateAt(player, 0.0);
 
@@ -150,6 +165,11 @@ public class BossStabFinisherState : EntityState<Player>
             m_director.Stop();
             Object.Destroy(m_director.gameObject);
             m_director = null;
+        }
+        if (m_impactEffect != null)
+        {
+            Object.Destroy(m_impactEffect);
+            m_impactEffect = null;
         }
         m_cutsceneCamera?.EndCutsceneCameraTracks();
         m_cutsceneCamera = null;
