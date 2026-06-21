@@ -2553,7 +2553,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1946993726595837059, guid: 4a85f46767a601d4d9c88e8815f057af, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2154599408826941144, guid: 4a85f46767a601d4d9c88e8815f057af, type: 3}
       propertyPath: m_LocalPosition.x
@@ -10625,7 +10625,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2387208754698167448, guid: 37032c1edd1675b47b516a8b3d917f76, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -28.999817
+      value: -28.999756
       objectReference: {fileID: 0}
     - target: {fileID: 5836681742755971000, guid: 37032c1edd1675b47b516a8b3d917f76, type: 3}
       propertyPath: m_LocalPosition.x
@@ -10686,7 +10686,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1946993726595837059, guid: 4a85f46767a601d4d9c88e8815f057af, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2154599408826941144, guid: 4a85f46767a601d4d9c88e8815f057af, type: 3}
       propertyPath: m_LocalPosition.x
@@ -24064,6 +24064,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: FinisherCameraRig (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 6847786062411376222, guid: 4a85f46767a601d4d9c88e8815f057af, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -25814,7 +25818,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1946993726595837059, guid: 4a85f46767a601d4d9c88e8815f057af, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2154599408826941144, guid: 4a85f46767a601d4d9c88e8815f057af, type: 3}
       propertyPath: m_LocalPosition.x
@@ -26168,10 +26172,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineThirdPersonFollow
   Damping: {x: 0.05, y: 0.2, z: 0.1}
-  ShoulderOffset: {x: 0, y: 0.3, z: 0}
+  ShoulderOffset: {x: 1.3, y: 0.3, z: 0}
   VerticalArmLength: 0
   CameraSide: 1
-  CameraDistance: 2
+  CameraDistance: 5
   AvoidObstacles:
     Enabled: 0
     CollisionFilter:
@@ -26240,8 +26244,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6460251227959511616}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.020561647, y: 0.9972998, z: -0.0705014, w: 0.0000191347}
-  m_LocalPosition: {x: -38.142715, y: -4.241643, z: 28.456268}
+  m_LocalRotation: {x: 0.1382374, y: -0.19529071, z: 0.027815484, w: 0.9705557}
+  m_LocalPosition: {x: -11.27, y: 2.7635288, z: -4.816584}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -26412,6 +26416,10 @@ PrefabInstance:
     - target: {fileID: 6847786062411376222, guid: 4a85f46767a601d4d9c88e8815f057af, type: 3}
       propertyPath: m_Name
       value: FinisherCameraRig
+      objectReference: {fileID: 0}
+    - target: {fileID: 6847786062411376222, guid: 4a85f46767a601d4d9c88e8815f057af, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -26662,7 +26670,7 @@ Camera:
     height: 1
   near clip plane: 0.1
   far clip plane: 5000
-  field of view: 40
+  field of view: 60
   orthographic: 0
   orthographic size: 10
   m_Depth: -1
