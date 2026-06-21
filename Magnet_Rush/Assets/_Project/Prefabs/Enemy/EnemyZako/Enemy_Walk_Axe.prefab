@@ -372,6 +372,7 @@ GameObject:
   - component: {fileID: 7025300836606099460}
   - component: {fileID: 2756956252481435442}
   - component: {fileID: 6635251846347781248}
+  - component: {fileID: 5588939366844914158}
   - component: {fileID: 272791022539229585}
   - component: {fileID: 2958568544906377151}
   - component: {fileID: 5793265015369139466}
@@ -455,6 +456,21 @@ MonoBehaviour:
   m_weaponPickupRange: 1.5
   m_allyAvoidanceRadius: 1.8
   m_allyAvoidanceWeight: 1.5
+--- !u!114 &5588939366844914158
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7655374763120775714}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 10046ab53d00e7d45af9c796406ab60c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Enemy::EnemyWalkAxeAnimator
+  m_animator: {fileID: 6896187385852445184}
+  m_isMovingParameterName: IsMoving
+  m_attackTriggerName: Attack
 --- !u!54 &272791022539229585
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -515,7 +531,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 97f69b1c489138947abe1d85876cc0f9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Core::MagneticMover
-  m_settings: {fileID: 11400000, guid: f3fde26729757804fa44d2860636c20d, type: 2}
+  m_settings: {fileID: 11400000, guid: 15980adcafb7d72438612773478dc744, type: 2}
   m_keepStuckUntilMagnetDeactivated: 1
 --- !u!114 &4325063793620339370
 MonoBehaviour:
@@ -596,7 +612,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3d55e6af00cce1547be99cde40281ef6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Enemy::EnemyWeaponHolder
-  m_weapon: {fileID: 485960858119341387}
+  m_weapon: {fileID: 3103304519514953781}
   m_modelWeapon: {fileID: 356359754326410981}
   m_reEquipDuration: 0.25
 --- !u!1 &8029942397825399512
@@ -841,7 +857,7 @@ PrefabInstance:
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 6695899210075822016, guid: 82b1867bb950d8d45bfffac8dc829d92, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 7972966757293523795}
+      addedObject: {fileID: 6073998798378032605}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 82b1867bb950d8d45bfffac8dc829d92, type: 3}
 --- !u!1 &356359754326410981 stripped
@@ -859,7 +875,12 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 6695899210075822016, guid: 82b1867bb950d8d45bfffac8dc829d92, type: 3}
   m_PrefabInstance: {fileID: 1071496390225657745}
   m_PrefabAsset: {fileID: 0}
---- !u!1001 &8581496956147689308
+--- !u!95 &6896187385852445184 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: 82b1867bb950d8d45bfffac8dc829d92, type: 3}
+  m_PrefabInstance: {fileID: 1071496390225657745}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1001 &8548192264817232742
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -867,75 +888,59 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 5922836664494860369}
     m_Modifications:
-    - target: {fileID: 1367372084905098933, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
-      propertyPath: m_Name
-      value: Weapon_Axe
-      objectReference: {fileID: 0}
-    - target: {fileID: 1851596299686503439, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+    - target: {fileID: 2515940074207876795, guid: f409eb99f3f5c70408c3156f0a9c9e6e, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0.020311326
       objectReference: {fileID: 0}
-    - target: {fileID: 1851596299686503439, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+    - target: {fileID: 2515940074207876795, guid: f409eb99f3f5c70408c3156f0a9c9e6e, type: 3}
       propertyPath: m_LocalPosition.y
       value: -0.10670251
       objectReference: {fileID: 0}
-    - target: {fileID: 1851596299686503439, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+    - target: {fileID: 2515940074207876795, guid: f409eb99f3f5c70408c3156f0a9c9e6e, type: 3}
       propertyPath: m_LocalPosition.z
       value: -0.051007282
       objectReference: {fileID: 0}
-    - target: {fileID: 1851596299686503439, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+    - target: {fileID: 2515940074207876795, guid: f409eb99f3f5c70408c3156f0a9c9e6e, type: 3}
       propertyPath: m_LocalRotation.w
       value: 0.5525542
       objectReference: {fileID: 0}
-    - target: {fileID: 1851596299686503439, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+    - target: {fileID: 2515940074207876795, guid: f409eb99f3f5c70408c3156f0a9c9e6e, type: 3}
       propertyPath: m_LocalRotation.x
       value: 0.5573175
       objectReference: {fileID: 0}
-    - target: {fileID: 1851596299686503439, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+    - target: {fileID: 2515940074207876795, guid: f409eb99f3f5c70408c3156f0a9c9e6e, type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0.44006538
+      value: -0.44006523
       objectReference: {fileID: 0}
-    - target: {fileID: 1851596299686503439, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+    - target: {fileID: 2515940074207876795, guid: f409eb99f3f5c70408c3156f0a9c9e6e, type: 3}
       propertyPath: m_LocalRotation.z
-      value: -0.43637556
+      value: -0.43637568
       objectReference: {fileID: 0}
-    - target: {fileID: 1851596299686503439, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
+    - target: {fileID: 2515940074207876795, guid: f409eb99f3f5c70408c3156f0a9c9e6e, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
-      value: 13.405
-      objectReference: {fileID: 0}
-    - target: {fileID: 1851596299686503439, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: -90.502
-      objectReference: {fileID: 0}
-    - target: {fileID: 1851596299686503439, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: -90.121
-      objectReference: {fileID: 0}
-    - target: {fileID: 3203641024391090725, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
-      propertyPath: m_IsKinematic
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8190324584306041367, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
-      propertyPath: m_ownedLocalEulerOffset.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 8255812454995536023, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: -0.566
+    - target: {fileID: 2515940074207876795, guid: f409eb99f3f5c70408c3156f0a9c9e6e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 8255812454995536023, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: -0
+    - target: {fileID: 2515940074207876795, guid: f409eb99f3f5c70408c3156f0a9c9e6e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2999883912666467329, guid: f409eb99f3f5c70408c3156f0a9c9e6e, type: 3}
+      propertyPath: m_Name
+      value: Weapon_Axe2
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
---- !u!114 &485960858119341387 stripped
+  m_SourcePrefab: {fileID: 100100000, guid: f409eb99f3f5c70408c3156f0a9c9e6e, type: 3}
+--- !u!114 &3103304519514953781 stripped
 MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 8190324584306041367, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
-  m_PrefabInstance: {fileID: 8581496956147689308}
+  m_CorrespondingSourceObject: {fileID: 6751002045829993299, guid: f409eb99f3f5c70408c3156f0a9c9e6e, type: 3}
+  m_PrefabInstance: {fileID: 8548192264817232742}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
@@ -943,8 +948,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 19824960e0a78724c8d2ac5a939c7029, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WeaponStateController
---- !u!4 &7972966757293523795 stripped
+--- !u!4 &6073998798378032605 stripped
 Transform:
-  m_CorrespondingSourceObject: {fileID: 1851596299686503439, guid: 4d79e6bd4c85fbe40953d019109c634d, type: 3}
-  m_PrefabInstance: {fileID: 8581496956147689308}
+  m_CorrespondingSourceObject: {fileID: 2515940074207876795, guid: f409eb99f3f5c70408c3156f0a9c9e6e, type: 3}
+  m_PrefabInstance: {fileID: 8548192264817232742}
   m_PrefabAsset: {fileID: 0}
