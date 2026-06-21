@@ -52,8 +52,12 @@ public class GameOverPresentation : MonoBehaviour
     [SerializeField] private Image m_fadeImage;
     [Tooltip("黒フェードの所要時間(秒)")]
     [SerializeField] private float m_fadeDuration = 0.5f;
-    [Tooltip("黒フェードの最終濃さ(1で真っ黒)")]
+    [Tooltip("黒フェードの最終濃さ(1で真っ黒)。シート再生中はこの濃さ(現状0.4)で背後のゲーム画面をうっすら見せる")]
     [SerializeField] private float m_fadeTargetAlpha = 1f;
+    [Tooltip("シートを再生し終えたあと、さらに真っ黒まで深める二段目フェードの所要時間(秒)")]
+    [SerializeField] private float m_finalFadeDuration = 0.5f;
+    [Tooltip("二段目フェードの最終濃さ(1で真っ黒)。RETRY/SELECTメニューはこの黒背景の上に出る")]
+    [SerializeField] private float m_finalFadeTargetAlpha = 1f;
 
     [Header("死亡ビート")]
     [Tooltip("ゲームオーバー画面を出す前に、スローで死亡アニメを見せる時間(秒・実時間)。0で即ゲームオーバー")]
@@ -116,7 +120,10 @@ public class GameOverPresentation : MonoBehaviour
         m_health = null;
     }
 
-    private void HandleDie()
+    private void HandleDie() => PlayGameOver();
+
+    /// <summary>プレイヤーの死亡を待たずにゲームオーバー演出を再生する。デバッグボタンからも呼ぶ。</summary>
+    public void PlayGameOver()
     {
         if (m_playing) { ChannelLogger.LogGuardReturn("Game", "ゲームオーバー演出が既に再生中"); return; }
         if (m_sequenceImage == null) { ChannelLogger.LogGuardReturn("Game", "m_sequenceImage 未設定"); return; }
@@ -170,6 +177,9 @@ public class GameOverPresentation : MonoBehaviour
             }
             if (m_staticHold > 0f) yield return WaitUnscaled(m_staticHold);
         }
+
+        // シートを再生し終えたら、背景をさらに真っ黒まで深めてからメニューを出す
+        yield return FadeToBlackRoutine();
 
         ShowMenu();
     }
@@ -275,6 +285,23 @@ public class GameOverPresentation : MonoBehaviour
             yield return null;
         }
         SetFadeAlpha(m_fadeTargetAlpha);
+    }
+
+    // シート再生後、現在の濃さ(m_fadeTargetAlpha)からさらに真っ黒(m_finalFadeTargetAlpha)まで深める二段目フェード。
+    private IEnumerator FadeToBlackRoutine()
+    {
+        if (m_fadeImage == null) yield break;
+        float start = m_fadeImage.color.a;
+        if (m_finalFadeDuration <= 0f) { SetFadeAlpha(m_finalFadeTargetAlpha); yield break; }
+        float t = 0f;
+        while (t < m_finalFadeDuration)
+        {
+            t += Time.unscaledDeltaTime;
+            float k = Mathf.Clamp01(t / m_finalFadeDuration);
+            SetFadeAlpha(Mathf.Lerp(start, m_finalFadeTargetAlpha, k));
+            yield return null;
+        }
+        SetFadeAlpha(m_finalFadeTargetAlpha);
     }
 
     private void SetFadeAlpha(float a)
