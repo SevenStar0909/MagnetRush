@@ -5,6 +5,7 @@ Shader "Hidden/MagnetRush/StabInk"
         _InkLow ("白に振る濃さの下限", Range(0, 1)) = 0.05
         _InkHigh ("黒に振る濃さの上限", Range(0, 1)) = 0.4
         _Strength ("演出の強さ", Range(0, 1)) = 1
+        _InvertStrength ("画面反転の強さ", Range(0, 1)) = 0
     }
 
     SubShader
@@ -32,6 +33,7 @@ Shader "Hidden/MagnetRush/StabInk"
                 float _InkLow;
                 float _InkHigh;
                 float _Strength;
+                float _InvertStrength;
             CBUFFER_END
 
             half4 frag(Varyings input) : SV_Target
@@ -45,6 +47,7 @@ Shader "Hidden/MagnetRush/StabInk"
                 half3 stylized = lerp(half3(1, 1, 1), half3(0, 0, 0), ink);
                 // _Strength で通常画面→演出画面へ補間（Timeline クリップ両端でフェード可能）
                 half3 col = lerp(src.rgb, stylized, saturate(_Strength));
+                col = lerp(col, 1.0h - col, saturate(_InvertStrength));
                 return half4(col, src.a);
             }
             ENDHLSL

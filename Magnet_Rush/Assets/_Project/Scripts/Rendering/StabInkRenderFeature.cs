@@ -21,6 +21,7 @@ public class StabInkRenderFeature : ScriptableRendererFeature
     public override void Create()
     {
         StabInkEffect.Strength = 0f;   // ドメインリロード跨ぎで焼き付かないよう、起動時は必ず通常画面
+        ScreenInvertEffect.Strength = 0f;
         m_maskPass = new MaskPass(StabInkEffect.RenderingLayerBit)
         {
             renderPassEvent = RenderPassEvent.AfterRenderingTransparents
@@ -34,7 +35,7 @@ public class StabInkRenderFeature : ScriptableRendererFeature
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
     {
         if (m_compositeMaterial == null) { ChannelLogger.LogGuardReturn("Game", "StabInk合成マテリアル未設定"); return; }
-        if (StabInkEffect.Strength <= 0f) return;   // 演出外はパスを積まない（ゼロコスト）
+        if (StabInkEffect.Strength <= 0f && ScreenInvertEffect.Strength <= 0f) return; // 演出外はゼロコスト
         if (renderingData.cameraData.cameraType == CameraType.SceneView) return;
         if (renderingData.cameraData.cameraType == CameraType.Preview) return;
         renderer.EnqueuePass(m_maskPass);
@@ -127,6 +128,7 @@ public class StabInkRenderFeature : ScriptableRendererFeature
         {
             var resourceData = frameData.Get<UniversalResourceData>();
             m_material.SetFloat("_Strength", Mathf.Clamp01(StabInkEffect.Strength));
+            m_material.SetFloat("_InvertStrength", Mathf.Clamp01(ScreenInvertEffect.Strength));
 
             var source = resourceData.activeColorTexture;
             var desc = renderGraph.GetTextureDesc(source);
