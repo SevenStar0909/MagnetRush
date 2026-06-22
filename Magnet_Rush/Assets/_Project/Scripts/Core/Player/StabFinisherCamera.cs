@@ -67,6 +67,10 @@ public class StabFinisherCamera : MonoBehaviour
 
     void OnEnable()
     {
+        // idle 中は専用 Camera を描画させない。シーンに有効状態で置かれていても起動時に必ず非アクティブへ落とし、
+        // 通常の PlayerCamera を映す（演出開始/着弾で SetActive(true)、終了で再び false）。重複 rig でも各自のカメラを必ず落とす。
+        if (m_finisherCamera != null) m_finisherCamera.gameObject.SetActive(false);
+
         // _Camera.prefab に旧構成の FinisherCameraRig が重複していても、イベント購読と描画を二重化しない。
         if (Current != null && Current != this)
         {
