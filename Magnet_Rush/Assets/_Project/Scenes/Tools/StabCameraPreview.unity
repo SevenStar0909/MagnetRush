@@ -10352,7 +10352,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2387208754698167448, guid: 37032c1edd1675b47b516a8b3d917f76, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -28.999817
+      value: -28.999878
       objectReference: {fileID: 0}
     - target: {fileID: 5836681742755971000, guid: 37032c1edd1675b47b516a8b3d917f76, type: 3}
       propertyPath: m_LocalPosition.x
@@ -24068,6 +24068,11 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1995372456 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3599819121318360687, guid: 38fb4253b5b550c4489404a3d2455b51, type: 3}
+  m_PrefabInstance: {fileID: 1864654357956608972}
+  m_PrefabAsset: {fileID: 0}
 --- !u!43 &2001380233
 Mesh:
   m_ObjectHideFlags: 0
@@ -25324,6 +25329,14 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6835404923145018549, guid: 38fb4253b5b550c4489404a3d2455b51, type: 3}
+      propertyPath: m_SceneBindings.Array.size
+      value: 12
+      objectReference: {fileID: 0}
+    - target: {fileID: 6835404923145018549, guid: 38fb4253b5b550c4489404a3d2455b51, type: 3}
+      propertyPath: m_SceneBindings.Array.data[12].key
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 6835404923145018549, guid: 38fb4253b5b550c4489404a3d2455b51, type: 3}
       propertyPath: m_SceneBindings.Array.data[0].value
       value: 
       objectReference: {fileID: 645861717}
@@ -25331,6 +25344,22 @@ PrefabInstance:
       propertyPath: m_SceneBindings.Array.data[2].value
       value: 
       objectReference: {fileID: 1066483582}
+    - target: {fileID: 6835404923145018549, guid: 38fb4253b5b550c4489404a3d2455b51, type: 3}
+      propertyPath: m_SceneBindings.Array.data[12].value
+      value: 
+      objectReference: {fileID: 1864654357956608973}
+    - target: {fileID: 6835404923145018549, guid: 38fb4253b5b550c4489404a3d2455b51, type: 3}
+      propertyPath: m_ExposedReferences.m_References.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 6835404923145018549, guid: 38fb4253b5b550c4489404a3d2455b51, type: 3}
+      propertyPath: m_ExposedReferences.m_References.Array.data[1].first
+      value: bbc93807a0ed7ca4792ab252876e7142
+      objectReference: {fileID: 0}
+    - target: {fileID: 6835404923145018549, guid: 38fb4253b5b550c4489404a3d2455b51, type: 3}
+      propertyPath: m_ExposedReferences.m_References.Array.data[1].second
+      value: 
+      objectReference: {fileID: 1995372456}
     - target: {fileID: 7117160856389860602, guid: 38fb4253b5b550c4489404a3d2455b51, type: 3}
       propertyPath: Target.TrackingTarget
       value: 
@@ -25343,11 +25372,20 @@ PrefabInstance:
       propertyPath: Target.TrackingTarget
       value: 
       objectReference: {fileID: 645861718}
+    - target: {fileID: 9000000000000000003, guid: 38fb4253b5b550c4489404a3d2455b51, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 38fb4253b5b550c4489404a3d2455b51, type: 3}
+--- !u!1 &1864654357956608973 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 9000000000000000003, guid: 38fb4253b5b550c4489404a3d2455b51, type: 3}
+  m_PrefabInstance: {fileID: 1864654357956608972}
+  m_PrefabAsset: {fileID: 0}
 --- !u!114 &3131731838464624272
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -25502,8 +25540,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6460251227959511616}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.27319834, y: -0.4809517, z: 0.48777464, w: -0.6753696}
-  m_LocalPosition: {x: -73.81592, y: -3.1451697, z: 65.029434}
+  m_LocalRotation: {x: 0.1382374, y: -0.19529071, z: 0.027815484, w: 0.9705557}
+  m_LocalPosition: {x: -11.27, y: 2.7635288, z: -4.816584}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -25755,7 +25793,7 @@ Camera:
     height: 1
   near clip plane: 0.1
   far clip plane: 5000
-  field of view: 40
+  field of view: 60
   orthographic: 0
   orthographic size: 10
   m_Depth: -1
