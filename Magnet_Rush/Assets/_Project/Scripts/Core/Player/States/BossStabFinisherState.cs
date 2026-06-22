@@ -21,7 +21,11 @@ public class BossStabFinisherState : EntityState<Player>
     private EnemyBossAI m_bossAi;
 
     private PlayableDirector m_director;
-    private Vector3 m_offset;
+    private Vector3 m_anchorA0;              // 録画時アンカー位置（cutsceneAuthoringBossPosition）
+    private Vector3 m_anchorA1;              // 実行時アンカー位置（実ボスの StabAnchor）
+    private Quaternion m_anchorYawDelta;     // 録画→実行のヨー差分（水平回転のみ）
+    private Quaternion m_playerFinisherRot;  // 演出中のプレイヤールート向き（ボスを向く・一定）
+    private bool m_playerRotInitialized;
     private double m_duration;
     private bool m_hitDone;
     private StabFinisherCamera m_cutsceneCamera;
@@ -72,9 +76,14 @@ public class BossStabFinisherState : EntityState<Player>
             return;
         }
 
-        // 録画時ボス位置との差分だけ演出全体をずらして実ボスへ合わせる
+        // 録画時アンカー(StabAnchor)→実ボスの StabAnchor へ、位置＋ヨーで演出全体を剛体変換で再アンカーする。
+        // StabAnchor 未設定ならボス原点へフォールバック（現行と同一）。
         Transform bossT = ((MonoBehaviour)m_receiver).transform;
-        m_offset = bossT.position - m_settings.cutsceneAuthoringBossPosition;
+        Transform anchorT = m_receiver.StabAnchor != null ? m_receiver.StabAnchor : bossT;
+        m_anchorA0 = m_settings.cutsceneAuthoringBossPosition;
+        m_anchorA1 = anchorT.position;
+        m_anchorYawDelta = Quaternion.Euler(0f, anchorT.eulerAngles.y - m_settings.cutsceneAuthoringBossYaw, 0f);
+        m_playerRotInitialized = false;
 
         // バインド対象の Animator: body=モデル側 / root=_Player 自身（軌跡用・無ければ追加）
         Animator bodyAnim = null;
@@ -141,6 +150,15 @@ public class BossStabFinisherState : EntityState<Player>
         m_duration = cutscene.duration;
         EvaluateAt(player, 0.0);
 
+        // 演出中のプレイヤーの向きを「ボス(StabAnchor)を向く水平向き」で確定する。録画は回転カーブを持たず
+        // root 向きは一定なので、ここで1回決めて毎フレーム適用する（ピボットでパスを回した向きと整合する）。
+        Vector3 toAnchor = m_anchorA1 - player.transform.position; toAnchor.y = 0f;
+        m_playerFinisherRot = toAnchor.sqrMagnitude > 0.0001f
+            ? Quaternion.LookRotation(toAnchor.normalized, Vector3.up)
+            : player.transform.rotation;
+        m_playerRotInitialized = true;
+        player.transform.rotation = m_playerFinisherRot;
+
         m_bossAi?.BeginStabFinisher();
         player.FireStabFinisherStart(m_receiver.StabAnchor, m_receiver.StabChoreographyIndex);
     }
@@ -164,14 +182,17 @@ public class BossStabFinisherState : EntityState<Player>
         if (t >= m_duration) ReturnToNormal(player);
     }
 
-    // Timeline を指定時間で評価し、録画 world 座標にボス相対オフセットを足して実ボスへ合わせる。
-    // director.Evaluate は _Player を録画の絶対座標に置くため、毎フレーム評価後に差分を足す（累積はしない）。
+    // Timeline を指定時間で評価し、録画 world 座標を「録画時アンカー→実ボスの StabAnchor」へ
+    // 位置＋ヨーの剛体変換で写す（相対関係は保たれるので演出はそのまま、ボスの向きにも追従する）。
+    // 位置は毎フレーム Evaluate が録画値へ戻すのでピボット式を都度適用（累積しない）。
+    // プレイヤールートは回転カーブを持たず Evaluate で戻らないため、向きは開始時に確定した一定値を適用する。
     private void EvaluateAt(Player player, double time)
     {
         m_director.time = time;
         m_director.Evaluate();
-        player.transform.position += m_offset;
-        m_cutsceneCamera?.ApplyCutsceneCameraOffset(m_offset);
+        player.transform.position = m_anchorA1 + m_anchorYawDelta * (player.transform.position - m_anchorA0);
+        if (m_playerRotInitialized) player.transform.rotation = m_playerFinisherRot;
+        m_cutsceneCamera?.ApplyCutsceneCameraAnchor(m_anchorA0, m_anchorA1, m_anchorYawDelta);
     }
 
     protected override void OnExit(Player player)

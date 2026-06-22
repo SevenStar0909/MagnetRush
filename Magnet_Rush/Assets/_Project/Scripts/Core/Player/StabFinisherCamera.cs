@@ -292,13 +292,18 @@ public class StabFinisherCamera : MonoBehaviour
     public Animator GetCutsceneCameraAnimator(int index)
         => index >= 0 && index < m_timelineCameraAnimators.Count ? m_timelineCameraAnimators[index] : null;
 
-    /// <summary>録画時ボス位置との差分を全カメラへ加える。Timeline評価後に毎フレーム呼ぶため累積しない。</summary>
-    public void ApplyCutsceneCameraOffset(Vector3 offset)
+    /// <summary>
+    /// 録画時アンカー a0 → 実行時アンカー a1 ＋ ヨー差分 dR で全カメラ rig をボス相対へ剛体変換で再アンカーする。
+    /// rig ルートは位置・回転とも Timeline でキーされ毎フレーム録画値へ戻るので、評価後に都度適用してよい（累積しない）。
+    /// </summary>
+    public void ApplyCutsceneCameraAnchor(Vector3 a0, Vector3 a1, Quaternion dR)
     {
         for (int i = 0; i < m_timelineCameraRigs.Count; i++)
         {
             var rig = m_timelineCameraRigs[i];
-            if (rig != null) rig.transform.position += offset;
+            if (rig == null) continue;
+            rig.transform.position = a1 + dR * (rig.transform.position - a0);
+            rig.transform.rotation = dR * rig.transform.rotation;
         }
     }
 

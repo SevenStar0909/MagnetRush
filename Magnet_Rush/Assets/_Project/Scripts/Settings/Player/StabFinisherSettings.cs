@@ -77,9 +77,13 @@ public class StabFinisherSettings : ScriptableObject
     [Tooltip("StabFinisherCutscene 等。PlayerRoot=移動軌跡 / Player=体アニメ / Stab Slow=演出全体のスロー。Camera トラックは使わない（StabFinisherCamera が担当）")]
     public PlayableAsset finisherCutscene;
 
-    [Label("録画時のボス位置（演出をこのボス相対へずらす基準）")]
-    [Tooltip("Timeline を録画した時のボスのワールド座標。実行時はこの差分だけ演出全体をずらして実ボスへ合わせる")]
+    [Label("録画時の刺し点位置（演出をこのボス相対へ合わせる基準）")]
+    [Tooltip("Timeline を録画した時の刺し点(StabAnchor・未設定ならボス原点)のワールド座標。実行時はこの基準から実ボスへ位置＋向きで合わせる。下のボタンで自動入力")]
     public Vector3 cutsceneAuthoringBossPosition;
+
+    [Label("録画時の刺し点の向き（度・水平ヨー）")]
+    [Tooltip("録画した時に刺し点(StabAnchor)が向いていた水平角度。実行時はこの差分だけ演出を回してボスの向きに合わせる。下のボタンで自動入力")]
+    public float cutsceneAuthoringBossYaw;
 
     [Label("Timeline 駆動時のヒット発火時間（秒）")]
     [Tooltip("演出開始から何秒でボスにダメージ＋VFX を出すか。突きが刺さる瞬間に合わせる")]
