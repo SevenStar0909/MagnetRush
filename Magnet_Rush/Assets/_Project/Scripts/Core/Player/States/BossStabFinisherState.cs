@@ -52,6 +52,10 @@ public class BossStabFinisherState : EntityState<Player>
         player.lateralVelocity = Vector3.zero;
         player.externalVelocity = Vector3.zero;
 
+        // AimAbility.Update と TimeScaleTrack が同じフレームに時間倍率を書き合うと、
+        // 実行順により Timeline の進行量が揺れる。演出中は Timeline を唯一の所有者にする。
+        player.aim.SetTimeScaleControlSuspended(true);
+
         // 通常移動用の FixedUpdate 補間が、Timeline で動かすモデルを LateUpdate で上書きしないようにする。
         m_transformInterpolators = player.GetComponentsInChildren<TransformInterpolator>(true);
         foreach (var interpolator in m_transformInterpolators)
@@ -191,6 +195,7 @@ public class BossStabFinisherState : EntityState<Player>
 
         m_bossAi?.EndStabFinisher();
         player.FireStabFinisherEnd();
+        player.aim.SetTimeScaleControlSuspended(false);
     }
 
     // 既存のダメージ＋VFX＋receiver.OnStabHit を再利用する（StabAbility.OnStabHitEvent が着弾通知も担う）。

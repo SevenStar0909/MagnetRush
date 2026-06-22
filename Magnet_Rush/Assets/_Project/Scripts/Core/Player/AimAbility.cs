@@ -17,6 +17,7 @@ public class AimAbility : Ability
 
     private float m_baselineFixedDeltaTime;
     private float m_targetTimeScale = 1f;
+    private bool m_timeScaleControlSuspended;
 
     // スロー継続時間の上限管理
     private float m_aimElapsed;
@@ -43,12 +44,17 @@ public class AimAbility : Ability
         Time.timeScale = 1f;
         Time.fixedDeltaTime = m_baselineFixedDeltaTime;
         m_targetTimeScale = 1f;
+        m_timeScaleControlSuspended = false;
         m_aimElapsed = 0f;
         m_slowLockoutWhileHeld = false;
     }
 
     void Update()
     {
+        // Timeline など別システムが時間倍率を所有している間は書き戻さない。
+        // 同じフレームに複数箇所から Time.timeScale / fixedDeltaTime を更新すると、
+        // Script の実行順次第で Timeline の進行量が揺れる。
+        if (m_timeScaleControlSuspended) return;
         if (MagneticContactDamage.IsHitStopActive) return;
 
         // 目標値へ実時間でなめらかに追従。スナップ切替えのカクつきを除去
@@ -58,6 +64,30 @@ public class AimAbility : Ability
         float maxDelta = (duration > 0f) ? (Time.unscaledDeltaTime / duration) : 1f;
         Time.timeScale = Mathf.MoveTowards(Time.timeScale, m_targetTimeScale, maxDelta);
         Time.fixedDeltaTime = m_baselineFixedDeltaTime * Time.timeScale;
+    }
+
+    /// <summary>
+    /// Cutscene などが Time.timeScale を直接制御する間、Aim 側の時間制御を停止する。
+    /// 停止開始時は Aim の残留状態を解除し、外部側が一定の基準から制御できるよう等速へ戻す。
+    /// </summary>
+    public void SetTimeScaleControlSuspended(bool suspended)
+    {
+        if (m_timeScaleControlSuspended == suspended) return;
+
+        m_timeScaleControlSuspended = suspended;
+        if (!suspended) return;
+
+        m_targetTimeScale = 1f;
+        m_aimElapsed = 0f;
+        m_slowLockoutWhileHeld = false;
+        if (IsAiming)
+        {
+            IsAiming = false;
+            OnAimChanged?.Invoke(false);
+        }
+
+        Time.timeScale = 1f;
+        Time.fixedDeltaTime = m_baselineFixedDeltaTime;
     }
 
     /// <summary>LT 入力に応じてエイムモードを開始/維持する。Player.Update から毎フレーム呼ぶ。</summary>
