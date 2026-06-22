@@ -39,9 +39,10 @@ public static class SoundData
         public const string Reload = "Reload";
         public const string MagChange = "MagChange";
         public const string Aim = "Aim";
-        public const string DroneEnemy = "DroneEnemy";
+        public const string DysonEnemy = "DysonEnemy";
         public const string MissileShot = "MissileShot";
         public const string BossEnemySlam = "BossEnemySlam";
+        public const string MissileImpact = "MissileImpact";
         // 適時追加
     }
 
