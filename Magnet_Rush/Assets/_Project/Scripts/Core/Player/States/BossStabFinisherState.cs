@@ -26,6 +26,8 @@ public class BossStabFinisherState : EntityState<Player>
     private bool m_hitDone;
     private StabFinisherCamera m_cutsceneCamera;
     private TransformInterpolator[] m_transformInterpolators;
+    private Animator m_bodyAnim;
+    private RuntimeAnimatorController m_savedBodyController;
     private GameObject m_impactEffect;
 
     // StabFinisherCutscene の Stab Explosion（Control）トラックが着弾エフェクトを解決するための公開参照名。
@@ -99,6 +101,16 @@ public class BossStabFinisherState : EntityState<Player>
             else if (track is AnimationTrack animationTrack) cameraAnimationTracks.Add(animationTrack);
         }
 
+        // 体 Animator は Timeline の Player トラック（B_Player_Pile）だけで駆動する。Mecanim コントローラを残すと
+        // Update の director.Evaluate の後（アニメフェーズ）でコントローラが上書きし、Timeline が勝てず走りのまま固まる。
+        // root/カメラ用 Animator はコントローラ無しなので元から Timeline で動く。退出時に元のコントローラへ戻す。
+        m_bodyAnim = bodyAnim;
+        if (m_bodyAnim != null)
+        {
+            m_savedBodyController = m_bodyAnim.runtimeAnimatorController;
+            m_bodyAnim.runtimeAnimatorController = null;
+        }
+
         // Scene上の StabFinisherDirector と同じ Camera/Activation トラックを同じ順番で実行時rigへ割り当てる。
         int cameraCount = Mathf.Min(cameraActivationTracks.Count, cameraAnimationTracks.Count);
         m_cutsceneCamera = StabFinisherCamera.Current;
@@ -169,6 +181,13 @@ public class BossStabFinisherState : EntityState<Player>
             m_director.Stop();
             Object.Destroy(m_director.gameObject);
             m_director = null;
+        }
+        // 演出で外したコントローラを戻す。直後の ReturnToNormal が State を再設定するので通常アニメへ復帰する。
+        if (m_bodyAnim != null)
+        {
+            m_bodyAnim.runtimeAnimatorController = m_savedBodyController;
+            m_bodyAnim = null;
+            m_savedBodyController = null;
         }
         if (m_impactEffect != null)
         {
