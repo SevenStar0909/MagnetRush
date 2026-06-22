@@ -83,7 +83,10 @@ public class BossStabFinisherState : EntityState<Player>
         m_anchorA0 = m_settings.cutsceneAuthoringBossPosition;
         m_anchorA1 = anchorT.position;
         m_anchorYawDelta = Quaternion.Euler(0f, anchorT.eulerAngles.y - m_settings.cutsceneAuthoringBossYaw, 0f);
-        m_playerRotInitialized = false;
+        // 演出中のプレイヤー向き＝録画時のプレイヤー向きをヨー差分だけ回した一定値。
+        // 体アニメはこの向き基準で前進するので、向きを録画と一致させないと着地点が斜めにズレる。
+        m_playerFinisherRot = m_anchorYawDelta * Quaternion.Euler(0f, m_settings.cutsceneAuthoringPlayerYaw, 0f);
+        m_playerRotInitialized = true;
 
         // バインド対象の Animator: body=モデル側 / root=_Player 自身（軌跡用・無ければ追加）
         Animator bodyAnim = null;
@@ -149,15 +152,6 @@ public class BossStabFinisherState : EntityState<Player>
 
         m_duration = cutscene.duration;
         EvaluateAt(player, 0.0);
-
-        // 演出中のプレイヤーの向きを「ボス(StabAnchor)を向く水平向き」で確定する。録画は回転カーブを持たず
-        // root 向きは一定なので、ここで1回決めて毎フレーム適用する（ピボットでパスを回した向きと整合する）。
-        Vector3 toAnchor = m_anchorA1 - player.transform.position; toAnchor.y = 0f;
-        m_playerFinisherRot = toAnchor.sqrMagnitude > 0.0001f
-            ? Quaternion.LookRotation(toAnchor.normalized, Vector3.up)
-            : player.transform.rotation;
-        m_playerRotInitialized = true;
-        player.transform.rotation = m_playerFinisherRot;
 
         m_bossAi?.BeginStabFinisher();
         player.FireStabFinisherStart(m_receiver.StabAnchor, m_receiver.StabChoreographyIndex);

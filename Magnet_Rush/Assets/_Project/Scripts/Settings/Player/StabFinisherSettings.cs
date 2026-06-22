@@ -85,6 +85,10 @@ public class StabFinisherSettings : ScriptableObject
     [Tooltip("録画した時に刺し点(StabAnchor)が向いていた水平角度。実行時はこの差分だけ演出を回してボスの向きに合わせる。下のボタンで自動入力")]
     public float cutsceneAuthoringBossYaw;
 
+    [Label("録画時のプレイヤーの向き（度・水平ヨー）")]
+    [Tooltip("録画した時にプレイヤーが向いていた水平角度。体アニメはこの向き基準で前進するので、実行時はヨー差分だけ回して同じ向きを再現する。下のボタンで自動入力")]
+    public float cutsceneAuthoringPlayerYaw;
+
     [Label("Timeline 駆動時のヒット発火時間（秒）")]
     [Tooltip("演出開始から何秒でボスにダメージ＋VFX を出すか。突きが刺さる瞬間に合わせる")]
     public float cutsceneHitTime = 2.5f;
