@@ -22,6 +22,7 @@ public class StabInkRenderFeature : ScriptableRendererFeature
     {
         StabInkEffect.Strength = 0f;   // ドメインリロード跨ぎで焼き付かないよう、起動時は必ず通常画面
         ScreenInvertEffect.Strength = 0f;
+        ScreenInvertEffect.InvertPolarity = 0f;
         m_maskPass = new MaskPass(StabInkEffect.RenderingLayerBit)
         {
             renderPassEvent = RenderPassEvent.AfterRenderingTransparents
@@ -129,6 +130,9 @@ public class StabInkRenderFeature : ScriptableRendererFeature
             var resourceData = frameData.Get<UniversalResourceData>();
             m_material.SetFloat("_Strength", Mathf.Clamp01(StabInkEffect.Strength));
             m_material.SetFloat("_InvertStrength", Mathf.Clamp01(ScreenInvertEffect.Strength));
+            m_material.SetFloat("_InvertContrast", Mathf.Max(1f, ScreenInvertEffect.Contrast));
+            m_material.SetFloat("_InvertThreshold", Mathf.Clamp01(ScreenInvertEffect.Threshold));
+            m_material.SetFloat("_InvertPolarity", Mathf.Clamp01(ScreenInvertEffect.InvertPolarity));
 
             var source = resourceData.activeColorTexture;
             var desc = renderGraph.GetTextureDesc(source);

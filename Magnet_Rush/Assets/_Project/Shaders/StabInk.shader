@@ -6,6 +6,9 @@ Shader "Hidden/MagnetRush/StabInk"
         _InkHigh ("黒に振る濃さの上限", Range(0, 1)) = 0.4
         _Strength ("演出の強さ", Range(0, 1)) = 1
         _InvertStrength ("画面反転の強さ", Range(0, 1)) = 0
+        _InvertContrast ("白黒の硬さ", Range(1, 50)) = 12
+        _InvertThreshold ("白黒の閾値", Range(0, 1)) = 0.5
+        _InvertPolarity ("白黒反転", Range(0, 1)) = 0
     }
 
     SubShader
@@ -34,6 +37,9 @@ Shader "Hidden/MagnetRush/StabInk"
                 float _InkHigh;
                 float _Strength;
                 float _InvertStrength;
+                float _InvertContrast;
+                float _InvertThreshold;
+                float _InvertPolarity;
             CBUFFER_END
 
             half4 frag(Varyings input) : SV_Target
@@ -47,7 +53,12 @@ Shader "Hidden/MagnetRush/StabInk"
                 half3 stylized = lerp(half3(1, 1, 1), half3(0, 0, 0), ink);
                 // _Strength で通常画面→演出画面へ補間（Timeline クリップ両端でフェード可能）
                 half3 col = lerp(src.rgb, stylized, saturate(_Strength));
-                col = lerp(col, 1.0h - col, saturate(_InvertStrength));
+                // 2値に近い高コントラスト白黒を作り、Timelineのフレーム位相で白黒を交互反転する。
+                half gray = dot(col, half3(0.2126h, 0.7152h, 0.0722h));
+                half softness = 0.5h / max((half)_InvertContrast, 1.0h);
+                half bw = smoothstep((half)_InvertThreshold - softness, (half)_InvertThreshold + softness, gray);
+                bw = lerp(bw, 1.0h - bw, saturate((half)_InvertPolarity));
+                col = lerp(col, half3(bw, bw, bw), saturate((half)_InvertStrength));
                 return half4(col, src.a);
             }
             ENDHLSL
