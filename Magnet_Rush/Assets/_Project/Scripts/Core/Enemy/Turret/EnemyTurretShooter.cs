@@ -11,6 +11,14 @@ public class EnemyTurretShooter : MonoBehaviour
     [Tooltip("未指定ならEnemyTurretBase.FirePointを使用")]
     [SerializeField] private Transform m_firePointOverride;
 
+    [Header("Sound")]
+    [Label("発射音が最大音量になる距離(m)")]
+    [Tooltip("プレイヤーがこの距離より近いと発射音は最大音量（これ以内は減衰しない）")]
+    [SerializeField] private float m_shotSoundMinDistance = 4f;
+    [Label("発射音が最小音量になる距離(m)")]
+    [Tooltip("プレイヤーがこの距離より遠いと発射音はほぼ聞こえない（min〜maxで減衰）")]
+    [SerializeField] private float m_shotSoundMaxDistance = 35f;
+
     private EnemyTurretBase m_turretBase;
     private Magnetizable m_selfMagnetizable;
     private EnemyTurretSettings m_data;
@@ -106,6 +114,10 @@ public class EnemyTurretShooter : MonoBehaviour
             enemyBullet.IgnoreCollisionsWith(gameObject);
             enemyBullet.Initialize(direction);
         }
+
+        // タレットが弾を撃った音（3D位置で再生＝離れていると小さく聞こえる）
+        Sound.PlayAt(SoundData.CueSheet.SE, SoundData.SE.TurretShot, spawnPos,
+            m_shotSoundMinDistance, m_shotSoundMaxDistance);
     }
 
     private Transform ResolveFirePoint()

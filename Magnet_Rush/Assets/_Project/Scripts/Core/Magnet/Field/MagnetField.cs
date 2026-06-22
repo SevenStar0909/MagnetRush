@@ -58,6 +58,9 @@ public class MagnetField : MonoBehaviour, IMagnetField
         // 親階層の Magnetizable にフィールド参照を登録（本体子コライダーのように Magnetizable が祖先にある場合も対応）
         var mag = GetComponentInParent<Magnetizable>();
         if (mag != null) mag.SetField(this);
+
+        // 磁力場が発生した音
+        Sound.Play(SoundData.CueSheet.SE, SoundData.SE.MagField);
     }
 
     private GameObject m_triggerGO;

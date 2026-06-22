@@ -222,6 +222,9 @@ public class MagnetBullet : MonoBehaviour, IBulletProximity
     {
         if (IsStuck) return;
 
+        // 弾が何かに着弾した音
+        Sound.Play(SoundData.CueSheet.SE, SoundData.SE.HitObject);
+
         var targetMag = other.GetComponentInParent<Magnetizable>();
         if (targetMag != null)
             MagnetizeTarget(other, targetMag);
