@@ -10,6 +10,9 @@ public class AimAbility : Ability
     /// <summary>エイム中かどうか。</summary>
     public bool IsAiming { get; private set; }
 
+    /// <summary> SoudManagerのインスタンスから直接ハンドルを受け取って再生</summary>
+    private SoundManager.Playback m_aimPlayback;
+
     /// <summary>エイム状態変化時に発火。CameraSettingsApplier 等が購読。静的なのは Player.Current 未生成時点で購読可能にするため。</summary>
     public static event Action<bool> OnAimChanged;
 
@@ -101,7 +104,7 @@ public class AimAbility : Ability
         m_targetTimeScale = m_player.Settings.aimTimeScale;
         OnAimChanged?.Invoke(true);
         m_states.Change<AimPlayerState>();
-        Sound.Play(SoundData.CueSheet.SE, SoundData.SE.Aim);
+        m_aimPlayback = SoundManager.Instance.PlayWithHandle(SoundData.CueSheet.SE, SoundData.SE.Aim);
     }
 
     /// <summary>エイムモード終了。空中なら Fall、地上では入力があれば Move、なければ Idle に戻る。timeScale は Update で 1.0 に戻る。</summary>
@@ -117,5 +120,7 @@ public class AimAbility : Ability
             m_states.Change<MovePlayerState>();
         else
             m_states.Change<IdlePlayerState>();
+
+        m_aimPlayback.Stop();
     }
 }
