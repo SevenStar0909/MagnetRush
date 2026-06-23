@@ -1119,10 +1119,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b5dd4ad2d9934c3da39206e39a65bc01, type: 3}
   m_Name: CameraShakeClip
   m_EditorClassIdentifier: MagnetRush.Player::CameraShakeClip
-  amplitude: 1.73
-  frequency: 27.8
-  shakeDuration: 1.64
-  axis: {x: 1.93, y: 1, z: 3.02}
+  amplitude: 0.9
+  frequency: 1
+  shakeDuration: 1
+  useClipDuration: 1
+  axis: {x: 1, y: 1, z: 0}
   decayPower: 2
 --- !u!114 &-202606230000000001
 MonoBehaviour:
@@ -1146,10 +1147,10 @@ MonoBehaviour:
   m_Children: []
   m_Clips:
   - m_Version: 1
-    m_Start: 2.3
+    m_Start: 2.4833333333333334
     m_ClipIn: 0
     m_Asset: {fileID: -202606230000000002}
-    m_Duration: 1
+    m_Duration: 1.0833333333333335
     m_TimeScale: 1
     m_ParentTrack: {fileID: -202606230000000001}
     m_EaseInDuration: 0
@@ -1217,6 +1218,7 @@ MonoBehaviour:
   m_Markers:
     m_Objects: []
   runtimeCameraIndex: 4
+  settingsSource: 0
 --- !u!114 &-202606220000000002
 MonoBehaviour:
   m_ObjectHideFlags: 1

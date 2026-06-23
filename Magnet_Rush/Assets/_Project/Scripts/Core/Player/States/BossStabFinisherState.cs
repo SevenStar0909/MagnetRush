@@ -139,14 +139,18 @@ public class BossStabFinisherState : EntityState<Player>
                 var runtimeAnimator = m_cutsceneCamera.GetCutsceneCameraAnimator(cameraIndex);
                 m_director.SetGenericBinding(shakeTrack, runtimeAnimator);
 
-                // Scene上のFinisherCameraRig (4)で調整した値を、実行時に生成した同番号のrigへ引き継ぐ。
-                var authoringSettings = FindAuthoringShakeSettings(cutscene, shakeTrack);
-                if (runtimeAnimator != null && authoringSettings != null)
+                // TrackがInspector設定を使う場合だけ、Scene上の値を実行時生成rigへ引き継ぐ。
+                // Timeline Clip設定を使うTrackではクリップ値をそのまま正とする。
+                if (shakeTrack.UsesBoundCameraInspector && runtimeAnimator != null)
                 {
-                    var runtimeSettings = runtimeAnimator.GetComponent<CameraShakeRuntimeSettings>();
-                    if (runtimeSettings == null)
-                        runtimeSettings = runtimeAnimator.gameObject.AddComponent<CameraShakeRuntimeSettings>();
-                    runtimeSettings.CopyFrom(authoringSettings);
+                    var authoringSettings = FindAuthoringShakeSettings(cutscene, shakeTrack);
+                    if (authoringSettings != null)
+                    {
+                        var runtimeSettings = runtimeAnimator.GetComponent<CameraShakeRuntimeSettings>();
+                        if (runtimeSettings == null)
+                            runtimeSettings = runtimeAnimator.gameObject.AddComponent<CameraShakeRuntimeSettings>();
+                        runtimeSettings.CopyFrom(authoringSettings);
+                    }
                 }
             }
         }
@@ -275,6 +279,8 @@ public class BossStabFinisherState : EntityState<Player>
     {
         m_director.time = time;
         m_director.Evaluate();
+        // CameraShakeTrackはAnimationTrackの最終書き戻し後に適用しないと消える。
+        CameraShakeMixerBehaviour.ApplyPendingShakes();
         player.transform.position = m_anchorA1 + m_anchorYawDelta * (player.transform.position - m_anchorA0);
         if (m_playerRotInitialized) player.transform.rotation = m_playerFinisherRot;
         m_cutsceneCamera?.ApplyCutsceneCameraAnchor(m_anchorA0, m_anchorA1, m_anchorYawDelta);
