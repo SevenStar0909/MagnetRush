@@ -745,6 +745,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
             : MissileWavePattern.Forward;
 
         FireMissileWave(pattern);
+        Sound.Play(SoundData.CueSheet.SE, SoundData.SE.MissileShot);
         m_nextMissileIsSideLob = !m_nextMissileIsSideLob;
         m_animator.TriggerMissileFinished();
     }
