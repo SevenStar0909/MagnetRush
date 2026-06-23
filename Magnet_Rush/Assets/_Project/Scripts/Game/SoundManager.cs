@@ -18,6 +18,39 @@ public class SoundManager : Singleton<SoundManager>
     private string m_currentBgm;
     private readonly Dictionary<string, CriAtomExAcb> m_acbCache = new();
 
+    /// <summary>
+    /// <para>CriAtomExPlayerをラップした構造体</para>
+    /// <para>個別操作するときに使う</para>
+    /// </summary>
+    public struct Playback
+    {
+        CriAtomExPlayer player;
+        CriAtomExPlayback playback;
+
+        internal Playback(CriAtomExPlayer player, CriAtomExPlayback pb)
+        {
+            this.player = player;
+            this.playback = pb;
+        }
+
+        public void SetVolumeAndPitch(float vol, float pitch)
+        {
+            this.player.SetVolume(vol);
+            this.player.SetPitch(pitch);
+            this.player.Update(playback);
+        }
+
+        public void Stop()
+        {
+            this.playback.Stop();
+        }
+
+        public bool IsPlaying()
+        {
+            return this.playback.GetStatus() == CriAtomExPlayback.Status.Playing;
+        }
+    }
+
     protected override void Awake()
     {
         base.Awake();
@@ -111,10 +144,11 @@ public class SoundManager : Singleton<SoundManager>
     /// <para>ハンドルを受け取る再生</para>
     /// <para>個別操作する場合はこちらを使う</para>
     /// </summary>
-    public CriAtomExPlayback PlayWithHandle(string cueSheetName, string cueName)
+    public Playback PlayWithHandle(string cueSheetName, string cueName)
     {
         m_player.SetCue(GetAcb(cueSheetName), cueName);
-        return m_player.Start();
+        Playback pb = new(m_player, m_player.Start());
+        return pb;
     }
 
     /// <summary>
