@@ -178,6 +178,7 @@ public class ShootingAbility : Ability
         m_input.ConsumeReload();
         BulletManager.Instance.ClearAll();
         m_events.FireReload();
+        Sound.Play(SoundData.CueSheet.SE, SoundData.SE.Reload);
     }
 
     /// <summary>

@@ -101,6 +101,7 @@ public class AimAbility : Ability
         m_targetTimeScale = m_player.Settings.aimTimeScale;
         OnAimChanged?.Invoke(true);
         m_states.Change<AimPlayerState>();
+        Sound.Play(SoundData.CueSheet.SE, SoundData.SE.Aim);
     }
 
     /// <summary>エイムモード終了。空中なら Fall、地上では入力があれば Move、なければ Idle に戻る。timeScale は Update で 1.0 に戻る。</summary>
