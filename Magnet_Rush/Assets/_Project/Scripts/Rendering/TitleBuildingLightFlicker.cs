@@ -414,7 +414,7 @@ public sealed class TitleBuildingLightFlicker : MonoBehaviour
             return mainCamera;
         }
 
-        Camera[] cameras = FindObjectsOfType<Camera>();
+        Camera[] cameras = FindObjectsByType<Camera>(FindObjectsSortMode.None);
         foreach (Camera camera in cameras)
         {
             if (camera != null && camera.isActiveAndEnabled)

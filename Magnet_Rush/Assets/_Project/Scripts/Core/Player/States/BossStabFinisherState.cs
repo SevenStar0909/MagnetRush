@@ -133,21 +133,16 @@ public class BossStabFinisherState : EntityState<Player>
                 m_director.SetGenericBinding(cameraAnimationTracks[i], m_cutsceneCamera.GetCutsceneCameraAnimator(i));
             }
 
+            // 生成カメラは全部同じ depth なので、アクティブ時間が重なると実機でどちらが映るか不定になる
+            // （プレビューは登録順が違うので別結果＝切り替えで別カメラが映りズレて見える）。
+            // カットイン順（アクティブ開始が遅いほど上に描画）に depth を振り直し、切り替えを決定的にする。
+            AssignCutsceneCameraDepths(cameraCount, cameraActivationTracks);
+
+            // 揺れの強さ・尺は Timeline の CameraShakeClip 側で持つので、実行時は番号のrigへバインドするだけ。
             foreach (var shakeTrack in cameraShakeTracks)
             {
                 int cameraIndex = Mathf.Clamp(shakeTrack.runtimeCameraIndex, 0, cameraCount - 1);
-                var runtimeAnimator = m_cutsceneCamera.GetCutsceneCameraAnimator(cameraIndex);
-                m_director.SetGenericBinding(shakeTrack, runtimeAnimator);
-
-                // Scene上のFinisherCameraRig (4)で調整した値を、実行時に生成した同番号のrigへ引き継ぐ。
-                var authoringSettings = FindAuthoringShakeSettings(cutscene, shakeTrack);
-                if (runtimeAnimator != null && authoringSettings != null)
-                {
-                    var runtimeSettings = runtimeAnimator.GetComponent<CameraShakeRuntimeSettings>();
-                    if (runtimeSettings == null)
-                        runtimeSettings = runtimeAnimator.gameObject.AddComponent<CameraShakeRuntimeSettings>();
-                    runtimeSettings.CopyFrom(authoringSettings);
-                }
+                m_director.SetGenericBinding(shakeTrack, m_cutsceneCamera.GetCutsceneCameraAnimator(cameraIndex));
             }
         }
         else
@@ -193,18 +188,43 @@ public class BossStabFinisherState : EntityState<Player>
         player.FireStabFinisherStart(m_receiver.StabAnchor, m_receiver.StabChoreographyIndex);
     }
 
-    private static StabFinisherCamera FindAuthoringShakeSettings(TimelineAsset cutscene, CameraShakeTrack shakeTrack)
+    // 生成カメラの depth を「アクティブ開始が遅いほど高い（上に描画）」順で振り直す。
+    // 同時開始は番号が小さい基準カメラを上にする。これで重複時の描画が決定的になる。
+    private void AssignCutsceneCameraDepths(int cameraCount, List<ActivationTrack> activationTracks)
     {
-        var directors = Object.FindObjectsByType<PlayableDirector>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-        foreach (var director in directors)
+        float baseDepth = 0f;
+        var firstRig = m_cutsceneCamera.GetCutsceneCameraRig(0);
+        if (firstRig != null)
         {
-            if (director.playableAsset != cutscene) continue;
-            if (director.GetGenericBinding(shakeTrack) is not Animator animator) continue;
-
-            var settings = animator.GetComponent<StabFinisherCamera>();
-            if (settings != null) return settings;
+            var firstCamera = firstRig.GetComponentInChildren<Camera>(true);
+            if (firstCamera != null) baseDepth = firstCamera.depth;
         }
-        return null;
+
+        var order = new List<int>();
+        for (int i = 0; i < cameraCount; i++) order.Add(i);
+        order.Sort((a, b) =>
+        {
+            float startA = GetActivationStart(activationTracks[a]);
+            float startB = GetActivationStart(activationTracks[b]);
+            if (!Mathf.Approximately(startA, startB)) return startA.CompareTo(startB);
+            return b.CompareTo(a);
+        });
+
+        for (int rank = 0; rank < order.Count; rank++)
+        {
+            var rig = m_cutsceneCamera.GetCutsceneCameraRig(order[rank]);
+            if (rig == null) continue;
+            var cam = rig.GetComponentInChildren<Camera>(true);
+            if (cam != null) cam.depth = baseDepth + rank;
+        }
+    }
+
+    private static float GetActivationStart(ActivationTrack track)
+    {
+        float start = float.MaxValue;
+        foreach (var clip in track.GetClips())
+            if (clip.start < start) start = (float)clip.start;
+        return start == float.MaxValue ? 0f : start;
     }
 
     private static GameObject FindAuthoringImpactEffect(
@@ -302,6 +322,8 @@ public class BossStabFinisherState : EntityState<Player>
         }
         m_cutsceneCamera?.EndCutsceneCameraTracks();
         m_cutsceneCamera = null;
+        // 破棄したクローンrigのオフセット残骸を描画フック側に残さない。
+        CameraShakeMixerBehaviour.ClearPending();
         if (m_transformInterpolators != null)
         {
             foreach (var interpolator in m_transformInterpolators)

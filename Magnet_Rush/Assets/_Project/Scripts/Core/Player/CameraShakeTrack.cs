@@ -19,14 +19,7 @@ public class CameraShakeTrack : TrackAsset
         return ScriptPlayable<CameraShakeMixerBehaviour>.Create(graph, inputCount);
     }
 
-    public override void GatherProperties(PlayableDirector director, IPropertyCollector driver)
-    {
-        base.GatherProperties(director, driver);
-        var animator = director.GetGenericBinding(this) as Animator;
-        if (animator == null) return;
-
-        driver.AddFromName<Transform>(animator.gameObject, "m_LocalPosition.x");
-        driver.AddFromName<Transform>(animator.gameObject, "m_LocalPosition.y");
-        driver.AddFromName<Transform>(animator.gameObject, "m_LocalPosition.z");
-    }
+    // GatherProperties は実装しない。揺れの加算先 FinisherCamera の位置は、同じカメラを駆動する
+    // AnimationTrack（焼き込み済みの子オフセット）がプレビュー終了時に元へ戻す。ここで重ねて登録すると
+    // 同一 EditorCurveBinding の二重登録になり Timeline プレビューが ArgumentException で壊れる。
 }
