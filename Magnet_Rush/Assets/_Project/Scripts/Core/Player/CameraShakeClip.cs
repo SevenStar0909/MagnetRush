@@ -13,11 +13,8 @@ public class CameraShakeClip : PlayableAsset, ITimelineClipAsset
     [Tooltip("1秒あたりの揺れの回数。低いほど重く、高いほど細かい揺れになる")]
     [Min(0f)] public float frequency = 22f;
 
-    [Tooltip("Use Clip DurationがOFFの場合に使う揺れの長さ（秒）")]
+    [Tooltip("バインド先に StabFinisherCamera が無い場合に使う揺れの長さ（秒）")]
     [Min(0f)] public float shakeDuration = 0.3f;
-
-    [Tooltip("ONならTimeline上のクリップ長を揺れの長さとして使う。クリップの端を動かしてシェイク尺を調整できる")]
-    public bool useClipDuration = true;
 
     [Tooltip("カメラローカル方向ごとの揺れ比率。X=横、Y=縦、Z=前後")]
     public Vector3 axis = new(0.15f, 1f, 0f);
@@ -35,7 +32,6 @@ public class CameraShakeClip : PlayableAsset, ITimelineClipAsset
         behaviour.amplitude = amplitude;
         behaviour.frequency = frequency;
         behaviour.shakeDuration = shakeDuration;
-        behaviour.useClipDuration = useClipDuration;
         behaviour.axis = axis;
         behaviour.decayPower = decayPower;
         return playable;
@@ -48,7 +44,6 @@ public class CameraShakeBehaviour : PlayableBehaviour
     public float amplitude;
     public float frequency;
     public float shakeDuration;
-    public bool useClipDuration;
     public Vector3 axis;
     public float decayPower;
 }

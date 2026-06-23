@@ -11,25 +11,12 @@ using UnityEngine.Timeline;
 [TrackBindingType(typeof(Animator))]
 public class CameraShakeTrack : TrackAsset
 {
-    public enum SettingsSource
-    {
-        TimelineClip,
-        BoundCameraInspector
-    }
-
     [Tooltip("実行時に揺らすカメラ番号（0始まり）。StabFinisherCutscene の5台目は4")]
     [Min(0)] public int runtimeCameraIndex = 4;
 
-    [Tooltip("Timeline Clip: 各シェイククリップのInspector値を使用。Bound Camera Inspector: バインド先のStabFinisherCamera値を使用")]
-    public SettingsSource settingsSource = SettingsSource.TimelineClip;
-
-    public bool UsesBoundCameraInspector => settingsSource == SettingsSource.BoundCameraInspector;
-
     public override Playable CreateTrackMixer(PlayableGraph graph, GameObject go, int inputCount)
     {
-        var playable = ScriptPlayable<CameraShakeMixerBehaviour>.Create(graph, inputCount);
-        playable.GetBehaviour().useBoundCameraInspector = UsesBoundCameraInspector;
-        return playable;
+        return ScriptPlayable<CameraShakeMixerBehaviour>.Create(graph, inputCount);
     }
 
     public override void GatherProperties(PlayableDirector director, IPropertyCollector driver)
@@ -38,12 +25,8 @@ public class CameraShakeTrack : TrackAsset
         var animator = director.GetGenericBinding(this) as Animator;
         if (animator == null) return;
 
-        Transform cameraTransform = CameraShakeMixerBehaviour.FindCameraTransform(animator);
-        if (cameraTransform == null) return;
-
-        // Edit ModeのTimelineプレビュー終了時に、シェイクを加算した実カメラの位置を確実に戻す。
-        driver.AddFromName<Transform>(cameraTransform.gameObject, "m_LocalPosition.x");
-        driver.AddFromName<Transform>(cameraTransform.gameObject, "m_LocalPosition.y");
-        driver.AddFromName<Transform>(cameraTransform.gameObject, "m_LocalPosition.z");
+        driver.AddFromName<Transform>(animator.gameObject, "m_LocalPosition.x");
+        driver.AddFromName<Transform>(animator.gameObject, "m_LocalPosition.y");
+        driver.AddFromName<Transform>(animator.gameObject, "m_LocalPosition.z");
     }
 }
