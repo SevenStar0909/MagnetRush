@@ -288,6 +288,7 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
     {
         if (m_attackHitboxes != null) m_attackHitboxes.EnableArmHitbox();
         PlayArmImpactDustEffect();
+        Sound.Play(SoundData.CueSheet.SE, SoundData.SE.BossEnemySlam);
         ChannelLogger.Log("EnemyBoss", $"BossArmEvent step2 is Triggered ");
     }
 
