@@ -34,10 +34,6 @@ public class BossStabFinisherState : EntityState<Player>
     private RuntimeAnimatorController m_savedBodyController;
     private GameObject m_impactEffect;
 
-    // StabFinisherCutscene の Stab Explosion（Control）トラックが着弾エフェクトを解決するための公開参照名。
-    // 実行時にここへ生成インスタンスをバインドすると、Manual評価でも Particle が director 時刻で進む（スロー中も止まらない）。
-    private const string k_ImpactEffectExposedName = "StabExplosionSource";
-
     /// <summary>PlayerAnimator 互換用。Timeline が体を直接駆動するので固定値でよい（突き扱い・接地扱い）。</summary>
     public int AnimatorPhaseIndex => (int)PlayerStateIndex.StabAttack;
 
@@ -55,6 +51,7 @@ public class BossStabFinisherState : EntityState<Player>
     protected override void OnEnter(Player player)
     {
         m_hitDone = false;
+        player.stab.SetProgramHitVfxSuppressed(false);
         player.lateralVelocity = Vector3.zero;
         player.externalVelocity = Vector3.zero;
 
@@ -105,12 +102,14 @@ public class BossStabFinisherState : EntityState<Player>
 
         var cameraActivationTracks = new List<ActivationTrack>();
         var cameraAnimationTracks = new List<AnimationTrack>();
+        var cameraShakeTracks = new List<CameraShakeTrack>();
         foreach (var track in cutscene.GetOutputTracks())
         {
             if (track.name == "Player") m_director.SetGenericBinding(track, bodyAnim);
             else if (track.name == "PlayerRoot") m_director.SetGenericBinding(track, rootAnim);
             else if (track is ActivationTrack activationTrack) cameraActivationTracks.Add(activationTrack);
             else if (track is AnimationTrack animationTrack) cameraAnimationTracks.Add(animationTrack);
+            else if (track is CameraShakeTrack shakeTrack) cameraShakeTracks.Add(shakeTrack);
         }
 
         // 体 Animator は Timeline の Player トラック（B_Player_Pile）だけで駆動する。Mecanim コントローラを残すと
@@ -133,6 +132,23 @@ public class BossStabFinisherState : EntityState<Player>
                 m_director.SetGenericBinding(cameraActivationTracks[i], m_cutsceneCamera.GetCutsceneCameraRig(i));
                 m_director.SetGenericBinding(cameraAnimationTracks[i], m_cutsceneCamera.GetCutsceneCameraAnimator(i));
             }
+
+            foreach (var shakeTrack in cameraShakeTracks)
+            {
+                int cameraIndex = Mathf.Clamp(shakeTrack.runtimeCameraIndex, 0, cameraCount - 1);
+                var runtimeAnimator = m_cutsceneCamera.GetCutsceneCameraAnimator(cameraIndex);
+                m_director.SetGenericBinding(shakeTrack, runtimeAnimator);
+
+                // Scene上のFinisherCameraRig (4)で調整した値を、実行時に生成した同番号のrigへ引き継ぐ。
+                var authoringSettings = FindAuthoringShakeSettings(cutscene, shakeTrack);
+                if (runtimeAnimator != null && authoringSettings != null)
+                {
+                    var runtimeSettings = runtimeAnimator.GetComponent<CameraShakeRuntimeSettings>();
+                    if (runtimeSettings == null)
+                        runtimeSettings = runtimeAnimator.gameObject.AddComponent<CameraShakeRuntimeSettings>();
+                    runtimeSettings.CopyFrom(authoringSettings);
+                }
+            }
         }
         else
         {
@@ -140,14 +156,34 @@ public class BossStabFinisherState : EntityState<Player>
             m_cutsceneCamera = null;
         }
 
-        // 着弾エフェクトを刺し位置に生成して Control トラックへバインドする。
-        // 生成時は非アクティブ（Control クリップが着弾時刻に有効化＋Particle を駆動し、終了で非アクティブへ戻す）。
-        if (m_settings.finisherImpactEffect != null)
+        // Timeline 上で調整した着弾エフェクトを複製して Control トラックへバインドする。
+        // exposedName は Timeline 編集時に Unity が再生成するため、固定文字列ではなく実際の Control クリップから取得する。
+        // 作者用オブジェクトの位置オフセット・回転・スケールも録画時アンカー基準で実ボスへ写し、Timeline と同じ見た目にする。
+        if (m_settings.finisherImpactEffect != null && TryGetImpactEffectExposedName(cutscene, out var impactEffectExposedName))
         {
-            Vector3 impactPos = m_receiver.StabAnchor != null ? m_receiver.StabAnchor.position : bossT.position;
-            m_impactEffect = Object.Instantiate(m_settings.finisherImpactEffect, impactPos, Quaternion.identity);
+            GameObject authoringEffect = FindAuthoringImpactEffect(cutscene, m_director, impactEffectExposedName);
+            GameObject effectTemplate = authoringEffect != null ? authoringEffect : m_settings.finisherImpactEffect;
+            m_impactEffect = Object.Instantiate(effectTemplate);
+
+            if (authoringEffect != null)
+            {
+                Transform authoringRoot = authoringEffect.transform.root;
+                Vector3 authoringPosition = authoringRoot.InverseTransformPoint(authoringEffect.transform.position);
+                Quaternion authoringRotation = Quaternion.Inverse(authoringRoot.rotation) * authoringEffect.transform.rotation;
+                m_impactEffect.transform.SetPositionAndRotation(
+                    m_anchorA1 + m_anchorYawDelta * (authoringPosition - m_anchorA0),
+                    m_anchorYawDelta * authoringRotation);
+                m_impactEffect.transform.localScale = authoringEffect.transform.localScale;
+            }
+            else
+            {
+                Vector3 impactPos = m_receiver.StabAnchor != null ? m_receiver.StabAnchor.position : bossT.position;
+                m_impactEffect.transform.SetPositionAndRotation(impactPos, Quaternion.identity);
+            }
+
             m_impactEffect.SetActive(false);
-            m_director.SetReferenceValue(k_ImpactEffectExposedName, m_impactEffect);
+            m_director.SetReferenceValue(impactEffectExposedName, m_impactEffect);
+            player.stab.SetProgramHitVfxSuppressed(true);
         }
 
         m_duration = cutscene.duration;
@@ -155,6 +191,61 @@ public class BossStabFinisherState : EntityState<Player>
 
         m_bossAi?.BeginStabFinisher();
         player.FireStabFinisherStart(m_receiver.StabAnchor, m_receiver.StabChoreographyIndex);
+    }
+
+    private static StabFinisherCamera FindAuthoringShakeSettings(TimelineAsset cutscene, CameraShakeTrack shakeTrack)
+    {
+        var directors = Object.FindObjectsByType<PlayableDirector>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        foreach (var director in directors)
+        {
+            if (director.playableAsset != cutscene) continue;
+            if (director.GetGenericBinding(shakeTrack) is not Animator animator) continue;
+
+            var settings = animator.GetComponent<StabFinisherCamera>();
+            if (settings != null) return settings;
+        }
+        return null;
+    }
+
+    private static GameObject FindAuthoringImpactEffect(
+        TimelineAsset cutscene,
+        PlayableDirector runtimeDirector,
+        PropertyName exposedName)
+    {
+        var directors = Object.FindObjectsByType<PlayableDirector>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        foreach (var director in directors)
+        {
+            if (director == runtimeDirector || director.playableAsset != cutscene) continue;
+
+            var effect = director.GetReferenceValue(exposedName, out bool isValid) as GameObject;
+            if (isValid && effect != null) return effect;
+
+            // 旧PrefabはUnityによるキー再生成前の名前で保持しているため、実ゲームSceneではこちらも確認する。
+            effect = director.GetReferenceValue(new PropertyName("StabExplosionSource"), out isValid) as GameObject;
+            if (isValid && effect != null) return effect;
+
+            foreach (var child in director.transform.root.GetComponentsInChildren<Transform>(true))
+                if (child.name == "StabExplosionPreview") return child.gameObject;
+        }
+        return null;
+    }
+
+    private static bool TryGetImpactEffectExposedName(TimelineAsset cutscene, out PropertyName exposedName)
+    {
+        foreach (var track in cutscene.GetOutputTracks())
+        {
+            if (track is not ControlTrack || track.name != "Stab Explosion") continue;
+
+            foreach (var clip in track.GetClips())
+            {
+                if (clip.asset is not ControlPlayableAsset controlAsset) continue;
+                exposedName = controlAsset.sourceGameObject.exposedName;
+                if (!exposedName.Equals(default(PropertyName))) return true;
+            }
+        }
+
+        exposedName = default;
+        return false;
     }
 
     protected override void OnStep(Player player, float dt)
@@ -229,10 +320,11 @@ public class BossStabFinisherState : EntityState<Player>
 
         m_bossAi?.EndStabFinisher();
         player.FireStabFinisherEnd();
+        player.stab.SetProgramHitVfxSuppressed(false);
         player.aim.SetTimeScaleControlSuspended(false);
     }
 
-    // 既存のダメージ＋VFX＋receiver.OnStabHit を再利用する（StabAbility.OnStabHitEvent が着弾通知も担う）。
+    // 既存のダメージ＋receiver.OnStabHit を再利用する。Timeline が爆発を駆動できない場合だけ汎用 VFX へフォールバックする。
     private void DoHit(Player player)
     {
         player.stab.OnStabHitEvent();

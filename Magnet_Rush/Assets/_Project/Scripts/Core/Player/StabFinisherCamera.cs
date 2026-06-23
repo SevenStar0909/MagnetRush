@@ -45,6 +45,19 @@ public class StabFinisherCamera : MonoBehaviour
     [Tooltip("揺れの速さ（Hz）。低いほど重いストローク（8〜12が目安）。高いと細かいプルプルになる")]
     [SerializeField] private float m_shakeFrequency = 10f;
 
+    [Tooltip("カメラローカル方向ごとの揺れ比率。X=横、Y=縦、Z=前後")]
+    [SerializeField] private Vector3 m_shakeAxis = new(0.15f, 1f, 0f);
+
+    [Tooltip("減衰の強さ。1=直線、2=前半で素早く減衰")]
+    [Min(0.01f)]
+    [SerializeField] private float m_shakeDecayPower = 2f;
+
+    public float ShakeAmplitude => Mathf.Max(0f, m_shakeAmplitude);
+    public float ShakeDuration => Mathf.Max(0f, m_shakeDuration);
+    public float ShakeFrequency => Mathf.Max(0f, m_shakeFrequency);
+    public Vector3 ShakeAxis => m_shakeAxis;
+    public float ShakeDecayPower => Mathf.Max(0.01f, m_shakeDecayPower);
+
     private Animator m_animator;             // rig の Animator（Timeline トラックのバインド先）
     private PlayableAsset m_defaultTimeline; // boss が cameraTimeline を持たない時のフォールバック（初期アサイン）
     private double m_timelineDuration = 1.0; // カメラ Timeline 全体の尺（秒）。カメラ区間＋着弾後テール（引き）を含む。

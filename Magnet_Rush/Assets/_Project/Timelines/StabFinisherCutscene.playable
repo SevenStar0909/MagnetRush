@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce2405d16ed982b43a13915b758f2b73, type: 3}
   m_Name: TimeScaleClip
   m_EditorClassIdentifier: MagnetRush.Player::TimeScaleClip
-  slowTimeScale: 0.247
+  slowTimeScale: 0.111
   freezeDuration: 0
   freezeTimeScale: 0
 --- !u!114 &-7000000000000000001
@@ -37,14 +37,14 @@ MonoBehaviour:
   m_Children: []
   m_Clips:
   - m_Version: 1
-    m_Start: 2.283333333333333
+    m_Start: 2.3666666666666667
     m_ClipIn: 0
     m_Asset: {fileID: -7000000000000000003}
-    m_Duration: 0.3999999999999999
+    m_Duration: 0.2666666666666666
     m_TimeScale: 1
     m_ParentTrack: {fileID: -7000000000000000001}
-    m_EaseInDuration: 0.06
-    m_EaseOutDuration: 0.1
+    m_EaseInDuration: 0
+    m_EaseOutDuration: 0.17
     m_BlendInDuration: -1
     m_BlendOutDuration: -1
     m_MixInCurve:
@@ -424,7 +424,7 @@ MonoBehaviour:
     m_Start: 1.9833333333333334
     m_ClipIn: 0
     m_Asset: {fileID: 9069453211566481908}
-    m_Duration: 2.634137557695309
+    m_Duration: 2.383333333333333
     m_TimeScale: 1
     m_ParentTrack: {fileID: -867714154632460569}
     m_EaseInDuration: 0
@@ -1107,6 +1107,116 @@ MonoBehaviour:
   m_Name: StabInkClip
   m_EditorClassIdentifier: MagnetRush.Player::StabInkClip
   strength: 0.829
+--- !u!114 &-202606230000000002
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b5dd4ad2d9934c3da39206e39a65bc01, type: 3}
+  m_Name: CameraShakeClip
+  m_EditorClassIdentifier: MagnetRush.Player::CameraShakeClip
+  amplitude: 1.73
+  frequency: 27.8
+  shakeDuration: 1.64
+  axis: {x: 1.93, y: 1, z: 3.02}
+  decayPower: 2
+--- !u!114 &-202606230000000001
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e8dd819b754461ab4cac832c9df25fe, type: 3}
+  m_Name: Camera Shake
+  m_EditorClassIdentifier: MagnetRush.Player::CameraShakeTrack
+  m_Version: 3
+  m_AnimClip: {fileID: 0}
+  m_Locked: 0
+  m_Muted: 0
+  m_CustomPlayableFullTypename: 
+  m_Curves: {fileID: 0}
+  m_Parent: {fileID: 11400000}
+  m_Children: []
+  m_Clips:
+  - m_Version: 1
+    m_Start: 2.3
+    m_ClipIn: 0
+    m_Asset: {fileID: -202606230000000002}
+    m_Duration: 1
+    m_TimeScale: 1
+    m_ParentTrack: {fileID: -202606230000000001}
+    m_EaseInDuration: 0
+    m_EaseOutDuration: 0
+    m_BlendInDuration: -1
+    m_BlendOutDuration: -1
+    m_MixInCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    m_MixOutCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    m_BlendInCurveMode: 0
+    m_BlendOutCurveMode: 0
+    m_ExposedParameterNames: []
+    m_AnimationCurves: {fileID: 0}
+    m_Recordable: 0
+    m_PostExtrapolationMode: 0
+    m_PreExtrapolationMode: 0
+    m_PostExtrapolationTime: 0
+    m_PreExtrapolationTime: 0
+    m_DisplayName: Impact Shake
+  m_Markers:
+    m_Objects: []
+  runtimeCameraIndex: 4
 --- !u!114 &-202606220000000002
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1245,6 +1355,7 @@ MonoBehaviour:
   - {fileID: 831120636956885985}
   - {fileID: 5063438619488916250}
   - {fileID: -202606220000000001}
+  - {fileID: -202606230000000001}
   m_FixedDuration: 0
   m_EditorSettings:
     m_Framerate: 60
@@ -3136,7 +3247,7 @@ MonoBehaviour:
     m_Start: 2.3666666666666667
     m_ClipIn: 0
     m_Asset: {fileID: 5152599561269329197}
-    m_Duration: 2.117470891028
+    m_Duration: 1.9999999999999996
     m_TimeScale: 1
     m_ParentTrack: {fileID: 5063438619488916250}
     m_EaseInDuration: 0
@@ -3252,7 +3363,7 @@ MonoBehaviour:
     m_Start: 0
     m_ClipIn: 0.050000000000000044
     m_Asset: {fileID: -557666546963467326}
-    m_Duration: 4.616666984558106
+    m_Duration: 4.366666666666666
     m_TimeScale: 1
     m_ParentTrack: {fileID: 5239266272639311870}
     m_EaseInDuration: 0

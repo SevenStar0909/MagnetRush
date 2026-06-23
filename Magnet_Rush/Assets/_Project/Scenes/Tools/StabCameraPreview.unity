@@ -10322,6 +10322,11 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1571507289}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!95 &1092126110 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 4231585466046080890, guid: 38fb4253b5b550c4489404a3d2455b51, type: 3}
+  m_PrefabInstance: {fileID: 1864654357956608972}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1095209964
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -25441,12 +25446,12 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6835404923145018549, guid: 38fb4253b5b550c4489404a3d2455b51, type: 3}
       propertyPath: m_SceneBindings.Array.size
-      value: 12
+      value: 13
       objectReference: {fileID: 0}
     - target: {fileID: 6835404923145018549, guid: 38fb4253b5b550c4489404a3d2455b51, type: 3}
       propertyPath: m_SceneBindings.Array.data[12].key
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: -202606230000000001, guid: d3ae16ad785a1954cb40f62edf45a378, type: 2}
     - target: {fileID: 6835404923145018549, guid: 38fb4253b5b550c4489404a3d2455b51, type: 3}
       propertyPath: m_SceneBindings.Array.data[0].value
       value: 
@@ -25458,7 +25463,7 @@ PrefabInstance:
     - target: {fileID: 6835404923145018549, guid: 38fb4253b5b550c4489404a3d2455b51, type: 3}
       propertyPath: m_SceneBindings.Array.data[12].value
       value: 
-      objectReference: {fileID: 1864654357956608973}
+      objectReference: {fileID: 1092126110}
     - target: {fileID: 6835404923145018549, guid: 38fb4253b5b550c4489404a3d2455b51, type: 3}
       propertyPath: m_ExposedReferences.m_References.Array.size
       value: 2
@@ -25482,6 +25487,30 @@ PrefabInstance:
     - target: {fileID: 7279570471761414705, guid: 38fb4253b5b550c4489404a3d2455b51, type: 3}
       propertyPath: autoRandomSeed
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7591472384879324914, guid: 38fb4253b5b550c4489404a3d2455b51, type: 3}
+      propertyPath: m_shakeAxis.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7591472384879324914, guid: 38fb4253b5b550c4489404a3d2455b51, type: 3}
+      propertyPath: m_shakeAxis.z
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7591472384879324914, guid: 38fb4253b5b550c4489404a3d2455b51, type: 3}
+      propertyPath: m_shakeDuration
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7591472384879324914, guid: 38fb4253b5b550c4489404a3d2455b51, type: 3}
+      propertyPath: m_shakeAmplitude
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7591472384879324914, guid: 38fb4253b5b550c4489404a3d2455b51, type: 3}
+      propertyPath: m_shakeFrequency
+      value: 50
+      objectReference: {fileID: 0}
+    - target: {fileID: 7591472384879324914, guid: 38fb4253b5b550c4489404a3d2455b51, type: 3}
+      propertyPath: m_shakeDecayPower
+      value: 24
       objectReference: {fileID: 0}
     - target: {fileID: 8298746225685981173, guid: 38fb4253b5b550c4489404a3d2455b51, type: 3}
       propertyPath: Target.TrackingTarget
