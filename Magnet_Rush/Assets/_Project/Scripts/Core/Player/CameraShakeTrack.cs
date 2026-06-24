@@ -12,7 +12,7 @@ using UnityEngine.Timeline;
 public class CameraShakeTrack : TrackAsset
 {
     [Tooltip("実行時に揺らすカメラ番号（0始まり）。StabFinisherCutscene の5台目は4")]
-    [Min(0)] public int runtimeCameraIndex = 4;
+    [LabelMin("揺らすカメラ番号（0始まり）", 0)] public int runtimeCameraIndex = 4;
 
     public override Playable CreateTrackMixer(PlayableGraph graph, GameObject go, int inputCount)
     {
