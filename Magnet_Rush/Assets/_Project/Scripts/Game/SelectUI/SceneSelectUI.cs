@@ -17,38 +17,64 @@ public class SceneSelectUI : MonoBehaviour
     private string m_lastSelectedMapName = "";
     private Coroutine m_previewCoroutine;
 
+    // 【追加】起動直後のSE暴発を防ぐための初期化フラグ
+    private bool m_isInitialized = false;
+
     private void Start()
     {
-        // タイトルから来たとき、先頭ステージ(チュートリアル)を初期選択としてプレビュー表示する。
         if (m_stageData == null || m_stageData.stages == null || m_stageData.stages.Length == 0)
             return;
 
+        // タイトルから来たとき、先頭ステージ(チュートリアル)を初期選択としてプレビュー表示する。
         StageData.Stage first = m_stageData.stages[0];
         if (first != null && !string.IsNullOrEmpty(first.mapSceneName))
-            OnSelectStage(first.mapSceneName);
+        {
+            // 初期化中なのでSEは鳴らさず、内部処理だけ進める
+            HandleStageSelection(first.mapSceneName, false);
+        }
 
         if (m_firstSelectedButton != null)
         {
             m_firstSelectedButton.Select();
-            
-            // 【重要】コントローラー用に選択状態にしたことをEventSystemにも通知する
-            UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(m_firstSelectedButton.gameObject);
-            
+
+            // コントローラー用に選択状態にしたことをEventSystemにも通知する
+            if (UnityEngine.EventSystems.EventSystem.current != null)
+            {
+                UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(m_firstSelectedButton.gameObject);
+            }
+
             Debug.Log($"[Debug] シーン開始時に '{m_firstSelectedButton.name}' を初期選択しました。");
         }
         else
         {
             Debug.LogWarning("[Debug] 警告: 最初に選択するボタン（m_firstSelectedButton）がインスペクターで設定されていません。");
         }
+
+        // 最初の1フレーム（初期選択のセットアップ）が終わったらSEの再生を許可する
+        StartCoroutine(EnableSoundRoutine());
+    }
+
+    private IEnumerator EnableSoundRoutine()
+    {
+        yield return null; // 1フレーム待つ
+        m_isInitialized = true;
     }
 
     /// <summary>
-    /// 【インスペクター用窓口A】マウスオーバー・コントローラー選択時に呼び出す
+    /// 【インスペクター・ヘルパー用窓口A】マウスオーバー・コントローラー選択時に呼び出す
     /// </summary>
     public void OnSelectStage(string mapName)
     {
-        // 内部で第2引数を false にして共通処理を呼び出す
+        // 【戻るボタン用ガード】マップ名が空の場合はプレビューを更新せず、音だけ鳴らす
+        if (string.IsNullOrEmpty(mapName))
+        {
+            if (m_isInitialized) Sound.Play(SoundData.CueSheet.SE, SoundData.SE.StageSelect);
+            return;
+        }
+
         HandleStageSelection(mapName, false);
+
+        if (m_isInitialized) Sound.Play(SoundData.CueSheet.SE, SoundData.SE.StageSelect);
     }
 
     /// <summary>
@@ -56,17 +82,22 @@ public class SceneSelectUI : MonoBehaviour
     /// </summary>
     public void OnConfirmStage(string mapName)
     {
-        // 内部で第2引数を true にして共通処理を呼び出す
         HandleStageSelection(mapName, true);
+
+        if (m_isInitialized) Sound.Play(SoundData.CueSheet.SE, SoundData.SE.Button);
     }
 
     /// <summary>
-    /// 【内部共通処理】（※インスペクターには表示されなくなりますが、上の2つから呼ばれます）
+    /// 【内部共通処理】
     /// </summary>
     private void HandleStageSelection(string mapName, bool isClick)
     {
-        // 先ほど作成した中身（foreachなどのロジック）はそのままここにおいておきます
         if (m_stageData == null || m_stageData.stages == null) return;
+        if (string.IsNullOrEmpty(mapName)) return;
+
+        // 【改良】既存のループを廃止し、下部のヘルパー関数を活用して1行に集約
+        StageData.Stage stage = GetStageDataByMapName(mapName);
+        if (stage == null) return;
 
         if (!isClick)
         {
@@ -76,16 +107,9 @@ public class SceneSelectUI : MonoBehaviour
             if (m_previewCoroutine != null) StopCoroutine(m_previewCoroutine);
             if (m_currentPreviewInstance != null) Destroy(m_currentPreviewInstance);
 
-            foreach (var stage in m_stageData.stages)
+            if (stage.previewPrefab != null && m_previewSpawnPoint != null)
             {
-                if (stage != null && stage.mapSceneName == mapName)
-                {
-                    if (stage.previewPrefab != null && m_previewSpawnPoint != null)
-                    {
-                        m_previewCoroutine = StartCoroutine(SpawnAndPlayPreviewRoutine(stage.previewPrefab));
-                    }
-                    break;
-                }
+                m_previewCoroutine = StartCoroutine(SpawnAndPlayPreviewRoutine(stage.previewPrefab));
             }
         }
         else
@@ -96,14 +120,7 @@ public class SceneSelectUI : MonoBehaviour
                 return;
             }
 
-            foreach (var stage in m_stageData.stages)
-            {
-                if (stage != null && stage.mapSceneName == mapName)
-                {
-                    SceneLoader.Instance.LoadGameWithMap(stage.mainSceneName, stage.mapSceneName);
-                    break;
-                }
-            }
+            SceneLoader.Instance.LoadGameWithMap(stage.mainSceneName, stage.mapSceneName);
         }
     }
 
