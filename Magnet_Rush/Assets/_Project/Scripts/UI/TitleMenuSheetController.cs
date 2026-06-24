@@ -74,6 +74,9 @@ public class TitleMenuSheetController : MonoBehaviour
         if (m_canAnyButtonInput)
         {
             m_canAnyButtonInput = false;
+
+            SoundManager.Instance.Play(SoundData.CueSheet.SE, SoundData.SE.Button);
+
             // アニメーション完了後にメニュー表示へ遷移
             StartCoroutine(AnyButtonFadeOutRoutine());
         }
