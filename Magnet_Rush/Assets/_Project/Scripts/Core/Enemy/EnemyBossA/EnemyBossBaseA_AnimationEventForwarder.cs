@@ -16,6 +16,13 @@ public class EnemyBossBaseA_AnimationEventForwarder : MonoBehaviour
             ChannelLogger.LogGuardReturn("Enemy", "EnemyBossBaseA_AnimationEventForwarder.m_target が未アサインです");
     }
 
+    public void OnBossFootStepEvent()
+    {
+        if (m_target != null) m_target.OnBossFootStepEvent();
+
+        ChannelLogger.Log("EnemyBoss", $"OnBossFootStepEvent step1 is Triggered ");
+    }
+
     public void EnableArmHitboxEvent()
     {
         if (m_target != null) m_target.EnableArmHitboxEvent();

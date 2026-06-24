@@ -25,6 +25,9 @@ public class EnemyWalkAxeAi : MonoBehaviour
     [Tooltip("AxeEnemy 同士の重なり回避の強さ")]
     [SerializeField] private float m_allyAvoidanceWeight = 1.5f;
 
+    [Header("Audio")]
+    [SerializeField, Range(0f, 1f)] private float m_enemyWheelVolume = 1f;
+
     private EnemyWalkBase m_enemyBase;
     private NavMeshAgent m_agent;
     private EnemySettings m_data;
@@ -32,7 +35,10 @@ public class EnemyWalkAxeAi : MonoBehaviour
     private Vector3 m_lastDirection;
     private float m_attackTimer;
     private bool m_isAttacking;
+    private bool m_wasMoving;
+    private bool m_enemyWheelPlaying;
     private Health m_ownHealth;
+    private SoundManager.Playback m_enemyWheelPlayback;
 
     private readonly HashSet<Health> m_hitTargets = new();
     private readonly Collider[] m_overlapResults = new Collider[32];
@@ -153,6 +159,8 @@ public class EnemyWalkAxeAi : MonoBehaviour
         m_agent.SetDestination(player.position);
         SetMoving(true);
         m_enemyBase.AccelerateToward(AddAllyAvoidance(GetNavMeshDirection(player)), dt);
+
+
     }
 
     // 丸腰のとき、落ちた自分の武器まで移動し、拾える状態になったら手元へ戻して再装備する。
@@ -367,7 +375,37 @@ public class EnemyWalkAxeAi : MonoBehaviour
 
     private void SetMoving(bool isMoving)
     {
-        m_animator?.SetMoving(isMoving && !m_isAttacking);
+        bool shouldMove = isMoving && !m_isAttacking;
+        m_animator?.SetMoving(shouldMove);
+
+        bool isAnimatorMoving = m_animator != null && m_animator.IsMoving;
+        if (isAnimatorMoving && !m_wasMoving)
+            PlayEnemyWheel();
+        else if (!isAnimatorMoving && m_wasMoving)
+            StopEnemyWheel();
+
+        m_wasMoving = isAnimatorMoving;
+    }
+
+    private void PlayEnemyWheel()
+    {
+        SoundManager soundManager = SoundManager.Instance;
+        if (soundManager == null)
+            return;
+
+        StopEnemyWheel();
+        m_enemyWheelPlayback = soundManager.PlayWithHandle(SoundData.CueSheet.SE, SoundData.SE.EnemyWheel);
+        m_enemyWheelPlayback.SetVolumeAndPitch(m_enemyWheelVolume, 0f);
+        m_enemyWheelPlaying = true;
+    }
+
+    private void StopEnemyWheel()
+    {
+        if (!m_enemyWheelPlaying)
+            return;
+
+        m_enemyWheelPlayback.Stop();
+        m_enemyWheelPlaying = false;
     }
 
     private void OnDisable()
@@ -375,6 +413,7 @@ public class EnemyWalkAxeAi : MonoBehaviour
         SetAttackBoxActive(false);
         m_isAttacking = false;
         SetMoving(false);
+        StopEnemyWheel();
     }
 
     private void LateUpdate()
