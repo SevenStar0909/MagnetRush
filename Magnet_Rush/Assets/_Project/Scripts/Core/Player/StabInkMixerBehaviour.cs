@@ -3,7 +3,8 @@ using UnityEngine.Playables;
 
 /// <summary>
 /// StabInkTrack のミキサー。各クリップの重み（両端イーズ込み）で StabInkEffect.Strength を 0↔strength に補間する。
-/// クリップが効いていない区間は 0（通常画面）へ戻す。Edit モードでは適用しない（StabInk は Play 中のみ）。
+/// クリップが効いていない区間は 0（通常画面）へ戻す。
+/// Timeline の Scene プレビューでも Game ビューに結果を出すため、Edit モードでも同じ値を適用する。
 /// </summary>
 public class StabInkMixerBehaviour : PlayableBehaviour
 {
@@ -11,8 +12,6 @@ public class StabInkMixerBehaviour : PlayableBehaviour
 
     public override void ProcessFrame(Playable playable, FrameData info, object playerData)
     {
-        if (!Application.isPlaying) return;
-
         int n = playable.GetInputCount();
         float blend = 0f;
         float weighted = 0f;

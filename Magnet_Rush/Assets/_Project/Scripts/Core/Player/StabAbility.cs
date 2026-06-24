@@ -10,6 +10,7 @@ public class StabAbility : Ability
     private Transform m_bossTarget;
     private IStabReceiver m_bossReceiver;
     private bool m_warnedNoBossTag;
+    private bool m_suppressProgramHitVfx;
 
     public bool CanStabNow
     {
@@ -79,7 +80,7 @@ public class StabAbility : Ability
         {
             Vector3 hitPoint = m_bossTarget != null ? m_bossTarget.position : m_player.transform.position;
 
-            SpawnStabHitVfx();
+            if (!m_suppressProgramHitVfx) SpawnStabHitVfx();
             // VFX と同フレームでカメラへ着弾を通知＝この瞬間に着弾アップ＋スローを開始させる。
             m_player.FireStabFinisherImpact();
 
@@ -91,6 +92,12 @@ public class StabAbility : Ability
             });
         }
         m_events.FireStab();
+    }
+
+    /// <summary>Timeline が着弾エフェクトを駆動している間、汎用のコード生成 VFX を止める。</summary>
+    public void SetProgramHitVfxSuppressed(bool suppressed)
+    {
+        m_suppressProgramHitVfx = suppressed;
     }
 
     // VFX はボス位置ではなく「プレイヤー前方」に出す。スタブの体感を「自分が刺した感」に寄せるため。

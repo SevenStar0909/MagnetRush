@@ -80,8 +80,8 @@ public class PlayerAnimator : MonoBehaviour
         { typeof(AimPlayerState),  (int)PlayerStateIndex.Aim        },
         { typeof(FallPlayerState), (int)PlayerStateIndex.Fall       },
         { typeof(StabPlayerState), (int)PlayerStateIndex.StabAttack },
-        // 演出ステートはひとまず StabAttack(5) として提示し、パイル(突き刺し)を再生させる。
-        // ジャンプ表現は後段でフェーズ別 State 駆動に差し替える。
+        // 演出中の体は Timeline の Player トラックが駆動する。ここでは演出から抜けた直後の
+        // LastState 参照用にマッピングだけ残す（演出中はコントローラを動かさない）。
         { typeof(BossStabFinisherState), (int)PlayerStateIndex.StabAttack },
     };
 
@@ -105,7 +105,6 @@ public class PlayerAnimator : MonoBehaviour
     private int m_hStab;
     private int m_hHit;
     private int m_hHitUpper;
-    private int m_lastFinisherPhaseIndex = int.MinValue;
 
     void Awake()
     {
@@ -257,6 +256,10 @@ public class PlayerAnimator : MonoBehaviour
     {
         if (m_animator == null) return;
 
+        // スタブ演出中は Timeline の Player トラックが体 Animator を直接駆動する。
+        // ここで同じ Animator へコントローラ用パラメータを書くと二重駆動になり、開始時のブレンド競合で体がガクつく。
+        if (m_states != null && m_states.current is BossStabFinisherState) return;
+
         if (m_player != null)
         {
             m_animator.SetFloat(m_hMoveSpeed, m_player.lateralVelocity.magnitude);
@@ -276,24 +279,6 @@ public class PlayerAnimator : MonoBehaviour
             // 接地中は velocity.y が -SnapForce 固定なので externalVelocity.y を加算して
             // 実効的な垂直速度を Animator に渡す (Jump/Fall サブ遷移を磁力上昇でも駆動する)。
             m_animator.SetFloat(m_hVerticalSpeed, m_player.velocity.y + m_player.externalVelocity.y);
-        }
-
-        // 演出ステート: フェーズに応じて State Int / IsGrounded を上書きし、既存の AnyState 遷移
-        // (State==N + OnStateChanged) で 接近=Idle → 跳び上がり=Fall → 突き下ろし=StabAttack(パイル) を順に再生する。
-        if (m_states != null && m_states.current is BossStabFinisherState finisher)
-        {
-            m_animator.SetBool(m_hIsGrounded, !finisher.IsAirbornePhase);
-            int phaseIdx = finisher.AnimatorPhaseIndex;
-            if (phaseIdx != m_lastFinisherPhaseIndex)
-            {
-                m_lastFinisherPhaseIndex = phaseIdx;
-                m_animator.SetInteger(m_hState, phaseIdx);
-                m_animator.SetTrigger(m_hOnStateChanged);
-            }
-        }
-        else
-        {
-            m_lastFinisherPhaseIndex = int.MinValue;
         }
 
         bool aiming = m_aim != null && m_aim.IsAiming;
@@ -318,6 +303,8 @@ public class PlayerAnimator : MonoBehaviour
     private void HandleStateChange()
     {
         if (m_animator == null || m_states == null) return;
+        // 演出突入時は Timeline が体 Animator を持つので、コントローラのクロスフェードを起こさない（二重駆動防止）。
+        if (m_states.current is BossStabFinisherState) return;
 
         int currentIdx = GetStateIndex(m_states.current?.GetType());
         int lastIdx    = GetStateIndex(m_states.last?.GetType());
