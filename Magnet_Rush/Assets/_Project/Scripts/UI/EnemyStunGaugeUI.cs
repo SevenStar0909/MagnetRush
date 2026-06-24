@@ -26,6 +26,7 @@ public class EnemyStunGaugeUI : MonoBehaviour
 
     private EnemyBossAI.BossState m_lastBossState = EnemyBossAI.BossState.Idle;
     private float m_uiStunTimer = 0f;
+    private float m_retryTimer = 0f;
 
     void Start()
     {
@@ -42,10 +43,22 @@ public class EnemyStunGaugeUI : MonoBehaviour
 
         if (!TryResolveBoss())
         { ChannelLogger.LogGuardReturn("Stun", "Boss未配置"); }
+
     }
 
     void Update()
     {
+        if (m_boss == null)
+        {
+            m_retryTimer -= Time.deltaTime;
+            if (m_retryTimer <= 0f)
+            {
+                TryResolveBoss(); // 毎フレームではなく、例えば1秒に1回だけ試行
+                m_retryTimer = 1.0f;
+            }
+            return;
+        }
+
         if (m_boss == null || m_playerTarget == null || m_gaugeFillImage == null || m_gaugeBackgroundImage == null) return;
 
         if (!m_isSpawned)
@@ -84,12 +97,14 @@ public class EnemyStunGaugeUI : MonoBehaviour
 
             m_uiStunTimer = Mathf.Max(0f, m_uiStunTimer - Time.deltaTime);
 
-            displayRatio = maxDuration > 0f ? 1.0f - (m_uiStunTimer / maxDuration) : 1f;
+            //displayRatio = maxDuration > 0f ? 1.0f - (m_uiStunTimer / maxDuration) : 1f;
+            displayRatio = maxDuration > 0f ? (m_uiStunTimer / maxDuration) : 0f;
         }
         else
         {
             // Stamina は内部的に「満タン→0」で減るが、プレイヤーには「スタンゲージが溜まる」見せ方にする。
             displayRatio = 1f - m_boss.Stamina.StaminaRatio;
+            //displayRatio = maxDuration > 0f ? (m_uiStunTimer / maxDuration) : 0f;
         }
 
         m_lastBossState = m_boss.State;
