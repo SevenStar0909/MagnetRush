@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 
 public class SimpleTutorial : MonoBehaviour
 {
@@ -43,10 +44,9 @@ public class SimpleTutorial : MonoBehaviour
     public List<TutorialStepData> phase9_BattleStart;     // 元のセリフ 28〜29
     [Header("=== 敵を撃破したら ===")]
     public List<TutorialStepData> phase10_EnemyDefeated;  // 元のセリフ 30
-    [Header("=== 図4の部分まで進んだら ===")]
-    public List<TutorialStepData> phase11_TurretSpotted;  // 元のセリフ 31〜32
-    [Header("=== 図5の部分まで進んだら ===")]
-    public List<TutorialStepData> phase12_Outro;          // 元のセリフ 33〜34
+    [Header("=== ゴール部分まで進んだら ===")]
+    [FormerlySerializedAs("phase12_Outro")]
+    public List<TutorialStepData> phase11_Outro;
 
     [Header("=== ゲーム進行用の設定 ===")]
     public Transform playerTransform;     // 👈 プレイヤーのTransform
@@ -77,11 +77,8 @@ public class SimpleTutorial : MonoBehaviour
         // 【仕様書 ⑭】図3（ゾーン3）への移動待ち
         if (zoneNumber == 3 && currentStep == 14) currentStep = 15;
 
-        // 【仕様書 ⑰】図4（ゾーン4）への移動待ち
-        if (zoneNumber == 4 && currentStep == 17) currentStep = 18;
-
-        // 【仕様書 ⑱】図5（ゾーン5）への移動待ち
-        if (zoneNumber == 5 && currentStep == 18) currentStep = 19;
+        // 敵撃破後、ゴール（ゾーン5）への移動待ち
+        if (zoneNumber == 5 && currentStep == 17) currentStep = 18;
     }
 
     void Start()
@@ -241,25 +238,15 @@ public class SimpleTutorial : MonoBehaviour
         currentStep = 17;
         yield return StartCoroutine(PlayPhaseRoutine(phase10_EnemyDefeated));
 
-        // ゾーン4（タレット前）への移動待ち
+        // ゴールエリア（ゾーン5）への移動待ち
         while (currentStep == 17)
         {
             yield return null;
         }
 
-        // --- フェーズ 11: タレット発見 ---
+        // --- フェーズ 11: ゴール・シミュレーション終了 ---
         currentStep = 18;
-        yield return StartCoroutine(PlayPhaseRoutine(phase11_TurretSpotted));
-
-        // ゾーン5（ゴールエリア）への移動待ち
-        while (currentStep == 18)
-        {
-            yield return null;
-        }
-
-        // --- フェーズ 12: ゴール・シミュレーション終了 ---
-        currentStep = 19;
-        yield return StartCoroutine(PlayPhaseRoutine(phase12_Outro));
+        yield return StartCoroutine(PlayPhaseRoutine(phase11_Outro));
     }
 
     //【追加】1つのフェーズ内のセリフを連続再生する汎用関数

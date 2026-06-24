@@ -97,7 +97,7 @@ public class ShootingAbility : Ability
         }
 
         m_events.FireShoot();
-        SoundManager.Instance.Play(SoundData.CueSheet.SE, SoundData.SE.PlayerShot); // サウンド再生
+        Sound.Play(SoundData.CueSheet.SE, SoundData.SE.PlayerShot);
     }
 
     /// <summary>A / F 入力があればセルフファイア（自己磁化）。毎フレーム呼ぶ。</summary>
@@ -167,7 +167,7 @@ public class ShootingAbility : Ability
             BulletManager.Instance.IncrementShotCount();
 
         m_events.FireSelfShoot();
-        SoundManager.Instance.Play(SoundData.CueSheet.SE, SoundData.SE.SelfShot); // サウンド再生
+        Sound.Play(SoundData.CueSheet.SE, SoundData.SE.SelfShot);
     }
 
     /// <summary>X 入力があればリロード（全弾クリア）。毎フレーム呼ぶ。</summary>
@@ -178,6 +178,7 @@ public class ShootingAbility : Ability
         m_input.ConsumeReload();
         BulletManager.Instance.ClearAll();
         m_events.FireReload();
+        Sound.Play(SoundData.CueSheet.SE, SoundData.SE.Reload);
     }
 
     /// <summary>
