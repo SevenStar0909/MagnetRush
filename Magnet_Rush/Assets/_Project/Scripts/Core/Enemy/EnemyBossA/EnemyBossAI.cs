@@ -198,6 +198,15 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
 
     void Update()
     {
+        if (this.transform.position.y < -100f)
+        {
+
+            Vector3 pos = this.transform.position;
+            pos.y = -25.0f;
+            this.transform.position = pos;
+
+        }
+
         if (m_player == null || m_settings == null || m_animator == null)
         { ChannelLogger.LogGuardReturn("Enemy", "プレイヤー/Settings/Agent/Animator未取得"); return; }
 
@@ -359,6 +368,13 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
         if (m_staminaBreakTimer > 0f) return;
 
         m_staminaBreakEndRequested = true;
+
+        // 崩れ回復時はスタミナをリセットする。スタンゲージが満タンのままだと、次の被弾で即よろけてループする。
+        if (m_stamina != null)
+            m_stamina.ResetStamina();
+
+        // sssWind
+
         EndBreakAnimations();
         ChangeState(BossState.Standing);
     }
@@ -420,6 +436,9 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
             // Idle に戻る時は Wind/Dust を必ず止める。Rush の DisableWindEffectEvent が
             // 中断（被弾→Stagger 等）で発火しないまま Idle へ戻ると Wind が出続けるため、保険として停止する。
             // Wind/Dust は Rush/Stun 中しか点かないので Idle で消すのは常に正しい。
+
+            // 押し出す衝撃波
+
             if (m_animator != null)
             {
                 m_animator.DisableWindEffectEvent();
@@ -441,6 +460,9 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
                 m_animator.DisableDustEffectEvent();
             }
         }
+
+        if (next == BossState.Standing && m_animator != null && !m_stabFinisherActive)
+            m_animator.PlayStandImpactEffect();
 
         if (prev == BossState.AttackMotion || prev == BossState.Rush || prev == BossState.Missile)
             m_cooldownTimer = m_settings.attackInterval;
@@ -514,9 +536,6 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
         m_wasInStunAnim = m_animator.IsStunned;
         m_wasInStaggerAnim = m_animator.IsInStagger;
         m_staminaBreakEndRequested = false;
-
-        // ここではスタン値（Stamina）をリセットしない。スタン値はスタブを当てるまで減らない仕様。
-        // リセットは OnStabHit（スタブ成功時）の EndBreakAfterStab でのみ行う。
     }
 
     // === 各状態の Tick ===
@@ -951,6 +970,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
     /// <summary>フィニッシャー演出の開始/終了を受け取り、演出中の崩れ回復を止める。</summary>
     public void BeginStabFinisher() { m_stabFinisherActive = true; m_stabFinisherFacingLock = true; m_stabFinisherFrozenY = transform.position.y; }
     public void EndStabFinisher() { m_stabFinisherActive = false; m_stabFinisherFacingLock = false; }
+    public void PlayStandingImpactEffect() { if (m_animator != null) m_animator.PlayStandImpactEffect(); }
 
     // スタブ成功時：スタン値を0に戻し、これ以上スタブできないようにする（1回のスタンにつき1回）。
     // ただしすぐには起き上がらせず、postStabDownDuration の間ダウンを保持する（命中直後の起き上がりが速すぎる対策）。
@@ -970,6 +990,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
         m_postStabHoldPending = false;
         m_staminaBreakEndRequested = true;
         m_stabFinisherActive = false; // 立ち上がったので演出ロック解除
+        // sssWind
         EndBreakAnimations();
         ChangeState(BossState.Standing);
     }
