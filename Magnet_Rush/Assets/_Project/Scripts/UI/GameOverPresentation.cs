@@ -234,8 +234,14 @@ public class GameOverPresentation : MonoBehaviour
             int dir = ReadVertical();
             if (dir != 0)
             {
-                m_index = Mathf.Clamp(m_index + dir, 0, 1);
-                UpdateArrow();
+                int next = Mathf.Clamp(m_index + dir, 0, 1);
+                if (next != m_index)
+                {
+                    m_index = next;
+                    UpdateArrow();
+                    // 矢印が実際に動いた時だけ移動音を鳴らす（端で押し続けても鳴らさない）
+                    Sound.Play(SoundData.CueSheet.SE, SoundData.SE.Select);
+                }
             }
             if (ReadSubmit()) Confirm();
         }
@@ -250,6 +256,8 @@ public class GameOverPresentation : MonoBehaviour
     private void Confirm()
     {
         m_menuActive = false;
+        // 決定音。SoundManager は DontDestroyOnLoad なのでシーン遷移しても鳴り切る（SceneSelectUI と同じ）
+        Sound.Play(SoundData.CueSheet.SE, SoundData.SE.Button);
         Time.timeScale = 1f;
 
         if (m_index == 0)
