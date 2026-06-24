@@ -42,6 +42,8 @@ public static class SoundData
         public const string DysonEnemy = "DysonEnemy";
         public const string MissileShot = "MissileShot";
         public const string BossEnemySlam = "BossEnemySlam";
+        public const string BossEnemyFoot = "BossEnemyFoot";
+        public const string EnemyWheel = "EnemyWheel";
         public const string MissileImpact = "MissileImpact";
         // 適時追加
     }
