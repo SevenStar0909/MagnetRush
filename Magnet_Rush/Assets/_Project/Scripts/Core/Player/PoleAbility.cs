@@ -34,5 +34,6 @@ public class PoleAbility : Ability
         Debug.Log($"[PoleAbility-DEBUG] 切替後={CurrentPole}, OnPoleChanged subs={(OnPoleChanged != null ? OnPoleChanged.GetInvocationList().Length : 0)}", this);
         OnPoleChanged?.Invoke(CurrentPole);
         m_events.FirePoleSwitch();
+        Sound.Play(SoundData.CueSheet.SE, SoundData.SE.MagChange);
     }
 }

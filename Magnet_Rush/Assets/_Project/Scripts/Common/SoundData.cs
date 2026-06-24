@@ -36,6 +36,15 @@ public static class SoundData
         public const string MagField = "MagField";
         public const string HitObject = "HitObject";
         public const string TurretShot = "TurretShot";
+        public const string Reload = "Reload";
+        public const string MagChange = "MagChange";
+        public const string Aim = "Aim";
+        public const string DysonEnemy = "DysonEnemy";
+        public const string MissileShot = "MissileShot";
+        public const string BossEnemySlam = "BossEnemySlam";
+        public const string BossEnemyFoot = "BossEnemyFoot";
+        public const string EnemyWheel = "EnemyWheel";
+        public const string MissileImpact = "MissileImpact";
         // 適時追加
     }
 
