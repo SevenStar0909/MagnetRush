@@ -98,3 +98,10 @@
 *.renderTexture merge=unityyamlmerge diff
 *.lighting merge=unityyamlmerge diff
 *.shadervariants merge=unityyamlmerge diff
+
+# ============================================================
+# NavMesh ベイク結果はバイナリ
+# 上の "*.asset text eol=lf" / "*.asset merge=unityyamlmerge" だと
+# 改行正規化・YAMLマージでバイナリが壊れる（読込失敗）。binary 指定で除外する。
+# ============================================================
+NavMesh-*.asset binary
