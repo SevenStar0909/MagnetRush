@@ -112,7 +112,9 @@ public class TitleMenuSheetController : MonoBehaviour
         // メニューを表示する前に指定した秒数だけ待機する
         yield return new WaitForSeconds(m_menuDisplayDelay);
 
-        StartCoroutine(SetupMenuRoutine());
+        SceneLoader.Instance.LoadScene(SceneLoader.SceneType.StageSelectScene);
+
+        //StartCoroutine(SetupMenuRoutine());
     }
 
     private IEnumerator SetupMenuRoutine()
