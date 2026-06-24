@@ -13,8 +13,10 @@ MonoBehaviour:
   m_Name: LoadingScreenSettings
   m_EditorClassIdentifier: MagnetRush.Data::LoadingScreenSettings
   backgroundSprites: []
-  backgroundVideos: []
+  backgroundVideos:
+  - {fileID: 32900000, guid: e16cfde1af1ddb84f82111c15c58970c, type: 3}
   minDisplayTime: 1.5
   fadeDuration: 0.3
+  waitForVideoEnd: 1
   playVideoAudio: 0
   loopVideo: 1

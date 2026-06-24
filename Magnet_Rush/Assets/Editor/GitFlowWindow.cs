@@ -40,6 +40,16 @@ public class GitFlowWindow : EditorWindow
     // リポジトリルート
     private string repoRoot;
 
+    // 実行時に自動ベイクされる動的フォントアトラスは「使い捨てキャッシュ」。
+    // ビルド時に ClearDynamicDataOnBuild で破棄され実機では .ttf から焼き直されるため
+    // コミットする意味がなく、ブランチ間でアトラスが食い違ってコンフリクトの原因になる。
+    // コミット時にベイク差分を破棄して churn を断つ（DiscardDynamicFontCache）。
+    private static readonly string[] k_DynamicFontCachePaths =
+    {
+        "Magnet_Rush/Assets/_Project/Asset/Fonts/VDL_GigaG-SDF.asset",
+        "Magnet_Rush/Assets/_Project/Asset/Fonts/NotoSansJP-SDF.asset",
+    };
+
     // 環境チェック結果
     private bool hasGitRepo = false;
     private bool hasRemote = false;
@@ -604,6 +614,25 @@ public class GitFlowWindow : EditorWindow
         {
             return (-1, $"Git 実行エラー: {e.Message}");
         }
+    }
+
+    /// <summary>
+    /// add -A の直後に呼び、動的フォントのベイクキャッシュの変更を破棄する（HEAD に戻す）。
+    /// 単に unstage するだけだと作業ツリーに変更が残り、直後の checkout / pull が
+    /// 「local changes would be overwritten」で失敗するため、作業ツリーごと HEAD に戻して
+    /// tree をクリーンにする。破棄するのは使い捨てキャッシュで、TMP が都度再ベイクする。
+    /// </summary>
+    /// <returns>破棄後もステージにコミット対象が残っていれば true（false ならコミット不要）。</returns>
+    private bool DiscardDynamicFontCache()
+    {
+        foreach (string path in k_DynamicFontCachePaths)
+        {
+            // ステージ・作業ツリーの両方を HEAD に戻す（フォント以外は触らない）
+            RunGit($"checkout -q HEAD -- \"{path}\"");
+        }
+        // 破棄後にステージへ実変更が残っているか（exitCode 0 = 差分なし）
+        var (diffCode, _) = RunGit("diff --cached --quiet");
+        return diffCode != 0;
     }
 
     // ========================================
@@ -1634,6 +1663,12 @@ public class GitFlowWindow : EditorWindow
                 return false;
             }
 
+            if (!DiscardDynamicFontCache())
+            {
+                Log("情報", "動的フォントのベイクキャッシュのみの変更のため、自動コミットをスキップしました。");
+                return true;
+            }
+
             string message = $"Auto-commit {reason}: {DateTime.Now:yyyy/MM/dd HH:mm:ss}";
             (code, output) = RunGit($"commit -m \"{message}\"");
             if (code != 0)
@@ -1908,6 +1943,12 @@ public class GitFlowWindow : EditorWindow
         if (addCode != 0)
         {
             Log("エラー", $"ステージングに失敗しました: {addOutput}");
+            return;
+        }
+
+        if (!DiscardDynamicFontCache())
+        {
+            Log("情報", "動的フォントのベイクキャッシュのみの変更のため、コミットをスキップしました。");
             return;
         }
 

@@ -70,8 +70,20 @@ public class StabFinisherSettings : ScriptableObject
     public Profile stun = new Profile();
 
     [Label("演出カメラの Timeline（このボス専用・未設定なら共通デフォルト）")]
-    [Tooltip("FinisherCamera の寄り/回り込みをアニメートする Timeline。ボスごとに差し替えられる")]
+    [Tooltip("FinisherCamera の寄り/回り込み専用 Timeline。ボスごとに差し替えられる。TimeScaleTrack はここではなく finisherCutscene 側へ置く")]
     public PlayableAsset cameraTimeline;
+
+    [Label("プレイヤー演出 Timeline（録画した軌跡＋体）。設定すると Timeline 駆動になる")]
+    [Tooltip("StabFinisherCutscene 等。PlayerRoot=移動軌跡 / Player=体アニメ / Stab Slow=演出全体のスロー。Camera トラックは使わない（StabFinisherCamera が担当）")]
+    public PlayableAsset finisherCutscene;
+
+    [Label("録画時のボス位置（演出をこのボス相対へずらす基準）")]
+    [Tooltip("Timeline を録画した時のボスのワールド座標。実行時はこの差分だけ演出全体をずらして実ボスへ合わせる")]
+    public Vector3 cutsceneAuthoringBossPosition;
+
+    [Label("Timeline 駆動時のヒット発火時間（秒）")]
+    [Tooltip("演出開始から何秒でボスにダメージ＋VFX を出すか。突きが刺さる瞬間に合わせる")]
+    public float cutsceneHitTime = 2.5f;
 
     /// <summary>崩れ種別インデックス（0=Stagger / 1=Stun）に対応するプロファイルを返す。範囲外は stagger。</summary>
     public Profile GetProfile(int choreographyIndex)

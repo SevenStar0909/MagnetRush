@@ -343,13 +343,23 @@ public class Player : Entity
         // 能力呼び出しは各 State の OnStep が Player.TickAllAbilities() 経由で行う。
         // Stab/Die は OnStep を空にすることで自動的に全入力ロックされる。
 
-        // 通常時は従来どおり Update ベースで動かす（60Hz 直書きで滑らか）
-        if (!IsSlowMotion)
+        bool isStabFinisher = states.IsCurrentOfType<BossStabFinisherState>();
+
+        // 通常時は従来どおり Update ベースで動かす。
+        // スタブ演出はスロー中も PlayerRoot と Camera の Timeline を同じ描画フレームで評価し、ずれを防ぐ。
+        if (!IsSlowMotion || isStabFinisher)
         {
             float dt = Mathf.Min(Time.deltaTime, Time.fixedDeltaTime * 3f);
             states.UpdateState(dt);
-            // 死亡・スタブ演出中（controlsOwnTransform）と磁力張り付き中は重力・移動を完全停止する。
-            if (!controlsOwnTransform && !isMagnetStuck) UpdateEntity(dt);
+
+            // UpdateState 内でスタブへ遷移する場合があるため、遷移後も再判定する。
+            // 遷移フレームに通常移動を重ねると Timeline の先頭姿勢が一度押し戻されてガクつく。
+            bool controlsOwnTransformAfterState = states.IsCurrentOfType<DiePlayerState>()
+                || states.IsCurrentOfType<BossStabFinisherState>();
+            bool isMagnetStuckAfterState = states.IsCurrentOfType<MagnetStickPlayerState>();
+            if (!controlsOwnTransform && !controlsOwnTransformAfterState
+                && !isMagnetStuck && !isMagnetStuckAfterState)
+                UpdateEntity(dt);
         }
     }
 
@@ -358,12 +368,23 @@ public class Player : Entity
         // スロー時のみ FixedUpdate で動かし、TransformInterpolator にサブフレーム補間させる
         if (!IsSlowMotion) return;
 
+        // スタブ Timeline は Update で PlayerRoot と Camera をまとめて評価する。
+        // ここでも進めると二重更新になり、両トラックの再生位置がずれる。
+        if (states.IsCurrentOfType<BossStabFinisherState>()) return;
+
         bool isDying = states.IsCurrentOfType<DiePlayerState>();
         bool controlsOwnTransform = isDying || states.IsCurrentOfType<BossStabFinisherState>();
         bool isMagnetStuck = states.IsCurrentOfType<MagnetStickPlayerState>();
         float dt = Time.fixedDeltaTime;
         states.UpdateState(dt);
-        if (!controlsOwnTransform && !isMagnetStuck) UpdateEntity(dt);
+
+        // FixedUpdate 内でスタブへ遷移した場合も、同じ物理ステップの通常移動を重ねない。
+        bool controlsOwnTransformAfterState = states.IsCurrentOfType<DiePlayerState>()
+            || states.IsCurrentOfType<BossStabFinisherState>();
+        bool isMagnetStuckAfterState = states.IsCurrentOfType<MagnetStickPlayerState>();
+        if (!controlsOwnTransform && !controlsOwnTransformAfterState
+            && !isMagnetStuck && !isMagnetStuckAfterState)
+            UpdateEntity(dt);
     }
 
     /// <summary>
