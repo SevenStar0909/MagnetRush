@@ -383,6 +383,11 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
             m_animator.TriggerStaggerEnd();
         }
 
+        if (m_stamina != null)
+        {
+            m_stamina.ResetStamina();
+        }
+
         m_animator.SetIsStunnedFalse();
     }
 
@@ -957,8 +962,8 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
     // 実際の起き上がり（崩れ終了＋Idle復帰）は保持経過後に TickStaminaBreakTimer が RecoverFromStab で行う。
     private void EndBreakAfterStab()
     {
-        if (m_stamina != null)
-            m_stamina.ResetStamina();
+        //if (m_stamina != null)
+            //m_stamina.ResetStamina();
 
         m_postStabHoldTimer = Mathf.Max(0f, m_settings != null ? m_settings.postStabDownDuration : 0f);
         m_postStabHoldPending = true;
