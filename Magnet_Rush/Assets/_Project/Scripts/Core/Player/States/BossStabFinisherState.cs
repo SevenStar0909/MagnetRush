@@ -162,13 +162,16 @@ public class BossStabFinisherState : EntityState<Player>
 
             if (authoringEffect != null)
             {
-                Transform authoringRoot = authoringEffect.transform.root;
-                Vector3 authoringPosition = authoringRoot.InverseTransformPoint(authoringEffect.transform.position);
-                Quaternion authoringRotation = Quaternion.Inverse(authoringRoot.rotation) * authoringEffect.transform.rotation;
+                // プレイヤー・カメラの再アンカーと同じくワールド座標で差分を取る。authoringRoot の
+                // ローカルへ変換すると、原点にないシーン（翻訳ルート下の Stage2_MAP インスタンス等）で
+                // ワールドの m_anchorA0 と座標系が混ざり、エフェクトがリグ変換ぶんずれて出る。
+                Vector3 authoringPosition = authoringEffect.transform.position;
+                Quaternion authoringRotation = authoringEffect.transform.rotation;
                 m_impactEffect.transform.SetPositionAndRotation(
                     m_anchorA1 + m_anchorYawDelta * (authoringPosition - m_anchorA0),
                     m_anchorYawDelta * authoringRotation);
-                m_impactEffect.transform.localScale = authoringEffect.transform.localScale;
+                // 複製は親なしで生成するので、親のスケールまで含めた見た目を lossyScale で再現する。
+                m_impactEffect.transform.localScale = authoringEffect.transform.lossyScale;
             }
             else
             {
