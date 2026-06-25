@@ -32,7 +32,7 @@ public class BossStabFinisherState : EntityState<Player>
     private TransformInterpolator[] m_transformInterpolators;
     private Animator m_bodyAnim;
     private RuntimeAnimatorController m_savedBodyController;
-    private GameObject m_impactEffect;
+    private readonly List<GameObject> m_controlledEffectInstances = new List<GameObject>();
 
     /// <summary>PlayerAnimator 互換用。Timeline が体を直接駆動するので固定値でよい（突き扱い・接地扱い）。</summary>
     public int AnimatorPhaseIndex => (int)PlayerStateIndex.StabAttack;
@@ -151,38 +151,23 @@ public class BossStabFinisherState : EntityState<Player>
             m_cutsceneCamera = null;
         }
 
-        // Timeline 上で調整した着弾エフェクトを複製して Control トラックへバインドする。
-        // exposedName は Timeline 編集時に Unity が再生成するため、固定文字列ではなく実際の Control クリップから取得する。
-        // 作者用オブジェクトの位置オフセット・回転・スケールも録画時アンカー基準で実ボスへ写し、Timeline と同じ見た目にする。
-        if (m_settings.finisherImpactEffect != null && TryGetImpactEffectExposedName(cutscene, out var impactEffectExposedName))
-        {
-            GameObject authoringEffect = FindAuthoringImpactEffect(cutscene, m_director, impactEffectExposedName);
-            GameObject effectTemplate = authoringEffect != null ? authoringEffect : m_settings.finisherImpactEffect;
-            m_impactEffect = Object.Instantiate(effectTemplate);
-
-            if (authoringEffect != null)
-            {
-                // プレイヤー・カメラの再アンカーと同じくワールド座標で差分を取る。authoringRoot の
-                // ローカルへ変換すると、原点にないシーン（翻訳ルート下の Stage2_MAP インスタンス等）で
-                // ワールドの m_anchorA0 と座標系が混ざり、エフェクトがリグ変換ぶんずれて出る。
-                Vector3 authoringPosition = authoringEffect.transform.position;
-                Quaternion authoringRotation = authoringEffect.transform.rotation;
-                m_impactEffect.transform.SetPositionAndRotation(
-                    m_anchorA1 + m_anchorYawDelta * (authoringPosition - m_anchorA0),
-                    m_anchorYawDelta * authoringRotation);
-                // 複製は親なしで生成するので、親のスケールまで含めた見た目を lossyScale で再現する。
-                m_impactEffect.transform.localScale = authoringEffect.transform.lossyScale;
-            }
-            else
-            {
-                Vector3 impactPos = m_receiver.StabAnchor != null ? m_receiver.StabAnchor.position : bossT.position;
-                m_impactEffect.transform.SetPositionAndRotation(impactPos, Quaternion.identity);
-            }
-
-            m_impactEffect.SetActive(false);
-            m_director.SetReferenceValue(impactEffectExposedName, m_impactEffect);
-            player.stab.SetProgramHitVfxSuppressed(true);
-        }
+        // Timeline 上で調整したエフェクトを複製して Control トラックへバインドする。
+        // 位置オフセット・回転・スケールも録画時アンカー基準で実ボスへ写し、Timeline と同じ見た目にする。
+        bool impactEffectBound = TryBindTimelineEffect(
+            cutscene,
+            bossT,
+            "Stab Explosion",
+            m_settings.finisherImpactEffect,
+            "StabExplosionSource",
+            "StabExplosionPreview");
+        TryBindTimelineEffect(
+            cutscene,
+            bossT,
+            "Stab Dust",
+            m_settings.finisherDustEffect,
+            "StabDustSource",
+            "StabDustPreview");
+        if (impactEffectBound) player.stab.SetProgramHitVfxSuppressed(true);
 
         m_duration = cutscene.duration;
         EvaluateAt(player, 0.0);
@@ -230,10 +215,12 @@ public class BossStabFinisherState : EntityState<Player>
         return start == float.MaxValue ? 0f : start;
     }
 
-    private static GameObject FindAuthoringImpactEffect(
+    private GameObject FindAuthoringTimelineEffect(
         TimelineAsset cutscene,
         PlayableDirector runtimeDirector,
-        PropertyName exposedName)
+        PropertyName exposedName,
+        string fallbackExposedName,
+        string previewObjectName)
     {
         var directors = Object.FindObjectsByType<PlayableDirector>(FindObjectsInactive.Include, FindObjectsSortMode.None);
         foreach (var director in directors)
@@ -244,20 +231,60 @@ public class BossStabFinisherState : EntityState<Player>
             if (isValid && effect != null) return effect;
 
             // 旧PrefabはUnityによるキー再生成前の名前で保持しているため、実ゲームSceneではこちらも確認する。
-            effect = director.GetReferenceValue(new PropertyName("StabExplosionSource"), out isValid) as GameObject;
+            effect = director.GetReferenceValue(new PropertyName(fallbackExposedName), out isValid) as GameObject;
             if (isValid && effect != null) return effect;
 
             foreach (var child in director.transform.root.GetComponentsInChildren<Transform>(true))
-                if (child.name == "StabExplosionPreview") return child.gameObject;
+                if (child.name == previewObjectName) return child.gameObject;
         }
         return null;
     }
 
-    private static bool TryGetImpactEffectExposedName(TimelineAsset cutscene, out PropertyName exposedName)
+    private bool TryBindTimelineEffect(
+        TimelineAsset cutscene,
+        Transform fallbackAnchor,
+        string trackName,
+        GameObject fallbackPrefab,
+        string fallbackExposedName,
+        string previewObjectName)
+    {
+        if (!TryGetControlEffectExposedName(cutscene, trackName, out var exposedName)) return false;
+
+        GameObject authoringEffect = FindAuthoringTimelineEffect(cutscene, m_director, exposedName, fallbackExposedName, previewObjectName);
+        GameObject effectTemplate = authoringEffect != null ? authoringEffect : fallbackPrefab;
+        if (effectTemplate == null) return false;
+
+        GameObject effectInstance = Object.Instantiate(effectTemplate);
+        if (authoringEffect != null)
+        {
+            // プレイヤー・カメラの再アンカーと同じくワールド座標で差分を取る。authoringRoot の
+            // ローカルへ変換すると、原点にないシーン（翻訳ルート下の Stage2_MAP インスタンス等）で
+            // ワールドの m_anchorA0 と座標系が混ざり、エフェクトがリグ変換ぶんずれて出る。
+            Vector3 authoringPosition = authoringEffect.transform.position;
+            Quaternion authoringRotation = authoringEffect.transform.rotation;
+            effectInstance.transform.SetPositionAndRotation(
+                m_anchorA1 + m_anchorYawDelta * (authoringPosition - m_anchorA0),
+                m_anchorYawDelta * authoringRotation);
+            // 複製は親なしで生成するので、親のスケールまで含めた見た目を lossyScale で再現する。
+            effectInstance.transform.localScale = authoringEffect.transform.lossyScale;
+        }
+        else
+        {
+            Vector3 effectPos = m_receiver.StabAnchor != null ? m_receiver.StabAnchor.position : fallbackAnchor.position;
+            effectInstance.transform.position = effectPos;
+        }
+
+        effectInstance.SetActive(false);
+        m_director.SetReferenceValue(exposedName, effectInstance);
+        m_controlledEffectInstances.Add(effectInstance);
+        return true;
+    }
+
+    private static bool TryGetControlEffectExposedName(TimelineAsset cutscene, string trackName, out PropertyName exposedName)
     {
         foreach (var track in cutscene.GetOutputTracks())
         {
-            if (track is not ControlTrack || track.name != "Stab Explosion") continue;
+            if (track is not ControlTrack || track.name != trackName) continue;
 
             foreach (var clip in track.GetClips())
             {
@@ -318,11 +345,11 @@ public class BossStabFinisherState : EntityState<Player>
             m_bodyAnim = null;
             m_savedBodyController = null;
         }
-        if (m_impactEffect != null)
+        foreach (var effectInstance in m_controlledEffectInstances)
         {
-            Object.Destroy(m_impactEffect);
-            m_impactEffect = null;
+            if (effectInstance != null) Object.Destroy(effectInstance);
         }
+        m_controlledEffectInstances.Clear();
         m_cutsceneCamera?.EndCutsceneCameraTracks();
         m_cutsceneCamera = null;
         // 破棄したクローンrigのオフセット残骸を描画フック側に残さない。

@@ -97,6 +97,10 @@ public class StabFinisherSettings : ScriptableObject
     [Tooltip("突きがボスに刺さった瞬間に出すエフェクトのプレハブ。StabFinisherCutscene の Stab Explosion トラックが再生を進めるので、スロー中でも止まらず最後まで再生される")]
     public GameObject finisherImpactEffect;
 
+    [Label("Dustエフェクト（Timelineで調整）")]
+    [Tooltip("StabFinisherCutscene の Stab Dust トラックで再生するDustプレハブ。位置・開始時間・尺はTimeline上のプレビューオブジェクトとクリップで調整する")]
+    public GameObject finisherDustEffect;
+
     /// <summary>崩れ種別インデックス（0=Stagger / 1=Stun）に対応するプロファイルを返す。範囲外は stagger。</summary>
     public Profile GetProfile(int choreographyIndex)
     {
