@@ -98,3 +98,11 @@
 *.renderTexture merge=unityyamlmerge diff
 *.lighting merge=unityyamlmerge diff
 *.shadervariants merge=unityyamlmerge diff
+
+# ============================================================
+# NavMesh バイナリアセットの除外（後勝ちで *.asset の text/merge を上書き）
+# NavMesh-*.asset は全てバイナリ。行8(text eol=lf)/行86(unityyamlmerge)が
+# 改行正規化してバイナリを破損させる（Unknown error while loading）ため binary 指定。
+# binary マクロ = -text -diff -merge
+# ============================================================
+NavMesh-*.asset binary

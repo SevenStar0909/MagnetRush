@@ -617,6 +617,11 @@ public class SOBrowserWindow : EditorWindow
             {
                 var lr = f.GetCustomAttribute<LabelRangeAttribute>();
                 if (lr != null) label = lr.Text;
+                else
+                {
+                    var lm = f.GetCustomAttribute<LabelMinAttribute>();
+                    if (lm != null) label = lm.Text;
+                }
             }
             pane.rows.Add(new SheetRow { IsHeader = false, Label = label, FieldName = f.Name });
         }

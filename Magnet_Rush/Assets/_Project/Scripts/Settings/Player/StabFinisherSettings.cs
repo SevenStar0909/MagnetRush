@@ -49,9 +49,8 @@ public class StabFinisherSettings : ScriptableObject
         public float retreatDuration = 0.4f;
 
         [Header("[突き調整]")]
-        [Label("突き時に頭側へ寄せる量（0=足場のまま / 1=頭の位置）")]
+        [LabelRange("突き時に頭側へ寄せる量（0=足場のまま / 1=頭の位置）", 0f, 1f)]
         [Tooltip("突きの瞬間、足場の上からボス頭(StabAnchor)へどれだけ寄せるか。頭に当てたいなら上げる")]
-        [Range(0f, 1f)]
         public float plungeHeadPull = 0.3f;
 
         [Label("突き時に上半身を頭側へ傾ける角度（度）")]

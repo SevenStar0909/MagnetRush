@@ -15,9 +15,8 @@ public class ContactDamageSettings : ScriptableObject
         new Keyframe(0f, 0f),
         new Keyframe(8f, 5f));
 
-    [Label("スタン値の蓄積率（％）")]
+    [LabelRange("スタン値の蓄積率（％）", 0, 100)]
     [Tooltip("この物理オブジェクトをボス本体にぶつけたとき、ボスのスタンゲージが何％溜まるか。小=10, 大=30 が目安")]
-    [Range(0, 100)]
     public int stunGaugePercent = 10;
 
     [Header("[判定]")]
@@ -44,9 +43,8 @@ public class ContactDamageSettings : ScriptableObject
         new Keyframe(5f, 0.16f),
         new Keyframe(15f, 0.28f));
 
-    [Label("揺れの細かさ")]
+    [LabelMin("揺れの細かさ", 0f)]
     [Tooltip("数値が大きいほど細かく速く揺れる")]
-    [Min(0f)]
     public float cameraShakeFrequency = 35f;
 
     [Header("[ヒットストップ]")]
@@ -61,8 +59,33 @@ public class ContactDamageSettings : ScriptableObject
         new Keyframe(5f, 0.04f),
         new Keyframe(15f, 0.08f));
 
-    [Label("停止中の時間倍率")]
+    [LabelRange("停止中の時間倍率", 0f, 1f)]
     [Tooltip("0で完全停止、0.1ならかなり遅いスロー。強すぎる場合は少し上げる")]
-    [Range(0f, 1f)]
     public float hitStopTimeScale = 0f;
+
+    [Header("[振動]")]
+    [Label("コントローラー振動を使う")]
+    [Tooltip("敵に磁力接触ダメージを与えたとき、ダメージ量に応じてコントローラーを振動させる")]
+    public bool enableRumble = true;
+
+    [Label("ダメージごとの重い振動")]
+    [Tooltip("横軸=ダメージ量、縦軸=重いゴロゴロした振動の強さ(0〜1)。0にすると鳴らない")]
+    public AnimationCurve rumbleLowByDamage = new AnimationCurve(
+        new Keyframe(0f, 0f),
+        new Keyframe(5f, 0.45f),
+        new Keyframe(15f, 0.9f));
+
+    [Label("ダメージごとの軽い振動")]
+    [Tooltip("横軸=ダメージ量、縦軸=軽いブルブルした振動の強さ(0〜1)。0にすると鳴らない")]
+    public AnimationCurve rumbleHighByDamage = new AnimationCurve(
+        new Keyframe(0f, 0f),
+        new Keyframe(5f, 0.35f),
+        new Keyframe(15f, 0.7f));
+
+    [Label("ダメージごとの振動時間")]
+    [Tooltip("横軸=ダメージ量、縦軸=振動の長さ(秒)。短いほど鋭い手応えになる")]
+    public AnimationCurve rumbleDurationByDamage = new AnimationCurve(
+        new Keyframe(0f, 0f),
+        new Keyframe(5f, 0.12f),
+        new Keyframe(15f, 0.22f));
 }
