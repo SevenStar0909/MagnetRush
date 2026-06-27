@@ -270,8 +270,10 @@ public class BossStabFinisherState : EntityState<Player>
         }
         else
         {
+            // authoring プレビューが見つからない素のプレハブ複製は、回転も identity に正規化する。
+            // ここを省くとプレハブ既定の回転のまま出て、地面水平前提の Dust 等が斜め・天井向きに出る。
             Vector3 effectPos = m_receiver.StabAnchor != null ? m_receiver.StabAnchor.position : fallbackAnchor.position;
-            effectInstance.transform.position = effectPos;
+            effectInstance.transform.SetPositionAndRotation(effectPos, Quaternion.identity);
         }
 
         effectInstance.SetActive(false);
