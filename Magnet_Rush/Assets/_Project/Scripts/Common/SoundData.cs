@@ -45,6 +45,9 @@ public static class SoundData
         public const string BossEnemyFoot = "BossEnemyFoot";
         public const string EnemyWheel = "EnemyWheel";
         public const string MissileImpact = "MissileImpact";
+        public const string Button = "Button";
+        public const string Select = "Select";
+        public const string StageSelect = "StageSelect";
         // 適時追加
     }
 

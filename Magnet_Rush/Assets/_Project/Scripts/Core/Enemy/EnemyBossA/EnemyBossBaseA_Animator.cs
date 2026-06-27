@@ -34,6 +34,9 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
     [SerializeField] private bool m_matchArmImpactDustScaleToHitbox = true;
     [Tooltip("右手 AttackHitbox 基準の Dust サイズ倍率。小さくしたい時はこの値を下げる")]
     [SerializeField, Range(0.1f, 2f)] private float m_armImpactDustScaleMultiplier = 0.55f;
+    [SerializeField] private float m_standImpactRadius = 8f;
+    [SerializeField] private float m_standImpactHorizontalForce = 12f;
+    [SerializeField] private float m_standImpactUpwardForce = 3f;
 
     //[Tooltip("ミサイル生成位置。未設定ならこのオブジェクト位置を使用")]
     //[SerializeField] private Transform[] m_missileSpawnPoints;
@@ -284,6 +287,11 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
     protected static bool IsState(int hash, int stateA, int stateB) => hash == stateA || hash == stateB;
 
     // AnimationEvent で呼び出す関数群。攻撃の当たり判定の有効化/無効化や、AIへの通知を行う。
+    public void OnBossFootStepEvent()
+    {
+        Sound.Play(SoundData.CueSheet.SE, SoundData.SE.BossEnemyFoot);
+    }
+
     public void EnableArmHitboxEvent()
     {
         if (m_attackHitboxes != null) m_attackHitboxes.EnableArmHitbox();
@@ -479,6 +487,31 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
 
         m_dustEffect.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
         m_dustEffect.Play(true);
+    }
+
+    public void PlayStandImpactEffect()
+    {
+        PlayArmImpactDustEffect();
+
+        Transform player = m_boss != null ? m_boss.Player : null;
+        if (player == null)
+            return;
+
+        Vector3 toPlayer = player.position - transform.position;
+        toPlayer.y = 0f;
+        float radius = Mathf.Max(0f, m_standImpactRadius);
+        if (toPlayer.sqrMagnitude > radius * radius)
+            return;
+
+        if (!player.TryGetComponent(out Entity playerEntity))
+            return;
+
+        Vector3 horizontalDirection = toPlayer.sqrMagnitude > 0.0001f
+            ? toPlayer.normalized
+            : transform.forward;
+        playerEntity.externalVelocity +=
+            horizontalDirection * Mathf.Max(0f, m_standImpactHorizontalForce)
+            + Vector3.up * Mathf.Max(0f, m_standImpactUpwardForce);
     }
 
     private static float GetMaxAbsScale(Transform target)

@@ -74,6 +74,9 @@ public class TitleMenuSheetController : MonoBehaviour
         if (m_canAnyButtonInput)
         {
             m_canAnyButtonInput = false;
+
+            SoundManager.Instance.Play(SoundData.CueSheet.SE, SoundData.SE.Button);
+
             // アニメーション完了後にメニュー表示へ遷移
             StartCoroutine(AnyButtonFadeOutRoutine());
         }
@@ -112,7 +115,9 @@ public class TitleMenuSheetController : MonoBehaviour
         // メニューを表示する前に指定した秒数だけ待機する
         yield return new WaitForSeconds(m_menuDisplayDelay);
 
-        StartCoroutine(SetupMenuRoutine());
+        SceneLoader.Instance.LoadScene(SceneLoader.SceneType.StageSelectScene);
+
+        //StartCoroutine(SetupMenuRoutine());
     }
 
     private IEnumerator SetupMenuRoutine()

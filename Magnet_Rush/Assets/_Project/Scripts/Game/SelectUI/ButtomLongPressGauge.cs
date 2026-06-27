@@ -143,6 +143,7 @@ public class LongPressGauge : MonoBehaviour, IPointerDownHandler, IPointerUpHand
     private void OnLongPressComplete()
     {
         m_isPressed = false;
+        Sound.Play(SoundData.CueSheet.SE, SoundData.SE.Button);
         if (string.IsNullOrEmpty(m_targetMapName))
             SceneLoader.Instance.LoadScene(SceneLoader.SceneType.TitleScene);
         else

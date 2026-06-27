@@ -384,6 +384,15 @@ public class EntityController : MonoBehaviour
                         displacement.y = 0f;
                 }
 
+                // 接地中に動的な PhysicsObject と重なった場合、下向きの押し出しは地面埋まりの原因になる。
+                // 箱に押されて少し持ち上がるのは許すが、地下へ押し込まれるのは止める。
+                if (m_entity != null && m_entity.IsGrounded
+                    && m_overlaps[i].gameObject.layer == PhysicsLayers.PhysicsObject
+                    && displacement.y < 0f)
+                {
+                    displacement.y = 0f;
+                }
+
                 position += displacement;
             }
         }
