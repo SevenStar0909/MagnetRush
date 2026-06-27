@@ -24,6 +24,7 @@ GameObject:
   - component: {fileID: 8774293733114710440}
   - component: {fileID: 2352887071160559212}
   - component: {fileID: 5259512155968354724}
+  - component: {fileID: 4572914339840791890}
   m_Layer: 9
   m_Name: Enemy_Boss_ver_0618
   m_TagString: Boss
@@ -172,6 +173,9 @@ MonoBehaviour:
   m_armImpactDustOffset: {x: 0, y: 0.05, z: -3}
   m_matchArmImpactDustScaleToHitbox: 1
   m_armImpactDustScaleMultiplier: 0.48
+  m_standImpactRadius: 8
+  m_standImpactHorizontalForce: 12
+  m_standImpactUpwardForce: 3
   m_enableDebugInput: 1
   m_attackName: Attack
   m_attackFinishedName: AttackFinished
@@ -220,22 +224,6 @@ MonoBehaviour:
   m_animator: {fileID: 1537800206930250247}
   m_stabAnchor: {fileID: 0}
   m_stabFinisherSettings: {fileID: 11400000, guid: cb977d2290347014cb9d9ece1b6f684b, type: 2}
-  m_missilePrefab: {fileID: 5509490972982333118, guid: 747eac45c9df97d49b3ef2b43ae206d9, type: 3}
-  m_missileSpawnPoints:
-  - {fileID: 427336397416801071}
-  - {fileID: 4631294791002744509}
-  m_missileSpawnOffsets:
-  - {x: 0, y: -1.5, z: 0}
-  - {x: 0, y: 1.5, z: 0}
-  m_fireLobMissiles: 1
-  m_missileLobAngle: 90
-  m_missileLobRiseTime: 0.12
-  m_missileSideLobAngle: 35
-  m_missileLaunchAngle: 12
-  m_missileArcHeight: 8
-  m_missileArcSpreadDistance: 8
-  m_missileArcLaneSpacing: 3
-  m_missileCollisionGrace: 3
   m_shockAfterAttackStance: 1
   m_shockAfterAttackMotion: 1
   m_shockRadius: 8
@@ -357,6 +345,26 @@ MonoBehaviour:
   m_maxPushPerFrame: 1
   m_maxIterations: 2
   m_horizontalOnly: 1
+--- !u!114 &4572914339840791890
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 529854419887168867}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe9f0da46509a3b4286f02be16c6562c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Enemy::BossMissileLauncher
+  m_settings: {fileID: 11400000, guid: 44b5798bf19b96b4181ae7cc0928cd4c, type: 2}
+  m_missilePrefab: {fileID: 5509490972982333118, guid: 747eac45c9df97d49b3ef2b43ae206d9, type: 3}
+  m_missileSpawnPoints:
+  - {fileID: 427336397416801071}
+  - {fileID: 4631294791002744509}
+  m_missileSpawnOffsets:
+  - {x: 0, y: -1.5, z: 0}
+  - {x: 0, y: 1.5, z: 0}
 --- !u!1 &561331924636560283
 GameObject:
   m_ObjectHideFlags: 0

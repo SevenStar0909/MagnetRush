@@ -24,43 +24,6 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
     [Tooltip("このボス専用のスタブ演出設定（数値＋カメラTimeline）。未設定ならプレイヤー共通設定を使う")]
     [SerializeField] private StabFinisherSettings m_stabFinisherSettings;
 
-    [Header("Missile")]
-    [Tooltip("生成するミサイルPrefab")]
-    [SerializeField] private EnemyMissile m_missilePrefab;
-
-    [Tooltip("ミサイル生成位置。未設定ならこのオブジェクト位置を使用")]
-    [SerializeField] private Transform[] m_missileSpawnPoints;
-
-    [Tooltip("各生成位置のローカルオフセット。m_missileSpawnPoints と同じ順番で指定")]
-    [SerializeField] private Vector3[] m_missileSpawnOffsets;
-
-    [Tooltip("ONでミサイルを 上2発→左上/右上1発ずつ の順に撃つ。OFFなら従来通り前方へ撃つ")]
-    [SerializeField] private bool m_fireLobMissiles = true;
-
-    [Tooltip("分岐後の上ミサイル角度(度)。前方から上へ傾ける。90で真上")]
-    [SerializeField] private float m_missileLobAngle = 45f;
-
-    [Tooltip("発射口から控えめな角度で出てから、上/左右上の形に分岐し始めるまでの時間(秒)")]
-    [SerializeField] private float m_missileLobRiseTime = 0.45f;
-
-    [Tooltip("左右上ミサイルの横方向への開き角度(度)。0なら真上、90なら真横")]
-    [SerializeField] private float m_missileSideLobAngle = 35f;
-
-    [Tooltip("発射口から出る瞬間だけ使う控えめな上向き角度(度)。分岐前の見た目用")]
-    [SerializeField] private float m_missileLaunchAngle = 12f;
-
-    [Tooltip("弧の頂点の高さ。大きいほどミサイル同士が空中で離れやすい")]
-    [SerializeField] private float m_missileArcHeight = 8f;
-
-    [Tooltip("分岐方向へ膨らませる距離。大きいほど横/前方に広い弧を描く")]
-    [SerializeField] private float m_missileArcSpreadDistance = 8f;
-
-    [Tooltip("上2発の弧を左右にずらす距離。0で同じライン")]
-    [SerializeField] private float m_missileArcLaneSpacing = 3f;
-
-    [Tooltip("発射してからこの秒数はミサイルがボス本体に当たらない(発射直後の自爆防止)。経過後はボスにも当たる=磁力で撃ち返せる。0で即当たる")]
-    [SerializeField] private float m_missileCollisionGrace = 3f;
-
     [Header("Shock Wave After Arm Attack Interrupted")]
     [Tooltip("AttackStance から Stunned / Stagger に入った時、周囲の PhysicsObject を押し出す")]
     [SerializeField] private bool m_shockAfterAttackStance = true;
@@ -80,13 +43,11 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
     [Min(0f)]
     [SerializeField] private float m_shockUpwardlForce = 3f;
 
-    // 次の OnMissileFireEvent で左右上ミサイルを撃つか。アニメの2イベントで 上→左右上 と切り替える
-    private bool m_nextMissileIsSideLob;
-
     [Header("Debug")]
     [SerializeField] private bool m_logStateChange = true;
 
     private EnemyBossBase m_boss;
+    private BossMissileLauncher m_missileLauncher;
     private Transform m_player;
     private EnemyBossSettings m_settings;
     private Stamina m_stamina;
@@ -141,6 +102,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
     void Awake()
     {
         m_boss = GetComponent<EnemyBossBase>();
+        m_missileLauncher = GetComponent<BossMissileLauncher>();
         m_stamina = GetComponent<Stamina>();
         m_health = GetComponent<Health>();
 
@@ -438,7 +400,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
 
         // ミサイル攻撃の入り口でトグルをリセット（必ず 1発目=上波 から始める）
         if (next == BossState.Missile)
-            m_nextMissileIsSideLob = false;
+            m_missileLauncher?.ResetWave();
 
         // Rush 中に Stun/Stagger で割り込まれると Rush 側の Disable AnimEvent が発火せず
         // Wind/Dust が出続けるので、ブレイク入り口でも明示停止する
@@ -739,167 +701,12 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
             ChangeState(BossState.Idle);
     }
 
-    /// <summary>Missile 発射イベント専用。AnimationEvent から呼ばれ、各 SpawnPoint からミサイルを生成する。</summary>
+    /// <summary>Missile 発射イベント専用。AnimationEvent から呼ばれ、BossMissileLauncher に1波分の発射を委譲する。</summary>
     public void OnMissileFireEvent()
     {
-        if (m_missilePrefab == null)
-        {
-            ChannelLogger.LogGuardReturn("EnemyBossA", "EnemyBossAI.m_missilePrefab が未アサインです");
-            return;
-        }
-
-        // アニメの2イベントで 1回目=上2発 / 2回目=左上1発+右上1発 と撃つ（計4発）
-        MissileWavePattern pattern = m_fireLobMissiles
-            ? (m_nextMissileIsSideLob ? MissileWavePattern.LeftRightUp : MissileWavePattern.Up)
-            : MissileWavePattern.Forward;
-
-        FireMissileWave(pattern);
-        Sound.Play(SoundData.CueSheet.SE, SoundData.SE.MissileShot);
-        m_nextMissileIsSideLob = !m_nextMissileIsSideLob;
+        if (m_missileLauncher != null)
+            m_missileLauncher.FireNextWave();
         m_animator.TriggerMissileFinished();
-    }
-
-    private enum MissileWavePattern
-    {
-        Forward,
-        Up,
-        LeftRightUp
-    }
-
-    /// <summary>1波分。全発射点からパターンに応じた初期方向で1発ずつ撃つ。</summary>
-    private void FireMissileWave(MissileWavePattern pattern)
-    {
-        if (m_missilePrefab == null) return;
-
-        if (!HasAnyMissileSpawnPoint())
-        {
-            SpawnMissileAt(this.transform, Vector3.zero, pattern, 0, pattern == MissileWavePattern.LeftRightUp ? 2 : 1);
-            if (pattern == MissileWavePattern.LeftRightUp)
-                SpawnMissileAt(this.transform, Vector3.zero, pattern, 1, 2);
-            return;
-        }
-
-        int spawnCount = m_missileSpawnPoints.Length;
-        for (int i = 0; i < m_missileSpawnPoints.Length; i++)
-        {
-            Transform spawnPoint = m_missileSpawnPoints[i];
-            if (spawnPoint == null) continue;
-
-            Vector3 offset = Vector3.zero;
-            if (m_missileSpawnOffsets != null && i < m_missileSpawnOffsets.Length)
-                offset = m_missileSpawnOffsets[i];
-
-            SpawnMissileAt(spawnPoint, offset, pattern, i, spawnCount);
-        }
-    }
-
-    private bool HasAnyMissileSpawnPoint()
-    {
-        if (m_missileSpawnPoints == null || m_missileSpawnPoints.Length == 0)
-            return false;
-
-        for (int i = 0; i < m_missileSpawnPoints.Length; i++)
-        {
-            if (m_missileSpawnPoints[i] != null)
-                return true;
-        }
-
-        return false;
-    }
-
-    private Vector3 ComputeMissileDirection(MissileWavePattern pattern, int spawnIndex)
-    {
-        switch (pattern)
-        {
-            case MissileWavePattern.Up:
-                return ComputeUpDirection();
-
-            case MissileWavePattern.LeftRightUp:
-                return ComputeSideUpDirection(spawnIndex);
-
-            default:
-                return transform.forward;
-        }
-    }
-
-    /// <summary>上ミサイルの初期方向。ボス正面を上へ m_missileLobAngle 度だけ傾ける。</summary>
-    private Vector3 ComputeUpDirection()
-    {
-        Vector3 fwd = transform.forward;
-        if (fwd.sqrMagnitude <= 0.0001f) fwd = Vector3.forward;
-        return Vector3.RotateTowards(fwd, Vector3.up, m_missileLobAngle * Mathf.Deg2Rad, 0f).normalized;
-    }
-
-    /// <summary>左上/右上ミサイルの初期方向。</summary>
-    private Vector3 ComputeSideUpDirection(int spawnIndex)
-    {
-        float sideSign = spawnIndex % 2 == 0 ? -1f : 1f;
-        Vector3 side = transform.right * sideSign;
-        float angle = Mathf.Clamp(m_missileSideLobAngle, 0f, 89f) * Mathf.Deg2Rad;
-        Vector3 direction = Vector3.up * Mathf.Cos(angle) + side * Mathf.Sin(angle);
-        return direction.sqrMagnitude > 0.0001f ? direction.normalized : Vector3.up;
-    }
-
-    private Vector3 ComputeLaunchDirection(Transform spawnPoint)
-    {
-        Vector3 bossForward = transform.forward;
-        if (bossForward.sqrMagnitude <= 0.0001f)
-            bossForward = Vector3.forward;
-
-        Vector3 fwd = spawnPoint != null ? spawnPoint.forward : bossForward;
-        if (fwd.sqrMagnitude <= 0.0001f)
-            fwd = bossForward;
-
-        // 左右でミラーされた発射口は forward が後ろ向きになることがある。
-        // その場合だけボス正面を使い、発射直後に背面へ飛ぶ見た目を防ぐ。
-        if (Vector3.Dot(Vector3.ProjectOnPlane(fwd, Vector3.up), Vector3.ProjectOnPlane(bossForward, Vector3.up)) < 0f)
-            fwd = bossForward;
-
-        float launchAngle = Mathf.Clamp(m_missileLaunchAngle, 0f, 89f) * Mathf.Deg2Rad;
-        return Vector3.RotateTowards(fwd.normalized, Vector3.up, launchAngle, 0f).normalized;
-    }
-
-    private float ComputeArcLaneOffset(MissileWavePattern pattern, int spawnIndex, int spawnCount)
-    {
-        if (pattern != MissileWavePattern.Up || spawnCount <= 1)
-            return 0f;
-
-        float center = (spawnCount - 1) * 0.5f;
-        return (spawnIndex - center) * m_missileArcLaneSpacing;
-    }
-
-    private void SpawnMissileAt(Transform spawnPoint, Vector3 localOffset, MissileWavePattern pattern, int spawnIndex, int spawnCount)
-    {
-        Vector3 spawnPos = spawnPoint.position + spawnPoint.TransformDirection(localOffset);
-        Vector3 formationDirection = ComputeMissileDirection(pattern, spawnIndex);
-        bool useArcFlight = pattern != MissileWavePattern.Forward;
-        Vector3 launchDirection = useArcFlight ? ComputeLaunchDirection(spawnPoint) : formationDirection;
-
-        if (launchDirection.sqrMagnitude <= 0.0001f)
-            launchDirection = spawnPoint.forward;
-        launchDirection = launchDirection.normalized;
-
-        Quaternion rotation = Quaternion.LookRotation(launchDirection, Vector3.up);
-        EnemyMissile missile = Instantiate(m_missilePrefab, spawnPos, rotation);
-        if (useArcFlight)
-        {
-            float laneOffset = ComputeArcLaneOffset(pattern, spawnIndex, spawnCount);
-            missile.InitializeArc(
-                m_player,
-                launchDirection,
-                formationDirection,
-                m_missileLobRiseTime,
-                m_missileArcHeight,
-                m_missileArcSpreadDistance,
-                laneOffset
-            );
-        }
-        else
-        {
-            missile.Initialize(m_player, launchDirection, -1f);
-        }
-        // ミサイルは PhysicsObject なので発射元ボスの Pushbox 等と衝突してしまう。spawn 即爆発・自傷を防ぐ。
-        missile.IgnoreCollisionsWith(gameObject, m_missileCollisionGrace);
     }
 
     // === IStabReceiver 実装 (Player → Boss スタブ受信) ===
