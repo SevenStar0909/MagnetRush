@@ -59,8 +59,6 @@ public sealed class ArmStunHitbox : MonoBehaviour, IHittable
     /// <summary>所属グループ。攻撃側との比較で自傷・同士討ちを弾く。</summary>
     public HitGroup HitGroup => m_hitGroup;
 
-    public event Action<HitData> OnHitEvent;
-
     private readonly List<CounterCueShape> m_counterCueShapes = new();
     private GameObject m_counterCueRoot;
     private static Material s_counterCueLineMaterial;
@@ -145,8 +143,6 @@ public sealed class ArmStunHitbox : MonoBehaviour, IHittable
             ChannelLogger.Log("EnemyBossA",
                 $"[ArmStunHitbox] 振り下ろしカウンター成立 → Stun src={(hit.source != null ? hit.source.name : "null")}");
         }
-
-        OnHitEvent?.Invoke(hit);
     }
 
     private bool ShouldShowCounterCue()

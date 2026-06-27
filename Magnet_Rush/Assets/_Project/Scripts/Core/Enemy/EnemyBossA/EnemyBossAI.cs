@@ -4,11 +4,11 @@ using UnityEngine;
 using UnityEngine.AI;
 
 /// <summary>
-/// ボスAI。6状態FSM (Idle/Chase/AttackStance/AttackMotion/Stunned/Stagger)。
-/// NavMeshAgent は経路計算のみ (updatePosition=false, updateRotation=false)、実移動は EnemyBossBase.AccelerateToward 経由で EntityController が処理する。
+/// ボスAI。8状態FSM (Idle/AttackStance/AttackMotion/Rush/Missile/Stunned/Stagger/Standing)。
+/// 移動は EnemyBossBase.AccelerateToward 経由で EntityController が処理する（NavMeshAgent は使わない）。
 /// AI → Animator: 状態読み取り (IsAttacking/IsInAttackMotion/IsStunned) のみ。書き込みは Animator が自分で行う。
 /// Animator → AI: AnimEvent 経由の OnAttackFinished/OnStunEnd コールバック。
-/// 依存: EnemyBossBase, NavMeshAgent, EnemyBossBaseA_Animator
+/// 依存: EnemyBossBase, EnemyBossBaseA_Animator
 /// </summary>
 [RequireComponent(typeof(EnemyBossBase))]
 public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
@@ -87,7 +87,6 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
     [SerializeField] private bool m_logStateChange = true;
 
     private EnemyBossBase m_boss;
-    private NavMeshAgent m_agent;
     private Transform m_player;
     private EnemyBossSettings m_settings;
     private Stamina m_stamina;
@@ -142,7 +141,6 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
     void Awake()
     {
         m_boss = GetComponent<EnemyBossBase>();
-        m_agent = GetComponent<NavMeshAgent>();
         m_stamina = GetComponent<Stamina>();
         m_health = GetComponent<Health>();
 
@@ -152,12 +150,9 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
         if (m_animator == null)
             m_animator = GetComponentInChildren<EnemyBossBaseA_Animator>();
 
-        if (m_agent != null)
-        {
-            // Boss AI no longer uses NavMeshAgent; keep the component inert if it remains on old prefabs.
-            m_agent.enabled = false;
-            m_agent = null;
-        }
+        // 旧プレハブに残る NavMeshAgent は AI では使わないので無効化しておく（付いていても動かさない）。
+        var navAgent = GetComponent<NavMeshAgent>();
+        if (navAgent != null) navAgent.enabled = false;
     }
 
     void OnEnable()
@@ -185,13 +180,6 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
         m_player = m_boss.Player;
         m_settings = m_boss.StatusData;
 
-        if (m_agent != null && m_settings != null)
-        {
-            m_agent.speed = m_settings.moveSpeed;
-            m_agent.stoppingDistance = m_settings.stopDistance;
-            m_agent.acceleration = m_settings.acceleration;
-        }
-
         if (m_animator == null)
             ChannelLogger.LogError("Enemy", $"[EnemyBossAI] {name}: EnemyBossBaseA_Animator 未設定");
     }
@@ -208,7 +196,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
         }
 
         if (m_player == null || m_settings == null || m_animator == null)
-        { ChannelLogger.LogGuardReturn("Enemy", "プレイヤー/Settings/Agent/Animator未取得"); return; }
+        { ChannelLogger.LogGuardReturn("Enemy", "プレイヤー/Settings/Animator未取得"); return; }
 
         float dt = Time.deltaTime;
         m_cooldownTimer = Mathf.Max(0f, m_cooldownTimer - dt);
@@ -216,9 +204,6 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
         TickStunEntry(); // Stunアニメーションの開始を検知してStunned状態に入り、回復タイマーを開始する
         TickStaggerEntry(); // Staggerアニメーションの開始を検知してStagger状態に入り、回復タイマーを開始する
         TickStaminaBreakTimer(dt); // Stunned/Staggered 共通の回復タイマー
-
-        TryRecoverAgent();
-        SyncAgentToBody();
 
         switch (m_state)
         {
@@ -975,7 +960,6 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
     /// <summary>フィニッシャー演出の開始/終了を受け取り、演出中の崩れ回復を止める。</summary>
     public void BeginStabFinisher() { m_stabFinisherActive = true; m_stabFinisherFacingLock = true; m_stabFinisherFrozenY = transform.position.y; }
     public void EndStabFinisher() { m_stabFinisherActive = false; m_stabFinisherFacingLock = false; }
-    public void PlayStandingImpactEffect() { if (m_animator != null) m_animator.PlayStandImpactEffect(); }
 
     // スタブ成功時：スタン値を0に戻し、これ以上スタブできないようにする（1回のスタンにつき1回）。
     // ただしすぐには起き上がらせず、postStabDownDuration の間ダウンを保持する（命中直後の起き上がりが速すぎる対策）。
@@ -1025,73 +1009,4 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
         if (look.sqrMagnitude > 0.0001f)
             m_boss.FaceToward(look.normalized, dt, deadZoneDeg);
     }
-
-    private void SyncAgentToBody()
-    {
-        if (m_agent == null) return;
-        if (!m_agent.enabled || !m_agent.isOnNavMesh) return;
-        // EntityController が動かした位置を NavMeshAgent に同期し、内部シミュレーションを抑制
-        m_agent.nextPosition = transform.position;
-        m_agent.velocity = Vector3.zero;
-    }
-
-    private void TryRecoverAgent()
-    {
-        if (m_agent == null) return;
-        if (m_agent.enabled && m_agent.isOnNavMesh) { ChannelLogger.LogGuardReturn("EnemyBossA", "Agent既に有効"); return; }
-
-        const float sampleRadius = 20;
-
-        Vector3 sourcePosition = transform.position;
-        if (!NavMesh.SamplePosition(sourcePosition, out var hit, sampleRadius, NavMesh.AllAreas))
-        {
-            if (m_player != null)
-            {
-                sourcePosition = m_player.position;
-                if (!NavMesh.SamplePosition(sourcePosition, out hit, sampleRadius, NavMesh.AllAreas))
-                {
-                    ChannelLogger.LogGuardReturn("EnemyBossA",
-                        $"NavMeshサンプル失敗 pos={transform.position} player={m_player.position} radius={sampleRadius}");
-                    return;
-                }
-            }
-            else
-            {
-                ChannelLogger.LogGuardReturn("EnemyBossA",
-                    $"NavMeshサンプル失敗 pos={transform.position} radius={sampleRadius}");
-                return;
-            }
-        }
-
-        // 突進終了地点。Agent は NavMesh 上でないと有効化できないので一旦サンプル点へ移すが、
-        // 最後にここへ戻す。これをしないとボスが NavMesh 最寄り点へ瞬間移動する（突進終了時のワープの原因）。
-        Vector3 endPosition = transform.position;
-
-        if (m_agent.enabled)
-            m_agent.enabled = false;
-
-        transform.position = hit.position;
-        m_agent.enabled = true;
-
-        if (m_agent.isOnNavMesh)
-        {
-            m_agent.updatePosition = false;
-            m_agent.updateRotation = false;
-            m_agent.velocity = Vector3.zero;
-
-            // updatePosition=false なので Agent は内部位置(NavMesh上)を保ったまま、ボスの transform だけ
-            // 突進終了地点へ戻す。以降は通常の追従移動で滑らかに NavMesh 上へ戻る（瞬間移動しない）。
-            transform.position = endPosition;
-            m_agent.nextPosition = endPosition;
-
-            ChannelLogger.Log("EnemyBossA", $"Agent復帰成功 pos={transform.position} hit={hit.position}");
-        }
-        else
-        {
-            // 復帰できなかった場合もボスは飛ばさず元の位置へ戻す
-            transform.position = endPosition;
-            ChannelLogger.LogWarning("EnemyBossA", $"Agent復帰失敗 pos={transform.position}");
-        }
-    }
-
 }
