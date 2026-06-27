@@ -281,6 +281,7 @@ GameObject:
   - component: {fileID: 7352363120186605023}
   - component: {fileID: 7064576152818379390}
   - component: {fileID: 3800593402053944762}
+  - component: {fileID: 8711117810412107750}
   m_Layer: 8
   m_Name: _Player
   m_TagString: Player
@@ -388,8 +389,7 @@ MonoBehaviour:
   - FallPlayerState, MagnetRush.Player, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - StabPlayerState, MagnetRush.Player, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - StabPlayerState, MagnetRush.Player, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-  - MagnetStickPlayerState, MagnetRush.Player, Version=0.0.0.0, Culture=neutral,
-    PublicKeyToken=null
+  - MagnetStickPlayerState, MagnetRush.Player, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - BossStabFinisherState, MagnetRush.Player, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
 --- !u!114 &8415192833665430904
 MonoBehaviour:
@@ -692,6 +692,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8f53544fadbe5d540a392fc14654df58, type: 3}
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Player::PlayerAbilityLocker
+--- !u!114 &8711117810412107750
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1725508640444081474}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9120d59e60ffe1e4982de321bd2a9fd9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Core::PlayerRepulsionRumble
+  m_settings: {fileID: 11400000, guid: b9ca63115b45d604d9e50d78da8a80c6, type: 2}
+  m_magnetizable: {fileID: 7473496859954039961}
 --- !u!1 &1986303900024006054
 GameObject:
   m_ObjectHideFlags: 0
@@ -1696,11 +1710,11 @@ PrefabInstance:
       value: -0.5
       objectReference: {fileID: 0}
     - target: {fileID: -2933139716659438605, guid: f06552fba20857b4ebab566556d4415e, type: 3}
-      propertyPath: 'm_Materials.Array.data[0]'
+      propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: 586ee20b6d8b32d4385e28297417a486, type: 2}
     - target: {fileID: -2933139716659438605, guid: f06552fba20857b4ebab566556d4415e, type: 3}
-      propertyPath: 'm_Materials.Array.data[1]'
+      propertyPath: m_Materials.Array.data[1]
       value: 
       objectReference: {fileID: 2100000, guid: 37abf5f11f4f436449ea2c1c037197e5, type: 2}
     - target: {fileID: -2589049417834043258, guid: f06552fba20857b4ebab566556d4415e, type: 3}

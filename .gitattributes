@@ -100,8 +100,9 @@
 *.shadervariants merge=unityyamlmerge diff
 
 # ============================================================
-# NavMesh ベイク結果はバイナリ
-# 上の "*.asset text eol=lf" / "*.asset merge=unityyamlmerge" だと
-# 改行正規化・YAMLマージでバイナリが壊れる（読込失敗）。binary 指定で除外する。
+# NavMesh バイナリアセットの除外（後勝ちで *.asset の text/merge を上書き）
+# NavMesh-*.asset は全てバイナリ。行8(text eol=lf)/行86(unityyamlmerge)が
+# 改行正規化してバイナリを破損させる（Unknown error while loading）ため binary 指定。
+# binary マクロ = -text -diff -merge
 # ============================================================
 NavMesh-*.asset binary

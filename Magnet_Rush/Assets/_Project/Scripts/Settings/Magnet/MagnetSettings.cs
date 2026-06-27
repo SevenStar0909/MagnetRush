@@ -84,4 +84,29 @@ public class MagnetSettings : ScriptableObject
     [LabelRange("磁場が重なったときの力の加算（0=加算しない/一番強い磁場だけ, 1=全部加算）", 0f, 1f)]
     [Tooltip("磁場を複数重ねたとき、2個目以降の引っ張る力をどれだけ足すか。0=一番強い磁場1個分だけ効く（重ねても強くならない）、1=重ねた分だけ強くなる（従来）、0.5=半分だけ足す。1発の磁力の強さや鈍さには影響しない。")]
     public float overlapForceWeight = 1f;
+
+    [Header("[反発の振動]")]
+    [Label("反発時にコントローラーを振動させる")]
+    [Tooltip("プレイヤーが同極磁力で反発（弾かれる）した瞬間にコントローラーを1発振動させる")]
+    public bool enableRepulsionRumble = true;
+
+    [LabelRange("反発の重い振動の強さ（0〜1）", 0f, 1f)]
+    [Tooltip("反発時の重いゴロゴロした振動（低周波モーター）の強さ。0で無効")]
+    public float repulsionRumbleLow = 0.6f;
+
+    [LabelRange("反発の軽い振動の強さ（0〜1）", 0f, 1f)]
+    [Tooltip("反発時の軽いブルブルした振動（高周波モーター）の強さ。0で無効")]
+    public float repulsionRumbleHigh = 0.4f;
+
+    [LabelMin("反発の振動時間（秒）", 0f)]
+    [Tooltip("反発時に振動を鳴らす長さ。短いほど鋭い手応えになる")]
+    public float repulsionRumbleDuration = 0.15f;
+
+    [LabelMin("次の反発を鳴らすまでの間隔（秒）", 0f)]
+    [Tooltip("反発が一旦途切れてからこの時間が経つと、次の反発を新しい1発として鳴らす。連続反発でブルブル鳴り続けるのを防ぐ")]
+    public float repulsionRumbleRetriggerGap = 0.15f;
+
+    [LabelMin("これ未満の弱い反発では鳴らさない", 0f)]
+    [Tooltip("1フレームにかかる反発力がこの値未満なら振動させない。0なら弱い反発でも鳴る")]
+    public float repulsionRumbleMinForce = 0.5f;
 }

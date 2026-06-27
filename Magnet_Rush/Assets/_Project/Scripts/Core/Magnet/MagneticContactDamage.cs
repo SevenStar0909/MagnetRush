@@ -123,6 +123,19 @@ public class MagneticContactDamage : MonoBehaviour
     {
         RequestEnemyDamageCameraShake(damage);
         RequestEnemyDamageHitStop(damage);
+        RequestEnemyDamageRumble(damage);
+    }
+
+    private void RequestEnemyDamageRumble(int damage)
+    {
+        if (!m_settings.enableRumble) return;
+
+        float low = Mathf.Clamp01(m_settings.rumbleLowByDamage.Evaluate(damage));
+        float high = Mathf.Clamp01(m_settings.rumbleHighByDamage.Evaluate(damage));
+        float duration = Mathf.Max(0f, m_settings.rumbleDurationByDamage.Evaluate(damage));
+        if (duration <= 0f || (low <= 0f && high <= 0f)) return;
+
+        Rumble.Pulse(low, high, duration);
     }
 
     private void RequestEnemyDamageCameraShake(int damage)

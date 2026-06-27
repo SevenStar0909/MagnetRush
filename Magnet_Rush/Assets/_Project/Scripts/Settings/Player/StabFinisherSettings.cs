@@ -49,9 +49,8 @@ public class StabFinisherSettings : ScriptableObject
         public float retreatDuration = 0.4f;
 
         [Header("[突き調整]")]
-        [Label("突き時に頭側へ寄せる量（0=足場のまま / 1=頭の位置）")]
+        [LabelRange("突き時に頭側へ寄せる量（0=足場のまま / 1=頭の位置）", 0f, 1f)]
         [Tooltip("突きの瞬間、足場の上からボス頭(StabAnchor)へどれだけ寄せるか。頭に当てたいなら上げる")]
-        [Range(0f, 1f)]
         public float plungeHeadPull = 0.3f;
 
         [Label("突き時に上半身を頭側へ傾ける角度（度）")]
@@ -96,6 +95,10 @@ public class StabFinisherSettings : ScriptableObject
     [Label("着弾エフェクト（突きが刺さった瞬間に出す）")]
     [Tooltip("突きがボスに刺さった瞬間に出すエフェクトのプレハブ。StabFinisherCutscene の Stab Explosion トラックが再生を進めるので、スロー中でも止まらず最後まで再生される")]
     public GameObject finisherImpactEffect;
+
+    [Label("Dustエフェクト（Timelineで調整）")]
+    [Tooltip("StabFinisherCutscene の Stab Dust トラックで再生するDustプレハブ。位置・開始時間・尺はTimeline上のプレビューオブジェクトとクリップで調整する")]
+    public GameObject finisherDustEffect;
 
     /// <summary>崩れ種別インデックス（0=Stagger / 1=Stun）に対応するプロファイルを返す。範囲外は stagger。</summary>
     public Profile GetProfile(int choreographyIndex)

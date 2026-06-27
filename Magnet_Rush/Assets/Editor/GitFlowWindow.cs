@@ -1205,9 +1205,16 @@ public class GitFlowWindow : EditorWindow
     private void TryRestoreSceneSetup(OperationContext ctx)
     {
         if (ctx == null || ctx.SceneSetup == null || ctx.SceneSetup.Length == 0) return;
+
+        var setup = SanitizeSceneSetup(ctx.SceneSetup);
+        if (setup.Length == 0)
+        {
+            ctx.SceneSetup = null;
+            return;
+        }
         try
         {
-            EditorSceneManager.RestoreSceneManagerSetup(ctx.SceneSetup);
+            EditorSceneManager.RestoreSceneManagerSetup(setup);
             Log("情報", "シーンを復元しました。");
         }
         catch (Exception ex)
@@ -1224,6 +1231,50 @@ public class GitFlowWindow : EditorWindow
             }
         }
         ctx.SceneSetup = null;
+    }
+
+    /// <summary>
+    /// RestoreSceneManagerSetup に渡す前に SceneSetup 配列を正規化する。
+    /// 重複パス・空パスを除き、アクティブシーンが必ず1つかつロード済みになるよう整える。
+    /// これをしないと、ドメインリロードを跨いだ復元時などに不正な配列が渡り、
+    /// Unity 内部の重複削除でアサート（remove_duplicates.h: pred(*previous, *i)）が出る。
+    /// </summary>
+    private static SceneSetup[] SanitizeSceneSetup(SceneSetup[] setup)
+    {
+        if (setup == null || setup.Length == 0) return Array.Empty<SceneSetup>();
+
+        var seenPaths = new HashSet<string>();
+        var cleaned = new List<SceneSetup>(setup.Length);
+        foreach (var s in setup)
+        {
+            if (s == null || string.IsNullOrEmpty(s.path)) continue;
+            if (!seenPaths.Add(s.path)) continue; // 重複パスを除去
+            cleaned.Add(new SceneSetup
+            {
+                path = s.path,
+                isLoaded = s.isLoaded,
+                isActive = s.isActive,
+                isSubScene = s.isSubScene
+            });
+        }
+
+        if (cleaned.Count == 0) return Array.Empty<SceneSetup>();
+
+        // アクティブはロード済みのものを1つだけ。候補がなければ先頭をロード扱いにする。
+        int activeIndex = cleaned.FindIndex(s => s.isActive && s.isLoaded);
+        if (activeIndex < 0) activeIndex = cleaned.FindIndex(s => s.isLoaded);
+        if (activeIndex < 0)
+        {
+            activeIndex = 0;
+            cleaned[0].isLoaded = true;
+        }
+
+        for (int i = 0; i < cleaned.Count; i++)
+        {
+            cleaned[i].isActive = (i == activeIndex);
+        }
+
+        return cleaned.ToArray();
     }
 
     /// <summary>
