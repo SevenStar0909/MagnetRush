@@ -108,6 +108,9 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
     /// <summary>接地判定の追加レイ距離。</summary>
     protected virtual float GroundCheckDistance => 0.3f;
 
+    // 足元から地面までこの距離以内なら接地とみなす。細いRaycastと太いCapsule保険プローブで共通の許容値。
+    private const float k_GroundProbeClearance = 0.1f;
+
     /// <summary>接地が一瞬切れても非接地と判定するまでの猶予フレーム数。0で即時(プレイヤー等は0=従来通り)。</summary>
     protected virtual int GroundGraceFrames => 0;
 
@@ -393,19 +396,31 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
         float groundCheckDist = height * 0.5f + GroundCheckDistance;
 
         bool rawGrounded = false;
-        if (Physics.Raycast(transform.position, -transform.up, out var hit, groundCheckDist,
-            GroundLayer, QueryTriggerInteraction.Ignore))
-        {
-            float footDist = hit.distance - height * 0.5f;
-            rawGrounded = footDist < 0.1f;
+        RaycastHit groundProbe = default;
 
-            if (rawGrounded)
-            {
-                groundHit = hit;
-                groundNormal = hit.normal;
-                groundAngle = Vector3.Angle(Vector3.up, hit.normal);
-                localSlopeDirection = new Vector3(groundNormal.x, 0f, groundNormal.z).normalized;
-            }
+        // 1本目: 中心から真下へ細いRaycast。足元までの距離を正確に測る(従来通り)。
+        if (Physics.Raycast(transform.position, -transform.up, out var rayHit, groundCheckDist,
+                GroundLayer, QueryTriggerInteraction.Ignore)
+            && rayHit.distance - height * 0.5f < k_GroundProbeClearance)
+        {
+            rawGrounded = true;
+            groundProbe = rayHit;
+        }
+        // 2本目: 細いRaycastが床の継ぎ目・エッジをすり抜けた時の保険。Entity形状のCapsuleで太く拾う。
+        // 本家 Platformer Project の Sphere+Ray 2本立てと同じ思想で、単発の誤・非接地→重力→再スナップ
+        // による縦のガクつきを判定段階で潰す。Rayが拾えた通常時は撃たないので追加コストは取りこぼし時のみ。
+        else if (CapsuleCast(-transform.up, k_GroundProbeClearance, out var capsuleHit, GroundLayer))
+        {
+            rawGrounded = true;
+            groundProbe = capsuleHit;
+        }
+
+        if (rawGrounded)
+        {
+            groundHit = groundProbe;
+            groundNormal = groundProbe.normal;
+            groundAngle = Vector3.Angle(Vector3.up, groundProbe.normal);
+            localSlopeDirection = new Vector3(groundNormal.x, 0f, groundNormal.z).normalized;
         }
 
         // 接地→空中の単発切れを猶予フレーム分だけ吸収する(接地復帰は即時)。直前の接地情報を保持したまま
