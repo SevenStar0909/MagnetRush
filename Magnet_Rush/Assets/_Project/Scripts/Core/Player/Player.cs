@@ -395,9 +395,50 @@ public class Player : Entity
     {
         if (m_settings == null) return false;
         if (magnetizable == null || !magnetizable.IsActive) return false;
+        if (!HasAttractionInPullDirection(m_settings.magnetStickMinPullSpeed)) return false;
 
         return IsPulledIntoSurface(m_settings.magnetStickLayer,
             m_settings.magnetStickCheckDistance, m_settings.magnetStickMinPullSpeed);
+    }
+
+    private bool HasAttractionInPullDirection(float minPullSpeed)
+    {
+        Vector3 pull = externalVelocity + holdVelocity;
+        if (pull.sqrMagnitude < minPullSpeed * minPullSpeed) return false;
+
+        var manager = MagnetManager.Instance;
+        if (manager == null || manager.Settings == null) return false;
+
+        MagneticPole selfPole = magnetizable.Pole;
+        if (selfPole == MagneticPole.None) return false;
+
+        Vector3 pullDir = pull.normalized;
+        Vector3 selfPosition = magnetizable.Position;
+        float maxRange = manager.Settings.magnetRange;
+        float maxRangeSqr = maxRange * maxRange;
+        var activeMagnets = manager.GetActiveMagnetizables();
+
+        for (int i = 0; i < activeMagnets.Count; i++)
+        {
+            Magnetizable other = activeMagnets[i];
+            if (other == null || other == magnetizable || !other.IsActive) continue;
+            if (other.Pole == MagneticPole.None || other.Pole == selfPole) continue;
+
+            Vector3 toOther = other.Position - selfPosition;
+            float distanceSqr = toOther.sqrMagnitude;
+            if (distanceSqr < 0.0001f || distanceSqr > maxRangeSqr) continue;
+
+            float effectiveOuter = Mathf.Max(
+                magnetizable.FieldOuterRadius + other.FieldInnerRadius,
+                other.FieldOuterRadius + magnetizable.FieldInnerRadius);
+            if (effectiveOuter <= 0f) effectiveOuter = maxRange;
+            if (distanceSqr > effectiveOuter * effectiveOuter) continue;
+
+            if (Vector3.Dot(pullDir, toOther.normalized) > 0.35f)
+                return true;
+        }
+
+        return false;
     }
 
     /// <summary>
