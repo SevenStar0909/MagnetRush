@@ -24,6 +24,25 @@ public static class Sound
     /// <summary>ループSEを再生し、停止用デリゲートを返すフック。(キューシート名, キュー名) → 停止Action。SoundManager が登録する。</summary>
     public static Func<string, string, Action> OnPlayLoop;
 
+    /// <summary>Timeline用の停止・音量変更可能SE再生フック。(キューシート名, キュー名, 開始位置秒, 初期速度倍率) → 再生ハンドル。SoundManager が登録する。</summary>
+    public static Func<string, string, double, float, TimelineCuePlayback> OnPlayTimelineCue;
+
+    public sealed class TimelineCuePlayback
+    {
+        private readonly Action m_stop;
+        private readonly Action<float, float, float> m_setParameters;
+
+        public TimelineCuePlayback(Action stop, Action<float, float, float> setParameters)
+        {
+            m_stop = stop;
+            m_setParameters = setParameters;
+        }
+
+        public void SetVolumeAndPitch(float volume, float pitch) => SetParameters(volume, pitch, 1f);
+        public void SetParameters(float volume, float pitch, float playbackSpeed) => m_setParameters?.Invoke(volume, pitch, playbackSpeed);
+        public void Stop() => m_stop?.Invoke();
+    }
+
     private static readonly Action s_noop = () => { };
 
     /// <summary>SE 等を再生する。SoundManager 未登録時（起動直後・テスト）は何もしない。</summary>
@@ -45,4 +64,11 @@ public static class Sound
     /// </summary>
     public static Action PlayLoop(string cueSheet, string cue)
         => OnPlayLoop?.Invoke(cueSheet, cue) ?? s_noop;
+
+    /// <summary>
+    /// Timeline用にSEを途中位置から再生し、停止・音量変更用ハンドルを返す。
+    /// クリップの Clip In を startTimeSeconds に渡し、クリップ範囲を抜けたら返されたハンドルで停止する。
+    /// </summary>
+    public static TimelineCuePlayback PlayTimelineCue(string cueSheet, string cue, double startTimeSeconds, float initialPlaybackSpeed)
+        => OnPlayTimelineCue?.Invoke(cueSheet, cue, startTimeSeconds, initialPlaybackSpeed);
 }

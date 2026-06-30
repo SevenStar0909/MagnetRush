@@ -34,9 +34,13 @@ public class SoundManager : Singleton<SoundManager>
         }
 
         public void SetVolumeAndPitch(float vol, float pitch)
+            => SetVolumePitchAndSpeed(vol, pitch, 1f);
+
+        public void SetVolumePitchAndSpeed(float vol, float pitch, float playbackSpeed)
         {
             this.player.SetVolume(vol);
             this.player.SetPitch(pitch);
+            this.player.SetPlaybackRatio(Mathf.Max(0.01f, playbackSpeed));
             this.player.Update(playback);
         }
 
@@ -124,6 +128,7 @@ public class SoundManager : Singleton<SoundManager>
         Sound.OnStopBgm = StopBgm;
         Sound.OnPlayAt = PlayAt;
         Sound.OnPlayLoop = PlayLoop;
+        Sound.OnPlayTimelineCue = PlayTimelineCue;
 
         DontDestroyOnLoad(gameObject);
     }
@@ -161,6 +166,7 @@ public class SoundManager : Singleton<SoundManager>
         if (Sound.OnStopBgm == StopBgm) Sound.OnStopBgm = null;
         if (Sound.OnPlayAt == PlayAt) Sound.OnPlayAt = null;
         if (Sound.OnPlayLoop == PlayLoop) Sound.OnPlayLoop = null;
+        if (Sound.OnPlayTimelineCue == PlayTimelineCue) Sound.OnPlayTimelineCue = null;
 
         m_player?.Dispose();
         m_bgmPlayer?.Dispose();
@@ -189,6 +195,7 @@ public class SoundManager : Singleton<SoundManager>
     /// </summary>
     public void Play(string cueSheetName, string cueName)
     {
+        m_player.SetPlaybackRatio(1f);
         m_player.SetCue(GetAcb(cueSheetName), cueName);
         m_player.Start();
     }
@@ -199,6 +206,7 @@ public class SoundManager : Singleton<SoundManager>
     /// </summary>
     public Playback PlayWithHandle(string cueSheetName, string cueName)
     {
+        m_player.SetPlaybackRatio(1f);
         m_player.SetCue(GetAcb(cueSheetName), cueName);
         Playback pb = new(m_player, m_player.Start());
         return pb;
@@ -218,6 +226,36 @@ public class SoundManager : Singleton<SoundManager>
             stopped = true;
             pb.Stop();
         };
+    }
+
+    /// <summary>
+    /// Timeline の SoundCueClip 用。Clip In を CRI の開始位置に反映し、クリップ終了時に停止・カーブ更新できるハンドルを返す。
+    /// </summary>
+    public Sound.TimelineCuePlayback PlayTimelineCue(string cueSheetName, string cueName, double startTimeSeconds, float initialPlaybackSpeed)
+    {
+        long startTimeMs = Math.Max(0L, (long)Math.Round(startTimeSeconds * 1000.0));
+
+        m_player.SetStartTime(startTimeMs);
+        m_player.SetPlaybackRatio(Mathf.Max(0.01f, initialPlaybackSpeed));
+        m_player.SetCue(GetAcb(cueSheetName), cueName);
+        Playback pb = new(m_player, m_player.Start());
+        m_player.SetStartTime(0);
+
+        bool stopped = false;
+        void Stop()
+        {
+            if (stopped) return;
+            stopped = true;
+            pb.Stop();
+        }
+
+        void SetParameters(float volume, float pitch, float playbackSpeed)
+        {
+            if (stopped) return;
+            pb.SetVolumePitchAndSpeed(volume, pitch, playbackSpeed);
+        }
+
+        return new Sound.TimelineCuePlayback(Stop, SetParameters);
     }
 
     /// <summary>
