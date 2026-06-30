@@ -65,11 +65,12 @@ public class EnemyBullet : MonoBehaviour
     // 相手の HitGroup が自分(Physics)と異なるときだけダメージを通す（Player/Enemy 両方に通る。物理同士は弾く。原則3）。
     private void OnCollisionEnter(Collision collision)
     {
+        Vector3 point = collision.contactCount > 0 ? collision.GetContact(0).point : transform.position;
+
         // Pushbox/Hurtbox の子コライダー直撃でも親 Hitbox の IHittable に到達する
         var hittable = collision.collider.GetComponentInParent<IHittable>();
         if (hittable != null && hittable.HitGroup != m_hitGroup)
         {
-            Vector3 point = collision.contactCount > 0 ? collision.GetContact(0).point : transform.position;
             hittable.OnHit(new HitData
             {
                 damage = m_damage,
@@ -79,6 +80,7 @@ public class EnemyBullet : MonoBehaviour
             });
         }
 
+        Sound.PlayAt(SoundData.CueSheet.SE, SoundData.SE.TurretImpact, point);
         Destroy(gameObject);
     }
 }

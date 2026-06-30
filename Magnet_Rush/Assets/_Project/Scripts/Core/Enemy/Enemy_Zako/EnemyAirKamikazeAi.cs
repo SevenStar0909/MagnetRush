@@ -25,9 +25,21 @@ public class EnemyAirKamikazeAi : MonoBehaviour
     [Tooltip("障害物回避の曲がりやすさ")]
     [SerializeField] private float m_obstacleAvoidanceWeight = 2.5f;
 
+    [Header("Audio")]
+    [Tooltip("飛行音の音量。0で無音、1で原音。プレイヤーから離れると距離減衰でさらに小さくなる")]
+    [SerializeField, Range(0f, 1f)] private float m_droneEnemyVolume = 0.5f;
+
+    [Tooltip("この距離まではフル音量で鳴る（メートル）。近づいてもこれ以上は大きくならない")]
+    [SerializeField] private float m_droneEnemyMinDistance = 3f;
+
+    [Tooltip("この距離で音が最小になる（メートル）。これより遠いとほぼ聞こえない")]
+    [SerializeField] private float m_droneEnemyMaxDistance = 20f;
+
     private EnemyAirBase m_enemyBase;
     private Magnetizable m_magnetizable;
     private bool m_hasHit;
+    private bool m_droneEnemyPlaying;
+    private SoundManager.Playback3d m_droneEnemyPlayback;
     private readonly Collider[] m_overlapBuffer = new Collider[8];
 
     // 自分の所属グループ（敵=Enemy）。Awake で自身の Hitbox から取得し、OnTriggerEnter の同士討ち判定に使う。
@@ -79,6 +91,8 @@ public class EnemyAirKamikazeAi : MonoBehaviour
 
     private void OnDisable()
     {
+        StopDroneEnemy();
+
         if (m_enemyBase != null)
         {
             m_enemyBase.EnvironmentContact -= HandleEnvironmentContact;
@@ -92,7 +106,10 @@ public class EnemyAirKamikazeAi : MonoBehaviour
             return;
 
         if (m_enemyBase.IsDead)
+        {
+            StopDroneEnemy();
             return;
+        }
 
         // AttackBox の Trigger は HitGroup で敵同士を弾くため、実体同士の接触は別経路で拾う。
         // QueryTriggerInteraction.Ignore の OverlapEntity なので、磁界や HurtBox の大きい Trigger では誤爆しない。
@@ -105,14 +122,23 @@ public class EnemyAirKamikazeAi : MonoBehaviour
             return;
 
         if (m_enemyBase.IsMagnetControlled)
+        {
+            StopDroneEnemy();
             return;
+        }
 
         if (m_enemyBase.Player == null)
+        {
+            StopDroneEnemy();
             return;
+        }
 
         Vector3 toPlayer = m_enemyBase.Player.position - transform.position;
         if (toPlayer.sqrMagnitude <= 0.0001f)
+        {
+            StopDroneEnemy();
             return;
+        }
 
         EnemyAirSettings data = m_enemyBase.StatusData;
         if (data != null)
@@ -125,6 +151,7 @@ public class EnemyAirKamikazeAi : MonoBehaviour
                 {
                     if (m_animator != null) m_animator.SetAttacking(false);
                     m_enemyBase.SlowDown(Time.deltaTime);
+                    StopDroneEnemy();
                     return;
                 }
             }
@@ -138,7 +165,14 @@ public class EnemyAirKamikazeAi : MonoBehaviour
             m_animator.TriggerAttack();
         }
 
+        PlayDroneEnemy();
         m_enemyBase.AccelerateToward(moveDirection, Time.deltaTime);
+    }
+
+    private void LateUpdate()
+    {
+        if (m_droneEnemyPlaying)
+            m_droneEnemyPlayback.SetPosition(transform.position);
     }
 
     private Vector3 GetObstacleAwareDirection(Vector3 toPlayer)
@@ -463,6 +497,8 @@ public class EnemyAirKamikazeAi : MonoBehaviour
 
     private void DestroySelf()
     {
+        StopDroneEnemy();
+
         if (m_enemyBase != null)
         {
             m_enemyBase.DestroyWithDisappearEffect();
@@ -470,5 +506,30 @@ public class EnemyAirKamikazeAi : MonoBehaviour
         }
 
         Destroy(gameObject);
+    }
+
+    private void PlayDroneEnemy()
+    {
+        if (m_droneEnemyPlaying)
+            return;
+
+        SoundManager soundManager = SoundManager.Instance;
+        if (soundManager == null)
+            return;
+        //Sound.Play(SoundData.CueSheet.SE, SoundData.SE.DroneEnemy);
+        m_droneEnemyPlayback = soundManager.PlayAtWithHandle(
+            SoundData.CueSheet.SE, SoundData.SE.DroneEnemy,
+            transform.position, m_droneEnemyMinDistance, m_droneEnemyMaxDistance);
+        m_droneEnemyPlayback.SetVolumeAndPitch(m_droneEnemyVolume, 0f);
+        m_droneEnemyPlaying = true;
+    }
+
+    private void StopDroneEnemy()
+    {
+        if (!m_droneEnemyPlaying)
+            return;
+
+        m_droneEnemyPlayback.Stop();
+        m_droneEnemyPlaying = false;
     }
 }
