@@ -21,6 +21,11 @@ public static class Sound
     /// <summary>3D位置で SE を再生するフック。(キューシート名, キュー名, ワールド位置, 最小距離, 最大距離)。</summary>
     public static Action<string, string, Vector3, float, float> OnPlayAt;
 
+    /// <summary>ループSEを再生し、停止用デリゲートを返すフック。(キューシート名, キュー名) → 停止Action。SoundManager が登録する。</summary>
+    public static Func<string, string, Action> OnPlayLoop;
+
+    private static readonly Action s_noop = () => { };
+
     /// <summary>SE 等を再生する。SoundManager 未登録時（起動直後・テスト）は何もしない。</summary>
     public static void Play(string cueSheet, string cue) => OnPlay?.Invoke(cueSheet, cue);
 
@@ -33,4 +38,11 @@ public static class Sound
     /// <summary>3D位置で SE を再生する（距離減衰あり）。SoundManager 未登録時は何もしない。</summary>
     public static void PlayAt(string cueSheet, string cue, Vector3 position, float minDistance = 4f, float maxDistance = 35f)
         => OnPlayAt?.Invoke(cueSheet, cue, position, minDistance, maxDistance);
+
+    /// <summary>
+    /// ループSEを再生し、停止用デリゲートを返す。呼び出し側はこの Action を保持し、止めたいタイミングで呼ぶ。
+    /// SoundManager 未登録時（起動直後・テスト）は何もしない no-op を返す。
+    /// </summary>
+    public static Action PlayLoop(string cueSheet, string cue)
+        => OnPlayLoop?.Invoke(cueSheet, cue) ?? s_noop;
 }

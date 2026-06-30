@@ -16,6 +16,7 @@ public class MagnetField : MonoBehaviour, IMagnetField
     private bool m_initialized;
     private bool m_expired;
     private SphereCollider m_triggerCollider;
+    private Action m_stopMagFieldSound;
 
     // トリガー検知用キャッシュ（GravityFieldパターン）
     private readonly Dictionary<Collider, Entity> m_entityCache = new();
@@ -59,8 +60,10 @@ public class MagnetField : MonoBehaviour, IMagnetField
         var mag = GetComponentInParent<Magnetizable>();
         if (mag != null) mag.SetField(this);
 
-        // 磁力場が発生した音
-        Sound.Play(SoundData.CueSheet.SE, SoundData.SE.MagField);
+        // 磁力場が展開している間ループで鳴らし、フィールド消滅時(OnDisable)に止める。
+        // 撃ちっぱなしにすると寿命切れ・リロード後も鳴り続けてしまうため、停止用ハンドルを保持する。
+        m_stopMagFieldSound?.Invoke();
+        m_stopMagFieldSound = Sound.PlayLoop(SoundData.CueSheet.SE, SoundData.SE.MagField);
     }
 
     private GameObject m_triggerGO;
@@ -203,6 +206,10 @@ public class MagnetField : MonoBehaviour, IMagnetField
 
     void OnDisable()
     {
+        // フィールド消滅と同時にループ中の磁力場音を止める（寿命切れ・リロード・着弾消滅すべてここを通る）
+        m_stopMagFieldSound?.Invoke();
+        m_stopMagFieldSound = null;
+
         if (MagnetManager.Instance != null)
             MagnetManager.Instance.UnregisterField(this);
 

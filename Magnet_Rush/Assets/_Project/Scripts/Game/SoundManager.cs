@@ -123,6 +123,7 @@ public class SoundManager : Singleton<SoundManager>
         Sound.OnPlayBgm = PlayBgm;
         Sound.OnStopBgm = StopBgm;
         Sound.OnPlayAt = PlayAt;
+        Sound.OnPlayLoop = PlayLoop;
 
         DontDestroyOnLoad(gameObject);
     }
@@ -159,6 +160,7 @@ public class SoundManager : Singleton<SoundManager>
         if (Sound.OnPlayBgm == PlayBgm) Sound.OnPlayBgm = null;
         if (Sound.OnStopBgm == StopBgm) Sound.OnStopBgm = null;
         if (Sound.OnPlayAt == PlayAt) Sound.OnPlayAt = null;
+        if (Sound.OnPlayLoop == PlayLoop) Sound.OnPlayLoop = null;
 
         m_player?.Dispose();
         m_bgmPlayer?.Dispose();
@@ -200,6 +202,22 @@ public class SoundManager : Singleton<SoundManager>
         m_player.SetCue(GetAcb(cueSheetName), cueName);
         Playback pb = new(m_player, m_player.Start());
         return pb;
+    }
+
+    /// <summary>
+    /// ループSEを再生し、停止用デリゲートを返す。呼び出し側はこの Action を保持し、止めたいタイミングで呼ぶ。
+    /// Game を参照しない層に Playback 型を晒さず「止められる音」を渡すための窓口（Sound.PlayLoop 経由）。
+    /// </summary>
+    public Action PlayLoop(string cueSheetName, string cueName)
+    {
+        Playback pb = PlayWithHandle(cueSheetName, cueName);
+        bool stopped = false;
+        return () =>
+        {
+            if (stopped) return;
+            stopped = true;
+            pb.Stop();
+        };
     }
 
     /// <summary>
