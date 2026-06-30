@@ -218,7 +218,7 @@ public class BossStabFinisherState : EntityState<Player>
     private GameObject FindAuthoringTimelineEffect(
         TimelineAsset cutscene,
         PlayableDirector runtimeDirector,
-        PropertyName exposedName,
+        List<PropertyName> exposedNames,
         string fallbackExposedName,
         string previewObjectName)
     {
@@ -227,12 +227,15 @@ public class BossStabFinisherState : EntityState<Player>
         {
             if (director == runtimeDirector || director.playableAsset != cutscene) continue;
 
-            var effect = director.GetReferenceValue(exposedName, out bool isValid) as GameObject;
-            if (isValid && effect != null) return effect;
+            foreach (var exposedName in exposedNames)
+            {
+                var referencedEffect = director.GetReferenceValue(exposedName, out bool isValid) as GameObject;
+                if (isValid && referencedEffect != null) return referencedEffect;
+            }
 
             // 旧PrefabはUnityによるキー再生成前の名前で保持しているため、実ゲームSceneではこちらも確認する。
-            effect = director.GetReferenceValue(new PropertyName(fallbackExposedName), out isValid) as GameObject;
-            if (isValid && effect != null) return effect;
+            var fallbackEffect = director.GetReferenceValue(new PropertyName(fallbackExposedName), out bool fallbackIsValid) as GameObject;
+            if (fallbackIsValid && fallbackEffect != null) return fallbackEffect;
 
             foreach (var child in director.transform.root.GetComponentsInChildren<Transform>(true))
                 if (child.name == previewObjectName) return child.gameObject;
@@ -248,25 +251,21 @@ public class BossStabFinisherState : EntityState<Player>
         string fallbackExposedName,
         string previewObjectName)
     {
-        if (!TryGetControlEffectExposedName(cutscene, trackName, out var exposedName)) return false;
+        var exposedNames = GetControlEffectExposedNames(cutscene, trackName);
+        if (exposedNames.Count == 0) return false;
 
-        GameObject authoringEffect = FindAuthoringTimelineEffect(cutscene, m_director, exposedName, fallbackExposedName, previewObjectName);
+        GameObject authoringEffect = FindAuthoringTimelineEffect(cutscene, m_director, exposedNames, fallbackExposedName, previewObjectName);
         GameObject effectTemplate = authoringEffect != null ? authoringEffect : fallbackPrefab;
         if (effectTemplate == null) return false;
 
         GameObject effectInstance = Object.Instantiate(effectTemplate);
         if (authoringEffect != null)
         {
-            // プレイヤー・カメラの再アンカーと同じくワールド座標で差分を取る。authoringRoot の
-            // ローカルへ変換すると、原点にないシーン（翻訳ルート下の Stage2_MAP インスタンス等）で
-            // ワールドの m_anchorA0 と座標系が混ざり、エフェクトがリグ変換ぶんずれて出る。
-            Vector3 authoringPosition = authoringEffect.transform.position;
-            Quaternion authoringRotation = authoringEffect.transform.rotation;
+            GetAuthoringEffectPose(authoringEffect.transform, out Vector3 authoringPosition, out Quaternion authoringRotation, out Vector3 authoringScale);
             effectInstance.transform.SetPositionAndRotation(
                 m_anchorA1 + m_anchorYawDelta * (authoringPosition - m_anchorA0),
                 m_anchorYawDelta * authoringRotation);
-            // 複製は親なしで生成するので、親のスケールまで含めた見た目を lossyScale で再現する。
-            effectInstance.transform.localScale = authoringEffect.transform.lossyScale;
+            effectInstance.transform.localScale = authoringScale;
         }
         else
         {
@@ -277,27 +276,76 @@ public class BossStabFinisherState : EntityState<Player>
         }
 
         effectInstance.SetActive(false);
-        m_director.SetReferenceValue(exposedName, effectInstance);
+        foreach (var exposedName in exposedNames)
+            m_director.SetReferenceValue(exposedName, effectInstance);
+        m_director.SetReferenceValue(new PropertyName(fallbackExposedName), effectInstance);
         m_controlledEffectInstances.Add(effectInstance);
         return true;
     }
 
-    private static bool TryGetControlEffectExposedName(TimelineAsset cutscene, string trackName, out PropertyName exposedName)
+    private static void GetAuthoringEffectPose(Transform effect, out Vector3 position, out Quaternion rotation, out Vector3 scale)
     {
+        Transform rigRoot = FindStabFinisherRigRoot(effect);
+        if (rigRoot != null)
+        {
+            position = rigRoot.InverseTransformPoint(effect.position);
+            rotation = Quaternion.Inverse(rigRoot.rotation) * effect.rotation;
+            scale = DivideLossyScale(effect.lossyScale, rigRoot.lossyScale);
+            return;
+        }
+
+        position = effect.position;
+        rotation = effect.rotation;
+        scale = effect.lossyScale;
+    }
+
+    private static Transform FindStabFinisherRigRoot(Transform current)
+    {
+        while (current != null)
+        {
+            if (current.name == "StabFinisherRig") return current;
+            current = current.parent;
+        }
+
+        return null;
+    }
+
+    private static Vector3 DivideLossyScale(Vector3 scale, Vector3 parentScale)
+    {
+        return new Vector3(
+            !Mathf.Approximately(parentScale.x, 0f) ? scale.x / parentScale.x : scale.x,
+            !Mathf.Approximately(parentScale.y, 0f) ? scale.y / parentScale.y : scale.y,
+            !Mathf.Approximately(parentScale.z, 0f) ? scale.z / parentScale.z : scale.z);
+    }
+
+    private static List<PropertyName> GetControlEffectExposedNames(TimelineAsset cutscene, string trackName)
+    {
+        var exposedNames = new List<PropertyName>();
         foreach (var track in cutscene.GetOutputTracks())
         {
-            if (track is not ControlTrack || track.name != trackName) continue;
+            if (track is not ControlTrack || !IsTimelineTrackNameMatch(track.name, trackName)) continue;
 
             foreach (var clip in track.GetClips())
             {
                 if (clip.asset is not ControlPlayableAsset controlAsset) continue;
-                exposedName = controlAsset.sourceGameObject.exposedName;
-                if (!exposedName.Equals(default(PropertyName))) return true;
+                AddUniqueExposedName(exposedNames, controlAsset.sourceGameObject.exposedName);
             }
         }
 
-        exposedName = default;
-        return false;
+        return exposedNames;
+    }
+
+    private static void AddUniqueExposedName(List<PropertyName> exposedNames, PropertyName exposedName)
+    {
+        if (exposedName.Equals(default(PropertyName))) return;
+        foreach (var current in exposedNames)
+            if (current.Equals(exposedName)) return;
+        exposedNames.Add(exposedName);
+    }
+
+    private static bool IsTimelineTrackNameMatch(string actualName, string expectedName)
+    {
+        return actualName == expectedName || actualName.StartsWith(expectedName + " (", System.StringComparison.Ordinal);
     }
 
     protected override void OnStep(Player player, float dt)
