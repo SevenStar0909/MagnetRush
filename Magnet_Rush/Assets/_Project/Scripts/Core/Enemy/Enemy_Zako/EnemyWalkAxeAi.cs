@@ -26,7 +26,14 @@ public class EnemyWalkAxeAi : MonoBehaviour
     [SerializeField] private float m_allyAvoidanceWeight = 1.5f;
 
     [Header("Audio")]
-    [SerializeField, Range(0f, 1f)] private float m_enemyWheelVolume = 1f;
+    [Tooltip("車輪音の音量。0で無音、1で原音。プレイヤーから離れると距離減衰でさらに小さくなる")]
+    [SerializeField, Range(0f, 1f)] private float m_enemyWheelVolume = 0.5f;
+
+    [Tooltip("この距離まではフル音量で鳴る（メートル）。近づいてもこれ以上は大きくならない")]
+    [SerializeField] private float m_enemyWheelMinDistance = 3f;
+
+    [Tooltip("この距離で音が最小になる（メートル）。これより遠いとほぼ聞こえない")]
+    [SerializeField] private float m_enemyWheelMaxDistance = 20f;
 
     private EnemyWalkBase m_enemyBase;
     private NavMeshAgent m_agent;
@@ -38,7 +45,7 @@ public class EnemyWalkAxeAi : MonoBehaviour
     private bool m_wasMoving;
     private bool m_enemyWheelPlaying;
     private Health m_ownHealth;
-    private SoundManager.Playback m_enemyWheelPlayback;
+    private SoundManager.Playback3d m_enemyWheelPlayback;
 
     private readonly HashSet<Health> m_hitTargets = new();
     private readonly Collider[] m_overlapResults = new Collider[32];
@@ -394,7 +401,9 @@ public class EnemyWalkAxeAi : MonoBehaviour
             return;
 
         StopEnemyWheel();
-        m_enemyWheelPlayback = soundManager.PlayWithHandle(SoundData.CueSheet.SE, SoundData.SE.EnemyWheel);
+        m_enemyWheelPlayback = soundManager.PlayAtWithHandle(
+            SoundData.CueSheet.SE, SoundData.SE.EnemyWheel,
+            transform.position, m_enemyWheelMinDistance, m_enemyWheelMaxDistance);
         m_enemyWheelPlayback.SetVolumeAndPitch(m_enemyWheelVolume, 0f);
         m_enemyWheelPlaying = true;
     }
@@ -418,6 +427,10 @@ public class EnemyWalkAxeAi : MonoBehaviour
 
     private void LateUpdate()
     {
+        // 3D車輪音を本体位置に追従させる（距離減衰の聴取点はカメラ）
+        if (m_enemyWheelPlaying)
+            m_enemyWheelPlayback.SetPosition(transform.position);
+
         if (m_activeAttackCollider != null && m_activeAttackCollider.enabled)
             CheckAttackBoxOverlapAndDamage();
     }

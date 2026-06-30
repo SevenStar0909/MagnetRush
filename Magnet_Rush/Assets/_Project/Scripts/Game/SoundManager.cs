@@ -51,6 +51,57 @@ public class SoundManager : Singleton<SoundManager>
         }
     }
 
+    /// <summary>
+    /// <para>3D再生（距離減衰あり）のハンドル。専用の CriAtomEx3dSource を持つ。</para>
+    /// <para>移動する音源を SetPosition で追従させ、Stop で再生停止と同時に専用ソースを破棄する。</para>
+    /// </summary>
+    public struct Playback3d
+    {
+        CriAtomExPlayer player;
+        CriAtomExPlayback playback;
+        CriAtomEx3dSource source;
+
+        internal Playback3d(CriAtomExPlayer player, CriAtomEx3dSource source, CriAtomExPlayback pb)
+        {
+            this.player = player;
+            this.source = source;
+            this.playback = pb;
+        }
+
+        /// <summary>発音位置を更新する。移動する音源を毎フレーム追従させる用途。</summary>
+        public void SetPosition(Vector3 position)
+        {
+            if (source == null) return;
+            source.SetPosition(position.x, position.y, position.z);
+            source.Update();
+        }
+
+        public void SetVolumeAndPitch(float vol, float pitch)
+        {
+            if (player == null || source == null) return;
+
+            // m_player3d は全 3D 再生で共有なので、Update 前に自分のソースへ再バインドして取り違えを防ぐ
+            player.Set3dSource(source);
+            player.SetVolume(vol);
+            player.SetPitch(pitch);
+            player.Update(playback);
+        }
+
+        public bool IsPlaying()
+        {
+            return source != null && playback.GetStatus() == CriAtomExPlayback.Status.Playing;
+        }
+
+        /// <summary>再生を停止し、専用の3Dソースを破棄する。</summary>
+        public void Stop()
+        {
+            if (source == null) return;
+            playback.Stop();
+            source.Dispose();
+            source = null;
+        }
+    }
+
     protected override void Awake()
     {
         base.Awake();
@@ -189,8 +240,32 @@ public class SoundManager : Singleton<SoundManager>
         m_source3d.SetPosition(position.x, position.y, position.z);
         m_source3d.Update();
 
+        // PlayAtWithHandle で別ソースに差し替わっている場合があるので共有ソースへ戻す
+        m_player3d.Set3dSource(m_source3d);
         m_player3d.SetCue(acb, cueName);
         m_player3d.Start();
+    }
+
+    /// <summary>
+    /// 3D位置で SE をハンドル付きで再生する（距離減衰あり）。専用ソースを持つので移動・停止できる。
+    /// ループするキューを移動する敵に追従させる等に使う。Playback3d.SetPosition で位置更新、Stop で停止＋破棄。
+    /// </summary>
+    public Playback3d PlayAtWithHandle(string cueSheetName, string cueName, Vector3 position, float minDistance, float maxDistance)
+    {
+        if (m_player3d == null) return default;
+
+        var acb = GetAcb(cueSheetName);
+        if (acb == null) return default;
+
+        var source = new CriAtomEx3dSource();
+        source.SetMinMaxDistance(minDistance, maxDistance);
+        source.SetPosition(position.x, position.y, position.z);
+        source.Update();
+
+        m_player3d.Set3dSource(source);
+        m_player3d.SetCue(acb, cueName);
+        CriAtomExPlayback pb = m_player3d.Start();
+        return new Playback3d(m_player3d, source, pb);
     }
 
     // ── カテゴリ操作 ──────────────────────────────────────────────
