@@ -389,7 +389,8 @@ MonoBehaviour:
   - FallPlayerState, MagnetRush.Player, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - StabPlayerState, MagnetRush.Player, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - StabPlayerState, MagnetRush.Player, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-  - MagnetStickPlayerState, MagnetRush.Player, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  - MagnetStickPlayerState, MagnetRush.Player, Version=0.0.0.0, Culture=neutral,
+    PublicKeyToken=null
   - BossStabFinisherState, MagnetRush.Player, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
 --- !u!114 &8415192833665430904
 MonoBehaviour:
@@ -1710,11 +1711,11 @@ PrefabInstance:
       value: -0.5
       objectReference: {fileID: 0}
     - target: {fileID: -2933139716659438605, guid: f06552fba20857b4ebab566556d4415e, type: 3}
-      propertyPath: m_Materials.Array.data[0]
+      propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: 586ee20b6d8b32d4385e28297417a486, type: 2}
     - target: {fileID: -2933139716659438605, guid: f06552fba20857b4ebab566556d4415e, type: 3}
-      propertyPath: m_Materials.Array.data[1]
+      propertyPath: 'm_Materials.Array.data[1]'
       value: 
       objectReference: {fileID: 2100000, guid: 37abf5f11f4f436449ea2c1c037197e5, type: 2}
     - target: {fileID: -2589049417834043258, guid: f06552fba20857b4ebab566556d4415e, type: 3}
@@ -2203,6 +2204,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: f06552fba20857b4ebab566556d4415e, type: 3}
       insertIndex: -1
       addedObject: {fileID: 31733714676797974}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: f06552fba20857b4ebab566556d4415e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5224224953915063660}
   m_SourcePrefab: {fileID: 100100000, guid: f06552fba20857b4ebab566556d4415e, type: 3}
 --- !u!95 &3934156298241652957 stripped
 Animator:
@@ -2237,3 +2241,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Player::PlayerAnimEventRelay
   m_playerAnimator: {fileID: 0}
+--- !u!114 &5224224953915063660
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7724537814246930461}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b407125ec66930d4aad9a410590723ed, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Player::FootstepAudio
