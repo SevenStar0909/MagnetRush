@@ -56,12 +56,17 @@ public sealed class ArmStunHitbox : MonoBehaviour, IHittable
     [Tooltip("目印位置のローカルオフセット")]
     private Vector3 m_counterCueLocalOffset = Vector3.zero;
 
+    [SerializeField, Min(0f)]
+    [Tooltip("攻撃モーションに入ってから目印を表示するまでの遅延秒数")]
+    private float m_counterCueShowDelay = 0f;
+
     /// <summary>所属グループ。攻撃側との比較で自傷・同士討ちを弾く。</summary>
     public HitGroup HitGroup => m_hitGroup;
 
     private readonly List<CounterCueShape> m_counterCueShapes = new();
     private GameObject m_counterCueRoot;
     private static Material s_counterCueLineMaterial;
+    private float m_counterCueEligibleTime;
 
     private sealed class CounterCueShape
     {
@@ -111,7 +116,13 @@ public sealed class ArmStunHitbox : MonoBehaviour, IHittable
             SetCounterCueVisible(false);
         }
 
-        bool shouldShow = ShouldShowCounterCue();
+        bool canShowCounterCue = CanShowCounterCue();
+        if (canShowCounterCue)
+            m_counterCueEligibleTime += Time.deltaTime;
+        else
+            m_counterCueEligibleTime = 0f;
+
+        bool shouldShow = canShowCounterCue && m_counterCueEligibleTime >= m_counterCueShowDelay;
         SetCounterCueVisible(shouldShow);
 
         if (shouldShow)
@@ -145,7 +156,7 @@ public sealed class ArmStunHitbox : MonoBehaviour, IHittable
         }
     }
 
-    private bool ShouldShowCounterCue()
+    private bool CanShowCounterCue()
     {
         return m_showCounterCue
             && m_animator != null
