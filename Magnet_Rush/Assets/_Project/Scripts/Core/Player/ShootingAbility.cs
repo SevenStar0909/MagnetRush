@@ -29,6 +29,9 @@ public class ShootingAbility : Ability
     private const float k_ForwardDotThreshold = 0.1f;
     private const string k_SelfFireFieldHostName = "SelfMagnetFieldHost";
 
+    /// <summary> SoudManagerのインスタンスから直接ハンドルを受け取って再生</summary>
+    private SoundManager.Playback m_shootPlayback;
+
     protected override void Awake()
     {
         base.Awake();
@@ -97,7 +100,8 @@ public class ShootingAbility : Ability
         }
 
         m_events.FireShoot();
-        Sound.Play(SoundData.CueSheet.SE, SoundData.SE.PlayerShot);
+        m_shootPlayback = SoundManager.Instance.PlayWithHandle(SoundData.CueSheet.SE, SoundData.SE.PlayerShot);
+        m_shootPlayback.SetVolumeAndPitch(0.1f, 1.0f);
     }
 
     /// <summary>A / F 入力があればセルフファイア（自己磁化）。毎フレーム呼ぶ。</summary>
