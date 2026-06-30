@@ -85,6 +85,7 @@ public class SimpleTutorial : MonoBehaviour
     {
         //ステージ開始：すべての操作をロック（窓口）
         SetPlayerLockAll(true);
+        SetPlayerCameraLock(false);
 
         // チュートリアルのレールの開始！
         StartCoroutine(TutorialSequenceRoutine());
@@ -439,6 +440,13 @@ public class SimpleTutorial : MonoBehaviour
         if (locker == null) return;
         foreach (PlayerAbilityType ability in System.Enum.GetValues(typeof(PlayerAbilityType)))
             locker.SetLocked(ability, isLock);
+    }
+
+    private void SetPlayerCameraLock(bool isLock)
+    {
+        var locker = GetLocker();
+        if (locker == null) return;
+        locker.SetLocked(PlayerAbilityType.Camera, isLock);
     }
 
     // 仕様③メッセージ4で解除する移動・カメラ・ジャンプ。
