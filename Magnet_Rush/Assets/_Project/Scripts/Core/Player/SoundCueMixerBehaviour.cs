@@ -3,16 +3,19 @@ using UnityEngine.Playables;
 
 /// <summary>
 /// SoundCueClip がクリップ範囲に入った瞬間に SE を1回だけ鳴らす。
-/// 物理的な再生なので Edit Mode のスクラブでは鳴らさず（誤爆防止）、再生中のみ発火する。
+/// ランタイムは Sound.Play、Edit Mode の Timeline プレビュー再生中は EditorPreviewPlay フック経由で鳴らす。
 /// クリップ長は「鳴らすタイミングの窓」であって、SE 自体の長さはキュー側で決まる。
 /// </summary>
 public class SoundCueMixerBehaviour : PlayableBehaviour
 {
+    /// <summary>
+    /// Edit Mode の Timeline プレビュー再生で SE を鳴らすためのフック。(キューシート名, キュー名)。
+    /// SoundCueTimelinePreview([InitializeOnLoad]) が登録する。ビルド・ランタイムでは未使用（null のまま）。
+    /// </summary>
+    public static System.Action<string, string> EditorPreviewPlay;
+
     public override void ProcessFrame(Playable playable, FrameData info, object playerData)
     {
-        // Edit Mode のプレビュー中は鳴らさない（スクラブで誤爆させない）。
-        if (!Application.isPlaying) return;
-
         int inputCount = playable.GetInputCount();
         for (int i = 0; i < inputCount; i++)
         {
@@ -22,7 +25,7 @@ public class SoundCueMixerBehaviour : PlayableBehaviour
             bool active = playable.GetInputWeight(i) > 0f;
             if (active && !behaviour.fired)
             {
-                Sound.Play(behaviour.cueSheet, behaviour.cueName);
+                Fire(behaviour.cueSheet, behaviour.cueName);
                 behaviour.fired = true;
             }
             else if (!active && behaviour.fired)
@@ -31,5 +34,14 @@ public class SoundCueMixerBehaviour : PlayableBehaviour
                 behaviour.fired = false;
             }
         }
+    }
+
+    private static void Fire(string cueSheet, string cueName)
+    {
+        if (Application.isPlaying)
+            Sound.Play(cueSheet, cueName);
+        else
+            // Edit Mode の Timeline プレビュー再生時のみ。フック未登録のビルドでは null で何もしない。
+            EditorPreviewPlay?.Invoke(cueSheet, cueName);
     }
 }
