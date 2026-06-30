@@ -48,6 +48,13 @@ public static class SoundData
         public const string Button = "Button";
         public const string Select = "Select";
         public const string StageSelect = "StageSelect";
+        public const string Stab = "Stab";
+        public const string TurretImpact = "TurretImpact";
+        public const string PlayerFoot01 = "PlayerFoot01";
+        public const string PlayerFoot02 = "PlayerFoot02";
+        public const string PlayerFoot03 = "PlayerFoot03";
+        public const string PlayerFoot04 = "PlayerFoot04";
+        public const string DroneEnemy = "DroneEnemy";
         // 適時追加
     }
 
