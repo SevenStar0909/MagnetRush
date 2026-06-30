@@ -58,10 +58,22 @@ public class SimpleTutorial : MonoBehaviour
     // ==== 🎥 カメラズーム用の変数を追加 ====
     public Camera mainCamera;       // シーン上のメインカメラを登録する用
     public float zoomFOV = 30f;     // ズームした時の視野角（小さいほどドアップになります）
+    public int phase2CrateHighlightIndex = 1;
+    public float phase2CrateHighlightDuration = 2f;
+    public float phase2CrateHighlightRadius = 1.2f;
+    public float phase2CrateHighlightHeightOffset = 1.2f;
+    public float phase2CrateHighlightLineWidth = 0.06f;
+    public Vector3 phase2CrateHighlightEulerAngles = Vector3.zero;
+    public Vector3 phase2CrateHighlightSpinAxis = Vector3.up;
+    public float phase2CrateHighlightSpinSpeed = 120f;
+    public Color phase2CrateHighlightColor = new Color(0.2f, 0.9f, 1f, 1f);
     private float defaultFOV;       // 元のカメラの視野角を保存しておく変数
     private bool isZooming = false; // 今ズーム中かどうかのフラグ
 
     private int currentStep = 0;
+    private Coroutine m_phase2CrateHighlightRoutine;
+    private GameObject m_phase2CrateHighlightObject;
+    private static Material s_tutorialHighlightMaterial;
 
     /// <summary>
     /// 外部のゾーンコライダーから、プレイヤーが触れた瞬間に呼び出される関数
@@ -69,7 +81,11 @@ public class SimpleTutorial : MonoBehaviour
     public void OnPlayerEnterZone(int zoneNumber)
     {
         // 【仕様書 ③】図1（ゾーン1）への移動待ち
-        if (zoneNumber == 1 && currentStep == 3) currentStep = 4;
+        if (zoneNumber == 1 && currentStep == 3)
+        {
+            SetPlayerMoveLock(true);
+            currentStep = 4;
+        }
 
         // 【仕様書 ⑪】図2（ゾーン2）への移動待ち
         if (zoneNumber == 2 && currentStep == 11) currentStep = 12;
@@ -255,10 +271,17 @@ public class SimpleTutorial : MonoBehaviour
     {
         if (phaseSteps == null || phaseSteps.Count == 0) yield break;
 
-        foreach (var step in phaseSteps)
+        for (int i = 0; i < phaseSteps.Count; i++)
         {
+            var step = phaseSteps[i];
+
             // 💡 セリフが始まるので、ボードを表示する（消えていた場合自動で復活します）
             if (commentBoardObject != null) commentBoardObject.SetActive(true);
+
+            if (ShouldHighlightTarget1Crate(phaseSteps, i))
+            {
+                StartCrateHighlight(GetPhase2CrateHighlightTarget(), phase2CrateHighlightDuration);
+            }
 
             // タイピング演出へデータを渡して再生
             yield return StartCoroutine(TypeAndAutoAdvance(step.message, defaultTextSpeed, step.messageWaitTime));
@@ -270,6 +293,159 @@ public class SimpleTutorial : MonoBehaviour
                 if (tutorialText != null) tutorialText.text = "";
             }
         }
+    }
+
+    private bool ShouldHighlightTarget1Crate(List<TutorialStepData> phaseSteps, int stepIndex)
+    {
+        return ReferenceEquals(phaseSteps, phase2_Zone1Reached)
+            && stepIndex == phaseSteps.Count - 1;
+    }
+
+    private Transform GetPhase2CrateHighlightTarget()
+    {
+        if (tutorialCrates == null) return null;
+        if (phase2CrateHighlightIndex < 0 || phase2CrateHighlightIndex >= tutorialCrates.Length) return null;
+
+        var crate = tutorialCrates[phase2CrateHighlightIndex];
+        return crate != null ? crate.transform : null;
+    }
+
+    private void StartCrateHighlight(Transform target, float duration)
+    {
+        if (target == null || duration <= 0f) return;
+
+        if (m_phase2CrateHighlightRoutine != null)
+        {
+            StopCoroutine(m_phase2CrateHighlightRoutine);
+            m_phase2CrateHighlightRoutine = null;
+        }
+
+        if (m_phase2CrateHighlightObject != null)
+        {
+            Destroy(m_phase2CrateHighlightObject);
+            m_phase2CrateHighlightObject = null;
+        }
+
+        m_phase2CrateHighlightRoutine = StartCoroutine(CrateHighlightRoutine(target, duration));
+    }
+
+    private GameObject CreateCrateHighlightObject(Transform target)
+    {
+        if (target == null) return null;
+
+        var highlightObject = new GameObject("Tutorial_Target1_Highlight");
+
+        var line = highlightObject.AddComponent<LineRenderer>();
+        line.useWorldSpace = false;
+        line.loop = true;
+        line.positionCount = 64;
+        line.widthMultiplier = phase2CrateHighlightLineWidth;
+        line.numCornerVertices = 4;
+        line.numCapVertices = 4;
+        line.alignment = LineAlignment.View;
+
+        var material = GetTutorialHighlightMaterial();
+        if (material != null) line.material = material;
+
+        line.startColor = phase2CrateHighlightColor;
+        line.endColor = phase2CrateHighlightColor;
+
+        for (int i = 0; i < line.positionCount; i++)
+        {
+            float angle = (float)i / line.positionCount * Mathf.PI * 2f;
+            line.SetPosition(i, new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)));
+        }
+
+        UpdateCrateHighlightObject(highlightObject.transform, target);
+        return highlightObject;
+    }
+
+    private void UpdateCrateHighlightObject(Transform highlightTransform, Transform target)
+    {
+        if (highlightTransform == null || target == null) return;
+
+        Bounds bounds = GetTargetBounds(target);
+        float radius = Mathf.Max(phase2CrateHighlightRadius, bounds.extents.x, bounds.extents.z);
+        float pulse = 1f + Mathf.Sin(Time.unscaledTime * 8f) * 0.08f;
+
+        highlightTransform.position = new Vector3(
+            bounds.center.x,
+            bounds.max.y + phase2CrateHighlightHeightOffset,
+            bounds.center.z
+        );
+        Quaternion baseRotation = Quaternion.Euler(phase2CrateHighlightEulerAngles);
+        if (phase2CrateHighlightSpinAxis.sqrMagnitude > 0.0001f && Mathf.Abs(phase2CrateHighlightSpinSpeed) > 0.0001f)
+        {
+            baseRotation *= Quaternion.AngleAxis(
+                Time.unscaledTime * phase2CrateHighlightSpinSpeed,
+                phase2CrateHighlightSpinAxis.normalized
+            );
+        }
+
+        highlightTransform.rotation = baseRotation;
+        highlightTransform.localScale = Vector3.one * radius * pulse;
+    }
+
+    private Bounds GetTargetBounds(Transform target)
+    {
+        var renderers = target.GetComponentsInChildren<Renderer>();
+        bool hasBounds = false;
+        Bounds bounds = new Bounds(target.position, Vector3.one * phase2CrateHighlightRadius);
+
+        foreach (var renderer in renderers)
+        {
+            if (renderer == null || !renderer.enabled) continue;
+
+            if (!hasBounds)
+            {
+                bounds = renderer.bounds;
+                hasBounds = true;
+            }
+            else
+            {
+                bounds.Encapsulate(renderer.bounds);
+            }
+        }
+
+        return bounds;
+    }
+
+    private Material GetTutorialHighlightMaterial()
+    {
+        if (s_tutorialHighlightMaterial != null) return s_tutorialHighlightMaterial;
+
+        Shader shader = Shader.Find("Sprites/Default");
+        if (shader == null) shader = Shader.Find("Universal Render Pipeline/Unlit");
+        if (shader == null) shader = Shader.Find("Unlit/Color");
+        if (shader == null) return null;
+
+        s_tutorialHighlightMaterial = new Material(shader)
+        {
+            name = "TutorialHighlightLineMaterial",
+            hideFlags = HideFlags.HideAndDontSave
+        };
+        return s_tutorialHighlightMaterial;
+    }
+
+    private IEnumerator CrateHighlightRoutine(Transform target, float duration)
+    {
+        m_phase2CrateHighlightObject = CreateCrateHighlightObject(target);
+        if (m_phase2CrateHighlightObject == null) yield break;
+
+        float endTime = Time.unscaledTime + duration;
+        while (target != null && Time.unscaledTime < endTime)
+        {
+            UpdateCrateHighlightObject(m_phase2CrateHighlightObject.transform, target);
+            yield return null;
+        }
+
+        if (m_phase2CrateHighlightObject != null)
+        {
+            Destroy(m_phase2CrateHighlightObject);
+            m_phase2CrateHighlightObject = null;
+        }
+
+        m_phase2CrateHighlightRoutine = null;
     }
 
     // ✍️ リッチテキスト対応・個別速度・時間対応版のタイピング演出
@@ -457,6 +633,13 @@ public class SimpleTutorial : MonoBehaviour
         locker.SetLocked(PlayerAbilityType.Move, isLock);
         locker.SetLocked(PlayerAbilityType.Camera, isLock);
         locker.SetLocked(PlayerAbilityType.Jump, isLock);
+    }
+
+    private void SetPlayerMoveLock(bool isLock)
+    {
+        var locker = GetLocker();
+        if (locker == null) return;
+        locker.SetLocked(PlayerAbilityType.Move, isLock);
     }
 
     // 射撃グループ＝エイム＋射撃＋リロード（銃の一式。射撃が使えるならリロードも使える）。
