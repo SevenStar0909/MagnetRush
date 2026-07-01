@@ -45,6 +45,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
 
     [Header("Debug")]
     [SerializeField] private bool m_logStateChange = true;
+    public bool isBattleing = false;
 
     private EnemyBossBase m_boss;
     private BossMissileLauncher m_missileLauncher;
@@ -52,6 +53,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
     private EnemyBossSettings m_settings;
     private Stamina m_stamina;
     private Health m_health;
+   
 
     // ボス本体（各ボーン）の Hitbox。物理オブジェクト接触でスタンゲージを溜める（機構1）。
     private Hitbox[] m_bodyHitboxes;
@@ -98,6 +100,20 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
     public EnemyBossSettings Settings => m_settings;
 
     public Stamina Stamina => m_stamina;
+
+
+    public void SetBattlingOn()
+    {
+        setisBattleing(true);
+    }
+    public void setisBattleing()
+    {
+        setisBattleing(!isBattleing);
+    }
+    public void setisBattleing(bool value)
+    {
+        isBattleing = value;
+    }
 
     void Awake()
     {
@@ -161,6 +177,16 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
         { ChannelLogger.LogGuardReturn("Enemy", "プレイヤー/Settings/Animator未取得"); return; }
 
         float dt = Time.deltaTime;
+
+        if (!isBattleing)
+        {
+            if (m_state != BossState.Idle)
+                ChangeState(BossState.Idle);
+
+            m_boss.SlowDown(dt);
+            return;
+        }
+
         m_cooldownTimer = Mathf.Max(0f, m_cooldownTimer - dt);
 
         TickStunEntry(); // Stunアニメーションの開始を検知してStunned状態に入り、回復タイマーを開始する
