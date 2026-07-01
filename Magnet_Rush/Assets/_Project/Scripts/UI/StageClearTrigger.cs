@@ -63,18 +63,9 @@ public class GameClearTrigger : MonoBehaviour
                 Transform sequenceTransform = rootTransform.Find("Sequence");
                 if (sequenceTransform != null)
                 {
-                    // ➔ 変数名に合わせて書き換えてください
                     m_sequenceImage = sequenceTransform.GetComponent<RawImage>();
-
-                    // 💡 もしm_sequenceの型がGameObjectではなく、特定のコンポーネント（例: PlayableDirectorなど）の場合は以下のように記述します
-                    // m_sequence = sequenceTransform.GetComponent<型名>();
                 }
             }
-            Debug.Log("[Goal] シーンの壁を越えて、GameClearCanvasのRootとSequenceを自動接続しました！");
-        }
-        else
-        {
-            Debug.LogWarning("[Goal] GameClearCanvasが見つかりませんでした。オブジェクト名を確認してください。");
         }
     }
 
@@ -90,7 +81,7 @@ public class GameClearTrigger : MonoBehaviour
         // 磁力フィールドは完全に無視する
         if (other.name.Contains("MagnetField"))
         {
-            return; // ここで処理を終了して追い返す
+            return;
         }
 
         // 触れてきた相手自身、またはその親（ルート）が Player タグを持っているかチェック
