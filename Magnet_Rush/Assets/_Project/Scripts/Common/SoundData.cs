@@ -26,6 +26,7 @@ public static class SoundData
     public static class BGM
     {
         public const string Test = "test";
+        public const string BossBattle = "BossBattle";
         // 適時追加
     }
 
