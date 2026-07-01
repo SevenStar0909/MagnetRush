@@ -158,8 +158,8 @@ public class EnemyBossArenaGate : MonoBehaviour
         m_state = ArenaState.Sealed;
         SubscribeBoss();
         Debug.Log($"{kLogPrefix} sealed boss={(m_boss != null ? m_boss.name : "null")} autoEnableAI={m_disableBossAIUntilSealed && m_enableBossAIOnSealed}", this);
-        if (m_disableBossAIUntilSealed && m_enableBossAIOnSealed)
-            SetBossAIEnabled(true);
+     //   if (m_disableBossAIUntilSealed && m_enableBossAIOnSealed)
+     //       SetBossAIEnabled(true);
         EnableBarriers(true);
         ChannelLogger.Log("Enemy", $"EnemyBossArenaGate: 封鎖開始 対象ボス={m_boss.name}");
         m_onSealed?.Invoke();
@@ -189,7 +189,7 @@ public class EnemyBossArenaGate : MonoBehaviour
         if (bossAI == null)
             return;
 
-        SetBossAIEnabled(false);
+     //   SetBossAIEnabled(false);
     }
 
     private void ResolveBoss()
@@ -255,19 +255,19 @@ public class EnemyBossArenaGate : MonoBehaviour
         return m_bossAI;
     }
 
-    private void SetBossAIEnabled(bool enabled)
-    {
-        EnemyBossAI bossAI = ResolveBossAI();
-        if (bossAI == null)
-            return;
-
-        if (bossAI.enabled == enabled)
-            return;
-
-        bossAI.enabled = enabled;
-        Debug.Log($"{kLogPrefix} bossAI.enabled = {enabled}", bossAI);
-        ChannelLogger.Log("Enemy", $"EnemyBossArenaGate: ボスAI {(enabled ? "起動" : "停止")}");
-    }
+    //private void SetBossAIEnabled(bool enabled)
+    //{
+    //    EnemyBossAI bossAI = ResolveBossAI();
+    //    if (bossAI == null)
+    //        return;
+    //
+    //    if (bossAI.enabled == enabled)
+    //        return;
+    //
+    //    bossAI.enabled = enabled;
+    //    Debug.Log($"{kLogPrefix} bossAI.enabled = {enabled}", bossAI);
+    //    ChannelLogger.Log("Enemy", $"EnemyBossArenaGate: ボスAI {(enabled ? "起動" : "停止")}");
+    //}
 
     private bool TryTrackBoss(EnemyBossBase boss)
     {
