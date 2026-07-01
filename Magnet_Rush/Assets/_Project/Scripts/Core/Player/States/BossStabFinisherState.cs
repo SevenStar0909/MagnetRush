@@ -421,6 +421,7 @@ public class BossStabFinisherState : EntityState<Player>
             player.transform.rotation = Quaternion.LookRotation(flatFwd.normalized, Vector3.up);
 
         m_bossAi?.EndStabFinisher();
+        m_bossAi?.PlayStandingImpactEffect();
         player.FireStabFinisherEnd();
         player.stab.SetProgramHitVfxSuppressed(false);
         player.aim.SetTimeScaleControlSuspended(false);

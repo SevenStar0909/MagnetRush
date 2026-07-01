@@ -43,6 +43,13 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
     [Min(0f)]
     [SerializeField] private float m_shockUpwardlForce = 3f;
 
+    [Header("Player Knockback")]
+    [SerializeField] private float m_standImpactRadius = 8f;
+    [SerializeField] private float m_standImpactHorizontalForce = 12f;
+    [SerializeField] private float m_standImpactUpwardForce = 3f;
+    [SerializeField] private float m_rushKnockbackHorizontalForce = 12f;
+    [SerializeField] private float m_rushKnockbackUpwardForce = 3f;
+
     [Header("Debug")]
     [SerializeField] private bool m_logStateChange = true;
     public bool isBattleing = false;
@@ -439,8 +446,8 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
             }
         }
 
-        if (next == BossState.Standing && m_animator != null && !m_stabFinisherActive)
-            m_animator.PlayStandImpactEffect();
+        if (next == BossState.Standing && !m_stabFinisherActive)
+            PlayStandingImpactEffect();
 
         if (prev == BossState.AttackMotion || prev == BossState.Rush || prev == BossState.Missile)
             m_cooldownTimer = m_settings.attackInterval;
@@ -793,6 +800,35 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
     /// <summary>フィニッシャー演出の開始/終了を受け取り、演出中の崩れ回復を止める。</summary>
     public void BeginStabFinisher() { m_stabFinisherActive = true; m_stabFinisherFacingLock = true; m_stabFinisherFrozenY = transform.position.y; }
     public void EndStabFinisher() { m_stabFinisherActive = false; m_stabFinisherFacingLock = false; }
+    public void PlayStandingImpactEffect()
+    {
+        if (m_animator != null)
+            m_animator.PlayStandImpactEffect();
+
+        if (m_player == null)
+            return;
+
+        Vector3 toPlayer = m_player.position - transform.position;
+        toPlayer.y = 0f;
+        float radius = Mathf.Max(0f, m_standImpactRadius);
+        if (toPlayer.sqrMagnitude > radius * radius)
+            return;
+
+        ApplyPlayerKnockback(toPlayer, m_standImpactHorizontalForce, m_standImpactUpwardForce);
+    }
+
+    public void TryApplyRushKnockback(Collider other, Vector3 origin, Vector3 fallbackDirection)
+    {
+        if (other == null || other.gameObject.layer != PhysicsLayers.Player)
+            return;
+
+        Vector3 horizontalDirection = other.transform.position - origin;
+        horizontalDirection.y = 0f;
+        if (horizontalDirection.sqrMagnitude <= 0.0001f)
+            horizontalDirection = fallbackDirection;
+
+        ApplyPlayerKnockback(horizontalDirection, m_rushKnockbackHorizontalForce, m_rushKnockbackUpwardForce);
+    }
 
     // スタブ成功時：スタン値を0に戻し、これ以上スタブできないようにする（1回のスタンにつき1回）。
     // ただしすぐには起き上がらせず、postStabDownDuration の間ダウンを保持する（命中直後の起き上がりが速すぎる対策）。
@@ -832,6 +868,25 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
     private float DistanceToPlayer()
     {
         return Vector3.Distance(transform.position, m_player.position);
+    }
+
+    private void ApplyPlayerKnockback(Vector3 horizontalDirection, float horizontalForce, float upwardForce)
+    {
+        if (m_player == null)
+            return;
+
+        if (!m_player.TryGetComponent(out Entity playerEntity))
+            return;
+
+        horizontalDirection.y = 0f;
+        if (horizontalDirection.sqrMagnitude <= 0.0001f)
+            horizontalDirection = transform.forward;
+        else
+            horizontalDirection.Normalize();
+
+        playerEntity.externalVelocity +=
+            horizontalDirection * Mathf.Max(0f, horizontalForce)
+            + Vector3.up * Mathf.Max(0f, upwardForce);
     }
 
     private void FacePlayer(float dt, float deadZoneDeg = 0f)

@@ -17,6 +17,7 @@ public class BossAttackHitboxes : MonoBehaviour
 
     [Tooltip("HitData.source に渡す加害者 GameObject。未設定なら親階層の EnemyBossBase を使う")]
     [SerializeField] private EnemyBossBase m_owner;
+    [SerializeField] private EnemyBossAI m_ai;
 
     // 攻撃ヒットの重複を防ぐため、攻撃開始からヒット対象を記録する HashSet を用意。攻撃終了でクリアする。
     private readonly HashSet<Health> m_armHitTargets = new();
@@ -30,6 +31,8 @@ public class BossAttackHitboxes : MonoBehaviour
 
         if (m_settings == null && m_owner != null)
             m_settings = m_owner.StatusData;
+        if (m_ai == null)
+            m_ai = GetComponentInParent<EnemyBossAI>();
 
         // Collider を Trigger にして無効化
         // arm Collider は攻撃開始フレームで有効化、rushCollider は攻撃開始フレームの少し前に有効化する想定
@@ -205,6 +208,24 @@ public class BossAttackHitboxes : MonoBehaviour
             knockbackDir = (other.transform.position - origin).normalized,
             source = m_owner != null ? m_owner.gameObject : gameObject
         });
+
+        if (attackCollider == m_rushCollider && m_ai != null)
+            m_ai.TryApplyRushKnockback(other, origin, attackColliderForward());
+    }
+
+    private Vector3 attackColliderForward()
+    {
+        if (m_rushCollider != null)
+        {
+            Vector3 forward = m_rushCollider.transform.forward;
+            forward.y = 0f;
+            if (forward.sqrMagnitude > 0.0001f)
+                return forward.normalized;
+        }
+
+        Vector3 ownerForward = transform.forward;
+        ownerForward.y = 0f;
+        return ownerForward.sqrMagnitude > 0.0001f ? ownerForward.normalized : Vector3.forward;
     }
 
     private static void GetCapsuleWorldPoints(

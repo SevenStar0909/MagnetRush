@@ -35,9 +35,6 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
     [Tooltip("右手 AttackHitbox 基準の Dust サイズ倍率。小さくしたい時はこの値を下げる")]
     [SerializeField, Range(0.1f, 2f)] private float m_armImpactDustScaleMultiplier = 0.55f;
     [Header("ボスの立ち上がりによる主人公を吹き飛び")]
-    [SerializeField] private float m_standImpactRadius = 8f;
-    [SerializeField] private float m_standImpactHorizontalForce = 12f;
-    [SerializeField] private float m_standImpactUpwardForce = 3f;
 
     //[Tooltip("ミサイル生成位置。未設定ならこのオブジェクト位置を使用")]
     //[SerializeField] private Transform[] m_missileSpawnPoints;
@@ -493,26 +490,6 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
     public void PlayStandImpactEffect()
     {
         PlayArmImpactDustEffect();
-
-        Transform player = m_boss != null ? m_boss.Player : null;
-        if (player == null)
-            return;
-
-        Vector3 toPlayer = player.position - transform.position;
-        toPlayer.y = 0f;
-        float radius = Mathf.Max(0f, m_standImpactRadius);
-        if (toPlayer.sqrMagnitude > radius * radius)
-            return;
-
-        if (!player.TryGetComponent(out Entity playerEntity))
-            return;
-
-        Vector3 horizontalDirection = toPlayer.sqrMagnitude > 0.0001f
-            ? toPlayer.normalized
-            : transform.forward;
-        playerEntity.externalVelocity +=
-            horizontalDirection * Mathf.Max(0f, m_standImpactHorizontalForce)
-            + Vector3.up * Mathf.Max(0f, m_standImpactUpwardForce);
     }
 
     private static float GetMaxAbsScale(Transform target)
