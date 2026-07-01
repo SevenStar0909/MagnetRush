@@ -77,7 +77,7 @@ public class DebugBossStunButton : MonoBehaviour
         if (m_bossAI == null) return;
 
         const float panelW = 240f;
-        const float panelH = 230f;
+        const float panelH = 260f;
         var rect = new Rect(10, 10, panelW, panelH);
 
         GUI.Box(rect, "[Debug] Stab Test");
@@ -86,6 +86,9 @@ public class DebugBossStunButton : MonoBehaviour
         const float lineH = 18f;
 
         GUI.Label(new Rect(20, y, panelW - 20, lineH), "State: " + m_bossAI.State);
+        y += lineH;
+
+        GUI.Label(new Rect(20, y, panelW - 20, lineH), "Battle AI: " + (m_bossAI.isBattleing ? "ON" : "OFF"));
         y += lineH;
 
         if (m_bossHealth != null)
@@ -102,6 +105,10 @@ public class DebugBossStunButton : MonoBehaviour
             GUI.Label(new Rect(20, y, panelW - 20, lineH), "Distance: " + dist.ToString("F2") + "m");
         }
         y += lineH + 4f;
+
+        if (ClickButton(new Rect(15, y, panelW - 25, 24f), m_bossAI.isBattleing ? "Battle AI OFF" : "Battle AI ON"))
+            m_bossAI.setisBattleing();
+        y += 28f;
 
         if (ClickButton(new Rect(15, y, panelW - 25, 24f), "Force Stun Boss"))
             ForceStun();

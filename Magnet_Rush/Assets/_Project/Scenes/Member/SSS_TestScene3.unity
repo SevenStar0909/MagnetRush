@@ -561,7 +561,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2387208754698167448, guid: 37032c1edd1675b47b516a8b3d917f76, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -29.000366
+      value: -29.000244
       objectReference: {fileID: 0}
     - target: {fileID: 5836681742755971000, guid: 37032c1edd1675b47b516a8b3d917f76, type: 3}
       propertyPath: m_LocalPosition.x
@@ -1442,9 +1442,17 @@ PrefabInstance:
       value: 65523
       objectReference: {fileID: 0}
     - target: {fileID: 8951133768723248270, guid: 3fd9001ab0f166641b30a07eef64d701, type: 3}
+      propertyPath: isBattleing
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8951133768723248270, guid: 3fd9001ab0f166641b30a07eef64d701, type: 3}
       propertyPath: m_missilePrefab
       value: 
       objectReference: {fileID: 5509490972982333118, guid: 751e004ffe8c3de42b2d1b80df78e8ad, type: 3}
+    - target: {fileID: 8951133768723248270, guid: 3fd9001ab0f166641b30a07eef64d701, type: 3}
+      propertyPath: m_logStateChange
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 9143151154395978059, guid: 3fd9001ab0f166641b30a07eef64d701, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0

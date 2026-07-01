@@ -27,13 +27,14 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
     [Tooltip("Dust エフェクト")]
     [SerializeField] private ParticleSystem m_dustEffect;
 
-    [Header("ふり降ろし砂埃")]
+    [Header("ボス右手攻撃によるDUST")]
     [Tooltip("右手が地面についた時に出す Dust の位置調整。AttackHitboxの地面中心からワールド座標でずらす")]
     [SerializeField] private Vector3 m_armImpactDustOffset = new Vector3(0f, 0.05f, 0f);
     [Tooltip("振り下ろし着地時の Dust サイズを右手 AttackHitbox の横幅に合わせる")]
     [SerializeField] private bool m_matchArmImpactDustScaleToHitbox = true;
     [Tooltip("右手 AttackHitbox 基準の Dust サイズ倍率。小さくしたい時はこの値を下げる")]
     [SerializeField, Range(0.1f, 2f)] private float m_armImpactDustScaleMultiplier = 0.55f;
+    [Header("ボスの立ち上がりによる主人公を吹き飛び")]
     [SerializeField] private float m_standImpactRadius = 8f;
     [SerializeField] private float m_standImpactHorizontalForce = 12f;
     [SerializeField] private float m_standImpactUpwardForce = 3f;
