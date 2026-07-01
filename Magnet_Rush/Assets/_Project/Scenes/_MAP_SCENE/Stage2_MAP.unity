@@ -5590,6 +5590,18 @@ PrefabInstance:
       propertyPath: m_LocalPosition.y
       value: -0.01
       objectReference: {fileID: 0}
+    - target: {fileID: 1537800206930250247, guid: 3fd9001ab0f166641b30a07eef64d701, type: 3}
+      propertyPath: m_standImpactRadius
+      value: 30
+      objectReference: {fileID: 0}
+    - target: {fileID: 1537800206930250247, guid: 3fd9001ab0f166641b30a07eef64d701, type: 3}
+      propertyPath: m_standImpactUpwardForce
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 1537800206930250247, guid: 3fd9001ab0f166641b30a07eef64d701, type: 3}
+      propertyPath: m_standImpactHorizontalForce
+      value: 150
+      objectReference: {fileID: 0}
     - target: {fileID: 3809441685285971335, guid: 3fd9001ab0f166641b30a07eef64d701, type: 3}
       propertyPath: m_LocalPosition.y
       value: 0.46
@@ -5613,6 +5625,22 @@ PrefabInstance:
     - target: {fileID: 8774293733114710440, guid: 3fd9001ab0f166641b30a07eef64d701, type: 3}
       propertyPath: m_smr
       value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 8951133768723248270, guid: 3fd9001ab0f166641b30a07eef64d701, type: 3}
+      propertyPath: m_shockRadius
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 8951133768723248270, guid: 3fd9001ab0f166641b30a07eef64d701, type: 3}
+      propertyPath: m_shockUpwardlForce
+      value: 60
+      objectReference: {fileID: 0}
+    - target: {fileID: 8951133768723248270, guid: 3fd9001ab0f166641b30a07eef64d701, type: 3}
+      propertyPath: m_shockHorizontalForce
+      value: 60
+      objectReference: {fileID: 0}
+    - target: {fileID: 8951133768723248270, guid: 3fd9001ab0f166641b30a07eef64d701, type: 3}
+      propertyPath: m_shockAfterAttackMotion
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 9143151154395978059, guid: 3fd9001ab0f166641b30a07eef64d701, type: 3}
       propertyPath: m_LocalPosition.x
