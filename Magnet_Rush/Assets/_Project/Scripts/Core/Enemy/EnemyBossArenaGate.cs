@@ -12,6 +12,8 @@ using UnityEngine.Rendering;
 [RequireComponent(typeof(BoxCollider))]
 public class EnemyBossArenaGate : MonoBehaviour
 {
+    private const string kLogPrefix = "[boss gate]";
+
     private enum ArenaState { Idle, Sealed, Cleared }
 
     private const int k_SideCount = 12;
@@ -36,6 +38,7 @@ public class EnemyBossArenaGate : MonoBehaviour
     [Header("ボス起動")]
     [Tooltip("ON: このゲートが封鎖されるまでボスAIを停止し、封鎖開始と同時に動かす")]
     [SerializeField] private bool m_disableBossAIUntilSealed = true;
+    [SerializeField] private bool m_enableBossAIOnSealed = true;
     [Tooltip("停止・起動するボスAI。未設定なら対象ボスから自動取得する")]
     [SerializeField] private EnemyBossAI m_bossAI;
 
@@ -141,7 +144,9 @@ public class EnemyBossArenaGate : MonoBehaviour
 
     private void Seal()
     {
+        Debug.Log($"{kLogPrefix} seal start", this);
         ResolveBoss();
+        Debug.Log($"{kLogPrefix} resolve boss result boss={(m_boss != null ? m_boss.name : "null")} health={(m_bossHealth != null)}", this);
 
         if (m_bossHealth == null)
         {
@@ -152,7 +157,8 @@ public class EnemyBossArenaGate : MonoBehaviour
 
         m_state = ArenaState.Sealed;
         SubscribeBoss();
-        if (m_disableBossAIUntilSealed)
+        Debug.Log($"{kLogPrefix} sealed boss={(m_boss != null ? m_boss.name : "null")} autoEnableAI={m_disableBossAIUntilSealed && m_enableBossAIOnSealed}", this);
+        if (m_disableBossAIUntilSealed && m_enableBossAIOnSealed)
             SetBossAIEnabled(true);
         EnableBarriers(true);
         ChannelLogger.Log("Enemy", $"EnemyBossArenaGate: 封鎖開始 対象ボス={m_boss.name}");
@@ -179,6 +185,7 @@ public class EnemyBossArenaGate : MonoBehaviour
             return;
 
         EnemyBossAI bossAI = ResolveBossAI();
+        Debug.Log($"{kLogPrefix} SetBossAIEnabled({enabled}) resolve bossAI={(bossAI != null)}", this);
         if (bossAI == null)
             return;
 
@@ -258,6 +265,7 @@ public class EnemyBossArenaGate : MonoBehaviour
             return;
 
         bossAI.enabled = enabled;
+        Debug.Log($"{kLogPrefix} bossAI.enabled = {enabled}", bossAI);
         ChannelLogger.Log("Enemy", $"EnemyBossArenaGate: ボスAI {(enabled ? "起動" : "停止")}");
     }
 

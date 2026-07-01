@@ -1334,28 +1334,6 @@ Light:
   m_LightUnit: 1
   m_LuxAtDistance: 1
   m_EnableSpotReflector: 1
---- !u!114 &294150440 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 8951133768723248270, guid: 86ca71d9eb6a05847a992a5dd1f43333, type: 3}
-  m_PrefabInstance: {fileID: 921276033}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 26af372d0941d9e48adec06a96dd5e47, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: MagnetRush.Enemy::EnemyBossAI
---- !u!114 &294150447 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 1849210394476134877, guid: 86ca71d9eb6a05847a992a5dd1f43333, type: 3}
-  m_PrefabInstance: {fileID: 921276033}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2e7dcbdec3c9e394db96dd4304dd8a54, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: MagnetRush.Enemy::EnemyBossBase
 --- !u!1001 &318836347
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4958,71 +4936,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1048796535}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1001 &921276033
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 529854419887168867, guid: 86ca71d9eb6a05847a992a5dd1f43333, type: 3}
-      propertyPath: m_Name
-      value: Enemy_Boss_ver_0517
-      objectReference: {fileID: 0}
-    - target: {fileID: 529854419887168867, guid: 86ca71d9eb6a05847a992a5dd1f43333, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5724448596103820357, guid: 86ca71d9eb6a05847a992a5dd1f43333, type: 3}
-      propertyPath: m_Enabled
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 9143151154395978059, guid: 86ca71d9eb6a05847a992a5dd1f43333, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 56
-      objectReference: {fileID: 0}
-    - target: {fileID: 9143151154395978059, guid: 86ca71d9eb6a05847a992a5dd1f43333, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: -27
-      objectReference: {fileID: 0}
-    - target: {fileID: 9143151154395978059, guid: 86ca71d9eb6a05847a992a5dd1f43333, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: -174
-      objectReference: {fileID: 0}
-    - target: {fileID: 9143151154395978059, guid: 86ca71d9eb6a05847a992a5dd1f43333, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 9143151154395978059, guid: 86ca71d9eb6a05847a992a5dd1f43333, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 9143151154395978059, guid: 86ca71d9eb6a05847a992a5dd1f43333, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 9143151154395978059, guid: 86ca71d9eb6a05847a992a5dd1f43333, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 9143151154395978059, guid: 86ca71d9eb6a05847a992a5dd1f43333, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 9143151154395978059, guid: 86ca71d9eb6a05847a992a5dd1f43333, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 9143151154395978059, guid: 86ca71d9eb6a05847a992a5dd1f43333, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 86ca71d9eb6a05847a992a5dd1f43333, type: 3}
 --- !u!1 &935386082
 GameObject:
   m_ObjectHideFlags: 0
@@ -5385,11 +5298,11 @@ PrefabInstance:
     - target: {fileID: 1802304174126137013, guid: 1f12e6be734d4614a91a1b7a264498bf, type: 3}
       propertyPath: m_boss
       value: 
-      objectReference: {fileID: 294150447}
+      objectReference: {fileID: 2117617751}
     - target: {fileID: 1802304174126137013, guid: 1f12e6be734d4614a91a1b7a264498bf, type: 3}
       propertyPath: m_bossAI
       value: 
-      objectReference: {fileID: 294150440}
+      objectReference: {fileID: 2117617744}
     - target: {fileID: 1802304174126137013, guid: 1f12e6be734d4614a91a1b7a264498bf, type: 3}
       propertyPath: m_wallMaterial
       value: 
@@ -5398,10 +5311,20 @@ PrefabInstance:
       propertyPath: m_sealTriggerInset
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 1802304174126137013, guid: 1f12e6be734d4614a91a1b7a264498bf, type: 3}
+      propertyPath: m_enableBossAIOnSealed
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1802304174126137011, guid: 1f12e6be734d4614a91a1b7a264498bf, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1732882556}
+    - targetCorrespondingSourceObject: {fileID: 1802304174126137011, guid: 1f12e6be734d4614a91a1b7a264498bf, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1732882555}
   m_SourcePrefab: {fileID: 100100000, guid: 1f12e6be734d4614a91a1b7a264498bf, type: 3}
 --- !u!1 &1001681797
 GameObject:
@@ -9724,6 +9647,54 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!1 &1732882551 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1802304174126137011, guid: 1f12e6be734d4614a91a1b7a264498bf, type: 3}
+  m_PrefabInstance: {fileID: 990692882}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1732882552 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1802304174126137013, guid: 1f12e6be734d4614a91a1b7a264498bf, type: 3}
+  m_PrefabInstance: {fileID: 990692882}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1732882551}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: efc64a9261cd40144b69018fa3fe30a4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1732882555
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1732882551}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aba35864d28bcac4cafea5ef4d3c0bd7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Enemy::BossRoomTimelineController
+  m_gate: {fileID: 1732882552}
+  m_director: {fileID: 1732882556}
+  m_bossAI: {fileID: 2117617744}
+--- !u!320 &1732882556
+PlayableDirector:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1732882551}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_PlayableAsset: {fileID: 11400000, guid: e53c9cc4d0a68424b9cbb5fd6554d133, type: 2}
+  m_InitialState: 1
+  m_WrapMode: 2
+  m_DirectorUpdateMode: 1
+  m_InitialTime: 0
+  m_SceneBindings: []
+  m_ExposedReferences:
+    m_References: []
 --- !u!1001 &1735997951
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -12669,6 +12640,28 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2110543720}
   m_Mesh: {fileID: 1048259711176262175, guid: ae448c980d2616444afc51b49ff12498, type: 3}
+--- !u!114 &2117617744 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8951133768723248270, guid: 3fd9001ab0f166641b30a07eef64d701, type: 3}
+  m_PrefabInstance: {fileID: 1019863609}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 26af372d0941d9e48adec06a96dd5e47, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Enemy::EnemyBossAI
+--- !u!114 &2117617751 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1849210394476134877, guid: 3fd9001ab0f166641b30a07eef64d701, type: 3}
+  m_PrefabInstance: {fileID: 1019863609}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2e7dcbdec3c9e394db96dd4304dd8a54, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Enemy::EnemyBossBase
 --- !u!1001 &2144368396
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -13037,7 +13030,6 @@ SceneRoots:
   - {fileID: 184601369}
   - {fileID: 1736678116}
   - {fileID: 1815589333}
-  - {fileID: 921276033}
   - {fileID: 843580818}
   - {fileID: 1953357161}
   - {fileID: 1832815874}
