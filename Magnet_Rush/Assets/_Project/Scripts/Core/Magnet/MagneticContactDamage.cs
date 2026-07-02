@@ -4,9 +4,10 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// 磁力で加速されたPhysicsObjectがEntityBodyに衝突した際にダメージを与える。
-/// OnCollisionEnterで検出。PhysicsObject×EntityBody=ONのMatrix制御。
-/// 子コライダーから親のHitbox(IHittable)を辿ってOnHit()を呼ぶ。
+/// 磁力で加速されたオブジェクトが相手に衝突した際にダメージを与える。
+/// 検出経路は2つ: 動的Rigidbody(箱・斧等)は OnCollisionEnter、
+/// kinematic Entity(敵)は物理衝突イベントが発火しないため EntityController.OnMoveContact を購読する。
+/// どちらも同じ飛距離カーブのダメージモデルを通り、子コライダーから親のHitbox(IHittable)を辿ってOnHit()を呼ぶ。
 /// </summary>
 public class MagneticContactDamage : MonoBehaviour
 {
@@ -20,6 +21,8 @@ public class MagneticContactDamage : MonoBehaviour
 
     private Magnetizable m_magnetizable;
     private Rigidbody m_rb;
+    private Entity m_entity;
+    private EntityController m_entityController;
     private readonly HashSet<IHittable> m_hitTargets = new HashSet<IHittable>();
     private bool m_wasActive;
     private Vector3 m_pullStartPosition;
@@ -45,6 +48,20 @@ public class MagneticContactDamage : MonoBehaviour
     {
         m_magnetizable = GetComponentInParent<Magnetizable>();
         m_rb = GetComponentInParent<Rigidbody>();
+        m_entity = GetComponentInParent<Entity>();
+        m_entityController = GetComponentInParent<EntityController>();
+    }
+
+    void OnEnable()
+    {
+        if (m_entityController != null)
+            m_entityController.OnMoveContact += HandleMoveContact;
+    }
+
+    void OnDisable()
+    {
+        if (m_entityController != null)
+            m_entityController.OnMoveContact -= HandleMoveContact;
     }
 
     void FixedUpdate()
@@ -84,33 +101,70 @@ public class MagneticContactDamage : MonoBehaviour
         // プレイヤーには物理オブジェクトの接触ダメージを与えない（ボスのスタン蓄積・敵への加害は維持）
         if (hittable.HitGroup == HitGroup.Player) { ChannelLogger.LogGuardReturn("ContactDmg", "プレイヤーへの接触ダメージは無効"); return; }
 
+        DealContactDamage(hittable, collision.GetContact(0).point, collision.relativeVelocity.normalized, vel, logGuards: true);
+    }
+
+    /// <summary>
+    /// kinematic Entity(敵)の接触検出。EntityController の移動解決から通知される。
+    /// 接触が続く間は毎フレーム呼ばれるため、この経路のガードはログなしで抜ける（LogGuardReturn ルールの例外）。
+    /// </summary>
+    private void HandleMoveContact(Collider other, Vector3 hitPoint)
+    {
+        if (m_magnetizable == null || !m_magnetizable.IsActive || m_settings == null) return;
+        if (m_entity == null) return;
+
+        // kinematic Entity は collision.relativeVelocity が取れないので、自分の合計移動速度でゲートする
+        Vector3 flyVelocity = m_entity.velocity + m_entity.externalVelocity + m_entity.holdVelocity;
+        float vel = flyVelocity.magnitude;
+        if (vel < m_settings.minVelocity) return;
+
+        if (other.transform.IsChildOf(m_magnetizable.transform)) return;
+        if (IsOwnDamageOwner(other.gameObject)) return;
+
+        var hittable = other.GetComponentInParent<IHittable>();
+        if (hittable == null && other.attachedRigidbody != null)
+            hittable = other.attachedRigidbody.GetComponentInChildren<IHittable>();
+        if (hittable == null) return;
+
+        // プレイヤーには物理オブジェクトの接触ダメージを与えない（OnCollisionEnter 経路と同じ仕様）
+        if (hittable.HitGroup == HitGroup.Player) return;
+
+        DealContactDamage(hittable, hitPoint, flyVelocity.normalized, vel, logGuards: false);
+    }
+
+    /// <summary>飛距離カーブでダメージを算出し、磁力が切れるまで同一対象へ1回だけ OnHit と演出を発火する。</summary>
+    private void DealContactDamage(IHittable hittable, Vector3 hitPoint, Vector3 knockbackDir, float velocity, bool logGuards)
+    {
         // 磁化された位置から衝突地点までの直線距離をカーブに通してダメージを決める（近くから=弱、遠くから飛んできた=強）
         float pulledDistance = Vector3.Distance(transform.position, m_pullStartPosition);
         int damage = Mathf.Max(0, Mathf.RoundToInt(m_settings.damageByDistance.Evaluate(pulledDistance)));
-        if (damage <= 0) { ChannelLogger.LogGuardReturn("ContactDmg", $"飛距離{pulledDistance:F1}mのカーブ値が0のためダメージなし"); return; }
+        if (damage <= 0)
+        {
+            if (logGuards) ChannelLogger.LogGuardReturn("ContactDmg", $"飛距離{pulledDistance:F1}mのカーブ値が0のためダメージなし");
+            return;
+        }
+
+        // 同一対象への重複ダメージ防止（磁力切れるまで1回のみ）。ログより先に弾かないと接触継続中にHITログがスパムする
+        if (!m_hitTargets.Add(hittable)) return;
 
         // HIT のみ目立つログで残す
-        Debug.Log($"<color=#FF5722>[ContactDmg]</color> {name} → {((MonoBehaviour)hittable).name} dmg={damage} dist={pulledDistance:F1}m vel={vel:F1}");
+        Debug.Log($"<color=#FF5722>[ContactDmg]</color> {name} → {((MonoBehaviour)hittable).name} dmg={damage} dist={pulledDistance:F1}m vel={velocity:F1}");
 
-        // 同一対象への重複ダメージ防止（磁力切れるまで1回のみ）
-        if (m_hitTargets.Add(hittable))
+        var targetBehaviour = (MonoBehaviour)hittable;
+        var targetHealth = targetBehaviour.GetComponentInParent<Health>();
+        int healthBefore = targetHealth != null ? targetHealth.CurrentHealth : 0;
+
+        hittable.OnHit(new HitData
         {
-            var targetBehaviour = (MonoBehaviour)hittable;
-            var targetHealth = targetBehaviour.GetComponentInParent<Health>();
-            int healthBefore = targetHealth != null ? targetHealth.CurrentHealth : 0;
+            damage = damage,
+            hitPoint = hitPoint,
+            knockbackDir = knockbackDir,
+            source = gameObject
+        });
 
-            hittable.OnHit(new HitData
-            {
-                damage = damage,
-                hitPoint = collision.GetContact(0).point,
-                knockbackDir = collision.relativeVelocity.normalized,
-                source = gameObject
-            });
-
-            bool dealtDamage = targetHealth != null && targetHealth.CurrentHealth < healthBefore;
-            if (dealtDamage && hittable.HitGroup == HitGroup.Enemy)
-                RequestEnemyDamageFeedback(damage);
-        }
+        bool dealtDamage = targetHealth != null && targetHealth.CurrentHealth < healthBefore;
+        if (dealtDamage && hittable.HitGroup == HitGroup.Enemy)
+            RequestEnemyDamageFeedback(damage);
     }
 
     private bool IsOwnDamageOwner(GameObject target)
