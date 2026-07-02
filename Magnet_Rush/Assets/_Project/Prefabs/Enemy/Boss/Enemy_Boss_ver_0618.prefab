@@ -227,12 +227,12 @@ MonoBehaviour:
   m_shockHorizontalForce: 100
   m_shockUpwardlForce: 100
   m_standImpactRadius: 50
-  m_standImpactHorizontalForce: 50
+  m_standImpactHorizontalForce: 100
   m_standImpactUpwardForce: 40
-  m_rushKnockbackHorizontalForce: 100
-  m_rushKnockbackUpwardForce: 100
+  m_rushKnockbackHorizontalForce: 70
+  m_rushKnockbackUpwardForce: 70
   m_logStateChange: 1
-  isBattleing: 0
+  isBattleing: 1
   m_nextLongRangeAttackIsRush: 1
   m_rushKeepSeconds: 3
 --- !u!114 &8780740096348751557
@@ -361,7 +361,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Enemy::BossMissileLauncher
   m_settings: {fileID: 11400000, guid: 44b5798bf19b96b4181ae7cc0928cd4c, type: 2}
-  m_missilePrefab: {fileID: 5509490972982333118, guid: 747eac45c9df97d49b3ef2b43ae206d9, type: 3}
+  m_missilePrefab: {fileID: 5509490972982333118, guid: 751e004ffe8c3de42b2d1b80df78e8ad, type: 3}
+  m_launchExplosionEffectPrefab: {fileID: 7608947279581240675, guid: bf9ba2edd393fca46b6ff93c1bcdbc0f, type: 3}
+  m_launchExplosionEffectLifetime: 0.75
+  m_launchExplosionEffectScale: 2
   m_missileSpawnPoints:
   - {fileID: 427336397416801071}
   - {fileID: 4631294791002744509}
@@ -651,8 +654,8 @@ Transform:
   m_GameObject: {fileID: 1193734409511167720}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 5, z: 3}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 0, y: 3.49, z: 1.2}
+  m_LocalScale: {x: 1.0710824, y: 1.0710824, z: 1.0710824}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 3809441685285971335}

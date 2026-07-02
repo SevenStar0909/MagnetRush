@@ -56,6 +56,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
 
     private EnemyBossBase m_boss;
     private BossMissileLauncher m_missileLauncher;
+    private BossAttackHitboxes m_attackHitboxes;
     private Transform m_player;
     private EnemyBossSettings m_settings;
     private Stamina m_stamina;
@@ -97,6 +98,11 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
     private bool m_rushMovementStopped;
     private bool m_rushEndRequested;
     private float m_rushKeepTimer;
+    private bool m_missileAnimationStarted;
+    [SerializeField] private float m_missileFaceReadyAngleDeg = 0.5f;
+    private float m_attackMissTurnTimer;
+    private float m_attackMissTurnSpeedDegPerSec;
+    private const float AttackMissTurnDuration = 1f;
 
     public event Action OnStabHitSucceeded;   // スタブが成功したときに発火
 
@@ -126,6 +132,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
     {
         m_boss = GetComponent<EnemyBossBase>();
         m_missileLauncher = GetComponent<BossMissileLauncher>();
+        m_attackHitboxes = GetComponentInChildren<BossAttackHitboxes>(true);
         m_stamina = GetComponent<Stamina>();
         m_health = GetComponent<Health>();
 
@@ -415,8 +422,14 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
             m_rushKeepTimer = 0f;
         }
 
+        if (next == BossState.AttackStance)
+            m_attackHitboxes?.ResetArmHitThisAttack();
+
         if (next == BossState.Idle)
         {
+            if (prev == BossState.AttackMotion && !DidArmAttackHit())
+                BeginAttackMissTurn();
+
             ClearStaminaFlags();
             // Idle に戻る時は Wind/Dust を必ず止める。Rush の DisableWindEffectEvent が
             // 中断（被弾→Stagger 等）で発火しないまま Idle へ戻ると Wind が出続けるため、保険として停止する。
@@ -433,7 +446,10 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
 
         // ミサイル攻撃の入り口でトグルをリセット（必ず 1発目=上波 から始める）
         if (next == BossState.Missile)
+        {
+            m_missileAnimationStarted = false;
             m_missileLauncher?.ResetWave();
+        }
 
         // Rush 中に Stun/Stagger で割り込まれると Rush 側の Disable AnimEvent が発火せず
         // Wind/Dust が出続けるので、ブレイク入り口でも明示停止する
@@ -561,8 +577,6 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
         {
             if (m_nextLongRangeAttackIsRush)
                 m_animator.TriggerAttackRush();
-            else
-                m_animator.TriggerMissile();
             ChangeState(m_nextLongRangeAttackIsRush ? BossState.Rush : BossState.Missile);
             // 遠距離攻撃が実際に発動したときだけ Rush ↔ Missile を反転させる
             m_nextLongRangeAttackIsRush = !m_nextLongRangeAttackIsRush;
@@ -683,10 +697,19 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
 
     private void TickMissile(float dt)
     {
-        if (m_animator.IsIdle) { ChangeState(BossState.Idle); return; }
-
         m_boss.SlowDown(dt);
-        FacePlayer(dt, m_settings.faceDeadZoneDeg);
+
+        if (!m_missileAnimationStarted)
+        {
+            if (FacePlayerForMissileStart(dt))
+            {
+                m_missileAnimationStarted = true;
+                m_animator.TriggerMissile();
+            }
+            return;
+        }
+
+        if (m_animator.IsIdle) { ChangeState(BossState.Idle); return; }
     }
 
     private void TickStunned(float dt)
@@ -737,9 +760,8 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
     /// <summary>Missile 発射イベント専用。AnimationEvent から呼ばれ、BossMissileLauncher に1波分の発射を委譲する。</summary>
     public void OnMissileFireEvent()
     {
-        if (m_missileLauncher != null)
-            m_missileLauncher.FireNextWave();
-        m_animator.TriggerMissileFinished();
+        if (m_missileLauncher != null && m_missileLauncher.FireNextWave())
+            m_animator.TriggerMissileFinished();
     }
 
     // === IStabReceiver 実装 (Player → Boss スタブ受信) ===
@@ -894,7 +916,89 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
         if (m_stabFinisherFacingLock) return; // スタブ演出中(開始〜終了)はプレイヤーを追尾して回頭しない（命中後の立ち上がり中も維持）
         Vector3 look = m_player.position - transform.position;
         look.y = 0f;
-        if (look.sqrMagnitude > 0.0001f)
-            m_boss.FaceToward(look.normalized, dt, deadZoneDeg);
+        if (look.sqrMagnitude <= 0.0001f)
+            return;
+
+        if (m_attackMissTurnTimer > 0f)
+        {
+            FacePlayerAfterAttackMiss(look.normalized, dt);
+            return;
+        }
+
+        m_boss.FaceToward(look.normalized, dt, deadZoneDeg);
+    }
+
+    private bool FacePlayerForMissileStart(float dt)
+    {
+        if (m_stabFinisherFacingLock)
+            return true;
+
+        Vector3 look = m_player.position - transform.position;
+        look.y = 0f;
+        if (look.sqrMagnitude <= 0.0001f)
+            return true;
+
+        Vector3 direction = look.normalized;
+
+        if (m_attackMissTurnTimer > 0f)
+        {
+            FacePlayerAfterAttackMiss(direction, dt);
+            return false;
+        }
+
+        m_boss.FaceToward(direction, dt);
+        return IsFacingDirection(direction, Mathf.Max(0f, m_missileFaceReadyAngleDeg));
+    }
+
+    private bool IsFacingDirection(Vector3 direction, float angleDeg)
+    {
+        Vector3 currentForward = transform.forward;
+        currentForward.y = 0f;
+        direction.y = 0f;
+
+        if (currentForward.sqrMagnitude <= 0.0001f || direction.sqrMagnitude <= 0.0001f)
+            return true;
+
+        return Vector3.Angle(currentForward.normalized, direction.normalized) <= angleDeg;
+    }
+
+    private bool DidArmAttackHit()
+    {
+        return m_attackHitboxes != null && m_attackHitboxes.ArmHitThisAttack;
+    }
+
+    private void BeginAttackMissTurn()
+    {
+        if (m_player == null)
+            return;
+
+        Vector3 look = m_player.position - transform.position;
+        look.y = 0f;
+        if (look.sqrMagnitude <= 0.0001f)
+            return;
+
+        Vector3 currentForward = transform.forward;
+        currentForward.y = 0f;
+        if (currentForward.sqrMagnitude <= 0.0001f)
+            currentForward = transform.forward;
+
+        float angle = Vector3.Angle(currentForward.normalized, look.normalized);
+        if (angle <= Mathf.Max(0f, m_settings.faceDeadZoneDeg))
+            return;
+
+        m_attackMissTurnTimer = AttackMissTurnDuration;
+        m_attackMissTurnSpeedDegPerSec = angle / AttackMissTurnDuration;
+    }
+
+    private void FacePlayerAfterAttackMiss(Vector3 direction, float dt)
+    {
+        m_attackMissTurnTimer = Mathf.Max(0f, m_attackMissTurnTimer - dt);
+
+        Quaternion targetRotation = Quaternion.LookRotation(direction, transform.up);
+        transform.rotation = Quaternion.RotateTowards(
+            transform.rotation,
+            targetRotation,
+            m_attackMissTurnSpeedDegPerSec * dt
+        );
     }
 }
