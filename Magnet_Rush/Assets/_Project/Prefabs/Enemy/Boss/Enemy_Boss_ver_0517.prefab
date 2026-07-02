@@ -443,6 +443,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: MagnetRush.Enemy::BossMissileLauncher
   m_settings: {fileID: 11400000, guid: 44b5798bf19b96b4181ae7cc0928cd4c, type: 2}
   m_missilePrefab: {fileID: 5509490972982333118, guid: 747eac45c9df97d49b3ef2b43ae206d9, type: 3}
+  m_launchExplosionEffectPrefab: {fileID: 7608947279581240675, guid: bf9ba2edd393fca46b6ff93c1bcdbc0f, type: 3}
+  m_launchExplosionEffectLifetime: 0.75
+  m_launchExplosionEffectScale: 2
   m_missileSpawnPoints:
   - {fileID: 8662209342513077446}
   - {fileID: 5589826005968646182}
