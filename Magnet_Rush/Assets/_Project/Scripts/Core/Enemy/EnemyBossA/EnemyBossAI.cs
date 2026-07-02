@@ -539,7 +539,11 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
         m_interruptShockWaveBodies.Clear();
     }
 
-    private static bool IsArmAttackState(BossState state)
+    /// <summary>
+    /// 振り上げ攻撃（腕攻撃）中の状態か。磁力リセットとドームキャスト(BossHandMagnetCaster)で
+    /// 同じ状態集合を共有する（片方だけ直して対象がズレるのを防ぐ）。
+    /// </summary>
+    public static bool IsArmAttackState(BossState state)
     {
         return state == BossState.AttackStance || state == BossState.AttackMotion;
     }
@@ -566,10 +570,13 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
             mag.DeactivateWithFields();
         }
 
-        if (BulletManager.Instance != null)
+        bool refunded = BulletManager.Instance != null;
+        if (refunded)
             BulletManager.Instance.RefundShots(refundCount);
 
-        ChannelLogger.Log("EnemyBossA", $"[MagnetReset] ボスの磁力を{refundCount}箇所解除、残弾{refundCount}発返却");
+        ChannelLogger.Log("EnemyBossA", refunded
+            ? $"[MagnetReset] ボスの磁力を{refundCount}箇所解除、残弾{refundCount}発返却"
+            : $"[MagnetReset] ボスの磁力を{refundCount}箇所解除（BulletManager不在で残弾返却なし）");
     }
 
     private void ClearStaminaFlags()
