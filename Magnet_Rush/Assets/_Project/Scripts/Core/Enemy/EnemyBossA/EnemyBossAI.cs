@@ -50,6 +50,23 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
     [SerializeField] private float m_rushKnockbackHorizontalForce = 12f;
     [SerializeField] private float m_rushKnockbackUpwardForce = 3f;
 
+    [Header("Stab")]
+    [Tooltip("ダウンアニメーション開始からスタブを受け付けるまでの待ち時間")]
+    [Min(0f)]
+    [SerializeField] private float m_stabAvailableDelayAfterBreak = 2f;
+
+    [Header("Stab Ready Effect")]
+    [Tooltip("スタブ可能時に磁力エフェクトを出す胸コア周りのボーンパス")]
+    [SerializeField] private string m_stabReadyEffectBonePath = "Model/Boss01_Riging/Root/Oelvis/Body_Tube_1";
+    [SerializeField] private GameObject m_stabReadyEffectPrefab;
+    [SerializeField] private Vector3 m_stabReadyEffectLocalOffset = Vector3.zero;
+    [SerializeField] private Vector3 m_stabReadyEffectLocalEulerAngles = Vector3.zero;
+    [SerializeField] private Vector3 m_stabReadyEffectLocalScale = Vector3.one;
+    [SerializeField] private Color m_stabReadyEffectColor = new Color(1f, 0.42f, 0.04f, 0.9f);
+    [SerializeField, Min(0f)] private float m_stabReadyEffectBlinkCyclesPerSecond = 1f;
+    [SerializeField, Range(0f, 1f)] private float m_stabReadyEffectMinAlpha = 0.18f;
+    [SerializeField, Min(0f)] private float m_stabReadyEffectPulseScale = 0.18f;
+
     [Header("Debug")]
     [SerializeField] private bool m_logStateChange = true;
     public bool isBattleing = false;
@@ -84,6 +101,13 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
 
     private bool m_wasInStunAnim;
     private bool m_wasInStaggerAnim;
+    private float m_breakAnimationStartedTime = float.NegativeInfinity;
+    private Transform m_stabReadyEffectAnchor;
+    private GameObject m_stabReadyEffectRoot;
+    private ParticleSystem[] m_stabReadyEffectParticles = Array.Empty<ParticleSystem>();
+    private Renderer[] m_stabReadyEffectRenderers = Array.Empty<Renderer>();
+    private bool m_warnedMissingStabReadyEffectAnchor;
+    private bool m_warnedMissingStabReadyEffectPrefab;
     private bool m_staminaBreakEndRequested;
     private bool m_stabFinisherActive;
     private bool m_postStabHoldPending;      // スタブ命中後、起き上がりを遅らせて崩れたまま伏せている間 true
@@ -170,6 +194,8 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
         if (m_bodyHitboxes != null)
             foreach (var hb in m_bodyHitboxes)
                 if (hb != null) hb.OnHitEvent -= OnBodyHit;
+
+        DestroyStabReadyEffect();
     }
 
     void Start()
@@ -202,6 +228,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
             if (m_state != BossState.Idle)
                 ChangeState(BossState.Idle);
 
+            SetStabReadyEffectVisible(false);
             m_boss.SlowDown(dt);
             return;
         }
@@ -223,6 +250,8 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
             case BossState.Stagger: TickStagger(dt); break;
             case BossState.Standing: TickStanding(dt); break;
         }
+
+        UpdateStabReadyEffect();
     }
 
     void LateUpdate()
@@ -241,7 +270,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
 
     // スタンゲージが満タン（＝Stamina 0）になった時に Stamina.OnBreak から呼ばれる。
     // よろけ（Stagger）を1回だけ発火する。OnBreak はゲージが 0 に落ちた瞬間に1度だけ発火するのでループしない。
-    // よろけ中もスタブ可（CanReceiveStab が Stagger を含む）。スタン（振り上げカウンター=ArmStunHitbox）でも同様にスタブできる。
+    // よろけ/スタン中は、ダウン開始から一定時間経過後にスタブ可（CanReceiveStab が Stagger/Stunned を含む）。
     private void HandleStaminaBreak()
     {
         if (m_animator == null) return;
@@ -410,6 +439,16 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
         var prev = m_state;
         m_state = next;
 
+        bool wasBreak = IsBreakState(prev);
+        bool enteredBreak = !wasBreak && IsBreakState(next);
+        if (enteredBreak)
+            m_breakAnimationStartedTime = Time.time;
+        else if (wasBreak && !IsBreakState(next))
+        {
+            m_breakAnimationStartedTime = float.NegativeInfinity;
+            SetStabReadyEffectVisible(false);
+        }
+
         // 崩れ（Stun/Stagger）中だけ接地スナップを切る。崩れアニメで胴体が沈む間の下押しを止め、
         // 本体が地面にめり込むのを防ぐ。崩れを抜けた瞬間（Idle 等）に false へ戻して通常の接地に復帰する。
         if (m_boss != null)
@@ -421,7 +460,6 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
         // 前回の攻撃で付いた磁力が残ると、次の振り上げでプレイヤーが何もしなくても
         // クレートが磁化部位へ飛んでダウンしてしまうため。
         bool leftArmAttack = IsArmAttackState(prev) && !IsArmAttackState(next);
-        bool enteredBreak = next == BossState.Stunned || next == BossState.Stagger;
         if (leftArmAttack || enteredBreak)
             ResetBodyMagnetismAndRefundAmmo();
 
@@ -813,11 +851,10 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
     // === IStabReceiver 実装 (Player → Boss スタブ受信) ===
 
     /// <summary>
-    /// スタブを受け付ける条件。崩れ中 (Stunned=振り上げカウンター / Stagger=スタンゲージ満タン) に加え、
-    /// スタン値が満タン (Stamina.IsBroken) の間も true。満タンはスタブを当てるまで維持されるので、
-    /// 崩れアニメが終わって取り逃しても、近づいてスタブを決めれば成立する（ソフトロック防止）。
+    /// スタブを受け付ける条件。崩れ中 (Stunned=振り上げカウンター / Stagger=スタンゲージ満タン) かつ、
+    /// ダウンアニメーション開始から一定時間経過後だけ true。
     /// </summary>
-    public bool CanReceiveStab => !m_postStabHoldPending && IsBreakState();
+    public bool CanReceiveStab => !m_postStabHoldPending && IsBreakState() && IsStabAvailableAfterBreakDelay();
 
     /// <summary>突き刺し目標。頭ボーン下の StabAnchor（Inspectorアサイン）。未設定なら本体 transform。</summary>
     public Transform StabAnchor => m_stabAnchor != null ? m_stabAnchor : transform;
@@ -836,7 +873,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
     public void OnStabHit(StabHitData data)
     {
         if (!CanReceiveStab)
-        { ChannelLogger.LogGuardReturn("EnemyBossA", "Stunned/Stagger 以外のため Stab 無効"); return; }
+        { ChannelLogger.LogGuardReturn("EnemyBossA", "Stab 受付条件未達"); return; }
 
         if (m_health == null)
         { ChannelLogger.LogGuardReturn("EnemyBossA", "Health 未取得"); return; }
@@ -866,7 +903,13 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
     }
 
     /// <summary>フィニッシャー演出の開始/終了を受け取り、演出中の崩れ回復を止める。</summary>
-    public void BeginStabFinisher() { m_stabFinisherActive = true; m_stabFinisherFacingLock = true; m_stabFinisherFrozenY = transform.position.y; }
+    public void BeginStabFinisher()
+    {
+        m_stabFinisherActive = true;
+        m_stabFinisherFacingLock = true;
+        m_stabFinisherFrozenY = transform.position.y;
+        SetStabReadyEffectVisible(false);
+    }
     public void EndStabFinisher() { m_stabFinisherActive = false; m_stabFinisherFacingLock = false; }
     public void PlayStandingImpactEffect()
     {
@@ -929,6 +972,192 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
     private bool IsBreakState()
     {
         return m_state == BossState.Stunned || m_state == BossState.Stagger;
+    }
+
+    private static bool IsBreakState(BossState state)
+    {
+        return state == BossState.Stunned || state == BossState.Stagger;
+    }
+
+    private bool IsStabAvailableAfterBreakDelay()
+    {
+        return Time.time >= m_breakAnimationStartedTime + Mathf.Max(0f, m_stabAvailableDelayAfterBreak);
+    }
+
+    private void UpdateStabReadyEffect()
+    {
+        bool visible = CanReceiveStab && !m_stabFinisherActive;
+        SetStabReadyEffectVisible(visible);
+        if (!visible || m_stabReadyEffectRoot == null) return;
+
+        float cycles = Mathf.Max(0f, m_stabReadyEffectBlinkCyclesPerSecond);
+        float wave = cycles > 0f
+            ? (Mathf.Sin(Time.time * cycles * Mathf.PI * 2f) + 1f) * 0.5f
+            : 1f;
+        float alpha = Mathf.Lerp(Mathf.Clamp01(m_stabReadyEffectMinAlpha), 1f, wave) * m_stabReadyEffectColor.a;
+        Color color = m_stabReadyEffectColor;
+        color.a = alpha;
+
+        float scale = 1f + wave * Mathf.Max(0f, m_stabReadyEffectPulseScale);
+        m_stabReadyEffectRoot.transform.localPosition = m_stabReadyEffectLocalOffset;
+        m_stabReadyEffectRoot.transform.localRotation = Quaternion.Euler(m_stabReadyEffectLocalEulerAngles);
+        m_stabReadyEffectRoot.transform.localScale = Vector3.Scale(m_stabReadyEffectLocalScale, Vector3.one * scale);
+
+        TintStabReadyEffect(color);
+    }
+
+    private void TintStabReadyEffect(Color color)
+    {
+        for (int i = 0; i < m_stabReadyEffectParticles.Length; i++)
+        {
+            ParticleSystem particle = m_stabReadyEffectParticles[i];
+            if (particle == null) continue;
+
+            ParticleSystem.MainModule main = particle.main;
+            main.startColor = color;
+        }
+
+        for (int i = 0; i < m_stabReadyEffectRenderers.Length; i++)
+        {
+            Renderer effectRenderer = m_stabReadyEffectRenderers[i];
+            if (effectRenderer == null) continue;
+
+            Material[] materials = effectRenderer.materials;
+            for (int j = 0; j < materials.Length; j++)
+            {
+                Material material = materials[j];
+                if (material == null) continue;
+
+                if (material.HasProperty("_BaseColor"))
+                    material.SetColor("_BaseColor", color);
+                if (material.HasProperty("_Color"))
+                    material.SetColor("_Color", color);
+                if (material.HasProperty("_TintColor"))
+                    material.SetColor("_TintColor", color);
+                if (material.HasProperty("_EmissionColor"))
+                    material.SetColor("_EmissionColor", color);
+            }
+        }
+    }
+
+    private void SetStabReadyEffectVisible(bool visible)
+    {
+        if (visible && m_stabReadyEffectRoot == null)
+            BuildStabReadyEffect();
+
+        if (m_stabReadyEffectRoot == null || m_stabReadyEffectRoot.activeSelf == visible)
+            return;
+
+        if (visible)
+        {
+            m_stabReadyEffectRoot.SetActive(true);
+            PlayStabReadyEffect();
+        }
+        else
+        {
+            StopStabReadyEffect();
+            m_stabReadyEffectRoot.SetActive(false);
+        }
+    }
+
+    private void BuildStabReadyEffect()
+    {
+        m_stabReadyEffectAnchor = ResolveStabReadyEffectAnchor();
+        if (m_stabReadyEffectAnchor == null)
+        {
+            if (!m_warnedMissingStabReadyEffectAnchor)
+            {
+                ChannelLogger.LogWarning("EnemyBossA", $"スタブ可能エフェクトの表示先ボーン未検出: {m_stabReadyEffectBonePath}");
+                m_warnedMissingStabReadyEffectAnchor = true;
+            }
+            return;
+        }
+
+        if (m_stabReadyEffectPrefab == null)
+        {
+            if (!m_warnedMissingStabReadyEffectPrefab)
+            {
+                ChannelLogger.LogWarning("EnemyBossA", "スタブ可能エフェクトPrefab未設定");
+                m_warnedMissingStabReadyEffectPrefab = true;
+            }
+            return;
+        }
+
+        m_stabReadyEffectRoot = Instantiate(m_stabReadyEffectPrefab, m_stabReadyEffectAnchor);
+        m_stabReadyEffectRoot.name = "StabReadyMagnetEffect";
+        m_stabReadyEffectRoot.transform.SetParent(m_stabReadyEffectAnchor, false);
+        m_stabReadyEffectRoot.transform.localPosition = m_stabReadyEffectLocalOffset;
+        m_stabReadyEffectRoot.transform.localRotation = Quaternion.Euler(m_stabReadyEffectLocalEulerAngles);
+        m_stabReadyEffectRoot.transform.localScale = m_stabReadyEffectLocalScale;
+        m_stabReadyEffectParticles = m_stabReadyEffectRoot.GetComponentsInChildren<ParticleSystem>(true);
+        m_stabReadyEffectRenderers = m_stabReadyEffectRoot.GetComponentsInChildren<Renderer>(true);
+        TintStabReadyEffect(m_stabReadyEffectColor);
+
+        m_stabReadyEffectRoot.SetActive(false);
+    }
+
+    private void PlayStabReadyEffect()
+    {
+        for (int i = 0; i < m_stabReadyEffectParticles.Length; i++)
+        {
+            ParticleSystem particle = m_stabReadyEffectParticles[i];
+            if (particle == null) continue;
+
+            particle.Play(true);
+        }
+    }
+
+    private void StopStabReadyEffect()
+    {
+        for (int i = 0; i < m_stabReadyEffectParticles.Length; i++)
+        {
+            ParticleSystem particle = m_stabReadyEffectParticles[i];
+            if (particle == null) continue;
+
+            particle.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        }
+    }
+
+    private Transform ResolveStabReadyEffectAnchor()
+    {
+        Transform anchor = null;
+        if (!string.IsNullOrEmpty(m_stabReadyEffectBonePath))
+        {
+            anchor = transform.Find(m_stabReadyEffectBonePath);
+            if (anchor == null && m_stabReadyEffectBonePath.Contains("/Oelvis/"))
+                anchor = transform.Find(m_stabReadyEffectBonePath.Replace("/Oelvis/", "/Pelvis/"));
+            if (anchor == null && m_stabReadyEffectBonePath.Contains("/Pelvis/"))
+                anchor = transform.Find(m_stabReadyEffectBonePath.Replace("/Pelvis/", "/Oelvis/"));
+        }
+
+        return anchor != null ? anchor : FindChildRecursive(transform, "Body_Tube_1");
+    }
+
+    private static Transform FindChildRecursive(Transform root, string childName)
+    {
+        if (root == null) return null;
+        if (root.name == childName) return root;
+
+        for (int i = 0; i < root.childCount; i++)
+        {
+            Transform found = FindChildRecursive(root.GetChild(i), childName);
+            if (found != null) return found;
+        }
+
+        return null;
+    }
+
+    private void DestroyStabReadyEffect()
+    {
+        if (m_stabReadyEffectRoot == null) return;
+
+        if (Application.isPlaying)
+            Destroy(m_stabReadyEffectRoot);
+        else
+            DestroyImmediate(m_stabReadyEffectRoot);
+        m_stabReadyEffectRoot = null;
+        m_stabReadyEffectParticles = Array.Empty<ParticleSystem>();
+        m_stabReadyEffectRenderers = Array.Empty<Renderer>();
     }
 
     // === ヘルパ ===
