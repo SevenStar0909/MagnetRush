@@ -171,7 +171,9 @@ public class ShootingAbility : Ability
             BulletManager.Instance.IncrementShotCount();
 
         m_events.FireSelfShoot();
-        Sound.Play(SoundData.CueSheet.SE, SoundData.SE.SelfShot);
+        // 通常射撃と同じ音・同じ音量で鳴らす
+        m_shootPlayback = SoundManager.Instance.PlayWithHandle(SoundData.CueSheet.SE, SoundData.SE.PlayerShot);
+        m_shootPlayback.SetVolumeAndPitch(0.1f, 1.0f);
     }
 
     /// <summary>X 入力があればリロード（全弾クリア）。毎フレーム呼ぶ。</summary>
