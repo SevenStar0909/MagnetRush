@@ -65,6 +65,17 @@ public class BulletManager : Singleton<BulletManager>
     }
 
     /// <summary>
+    /// 撃った弾数を返却する（ボス磁化の強制リセット等の救済用）。0未満にはならない。
+    /// </summary>
+    /// <param name="count">返却する弾数（0以下は無視される）</param>
+    public void RefundShots(int count)
+    {
+        if (count <= 0) { ChannelLogger.LogGuardReturn("Bullet", "返却弾数が0以下"); return; }
+        m_shotCount = Mathf.Max(0, m_shotCount - count);
+        OnBulletCountChanged?.Invoke(m_shotCount);
+    }
+
+    /// <summary>
     /// 弾をアクティブリストから解除する。撃った弾数は減らさない。
     /// </summary>
     public void Unregister(MagnetBullet bullet)

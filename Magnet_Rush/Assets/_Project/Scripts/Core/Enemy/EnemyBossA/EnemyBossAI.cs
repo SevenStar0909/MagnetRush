@@ -65,6 +65,8 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
 
     // ボス本体（各ボーン）の Hitbox。物理オブジェクト接触でスタンゲージを溜める（機構1）。
     private Hitbox[] m_bodyHitboxes;
+    // ボス配下の全 Magnetizable（本体root＋手などのHurtbox）。弾で付いた磁力の一括リセットに使う。
+    private Magnetizable[] m_bodyMagnetizables;
     private readonly Collider[] m_interruptShockWaveBuffer = new Collider[64];
     private readonly HashSet<Rigidbody> m_interruptShockWaveBodies = new HashSet<Rigidbody>();
 
@@ -138,6 +140,9 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
 
         // 右手の ArmStunHitbox は Hitbox 派生ではないので含まれない（＝カウンター経路と分離される）。
         m_bodyHitboxes = GetComponentsInChildren<Hitbox>(true);
+
+        // Awake時点のプレハブ構成だけを対象にする（実行時に湧くミサイル等は含めない）
+        m_bodyMagnetizables = GetComponentsInChildren<Magnetizable>(true);
 
         if (m_animator == null)
             m_animator = GetComponentInChildren<EnemyBossBaseA_Animator>();
@@ -412,6 +417,14 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
 
         TryEmitInterruptShockWave(prev, next);
 
+        // 振り上げ攻撃の終了時とダウン（Stun/Stagger）確定時に、弾で付いた磁力を本体から一掃する。
+        // 前回の攻撃で付いた磁力が残ると、次の振り上げでプレイヤーが何もしなくても
+        // クレートが磁化部位へ飛んでダウンしてしまうため。
+        bool leftArmAttack = IsArmAttackState(prev) && !IsArmAttackState(next);
+        bool enteredBreak = next == BossState.Stunned || next == BossState.Stagger;
+        if (leftArmAttack || enteredBreak)
+            ResetBodyMagnetismAndRefundAmmo();
+
         if (next == BossState.Rush)
         {
             m_rushTargetPosition = m_player.position;
@@ -524,6 +537,39 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
             body.AddForce(impulse, ForceMode.Impulse);
         }
         m_interruptShockWaveBodies.Clear();
+    }
+
+    private static bool IsArmAttackState(BossState state)
+    {
+        return state == BossState.AttackStance || state == BossState.AttackMotion;
+    }
+
+    // 弾で付いたボスの磁力（本体root＋手）を全解除し、使った分の残弾をプレイヤーへ返す。
+    // ボスの磁化は弾着弾のみで起きる（ドームキャストは PhysicsObject 限定）ので、磁化1箇所＝弾1発として返却する。
+    private void ResetBodyMagnetismAndRefundAmmo()
+    {
+        if (m_bodyMagnetizables == null)
+        { ChannelLogger.LogGuardReturn("EnemyBossA", "Magnetizable未取得"); return; }
+
+        // 先に返却数を確定する。root の DeactivateWithFields は子孫（手）のフィールドも
+        // 巻き込んで解除するため、解除しながら数えると取りこぼす。
+        int refundCount = 0;
+        foreach (var mag in m_bodyMagnetizables)
+            if (mag != null && mag.IsActive) refundCount++;
+
+        if (refundCount == 0)
+        { ChannelLogger.LogGuardReturn("EnemyBossA", "磁化箇所なしでリセット不要"); return; }
+
+        foreach (var mag in m_bodyMagnetizables)
+        {
+            if (mag == null || !mag.IsActive) continue;
+            mag.DeactivateWithFields();
+        }
+
+        if (BulletManager.Instance != null)
+            BulletManager.Instance.RefundShots(refundCount);
+
+        ChannelLogger.Log("EnemyBossA", $"[MagnetReset] ボスの磁力を{refundCount}箇所解除、残弾{refundCount}発返却");
     }
 
     private void ClearStaminaFlags()
