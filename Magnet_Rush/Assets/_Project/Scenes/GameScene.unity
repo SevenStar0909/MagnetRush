@@ -254,6 +254,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4550234887310944996, guid: 6b054d6dbebac8b49be1e9aed68e9497, type: 3}
+      propertyPath: m_startDelay
+      value: 0.3
+      objectReference: {fileID: 0}
     - target: {fileID: 5587081181866657333, guid: 6b054d6dbebac8b49be1e9aed68e9497, type: 3}
       propertyPath: m_Name
       value: _Managers
@@ -1157,6 +1161,10 @@ PrefabInstance:
       propertyPath: m_ActiveFontFeatures.Array.size
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5755349610018105617, guid: 37032c1edd1675b47b516a8b3d917f76, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: f7630b8b9946ed54da068b865572cc0d, type: 3}
     - target: {fileID: 5836681742755971000, guid: 37032c1edd1675b47b516a8b3d917f76, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -1341,6 +1349,10 @@ PrefabInstance:
     - target: {fileID: 177638, guid: 0abab5bb77339e4428787a870eb31bd3, type: 3}
       propertyPath: m_Layer
       value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 177638, guid: 0abab5bb77339e4428787a870eb31bd3, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 179256, guid: 0abab5bb77339e4428787a870eb31bd3, type: 3}
       propertyPath: m_Layer
