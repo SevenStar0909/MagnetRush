@@ -173,9 +173,6 @@ MonoBehaviour:
   m_armImpactDustOffset: {x: 0, y: 0.05, z: -3}
   m_matchArmImpactDustScaleToHitbox: 1
   m_armImpactDustScaleMultiplier: 0.48
-  m_standImpactRadius: 8
-  m_standImpactHorizontalForce: 12
-  m_standImpactUpwardForce: 3
   m_enableDebugInput: 1
   m_attackName: Attack
   m_attackFinishedName: AttackFinished
@@ -226,10 +223,16 @@ MonoBehaviour:
   m_stabFinisherSettings: {fileID: 11400000, guid: cb977d2290347014cb9d9ece1b6f684b, type: 2}
   m_shockAfterAttackStance: 1
   m_shockAfterAttackMotion: 1
-  m_shockRadius: 8
-  m_shockHorizontalForce: 12
-  m_shockUpwardlForce: 3
+  m_shockRadius: 40
+  m_shockHorizontalForce: 100
+  m_shockUpwardlForce: 100
+  m_standImpactRadius: 50
+  m_standImpactHorizontalForce: 50
+  m_standImpactUpwardForce: 40
+  m_rushKnockbackHorizontalForce: 100
+  m_rushKnockbackUpwardForce: 100
   m_logStateChange: 1
+  isBattleing: 0
   m_nextLongRangeAttackIsRush: 1
   m_rushKeepSeconds: 3
 --- !u!114 &8780740096348751557
@@ -2264,6 +2267,7 @@ MonoBehaviour:
   m_rushCollider: {fileID: 2260008209048045659}
   m_settings: {fileID: 11400000, guid: c18fd890e7dc6ab42854abb4e3c2e1f1, type: 2}
   m_owner: {fileID: 1849210394476134877}
+  m_ai: {fileID: 0}
 --- !u!1 &4259904416899081124
 GameObject:
   m_ObjectHideFlags: 0

@@ -5628,19 +5628,39 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8951133768723248270, guid: 3fd9001ab0f166641b30a07eef64d701, type: 3}
       propertyPath: m_shockRadius
-      value: 20
+      value: 40
       objectReference: {fileID: 0}
     - target: {fileID: 8951133768723248270, guid: 3fd9001ab0f166641b30a07eef64d701, type: 3}
       propertyPath: m_shockUpwardlForce
-      value: 60
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 8951133768723248270, guid: 3fd9001ab0f166641b30a07eef64d701, type: 3}
+      propertyPath: m_standImpactRadius
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 8951133768723248270, guid: 3fd9001ab0f166641b30a07eef64d701, type: 3}
       propertyPath: m_shockHorizontalForce
-      value: 60
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 8951133768723248270, guid: 3fd9001ab0f166641b30a07eef64d701, type: 3}
       propertyPath: m_shockAfterAttackMotion
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8951133768723248270, guid: 3fd9001ab0f166641b30a07eef64d701, type: 3}
+      propertyPath: m_standImpactUpwardForce
+      value: 40
+      objectReference: {fileID: 0}
+    - target: {fileID: 8951133768723248270, guid: 3fd9001ab0f166641b30a07eef64d701, type: 3}
+      propertyPath: m_rushKnockbackUpwardForce
+      value: 40
+      objectReference: {fileID: 0}
+    - target: {fileID: 8951133768723248270, guid: 3fd9001ab0f166641b30a07eef64d701, type: 3}
+      propertyPath: m_standImpactHorizontalForce
+      value: 50
+      objectReference: {fileID: 0}
+    - target: {fileID: 8951133768723248270, guid: 3fd9001ab0f166641b30a07eef64d701, type: 3}
+      propertyPath: m_rushKnockbackHorizontalForce
+      value: 40
       objectReference: {fileID: 0}
     - target: {fileID: 9143151154395978059, guid: 3fd9001ab0f166641b30a07eef64d701, type: 3}
       propertyPath: m_LocalPosition.x
