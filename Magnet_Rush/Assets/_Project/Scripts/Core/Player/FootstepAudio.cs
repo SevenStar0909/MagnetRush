@@ -21,6 +21,6 @@ public class FootstepAudio : MonoBehaviour
 
         var handle = SoundManager.Instance.PlayWithHandle(SoundData.CueSheet.SE, selectedCue);
         float randomPitch = Random.Range(0.95f, 1.05f);
-        handle.SetVolumeAndPitch(0.1f, randomPitch);
+        handle.SetVolumeAndPitch(1f, randomPitch);
     }
 }

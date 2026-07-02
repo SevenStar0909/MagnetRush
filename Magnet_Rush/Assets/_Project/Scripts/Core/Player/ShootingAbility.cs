@@ -29,9 +29,6 @@ public class ShootingAbility : Ability
     private const float k_ForwardDotThreshold = 0.1f;
     private const string k_SelfFireFieldHostName = "SelfMagnetFieldHost";
 
-    /// <summary> SoudManagerのインスタンスから直接ハンドルを受け取って再生</summary>
-    private SoundManager.Playback m_shootPlayback;
-
     protected override void Awake()
     {
         base.Awake();
@@ -100,8 +97,8 @@ public class ShootingAbility : Ability
         }
 
         m_events.FireShoot();
-        m_shootPlayback = SoundManager.Instance.PlayWithHandle(SoundData.CueSheet.SE, SoundData.SE.PlayerShot);
-        m_shootPlayback.SetVolumeAndPitch(0.1f, 1.0f);
+        // 音量はサウンド調整シート（SoundVolumeSettings）の「磁力弾の射撃音」で管理する
+        Sound.Play(SoundData.CueSheet.SE, SoundData.SE.PlayerShot);
     }
 
     /// <summary>A / F 入力があればセルフファイア（自己磁化）。毎フレーム呼ぶ。</summary>
@@ -171,9 +168,8 @@ public class ShootingAbility : Ability
             BulletManager.Instance.IncrementShotCount();
 
         m_events.FireSelfShoot();
-        // 通常射撃と同じ音・同じ音量で鳴らす
-        m_shootPlayback = SoundManager.Instance.PlayWithHandle(SoundData.CueSheet.SE, SoundData.SE.PlayerShot);
-        m_shootPlayback.SetVolumeAndPitch(0.1f, 1.0f);
+        // 通常射撃と同じ音・同じ音量で鳴らす（音量はサウンド調整シートで管理）
+        Sound.Play(SoundData.CueSheet.SE, SoundData.SE.PlayerShot);
     }
 
     /// <summary>X 入力があればリロード（全弾クリア）。毎フレーム呼ぶ。</summary>

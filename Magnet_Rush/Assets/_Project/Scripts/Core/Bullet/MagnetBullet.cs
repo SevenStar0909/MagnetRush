@@ -222,8 +222,8 @@ public class MagnetBullet : MonoBehaviour, IBulletProximity
     {
         if (IsStuck) return;
 
-        // 弾が何かに着弾した音
-        Sound.Play(SoundData.CueSheet.SE, SoundData.SE.HitObject);
+        // 弾が何かに着弾した音（着弾点の3D位置で再生＝離れていると小さく聞こえる）
+        Sound.PlayAt(SoundData.CueSheet.SE, SoundData.SE.HitObject, transform.position);
 
         var targetMag = other.GetComponentInParent<Magnetizable>();
         if (targetMag != null)

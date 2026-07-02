@@ -39,10 +39,6 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
     //[Tooltip("ミサイル生成位置。未設定ならこのオブジェクト位置を使用")]
     //[SerializeField] private Transform[] m_missileSpawnPoints;
 
-    [Header("サウンド")]
-    [Tooltip("足音の音量。0で無音、1で原音、2で2倍に増幅")]
-    [SerializeField, LabelRange("足音の音量", 0f, 2f)] private float m_footstepVolume = 1f;
-
     [Header("Debug")]
     [SerializeField] private bool m_enableDebugInput = true;
 
@@ -291,16 +287,15 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
     // AnimationEvent で呼び出す関数群。攻撃の当たり判定の有効化/無効化や、AIへの通知を行う。
     public void OnBossFootStepEvent()
     {
-        // 共有プレイヤーに残った他SEの音量設定を引きずらないよう、ハンドル経由で毎回明示指定する
-        var footstepPlayback = SoundManager.Instance.PlayWithHandle(SoundData.CueSheet.SE, SoundData.SE.BossEnemyFoot);
-        footstepPlayback.SetVolumeAndPitch(m_footstepVolume, 0f);
+        // ボス位置の3D再生（離れていると小さく聞こえる）。音量・減衰距離はサウンド調整シートで管理
+        Sound.PlayAt(SoundData.CueSheet.SE, SoundData.SE.BossEnemyFoot, transform.position);
     }
 
     public void EnableArmHitboxEvent()
     {
         if (m_attackHitboxes != null) m_attackHitboxes.EnableArmHitbox();
         PlayArmImpactDustEffect();
-        Sound.Play(SoundData.CueSheet.SE, SoundData.SE.BossEnemySlam);
+        Sound.PlayAt(SoundData.CueSheet.SE, SoundData.SE.BossEnemySlam, transform.position);
         ChannelLogger.Log("EnemyBoss", $"BossArmEvent step2 is Triggered ");
     }
 

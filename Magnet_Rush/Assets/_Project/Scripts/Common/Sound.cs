@@ -24,6 +24,30 @@ public static class Sound
     /// <summary>ループSEを再生し、停止用デリゲートを返すフック。(キューシート名, キュー名) → 停止Action。SoundManager が登録する。</summary>
     public static Func<string, string, Action> OnPlayLoop;
 
+    /// <summary>
+    /// 3D位置でループSEを再生するフック。(キューシート名, キュー名, ワールド位置) → ハンドル。
+    /// 減衰距離は調整シート（SoundVolumeSettings）のキュー別設定を SoundManager が引く。
+    /// </summary>
+    public static Func<string, string, Vector3, PositionalLoopPlayback> OnPlayLoopAt;
+
+    /// <summary>3D位置ループSEのハンドル。動く音源（ボーン追従の磁場等）の位置更新と停止に使う。</summary>
+    public sealed class PositionalLoopPlayback
+    {
+        private readonly Action m_stop;
+        private readonly Action<Vector3> m_setPosition;
+
+        public PositionalLoopPlayback(Action stop, Action<Vector3> setPosition)
+        {
+            m_stop = stop;
+            m_setPosition = setPosition;
+        }
+
+        /// <summary>発音位置を更新する。毎フレーム呼んで音源を追従させる。</summary>
+        public void SetPosition(Vector3 position) => m_setPosition?.Invoke(position);
+
+        public void Stop() => m_stop?.Invoke();
+    }
+
     /// <summary>Timeline用の停止・音量変更可能SE再生フック。(キューシート名, キュー名, 開始位置秒, 初期速度倍率) → 再生ハンドル。SoundManager が登録する。</summary>
     public static Func<string, string, double, float, TimelineCuePlayback> OnPlayTimelineCue;
 
@@ -54,9 +78,19 @@ public static class Sound
     /// <summary>BGM を停止する。</summary>
     public static void StopBgm() => OnStopBgm?.Invoke();
 
-    /// <summary>3D位置で SE を再生する（距離減衰あり）。SoundManager 未登録時は何もしない。</summary>
-    public static void PlayAt(string cueSheet, string cue, Vector3 position, float minDistance = 4f, float maxDistance = 35f)
+    /// <summary>
+    /// 3D位置で SE を再生する（距離減衰あり）。SoundManager 未登録時は何もしない。
+    /// 距離を省略（負値）すると調整シート（SoundVolumeSettings）のキュー別減衰距離を使う。
+    /// </summary>
+    public static void PlayAt(string cueSheet, string cue, Vector3 position, float minDistance = -1f, float maxDistance = -1f)
         => OnPlayAt?.Invoke(cueSheet, cue, position, minDistance, maxDistance);
+
+    /// <summary>
+    /// 3D位置でループSEを再生し、位置更新・停止用ハンドルを返す。減衰距離は調整シートのキュー別設定。
+    /// SoundManager 未登録時（起動直後・テスト）は null を返すので、呼び出し側は null 許容（?.）で扱う。
+    /// </summary>
+    public static PositionalLoopPlayback PlayLoopAt(string cueSheet, string cue, Vector3 position)
+        => OnPlayLoopAt?.Invoke(cueSheet, cue, position);
 
     /// <summary>
     /// ループSEを再生し、停止用デリゲートを返す。呼び出し側はこの Action を保持し、止めたいタイミングで呼ぶ。

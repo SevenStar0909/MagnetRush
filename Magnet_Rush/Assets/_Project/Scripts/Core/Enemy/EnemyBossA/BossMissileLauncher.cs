@@ -68,7 +68,8 @@ public class BossMissileLauncher : MonoBehaviour
             : MissileWavePattern.Forward;
 
         FireMissileWave(pattern);
-        Sound.Play(SoundData.CueSheet.SE, SoundData.SE.MissileShot);
+        // ボス位置の3D再生（離れていると小さく聞こえる）。音量・減衰距離はサウンド調整シートで管理
+        Sound.PlayAt(SoundData.CueSheet.SE, SoundData.SE.MissileShot, transform.position);
         m_nextMissileIsSideLob = !m_nextMissileIsSideLob;
         m_firedWaveCount++;
 
