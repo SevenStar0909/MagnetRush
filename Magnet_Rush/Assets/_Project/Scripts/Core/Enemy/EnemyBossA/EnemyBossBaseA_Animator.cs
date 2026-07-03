@@ -434,6 +434,38 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
         }
     }
 
+    // 攻撃系トリガーの掃除用。SetTrigger は遷移で消費されるまで残留するため、
+    // 割り込み等で消費されなかったトリガーを EnemyBossAI が状態の入り口でリセットする。
+    public void ResetAttack()
+    {
+        if (m_animator != null) m_animator.ResetTrigger(m_hAttack);
+    }
+
+    public void ResetAttackFinished()
+    {
+        if (m_animator != null) m_animator.ResetTrigger(m_hAttackFinished);
+    }
+
+    public void ResetMissile()
+    {
+        if (m_animator != null) m_animator.ResetTrigger(m_hFireMissile);
+    }
+
+    public void ResetMissileFinished()
+    {
+        if (m_animator != null) m_animator.ResetTrigger(m_hFireMissileFinished);
+    }
+
+    public void ResetAttackRush()
+    {
+        if (m_animator != null) m_animator.ResetTrigger(m_hAttackRush);
+    }
+
+    public void ResetAttackRushFinished()
+    {
+        if (m_animator != null) m_animator.ResetTrigger(m_hAttackRushFinished);
+    }
+
     public void ResetStunEnd()
     {
         if (m_animator != null) m_animator.ResetTrigger(m_hStunEnd);

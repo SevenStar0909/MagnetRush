@@ -132,7 +132,15 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
     private bool m_rushEndRequested;
     private float m_rushKeepTimer;
     private bool m_missileAnimationStarted;
+    // Animator が実際にミサイル系ステートへ入ったのを見届けたか。Idle→MissileReady のブレンド中は
+    // GetCurrentAnimatorStateInfo が Idle を返し続けるため、これを見ずに IsIdle を終了判定に使うと
+    // 発射トリガー直後に Missile 状態を即抜けして AI と Animator がズレる（残留トリガーの温床）
+    private bool m_missileAnimEntered;
     [SerializeField] private float m_missileFaceReadyAngleDeg = 0.5f;
+    [Tooltip("ミサイル前にプレイヤーへ向き直るのを待つ上限（秒）。超えたら完全に向いていなくてもランダムで攻撃を強制開始する。0で無効")]
+    [Min(0f)]
+    [SerializeField] private float m_missileFaceWaitTimeoutSeconds = 2f;
+    private float m_missileFaceWaitTimer;
     private float m_attackMissTurnTimer;
     private float m_attackMissTurnSpeedDegPerSec;
     private const float AttackMissTurnDuration = 1f;
@@ -525,6 +533,8 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
         var prev = m_state;
         m_state = next;
 
+        ResetStaleAttackTriggers(next);
+
         // 崩れ（Stun/Stagger）中だけ接地スナップを切る。崩れアニメで胴体が沈む間の下押しを止め、
         // 本体が地面にめり込むのを防ぐ。崩れを抜けた瞬間（Idle 等）に false へ戻して通常の接地に復帰する。
         if (m_boss != null)
@@ -578,6 +588,8 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
         if (next == BossState.Missile)
         {
             m_missileAnimationStarted = false;
+            m_missileAnimEntered = false;
+            m_missileFaceWaitTimer = 0f;
             m_missileLauncher?.ResetWave();
         }
 
@@ -694,6 +706,40 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
         ChannelLogger.Log("EnemyBossA", refunded
             ? $"[MagnetReset] ボスの磁力を{refundCount}箇所解除、残弾{refundCount}発返却"
             : $"[MagnetReset] ボスの磁力を{refundCount}箇所解除（BulletManager不在で残弾返却なし）");
+    }
+
+    // 攻撃系トリガーは、Stun/Stagger の AnyState 割り込みや Animator が Idle 以外にいるタイミングで
+    // SetTrigger されると消費されずに残留する。残留したまま Animator が Idle へ戻ると、AI の状態と
+    // 無関係に発火する（例: ミサイル発射と振り下ろしの同時発動）。状態の入り口で不要なトリガーを掃除する。
+    // 直前の TickIdle / 強制攻撃で出したばかりの開始トリガー（Attack/AttackRush）は消さない。
+    private void ResetStaleAttackTriggers(BossState next)
+    {
+        if (m_animator == null) return;
+
+        switch (next)
+        {
+            case BossState.Stunned:
+            case BossState.Stagger:
+                m_animator.ResetAttack();
+                m_animator.ResetMissile();
+                m_animator.ResetAttackRush();
+                break;
+            case BossState.AttackStance:
+                m_animator.ResetMissile();
+                m_animator.ResetAttackRush();
+                m_animator.ResetAttackFinished();
+                break;
+            case BossState.Rush:
+                m_animator.ResetAttack();
+                m_animator.ResetMissile();
+                m_animator.ResetAttackRushFinished();
+                break;
+            case BossState.Missile:
+                m_animator.ResetAttack();
+                m_animator.ResetAttackRush();
+                m_animator.ResetMissileFinished();
+                break;
+        }
     }
 
     private void ClearStaminaFlags()
@@ -875,11 +921,44 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
             {
                 m_missileAnimationStarted = true;
                 m_animator.TriggerMissile();
+                return;
             }
+
+            // 振り向き待ちが長引くとボスが棒立ちになるため、上限を超えたらランダムで攻撃を強制開始する
+            m_missileFaceWaitTimer += dt;
+            if (m_missileFaceWaitTimeoutSeconds > 0f && m_missileFaceWaitTimer >= m_missileFaceWaitTimeoutSeconds)
+                ForceAttackAfterFaceWaitTimeout();
+            return;
+        }
+
+        // Idle→MissileReady のブレンド中は current state が Idle のまま報告されるため、
+        // ミサイル系ステートへ入ったのを見届けるまで IsIdle を終了判定に使わない
+        if (!m_missileAnimEntered)
+        {
+            if (m_animator.IsInMissile)
+                m_missileAnimEntered = true;
             return;
         }
 
         if (m_animator.IsIdle) { ChangeState(BossState.Idle); return; }
+    }
+
+    // 振り向き待ちがタイムアウトした時の強制攻撃。完全に向き直るのを諦め、
+    // ミサイル即発射かラッシュ切替をランダムに選んで攻撃フェーズへ入る。
+    private void ForceAttackAfterFaceWaitTimeout()
+    {
+        if (UnityEngine.Random.Range(0, 2) == 0)
+        {
+            m_missileAnimationStarted = true;
+            m_animator.TriggerMissile();
+            ChannelLogger.Log("EnemyBossA", "[FaceWait] 振り向き待ちタイムアウト → ミサイルを強制発射");
+        }
+        else
+        {
+            ChannelLogger.Log("EnemyBossA", "[FaceWait] 振り向き待ちタイムアウト → ラッシュへ切替");
+            m_animator.TriggerAttackRush();
+            ChangeState(BossState.Rush);
+        }
     }
 
     private void TickStunned(float dt)

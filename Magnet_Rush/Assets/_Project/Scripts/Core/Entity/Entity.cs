@@ -205,10 +205,29 @@ public abstract class Entity : MonoBehaviour, IMagnetTarget
     /// <param name="minPullSpeed">張り付き判定に必要な引き速度（m/s）</param>
     public bool IsPulledIntoSurface(LayerMask surfaceLayer, float checkDistance, float minPullSpeed)
     {
+        return IsPulledIntoSurface(surfaceLayer, checkDistance, minPullSpeed, 0f, out _);
+    }
+
+    /// <summary>
+    /// 面への引き込み一致度も見る版。minIntoSurfaceDot を上げるほど「面に向かってまっすぐ押し付けられている」
+    /// 時だけ true になる。遠くの磁石へ横向きに引かれながら足元の床をキャストが掠っただけのケース
+    /// （着地の瞬間に意図せずビタ止めする誤発動）を弾くために使う。0 なら従来どおり方向を問わない。
+    /// </summary>
+    /// <param name="minIntoSurfaceDot">引き込み方向と面法線の逆方向との内積の下限（0〜1）</param>
+    /// <param name="hit">張り付き対象面のヒット情報</param>
+    public bool IsPulledIntoSurface(LayerMask surfaceLayer, float checkDistance, float minPullSpeed,
+        float minIntoSurfaceDot, out RaycastHit hit)
+    {
+        hit = default;
         if (surfaceLayer.value == 0) return false;
         Vector3 pull = externalVelocity + holdVelocity;
         if (pull.magnitude < minPullSpeed) return false;
-        return CapsuleCast(pull.normalized, checkDistance, surfaceLayer.value);
+
+        Vector3 pullDir = pull.normalized;
+        if (!CapsuleCast(pullDir, checkDistance, out hit, surfaceLayer.value)) return false;
+
+        // 面に押し付けられていれば 1 に近く、面と平行に滑っているだけなら 0 に近い
+        return Vector3.Dot(pullDir, -hit.normal) >= minIntoSurfaceDot;
     }
 
     /// <summary>Entity位置でOverlapCapsule。接触判定に使用。</summary>
