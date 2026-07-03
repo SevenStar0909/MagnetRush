@@ -123,6 +123,9 @@ public class SoundManager : Singleton<SoundManager>
 
         m_player = new CriAtomExPlayer();
         m_bgmPlayer = new CriAtomExPlayer();
+        // SE多発で発音数上限に達すると後着優先でBGMのボイスが奪われ、BGMが途中で止まる（実測でSE15連発×3回で死亡）。
+        // BGMを最優先にしてSEに奪わせない
+        m_bgmPlayer.SetVoicePriority(255);
 
         // 3D再生用。リスナー(カメラ)とソース(発音位置)を player に紐付けて距離減衰させる
         m_player3d = new CriAtomExPlayer();
