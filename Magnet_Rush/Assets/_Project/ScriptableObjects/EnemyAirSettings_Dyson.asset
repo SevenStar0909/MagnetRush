@@ -24,3 +24,10 @@ MonoBehaviour:
   explosionRadius: 3
   respawnDelay: 500
   externalDrag: 3
+  wander:
+    enabled: 1
+    radius: 6
+    speedMultiplier: 0.5
+    moveTimeout: 6
+    pauseDurationMin: 1
+    pauseDurationMax: 3

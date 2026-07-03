@@ -40,6 +40,10 @@ public class EnemyWalkAxeAi : MonoBehaviour
     private float m_attackTimer;
     private bool m_isAttacking;
     private bool m_wasMoving;
+    // 徘徊（プレイヤーが追跡範囲外の間）の行き先と移動/休止サイクル
+    private Vector3 m_wanderTarget;
+    private float m_wanderTimer;
+    private bool m_isWanderMoving;
     private bool m_enemyWheelPlaying;
     private Health m_ownHealth;
     private SoundManager.Playback3d m_enemyWheelPlayback;
@@ -143,9 +147,7 @@ public class EnemyWalkAxeAi : MonoBehaviour
         float distance = Vector3.Distance(transform.position, player.position);
         if (distance > m_data.chaseRange)
         {
-            SetMoving(false);
-            m_agent.ResetPath();
-            m_enemyBase.SlowDown(dt);
+            TickWander(dt);
             return;
         }
 
@@ -165,6 +167,68 @@ public class EnemyWalkAxeAi : MonoBehaviour
         m_enemyBase.AccelerateToward(AddAllyAvoidance(GetNavMeshDirection(player)), dt);
 
 
+    }
+
+    // プレイヤーが追跡範囲外の間の徘徊。出現位置を中心にランダムな地点へ移動しては休むを繰り返す。
+    // NavMesh が使える時だけ呼ぶ（直接移動フォールバック時は従来どおり停止）。
+    private void TickWander(float dt)
+    {
+        EnemyWanderSettings wander = m_data.wander;
+        if (wander == null || !wander.enabled)
+        {
+            SetMoving(false);
+            m_agent.ResetPath();
+            m_enemyBase.SlowDown(dt);
+            return;
+        }
+
+        m_wanderTimer -= dt;
+
+        if (!m_isWanderMoving)
+        {
+            SetMoving(false);
+            m_enemyBase.SlowDown(dt);
+            if (m_wanderTimer <= 0f && TryPickWanderTarget(wander))
+            {
+                m_isWanderMoving = true;
+                m_wanderTimer = Mathf.Max(1f, wander.moveTimeout);
+            }
+            return;
+        }
+
+        Vector3 toTarget = m_wanderTarget - transform.position;
+        toTarget.y = 0f;
+        float arriveDistance = Mathf.Max(0.5f, m_data.stopDistance);
+        if (m_wanderTimer <= 0f || toTarget.sqrMagnitude <= arriveDistance * arriveDistance)
+        {
+            BeginWanderPause(wander);
+            SetMoving(false);
+            m_agent.ResetPath();
+            m_enemyBase.SlowDown(dt);
+            return;
+        }
+
+        m_agent.SetDestination(m_wanderTarget);
+        SetMoving(true);
+        m_enemyBase.AccelerateToward(AddAllyAvoidance(GetNavMeshDirectionTo(m_wanderTarget)), dt, wander.speedMultiplier);
+    }
+
+    private void BeginWanderPause(EnemyWanderSettings wander)
+    {
+        m_isWanderMoving = false;
+        m_wanderTimer = Random.Range(wander.pauseDurationMin, Mathf.Max(wander.pauseDurationMin, wander.pauseDurationMax));
+    }
+
+    // 出現位置を中心とした半径内から NavMesh 上の行き先を選ぶ。取れなければ false（次フレーム再抽選）。
+    private bool TryPickWanderTarget(EnemyWanderSettings wander)
+    {
+        Vector2 offset = Random.insideUnitCircle * Mathf.Max(0f, wander.radius);
+        Vector3 candidate = m_enemyBase.SpawnPosition + new Vector3(offset.x, 0f, offset.y);
+        if (!NavMesh.SamplePosition(candidate, out NavMeshHit hit, 2f, NavMesh.AllAreas))
+            return false;
+
+        m_wanderTarget = hit.position;
+        return true;
     }
 
     // 丸腰のとき、落ちた自分の武器まで移動し、拾える状態になったら手元へ戻して再装備する。
@@ -655,6 +719,24 @@ public class EnemyWalkAxeAi : MonoBehaviour
         if (m_agent == null || !m_agent.hasPath && !m_agent.pathPending)
             return GetDirectionToPlayer(player);
 
+        return GetNavMeshSteeringDirection();
+    }
+
+    // NavMesh 経路が使えないときは行き先への直線方向にフォールバックする（徘徊用）。
+    private Vector3 GetNavMeshDirectionTo(Vector3 fallbackTarget)
+    {
+        if (m_agent == null || !m_agent.hasPath && !m_agent.pathPending)
+        {
+            Vector3 direct = fallbackTarget - transform.position;
+            direct.y = 0f;
+            return direct.sqrMagnitude > 0.0001f ? direct.normalized : Vector3.zero;
+        }
+
+        return GetNavMeshSteeringDirection();
+    }
+
+    private Vector3 GetNavMeshSteeringDirection()
+    {
         if (m_agent.pathPending)
             return m_lastDirection;
 

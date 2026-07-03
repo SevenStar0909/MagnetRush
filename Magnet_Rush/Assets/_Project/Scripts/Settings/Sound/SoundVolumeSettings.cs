@@ -3,7 +3,7 @@ using UnityEngine;
 /// <summary>
 /// サウンド音量のプランナー用調整シート。全ての音を1音1項目で個別調整する。
 /// SoundManager が再生時に「全体音量 × 各音の音量」を適用する。
-/// 「MagnetRush/サウンド調整シート」ウィンドウなら各音をその場で試聴できる（Inspectorでも編集可）。
+/// 「Tools/サウンド調整シート」ウィンドウなら各音をその場で試聴できる（Inspectorでも編集可）。
 /// </summary>
 [CreateAssetMenu(menuName = "MagnetRush/SoundVolumeSettings")]
 [ClassLabelSO("サウンド音量調整シート")]

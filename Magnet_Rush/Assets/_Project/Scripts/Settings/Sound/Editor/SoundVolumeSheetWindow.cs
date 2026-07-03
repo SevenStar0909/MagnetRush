@@ -10,7 +10,7 @@ using CriWare.Editor;
 /// SoundVolumeSettings（1音1項目・日本語ラベル）をそのまま一覧表示し、各行の ▶ でその場で試聴できる。
 /// 試聴はゲームと同じ最終音量（全体 × 各音）で鳴る。Inspectorで直接編集しても同じ。
 /// CRI のエディタ試聴は SoundCueTimelinePreview と同型（ACF/ACB はランタイムと同じ実体をフルパスで読む）。
-/// メニュー: MagnetRush/サウンド調整シート
+/// メニュー: Tools/サウンド調整シート
 /// </summary>
 public class SoundVolumeSheetWindow : EditorWindow
 {
@@ -61,7 +61,7 @@ public class SoundVolumeSheetWindow : EditorWindow
     private SoundVolumeSettings m_settings;
     private Vector2 m_scroll;
 
-    [MenuItem("MagnetRush/サウンド調整シート")]
+    [MenuItem("Tools/サウンド調整シート")]
     public static void Open()
     {
         var window = GetWindow<SoundVolumeSheetWindow>("サウンド調整シート");

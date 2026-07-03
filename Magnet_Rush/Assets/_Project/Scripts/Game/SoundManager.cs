@@ -9,7 +9,7 @@ using CriWare;
 /// </summary>
 public class SoundManager : Singleton<SoundManager>
 {
-    [Tooltip("音量調整データ（マスター＋キュー別倍率）。「MagnetRush/サウンド調整シート」で編集する")]
+    [Tooltip("音量調整データ（マスター＋キュー別倍率）。「Tools/サウンド調整シート」で編集する")]
     [SerializeField] private SoundVolumeSettings m_volumeSettings;
 
     private CriAtomExPlayer m_player;

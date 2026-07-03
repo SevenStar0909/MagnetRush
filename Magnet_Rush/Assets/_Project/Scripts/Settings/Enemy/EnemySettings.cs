@@ -64,4 +64,7 @@ public class EnemySettings : ScriptableObject
     [Label("ヒットボックス持続時間（秒）")]
     [Tooltip("攻撃ヒットボックスの持続時間（秒）")]
     public float attackHitboxDuration = 0.2f;
+
+    [Header("[徘徊]")]
+    public EnemyWanderSettings wander = new EnemyWanderSettings();
 }
