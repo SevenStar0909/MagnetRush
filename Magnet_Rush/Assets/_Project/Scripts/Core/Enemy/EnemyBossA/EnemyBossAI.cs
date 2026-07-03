@@ -14,6 +14,7 @@ using UnityEngine.AI;
 public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
 {
     public enum BossState { Idle, AttackStance, AttackMotion, Rush, Missile, Stunned, Stagger, Standing }
+    private const string StabReadyEffectName = "StabReadyMagnetEffect";
 
     [Header("References")]
     [SerializeField] private EnemyBossBaseA_Animator m_animator;
@@ -53,17 +54,21 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
     [Header("Stab")]
     [Tooltip("ダウンアニメーション開始からスタブを受け付けるまでの待ち時間")]
     [Min(0f)]
-    [SerializeField] private float m_stabAvailableDelayAfterBreak = 2f;
+    [SerializeField] private float m_stabAvailableDelayAfterBreak = 3f;
 
     [Header("Stab Ready Effect")]
     [Tooltip("スタブ可能時に磁力エフェクトを出す胸コア周りのボーンパス")]
     [SerializeField] private string m_stabReadyEffectBonePath = "Model/Boss01_Riging/Root/Oelvis/Body_Tube_1";
+    [Tooltip("Scene上で位置調整したい場合に使う配置用Transform。未設定ならボーンパスを使う")]
+    [SerializeField] private Transform m_stabReadyEffectSceneAnchor;
+    [Tooltip("Scene/Prefab上に常時置いて調整するStabReadyMagnetEffect。未設定なら同名の子を探し、なければPrefabから生成する")]
+    [SerializeField] private GameObject m_stabReadyEffectSceneObject;
     [SerializeField] private GameObject m_stabReadyEffectPrefab;
     [SerializeField] private Vector3 m_stabReadyEffectLocalOffset = Vector3.zero;
     [SerializeField] private Vector3 m_stabReadyEffectLocalEulerAngles = Vector3.zero;
     [SerializeField] private Vector3 m_stabReadyEffectLocalScale = Vector3.one;
     [SerializeField] private Color m_stabReadyEffectColor = new Color(1f, 0.42f, 0.04f, 0.9f);
-    [SerializeField, Min(0f)] private float m_stabReadyEffectBlinkCyclesPerSecond = 1f;
+    [SerializeField, Min(0f)] private float m_stabReadyEffectBlinkCyclesPerSecond = 2f;
     [SerializeField, Range(0f, 1f)] private float m_stabReadyEffectMinAlpha = 0.18f;
     [SerializeField, Min(0f)] private float m_stabReadyEffectPulseScale = 0.18f;
 
@@ -106,6 +111,8 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
     private GameObject m_stabReadyEffectRoot;
     private ParticleSystem[] m_stabReadyEffectParticles = Array.Empty<ParticleSystem>();
     private Renderer[] m_stabReadyEffectRenderers = Array.Empty<Renderer>();
+    private bool m_usePlacedStabReadyEffect;
+    private Vector3 m_stabReadyEffectBaseLocalScale = Vector3.one;
     private bool m_warnedMissingStabReadyEffectAnchor;
     private bool m_warnedMissingStabReadyEffectPrefab;
     private bool m_staminaBreakEndRequested;
@@ -174,6 +181,8 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
         // 旧プレハブに残る NavMeshAgent は AI では使わないので無効化しておく（付いていても動かさない）。
         var navAgent = GetComponent<NavMeshAgent>();
         if (navAgent != null) navAgent.enabled = false;
+
+        BuildStabReadyEffect();
     }
 
     void OnEnable()
@@ -195,7 +204,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
             foreach (var hb in m_bodyHitboxes)
                 if (hb != null) hb.OnHitEvent -= OnBodyHit;
 
-        DestroyStabReadyEffect();
+        SetStabReadyEffectVisible(false);
     }
 
     void Start()
@@ -267,6 +276,59 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
             transform.position = p;
         }
     }
+
+#if UNITY_EDITOR
+    void OnValidate()
+    {
+        if (Application.isPlaying)
+            return;
+
+        UnityEditor.EditorApplication.delayCall -= EnsureStabReadyEffectInEditor;
+        UnityEditor.EditorApplication.delayCall += EnsureStabReadyEffectInEditor;
+    }
+
+    [ContextMenu("Ensure Stab Ready Magnet Effect In Scene")]
+    private void EnsureStabReadyEffectInEditor()
+    {
+        if (this == null || Application.isPlaying)
+            return;
+
+        if (!gameObject.scene.IsValid() || !gameObject.scene.isLoaded)
+            return;
+
+        GameObject placedEffect = ResolvePlacedStabReadyEffect();
+        if (placedEffect == null && m_stabReadyEffectPrefab != null)
+        {
+            Transform parent = ResolveStabReadyEffectAnchor();
+            if (parent == null)
+                parent = transform;
+
+            placedEffect = UnityEditor.PrefabUtility.InstantiatePrefab(m_stabReadyEffectPrefab, parent) as GameObject;
+            if (placedEffect == null)
+                return;
+
+            UnityEditor.Undo.RegisterCreatedObjectUndo(placedEffect, "Create Stab Ready Magnet Effect");
+            placedEffect.name = StabReadyEffectName;
+            placedEffect.transform.localPosition = m_stabReadyEffectLocalOffset;
+            placedEffect.transform.localRotation = Quaternion.Euler(m_stabReadyEffectLocalEulerAngles);
+            placedEffect.transform.localScale = m_stabReadyEffectLocalScale;
+            placedEffect.SetActive(false);
+        }
+
+        if (placedEffect == null)
+            return;
+
+        placedEffect.name = StabReadyEffectName;
+        placedEffect.SetActive(false);
+
+        if (m_stabReadyEffectSceneObject != placedEffect)
+        {
+            m_stabReadyEffectSceneObject = placedEffect;
+            UnityEditor.EditorUtility.SetDirty(this);
+            UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
+        }
+    }
+#endif
 
     // スタンゲージが満タン（＝Stamina 0）になった時に Stamina.OnBreak から呼ばれる。
     // よろけ（Stagger）を1回だけ発火する。OnBreak はゲージが 0 に落ちた瞬間に1度だけ発火するのでループしない。
@@ -999,9 +1061,13 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
         color.a = alpha;
 
         float scale = 1f + wave * Mathf.Max(0f, m_stabReadyEffectPulseScale);
-        m_stabReadyEffectRoot.transform.localPosition = m_stabReadyEffectLocalOffset;
-        m_stabReadyEffectRoot.transform.localRotation = Quaternion.Euler(m_stabReadyEffectLocalEulerAngles);
-        m_stabReadyEffectRoot.transform.localScale = Vector3.Scale(m_stabReadyEffectLocalScale, Vector3.one * scale);
+        if (!m_usePlacedStabReadyEffect)
+        {
+            m_stabReadyEffectRoot.transform.localPosition = m_stabReadyEffectLocalOffset;
+            m_stabReadyEffectRoot.transform.localRotation = Quaternion.Euler(m_stabReadyEffectLocalEulerAngles);
+            m_stabReadyEffectBaseLocalScale = m_stabReadyEffectLocalScale;
+        }
+        m_stabReadyEffectRoot.transform.localScale = Vector3.Scale(m_stabReadyEffectBaseLocalScale, Vector3.one * scale);
 
         TintStabReadyEffect(color);
     }
@@ -1056,12 +1122,29 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
         else
         {
             StopStabReadyEffect();
+            m_stabReadyEffectRoot.transform.localScale = m_stabReadyEffectBaseLocalScale;
             m_stabReadyEffectRoot.SetActive(false);
         }
     }
 
     private void BuildStabReadyEffect()
     {
+        if (m_stabReadyEffectRoot != null)
+            return;
+
+        m_stabReadyEffectRoot = ResolvePlacedStabReadyEffect();
+        if (m_stabReadyEffectRoot != null)
+        {
+            m_usePlacedStabReadyEffect = true;
+            m_stabReadyEffectRoot.name = StabReadyEffectName;
+            m_stabReadyEffectBaseLocalScale = m_stabReadyEffectRoot.transform.localScale;
+            m_stabReadyEffectParticles = m_stabReadyEffectRoot.GetComponentsInChildren<ParticleSystem>(true);
+            m_stabReadyEffectRenderers = m_stabReadyEffectRoot.GetComponentsInChildren<Renderer>(true);
+            TintStabReadyEffect(m_stabReadyEffectColor);
+            m_stabReadyEffectRoot.SetActive(false);
+            return;
+        }
+
         m_stabReadyEffectAnchor = ResolveStabReadyEffectAnchor();
         if (m_stabReadyEffectAnchor == null)
         {
@@ -1084,11 +1167,13 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
         }
 
         m_stabReadyEffectRoot = Instantiate(m_stabReadyEffectPrefab, m_stabReadyEffectAnchor);
-        m_stabReadyEffectRoot.name = "StabReadyMagnetEffect";
+        m_usePlacedStabReadyEffect = false;
+        m_stabReadyEffectRoot.name = StabReadyEffectName;
         m_stabReadyEffectRoot.transform.SetParent(m_stabReadyEffectAnchor, false);
         m_stabReadyEffectRoot.transform.localPosition = m_stabReadyEffectLocalOffset;
         m_stabReadyEffectRoot.transform.localRotation = Quaternion.Euler(m_stabReadyEffectLocalEulerAngles);
         m_stabReadyEffectRoot.transform.localScale = m_stabReadyEffectLocalScale;
+        m_stabReadyEffectBaseLocalScale = m_stabReadyEffectLocalScale;
         m_stabReadyEffectParticles = m_stabReadyEffectRoot.GetComponentsInChildren<ParticleSystem>(true);
         m_stabReadyEffectRenderers = m_stabReadyEffectRoot.GetComponentsInChildren<Renderer>(true);
         TintStabReadyEffect(m_stabReadyEffectColor);
@@ -1098,6 +1183,9 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
 
     private void PlayStabReadyEffect()
     {
+        if (m_stabReadyEffectRoot != null)
+            m_stabReadyEffectBaseLocalScale = m_stabReadyEffectRoot.transform.localScale;
+
         for (int i = 0; i < m_stabReadyEffectParticles.Length; i++)
         {
             ParticleSystem particle = m_stabReadyEffectParticles[i];
@@ -1120,6 +1208,9 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
 
     private Transform ResolveStabReadyEffectAnchor()
     {
+        if (m_stabReadyEffectSceneAnchor != null)
+            return m_stabReadyEffectSceneAnchor;
+
         Transform anchor = null;
         if (!string.IsNullOrEmpty(m_stabReadyEffectBonePath))
         {
@@ -1131,6 +1222,15 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
         }
 
         return anchor != null ? anchor : FindChildRecursive(transform, "Body_Tube_1");
+    }
+
+    private GameObject ResolvePlacedStabReadyEffect()
+    {
+        if (m_stabReadyEffectSceneObject != null)
+            return m_stabReadyEffectSceneObject;
+
+        Transform placedEffect = FindChildRecursive(transform, StabReadyEffectName);
+        return placedEffect != null ? placedEffect.gameObject : null;
     }
 
     private static Transform FindChildRecursive(Transform root, string childName)
@@ -1158,6 +1258,8 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
         m_stabReadyEffectRoot = null;
         m_stabReadyEffectParticles = Array.Empty<ParticleSystem>();
         m_stabReadyEffectRenderers = Array.Empty<Renderer>();
+        m_usePlacedStabReadyEffect = false;
+        m_stabReadyEffectBaseLocalScale = Vector3.one;
     }
 
     // === ヘルパ ===
