@@ -26,9 +26,6 @@ public class EnemyAirKamikazeAi : MonoBehaviour
     [SerializeField] private float m_obstacleAvoidanceWeight = 2.5f;
 
     [Header("Audio")]
-    [Tooltip("飛行音の音量。0で無音、1で原音。プレイヤーから離れると距離減衰でさらに小さくなる")]
-    [SerializeField, Range(0f, 1f)] private float m_droneEnemyVolume = 0.5f;
-
     [Tooltip("この距離まではフル音量で鳴る（メートル）。近づいてもこれ以上は大きくならない")]
     [SerializeField] private float m_droneEnemyMinDistance = 3f;
 
@@ -517,10 +514,10 @@ public class EnemyAirKamikazeAi : MonoBehaviour
         if (soundManager == null)
             return;
         //Sound.Play(SoundData.CueSheet.SE, SoundData.SE.DroneEnemy);
+        // 音量はサウンド調整シート（SoundVolumeSettings）の「ドローン敵の飛行ループ音」で管理する
         m_droneEnemyPlayback = soundManager.PlayAtWithHandle(
             SoundData.CueSheet.SE, SoundData.SE.DroneEnemy,
             transform.position, m_droneEnemyMinDistance, m_droneEnemyMaxDistance);
-        m_droneEnemyPlayback.SetVolumeAndPitch(m_droneEnemyVolume, 0f);
         m_droneEnemyPlaying = true;
     }
 

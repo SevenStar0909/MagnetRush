@@ -313,14 +313,16 @@ MonoBehaviour:
   m_shockRadius: 8
   m_shockHorizontalForce: 12
   m_shockUpwardlForce: 3
-  m_stabAvailableDelayAfterBreak: 2
+  m_stabReadyEffectDelayAfterBreak: 3
   m_stabReadyEffectBonePath: Model/Boss01_Riging/Root/Oelvis/Body_Tube_1
+  m_stabReadyEffectSceneAnchor: {fileID: 0}
+  m_stabReadyEffectSceneObject: {fileID: 0}
   m_stabReadyEffectPrefab: {fileID: 7392582979745333818, guid: b92291959a61b7a40acf101366cbe905, type: 3}
   m_stabReadyEffectLocalOffset: {x: 0, y: 0, z: 0}
   m_stabReadyEffectLocalEulerAngles: {x: 0, y: 0, z: 0}
-  m_stabReadyEffectLocalScale: {x: 1, y: 1, z: 1}
+  m_stabReadyEffectLocalScale: {x: 1.16, y: 1, z: 1}
   m_stabReadyEffectColor: {r: 1, g: 0.42, b: 0.04, a: 0.9}
-  m_stabReadyEffectBlinkCyclesPerSecond: 1
+  m_stabReadyEffectBlinkCyclesPerSecond: 2
   m_stabReadyEffectMinAlpha: 0.18
   m_stabReadyEffectPulseScale: 0.18
   m_logStateChange: 1

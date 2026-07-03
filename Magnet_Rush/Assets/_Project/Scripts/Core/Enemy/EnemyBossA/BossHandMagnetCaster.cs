@@ -167,8 +167,8 @@ public class BossHandMagnetCaster : MonoBehaviour
         if (m_bossAI == null)
         { ChannelLogger.LogGuardReturn("EnemyBossA", "m_bossAI 未アサインのため state 判定不能"); return false; }
 
-        var s = m_bossAI.State;
-        return s == EnemyBossAI.BossState.AttackStance || s == EnemyBossAI.BossState.AttackMotion;
+        // 状態集合は EnemyBossAI.IsArmAttackState と共有（磁力リセットとドームキャストの対象ズレ防止）
+        return EnemyBossAI.IsArmAttackState(m_bossAI.State);
     }
 
     private void Cast(MagneticPole pole)

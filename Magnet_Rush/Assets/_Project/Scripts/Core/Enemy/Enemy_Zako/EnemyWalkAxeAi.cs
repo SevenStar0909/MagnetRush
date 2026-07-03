@@ -26,9 +26,6 @@ public class EnemyWalkAxeAi : MonoBehaviour
     [SerializeField] private float m_allyAvoidanceWeight = 1.5f;
 
     [Header("Audio")]
-    [Tooltip("車輪音の音量。0で無音、1で原音。プレイヤーから離れると距離減衰でさらに小さくなる")]
-    [SerializeField, Range(0f, 1f)] private float m_enemyWheelVolume = 0.5f;
-
     [Tooltip("この距離まではフル音量で鳴る（メートル）。近づいてもこれ以上は大きくならない")]
     [SerializeField] private float m_enemyWheelMinDistance = 3f;
 
@@ -401,10 +398,10 @@ public class EnemyWalkAxeAi : MonoBehaviour
             return;
 
         StopEnemyWheel();
+        // 音量はサウンド調整シート（SoundVolumeSettings）の「車輪敵の走行ループ音」で管理する
         m_enemyWheelPlayback = soundManager.PlayAtWithHandle(
             SoundData.CueSheet.SE, SoundData.SE.EnemyWheel,
             transform.position, m_enemyWheelMinDistance, m_enemyWheelMaxDistance);
-        m_enemyWheelPlayback.SetVolumeAndPitch(m_enemyWheelVolume, 0f);
         m_enemyWheelPlaying = true;
     }
 
