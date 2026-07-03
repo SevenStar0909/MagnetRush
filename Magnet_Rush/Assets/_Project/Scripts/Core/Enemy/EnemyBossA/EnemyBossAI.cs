@@ -139,6 +139,9 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
 
     public event Action OnStabHitSucceeded;   // スタブが成功したときに発火
 
+    public event Action OnArmAttackStarted;   // 振り下ろし（腕）攻撃を開始した時
+    public event Action OnStaminaBroken;      // スンタゲージが削れきった（よろけた）時
+
     public BossState State => m_state;
     public bool IsInvincibleState => m_state == BossState.Standing;
     public bool CanTakeDamage(HitData hit) => !IsInvincibleState;
@@ -355,6 +358,8 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
         if (m_animator == null) return;
         if (IsInvincibleState) return;
 
+        OnStaminaBroken?.Invoke();
+
         m_animator.TriggerBeInterrupted();
     }
 
@@ -547,6 +552,8 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
 
         if (next == BossState.AttackStance)
             m_attackHitboxes?.ResetArmHitThisAttack();
+
+            OnArmAttackStarted?.Invoke();
 
         if (next == BossState.Idle)
         {
