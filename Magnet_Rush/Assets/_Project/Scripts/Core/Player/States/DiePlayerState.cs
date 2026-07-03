@@ -15,6 +15,12 @@ public class DiePlayerState : EntityState<Player>
         player.input.ClearBuffers();
         player.input.enabled = false;
 
+        // エイム中に死ぬと AimAbility.Update が timeScale をスロー値へ引っ張り続け、
+        // ゲームオーバーの凍結(timeScale=0)と毎フレーム競合する。エイムを解除した上で
+        // 時間制御を演出側へ明け渡す（BossStabFinisherState と同じパターン）
+        player.aim.CancelAim();
+        player.aim.SetTimeScaleControlSuspended(true);
+
         var controller = player.GetComponent<EntityController>();
         if (controller != null)
         {
@@ -26,6 +32,9 @@ public class DiePlayerState : EntityState<Player>
     protected override void OnExit(Player player)
     {
         player.input.enabled = true;
+
+        // リスポーンで時間制御を Aim 側へ返す
+        player.aim.SetTimeScaleControlSuspended(false);
 
         var controller = player.GetComponent<EntityController>();
         if (controller != null)

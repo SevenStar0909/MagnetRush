@@ -44,6 +44,8 @@ public class SoundManager : Singleton<SoundManager>
 
         public void SetVolumePitchAndSpeed(float vol, float pitch, float playbackSpeed)
         {
+            // acbロード失敗時は default ハンドル（player=null）が返るため、触らず戻る
+            if (this.player == null) return;
             this.player.SetVolume(vol * this.sheetScale);
             this.player.SetPitch(pitch);
             this.player.SetPlaybackRatio(Mathf.Max(0.01f, playbackSpeed));
@@ -52,11 +54,13 @@ public class SoundManager : Singleton<SoundManager>
 
         public void Stop()
         {
+            if (this.player == null) return;
             this.playback.Stop();
         }
 
         public bool IsPlaying()
         {
+            if (this.player == null) return false;
             return this.playback.GetStatus() == CriAtomExPlayback.Status.Playing;
         }
     }
@@ -245,7 +249,8 @@ public class SoundManager : Singleton<SoundManager>
     public void UnloadCueSheet(string name)
     {
         if (!m_acbCache.TryGetValue(name, out var acb)) return;
-        acb.Dispose();
+        // ロード失敗時は null がキャッシュされているため null 条件付きで解放する
+        acb?.Dispose();
         m_acbCache.Remove(name);
     }
 
@@ -254,9 +259,11 @@ public class SoundManager : Singleton<SoundManager>
     /// </summary>
     public void Play(string cueSheetName, string cueName)
     {
+        var acb = GetAcb(cueSheetName);
+        if (acb == null) { ChannelLogger.LogGuardReturn("Sound", $"acb未ロードのため {cueName} を再生できない"); return; }
         m_player.SetPlaybackRatio(1f);
         m_player.SetVolume(GetSeVolume(cueName));
-        m_player.SetCue(GetAcb(cueSheetName), cueName);
+        m_player.SetCue(acb, cueName);
         m_player.Start();
     }
 
@@ -266,9 +273,11 @@ public class SoundManager : Singleton<SoundManager>
     /// </summary>
     public Playback PlayWithHandle(string cueSheetName, string cueName)
     {
+        var acb = GetAcb(cueSheetName);
+        if (acb == null) { ChannelLogger.LogGuardReturn("Sound", $"acb未ロードのため {cueName} を再生できない"); return default; }
         m_player.SetPlaybackRatio(1f);
         m_player.SetVolume(GetSeVolume(cueName));
-        m_player.SetCue(GetAcb(cueSheetName), cueName);
+        m_player.SetCue(acb, cueName);
         Playback pb = new(m_player, m_player.Start(), GetSeVolume(cueName));
         return pb;
     }
@@ -294,13 +303,20 @@ public class SoundManager : Singleton<SoundManager>
     /// </summary>
     public Sound.TimelineCuePlayback PlayTimelineCue(string cueSheetName, string cueName, double startTimeSeconds, float initialPlaybackSpeed)
     {
+        var acb = GetAcb(cueSheetName);
+        if (acb == null)
+        {
+            ChannelLogger.LogGuardReturn("Sound", $"acb未ロードのため Timeline キュー {cueName} を再生できない");
+            return new Sound.TimelineCuePlayback(() => { }, (v, p, s) => { });
+        }
+
         long startTimeMs = Math.Max(0L, (long)Math.Round(startTimeSeconds * 1000.0));
 
         m_player.SetStartTime(startTimeMs);
         m_player.SetPlaybackRatio(Mathf.Max(0.01f, initialPlaybackSpeed));
         // Timeline のカーブが毎フレーム絶対値で音量を上書きするため、シート倍率はハンドル側に焼き込んで掛け算にする
         m_player.SetVolume(GetSeVolume(cueName));
-        m_player.SetCue(GetAcb(cueSheetName), cueName);
+        m_player.SetCue(acb, cueName);
         Playback pb = new(m_player, m_player.Start(), GetSeVolume(cueName));
         m_player.SetStartTime(0);
 
