@@ -48,7 +48,10 @@ public class SoundVolumeSheetWindow : EditorWindow
         { "select", (SoundData.CueSheet.SE, SoundData.SE.Select) },
         { "stageSelect", (SoundData.CueSheet.SE, SoundData.SE.StageSelect) },
         { "bossBattleBgm", (SoundData.CueSheet.BGM, SoundData.BGM.BossBattle) },
-        { "testBgm", (SoundData.CueSheet.BGM, SoundData.BGM.Test) },
+        { "titleBgm", (SoundData.CueSheet.BGM, SoundData.BGM.Title) },
+        { "stageSelectBgm", (SoundData.CueSheet.BGM, SoundData.BGM.StageSelect) },
+        { "tutorialBgm", (SoundData.CueSheet.BGM, SoundData.BGM.Tutorial) },
+        { "stage01Bgm", (SoundData.CueSheet.BGM, SoundData.BGM.Stage01) },
     };
 
     private static readonly Dictionary<string, CriAtomExAcb> s_acbs = new();

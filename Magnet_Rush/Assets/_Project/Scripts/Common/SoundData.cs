@@ -25,8 +25,11 @@ public static class SoundData
 
     public static class BGM
     {
-        public const string Test = "test";
         public const string BossBattle = "BossBattle";
+        public const string Title = "Title";
+        public const string StageSelect = "StageSelect";
+        public const string Tutorial = "Tutorial";
+        public const string Stage01 = "Stage01";
         // 適時追加
     }
 
