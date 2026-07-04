@@ -46,7 +46,7 @@ public class EnemyWalkAxeAi : MonoBehaviour
     private bool m_isWanderMoving;
     private bool m_enemyWheelPlaying;
     private Health m_ownHealth;
-    private SoundManager.Playback3d m_enemyWheelPlayback;
+    private Sound.PositionalLoopPlayback m_enemyWheelPlayback;
 
     private readonly HashSet<Health> m_hitTargets = new();
     private readonly Collider[] m_overlapResults = new Collider[32];
@@ -483,8 +483,9 @@ public class EnemyWalkAxeAi : MonoBehaviour
             return;
 
         StopEnemyWheel();
-        // 音量はサウンド調整シート（SoundVolumeSettings）の「車輪敵の走行ループ音」で管理する
-        m_enemyWheelPlayback = soundManager.PlayAtWithHandle(
+        // 音量はサウンド調整シート（SoundVolumeSettings）の「車輪敵の走行ループ音」で管理する。
+        // 距離カリング付き（可聴距離外ではボイスを解放）なので遠くの敵が発音数を食わない
+        m_enemyWheelPlayback = soundManager.PlayLoopAt(
             SoundData.CueSheet.SE, SoundData.SE.EnemyWheel,
             transform.position, m_enemyWheelMinDistance, m_enemyWheelMaxDistance);
         m_enemyWheelPlaying = true;
@@ -495,7 +496,8 @@ public class EnemyWalkAxeAi : MonoBehaviour
         if (!m_enemyWheelPlaying)
             return;
 
-        m_enemyWheelPlayback.Stop();
+        m_enemyWheelPlayback?.Stop();
+        m_enemyWheelPlayback = null;
         m_enemyWheelPlaying = false;
     }
 
@@ -511,7 +513,7 @@ public class EnemyWalkAxeAi : MonoBehaviour
     {
         // 3D車輪音を本体位置に追従させる（距離減衰の聴取点はカメラ）
         if (m_enemyWheelPlaying)
-            m_enemyWheelPlayback.SetPosition(transform.position);
+            m_enemyWheelPlayback?.SetPosition(transform.position);
 
         if (m_activeAttackCollider != null && m_activeAttackCollider.enabled)
             CheckAttackBoxOverlapAndDamage();

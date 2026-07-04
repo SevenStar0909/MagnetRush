@@ -16,10 +16,31 @@ public class SoundManager : Singleton<SoundManager>
     private CriAtomExPlayer m_bgmPlayer;
     private CriAtomExPlayer m_player3d;
     private CriAtomEx3dListener m_listener;
-    private CriAtomEx3dSource m_source3d;
     private Camera m_listenerCamera;
     private string m_currentBgm;
     private readonly Dictionary<string, CriAtomExAcb> m_acbCache = new();
+    private readonly List<ManagedLoop> m_managedLoops = new();
+    // PlayAt のワンショット3D再生が使い終わったソースを回収するための一覧。
+    // ソースを再生ごとに専有させないと、後発の PlayAt が共有ソースを動かして
+    // 再生中の全3D SEの位置・減衰距離が飛ぶ（音がブツ切れに聞こえる主因の一つ）
+    private readonly List<(CriAtomExPlayback playback, CriAtomEx3dSource source)> m_oneShot3dPlaybacks = new();
+
+    /// <summary>
+    /// 距離カリング対象のループ再生の内部状態。
+    /// リスナーが最大減衰距離の外にいる間はボイスを解放し、可聴距離に戻ったら同じキューを再始動する。
+    /// 聞こえないループにボイスを占有させないための仕組み（発音数はプール上限で有限）。
+    /// </summary>
+    private sealed class ManagedLoop
+    {
+        public string cueSheetName;
+        public string cueName;
+        public Vector3 position;
+        public float minDistance;
+        public float maxDistance;
+        public bool stopRequested;
+        public bool voiceAlive;
+        public Playback3d playback;
+    }
 
     /// <summary>
     /// <para>CriAtomExPlayerをラップした構造体</para>
@@ -131,12 +152,12 @@ public class SoundManager : Singleton<SoundManager>
         // BGMを最優先にしてSEに奪わせない
         m_bgmPlayer.SetVoicePriority(255);
 
-        // 3D再生用。リスナー(カメラ)とソース(発音位置)を player に紐付けて距離減衰させる
+        // 3D再生用。リスナー(カメラ)を player に紐付けて距離減衰させる。
+        // ソース(発音位置)は再生ごとに専有インスタンスを作る（共有すると後発の再生が
+        // 再生中の全3D SEの位置を動かしてしまう）
         m_player3d = new CriAtomExPlayer();
         m_listener = new CriAtomEx3dListener();
-        m_source3d = new CriAtomEx3dSource();
         m_player3d.Set3dListener(m_listener);
-        m_player3d.Set3dSource(m_source3d);
         // acb のキューは全て Pan3d（2Dパン）でオーサリングされているため、3D経路のプレーヤ側で
         // 3Dポジショニングを強制する。これが無いと SetMinMaxDistance が無視され距離減衰が一切効かない
         m_player3d.SetPanType(CriAtomEx.PanType.Pos3d);
@@ -187,6 +208,14 @@ public class SoundManager : Singleton<SoundManager>
 
     private void LateUpdate()
     {
+        // 再生が終わったワンショット3D再生の専有ソースを回収する
+        for (int i = m_oneShot3dPlaybacks.Count - 1; i >= 0; i--)
+        {
+            if (m_oneShot3dPlaybacks[i].playback.GetStatus() != CriAtomExPlayback.Status.Removed) continue;
+            m_oneShot3dPlaybacks[i].source.Dispose();
+            m_oneShot3dPlaybacks.RemoveAt(i);
+        }
+
         // 3D音の聴取点をメインカメラに追従させる
         if (m_listener == null) return;
         if (m_listenerCamera == null) m_listenerCamera = Camera.main;
@@ -199,6 +228,31 @@ public class SoundManager : Singleton<SoundManager>
         m_listener.SetPosition(p.x, p.y, p.z);
         m_listener.SetOrientation(f.x, f.y, f.z, u.x, u.y, u.z);
         m_listener.Update();
+
+        // 聞こえない距離のループにボイスを占有させない（プール上限の奪い合いで他の音が途切れる対策）
+        for (int i = 0; i < m_managedLoops.Count; i++)
+            UpdateLoopVoiceByDistance(m_managedLoops[i], p);
+    }
+
+    /// <summary>
+    /// ループのボイスを距離で始動/停止する。停止側の閾値を広げたヒステリシスで境界のバタつきを防ぐ。
+    /// </summary>
+    private void UpdateLoopVoiceByDistance(ManagedLoop loop, Vector3 listenerPosition)
+    {
+        const float stopMargin = 1.15f;
+        if (loop.stopRequested) return;
+
+        float dist = Vector3.Distance(listenerPosition, loop.position);
+        if (!loop.voiceAlive && dist <= loop.maxDistance)
+        {
+            loop.playback = PlayAtWithHandle(loop.cueSheetName, loop.cueName, loop.position, loop.minDistance, loop.maxDistance);
+            loop.voiceAlive = true;
+        }
+        else if (loop.voiceAlive && dist > loop.maxDistance * stopMargin)
+        {
+            loop.playback.Stop();
+            loop.voiceAlive = false;
+        }
     }
 
     protected override void OnDestroy()
@@ -214,10 +268,12 @@ public class SoundManager : Singleton<SoundManager>
         if (Sound.OnPlayLoopAt == PlayLoopAt) Sound.OnPlayLoopAt = null;
         if (Sound.OnPlayTimelineCue == PlayTimelineCue) Sound.OnPlayTimelineCue = null;
 
+        m_managedLoops.Clear();
+        foreach (var (_, source) in m_oneShot3dPlaybacks) source?.Dispose();
+        m_oneShot3dPlaybacks.Clear();
         m_player?.Dispose();
         m_bgmPlayer?.Dispose();
         m_player3d?.Dispose();
-        m_source3d?.Dispose();
         m_listener?.Dispose();
         foreach (var acb in m_acbCache.Values) acb?.Dispose();
         m_acbCache.Clear();
@@ -261,6 +317,8 @@ public class SoundManager : Singleton<SoundManager>
     {
         var acb = GetAcb(cueSheetName);
         if (acb == null) { ChannelLogger.LogGuardReturn("Sound", $"acb未ロードのため {cueName} を再生できない"); return; }
+        // Playback.SetVolumePitchAndSpeed が共有プレーヤにピッチを残すため、単発再生の前に基準へ戻す
+        m_player.SetPitch(0f);
         m_player.SetPlaybackRatio(1f);
         m_player.SetVolume(GetSeVolume(cueName));
         m_player.SetCue(acb, cueName);
@@ -275,6 +333,7 @@ public class SoundManager : Singleton<SoundManager>
     {
         var acb = GetAcb(cueSheetName);
         if (acb == null) { ChannelLogger.LogGuardReturn("Sound", $"acb未ロードのため {cueName} を再生できない"); return default; }
+        m_player.SetPitch(0f);
         m_player.SetPlaybackRatio(1f);
         m_player.SetVolume(GetSeVolume(cueName));
         m_player.SetCue(acb, cueName);
@@ -312,6 +371,7 @@ public class SoundManager : Singleton<SoundManager>
 
         long startTimeMs = Math.Max(0L, (long)Math.Round(startTimeSeconds * 1000.0));
 
+        m_player.SetPitch(0f);
         m_player.SetStartTime(startTimeMs);
         m_player.SetPlaybackRatio(Mathf.Max(0.01f, initialPlaybackSpeed));
         // Timeline のカーブが毎フレーム絶対値で音量を上書きするため、シート倍率はハンドル側に焼き込んで掛け算にする
@@ -380,15 +440,16 @@ public class SoundManager : Singleton<SoundManager>
             maxDistance = d.y;
         }
 
-        m_source3d.SetMinMaxDistance(minDistance, maxDistance);
-        m_source3d.SetPosition(position.x, position.y, position.z);
-        m_source3d.Update();
+        // 再生ごとに専有ソースを作り、再生終了後に LateUpdate で回収する
+        var source = new CriAtomEx3dSource();
+        source.SetMinMaxDistance(minDistance, maxDistance);
+        source.SetPosition(position.x, position.y, position.z);
+        source.Update();
 
-        // PlayAtWithHandle で別ソースに差し替わっている場合があるので共有ソースへ戻す
-        m_player3d.Set3dSource(m_source3d);
+        m_player3d.Set3dSource(source);
         m_player3d.SetVolume(GetSeVolume(cueName));
         m_player3d.SetCue(acb, cueName);
-        m_player3d.Start();
+        m_oneShot3dPlaybacks.Add((m_player3d.Start(), source));
     }
 
     /// <summary>
@@ -435,19 +496,50 @@ public class SoundManager : Singleton<SoundManager>
     public Sound.PositionalLoopPlayback PlayLoopAt(string cueSheetName, string cueName, Vector3 position)
     {
         Vector2 d = GetCueDistance(cueName);
-        Playback3d pb = PlayAtWithHandle(cueSheetName, cueName, position, d.x, d.y);
-        bool stopped = false;
+        return PlayLoopAt(cueSheetName, cueName, position, d.x, d.y);
+    }
+
+    /// <summary>
+    /// 3D位置でループSEを距離カリング付きで再生する。リスナーが最大減衰距離の外にいる間は
+    /// ボイスを解放し、可聴距離に戻ったら再始動する（判定は LateUpdate）。
+    /// </summary>
+    public Sound.PositionalLoopPlayback PlayLoopAt(string cueSheetName, string cueName, Vector3 position, float minDistance, float maxDistance)
+    {
+        var loop = new ManagedLoop
+        {
+            cueSheetName = cueSheetName,
+            cueName = cueName,
+            position = position,
+            minDistance = minDistance,
+            maxDistance = maxDistance,
+        };
+        // リスナー位置が取れる前に鳴らし始めるケースは従来挙動（即時再生）に合わせる
+        if (m_listenerCamera != null)
+            UpdateLoopVoiceByDistance(loop, m_listenerCamera.transform.position);
+        else
+        {
+            loop.playback = PlayAtWithHandle(cueSheetName, cueName, position, minDistance, maxDistance);
+            loop.voiceAlive = true;
+        }
+        m_managedLoops.Add(loop);
+
         return new Sound.PositionalLoopPlayback(
             () =>
             {
-                if (stopped) return;
-                stopped = true;
-                pb.Stop();
+                if (loop.stopRequested) return;
+                loop.stopRequested = true;
+                if (loop.voiceAlive)
+                {
+                    loop.playback.Stop();
+                    loop.voiceAlive = false;
+                }
+                m_managedLoops.Remove(loop);
             },
             p =>
             {
-                if (stopped) return;
-                pb.SetPosition(p);
+                if (loop.stopRequested) return;
+                loop.position = p;
+                if (loop.voiceAlive) loop.playback.SetPosition(p);
             });
     }
 

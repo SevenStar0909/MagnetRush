@@ -36,7 +36,7 @@ public class EnemyAirKamikazeAi : MonoBehaviour
     private Magnetizable m_magnetizable;
     private bool m_hasHit;
     private bool m_droneEnemyPlaying;
-    private SoundManager.Playback3d m_droneEnemyPlayback;
+    private Sound.PositionalLoopPlayback m_droneEnemyPlayback;
     private readonly Collider[] m_overlapBuffer = new Collider[8];
 
     // 自分の所属グループ（敵=Enemy）。Awake で自身の Hitbox から取得し、OnTriggerEnter の同士討ち判定に使う。
@@ -169,7 +169,7 @@ public class EnemyAirKamikazeAi : MonoBehaviour
     private void LateUpdate()
     {
         if (m_droneEnemyPlaying)
-            m_droneEnemyPlayback.SetPosition(transform.position);
+            m_droneEnemyPlayback?.SetPosition(transform.position);
     }
 
     private Vector3 GetObstacleAwareDirection(Vector3 toPlayer)
@@ -513,9 +513,9 @@ public class EnemyAirKamikazeAi : MonoBehaviour
         SoundManager soundManager = SoundManager.Instance;
         if (soundManager == null)
             return;
-        //Sound.Play(SoundData.CueSheet.SE, SoundData.SE.DroneEnemy);
-        // 音量はサウンド調整シート（SoundVolumeSettings）の「ドローン敵の飛行ループ音」で管理する
-        m_droneEnemyPlayback = soundManager.PlayAtWithHandle(
+        // 音量はサウンド調整シート（SoundVolumeSettings）の「ドローン敵の飛行ループ音」で管理する。
+        // 距離カリング付き（可聴距離外ではボイスを解放）なので遠くの敵が発音数を食わない
+        m_droneEnemyPlayback = soundManager.PlayLoopAt(
             SoundData.CueSheet.SE, SoundData.SE.DroneEnemy,
             transform.position, m_droneEnemyMinDistance, m_droneEnemyMaxDistance);
         m_droneEnemyPlaying = true;
@@ -526,7 +526,8 @@ public class EnemyAirKamikazeAi : MonoBehaviour
         if (!m_droneEnemyPlaying)
             return;
 
-        m_droneEnemyPlayback.Stop();
+        m_droneEnemyPlayback?.Stop();
+        m_droneEnemyPlayback = null;
         m_droneEnemyPlaying = false;
     }
 }

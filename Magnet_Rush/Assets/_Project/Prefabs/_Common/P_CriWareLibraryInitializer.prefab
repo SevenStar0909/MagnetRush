@@ -58,7 +58,7 @@ MonoBehaviour:
   initializesAtom: 1
   atomConfig:
     acfFileName: 
-    maxVirtualVoices: 32
+    maxVirtualVoices: 128
     maxVoiceLimitGroups: 32
     maxCategories: 32
     maxAisacs: 8
@@ -67,7 +67,7 @@ MonoBehaviour:
     maxBeatSyncCallbacksPerFrame: 1
     maxCueLinkCallbacksPerFrame: 1
     standardVoicePoolConfig:
-      memoryVoices: 16
+      memoryVoices: 64
       streamingVoices: 8
     hcaMxVoicePoolConfig:
       memoryVoices: 0
