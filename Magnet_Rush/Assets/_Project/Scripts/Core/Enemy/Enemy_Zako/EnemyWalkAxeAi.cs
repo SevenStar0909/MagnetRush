@@ -170,14 +170,17 @@ public class EnemyWalkAxeAi : MonoBehaviour
     }
 
     // プレイヤーが追跡範囲外の間の徘徊。出現位置を中心にランダムな地点へ移動しては休むを繰り返す。
-    // NavMesh が使える時だけ呼ぶ（直接移動フォールバック時は従来どおり停止）。
+    // NavMesh に乗れていない敵も直線移動で徘徊する（壁は EntityController の衝突が止め、移動上限時間で打ち切る）。
     private void TickWander(float dt)
     {
         EnemyWanderSettings wander = m_data.wander;
+        bool agentReady = m_agent != null && m_agent.enabled && m_agent.isOnNavMesh;
+
         if (wander == null || !wander.enabled)
         {
             SetMoving(false);
-            m_agent.ResetPath();
+            if (agentReady)
+                m_agent.ResetPath();
             m_enemyBase.SlowDown(dt);
             return;
         }
@@ -188,7 +191,7 @@ public class EnemyWalkAxeAi : MonoBehaviour
         {
             SetMoving(false);
             m_enemyBase.SlowDown(dt);
-            if (m_wanderTimer <= 0f && TryPickWanderTarget(wander))
+            if (m_wanderTimer <= 0f && TryPickWanderTarget(wander, agentReady))
             {
                 m_isWanderMoving = true;
                 m_wanderTimer = Mathf.Max(1f, wander.moveTimeout);
@@ -203,14 +206,25 @@ public class EnemyWalkAxeAi : MonoBehaviour
         {
             BeginWanderPause(wander);
             SetMoving(false);
-            m_agent.ResetPath();
+            if (agentReady)
+                m_agent.ResetPath();
             m_enemyBase.SlowDown(dt);
             return;
         }
 
-        m_agent.SetDestination(m_wanderTarget);
+        Vector3 direction;
+        if (agentReady)
+        {
+            m_agent.SetDestination(m_wanderTarget);
+            direction = GetNavMeshDirectionTo(m_wanderTarget);
+        }
+        else
+        {
+            direction = toTarget.normalized;
+        }
+
         SetMoving(true);
-        m_enemyBase.AccelerateToward(AddAllyAvoidance(GetNavMeshDirectionTo(m_wanderTarget)), dt, wander.speedMultiplier);
+        m_enemyBase.AccelerateToward(AddAllyAvoidance(direction), dt, wander.speedMultiplier);
     }
 
     private void BeginWanderPause(EnemyWanderSettings wander)
@@ -219,15 +233,23 @@ public class EnemyWalkAxeAi : MonoBehaviour
         m_wanderTimer = Random.Range(wander.pauseDurationMin, Mathf.Max(wander.pauseDurationMin, wander.pauseDurationMax));
     }
 
-    // 出現位置を中心とした半径内から NavMesh 上の行き先を選ぶ。取れなければ false（次フレーム再抽選）。
-    private bool TryPickWanderTarget(EnemyWanderSettings wander)
+    // 出現位置を中心とした半径内から行き先を選ぶ。NavMesh に乗っていれば NavMesh 上の点にスナップし、
+    // 乗っていなければそのままの点を使う（届かない点は移動上限時間で打ち切られる）。
+    private bool TryPickWanderTarget(EnemyWanderSettings wander, bool agentReady)
     {
         Vector2 offset = Random.insideUnitCircle * Mathf.Max(0f, wander.radius);
         Vector3 candidate = m_enemyBase.SpawnPosition + new Vector3(offset.x, 0f, offset.y);
-        if (!NavMesh.SamplePosition(candidate, out NavMeshHit hit, 2f, NavMesh.AllAreas))
-            return false;
 
-        m_wanderTarget = hit.position;
+        if (agentReady)
+        {
+            if (!NavMesh.SamplePosition(candidate, out NavMeshHit hit, 2f, NavMesh.AllAreas))
+                return false;
+
+            m_wanderTarget = hit.position;
+            return true;
+        }
+
+        m_wanderTarget = candidate;
         return true;
     }
 
@@ -311,8 +333,7 @@ public class EnemyWalkAxeAi : MonoBehaviour
         float distance = Vector3.Distance(transform.position, player.position);
         if (distance > m_data.chaseRange)
         {
-            SetMoving(false);
-            m_enemyBase.SlowDown(dt);
+            TickWander(dt);
             return;
         }
 
