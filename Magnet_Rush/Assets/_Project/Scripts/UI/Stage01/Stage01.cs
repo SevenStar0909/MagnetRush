@@ -74,11 +74,14 @@ public class Stage01Message : MonoBehaviour
     private bool isBossSlammed = false;
     private bool isBossStunned = false;
     private bool isBossDefeated = false;
+    private bool registeredBossEvents = false;
 
     void Start()
     {
         // 🔔 アリーナのイベント（発動・解除）に自作関数を自動登録
         RegisterArenaEvents();
+        ResolveBossAI();
+        RegisterBossEvents();
 
         SetPlayerLockAll(true);
         SetPlayerCameraLock(false);
@@ -86,21 +89,12 @@ public class Stage01Message : MonoBehaviour
         // メッセージの一本道レールを開始
         StartCoroutine(TutorialSequenceRoutine());
 
-        if (bossAI != null)
-        {
-            bossAI.OnArmAttackStarted += OnBossArmAttack;
-            bossAI.OnStaminaBroken += OnBossStaminaBroken;
-        }
     }
 
     void OnDestroy()
     {
         UnregisterArenaEvents();
-        if (bossAI != null)
-        {
-            bossAI.OnArmAttackStarted -= OnBossArmAttack;
-            bossAI.OnStaminaBroken -= OnBossStaminaBroken;
-        }
+        UnregisterBossEvents();
     }
 
     /// <summary>
@@ -168,7 +162,12 @@ public class Stage01Message : MonoBehaviour
     private void OnZone1Cleared() { isZone1Cleared = true; }
     private void OnZone2Sealed() { isZone2Sealed = true; }
     private void OnZone2Cleared() { isZone2Cleared = true; }
-    private void OnZone3Sealed() { isZone3Sealed = true; }
+    private void OnZone3Sealed()
+    {
+        isZone3Sealed = true;
+        ResolveBossAI();
+        RegisterBossEvents();
+    }
     private void OnZone3Cleared() { isBossDefeated = true; } // ボスアリーナ解除＝ボス撃破とみなす
 
     // ==========================================
@@ -208,6 +207,33 @@ public class Stage01Message : MonoBehaviour
         if (zone1Arena != null) { zone1Arena.Sealed -= OnZone1Sealed; zone1Arena.Cleared -= OnZone1Cleared; }
         if (zone2Arena != null) { zone2Arena.Sealed -= OnZone2Sealed; zone2Arena.Cleared -= OnZone2Cleared; }
         if (zone3Arena != null) { zone3Arena.Sealed -= OnZone3Sealed; zone3Arena.Cleared -= OnZone3Cleared; }
+    }
+
+    private void ResolveBossAI()
+    {
+        if (bossAI != null) return;
+        bossAI = FindAnyObjectByType<EnemyBossAI>();
+    }
+
+    private void RegisterBossEvents()
+    {
+        if (registeredBossEvents || bossAI == null) return;
+
+        bossAI.OnArmAttackStarted += OnBossArmAttack;
+        bossAI.OnStaminaBroken += OnBossStaminaBroken;
+        registeredBossEvents = true;
+
+        if (EnemyBossAI.IsArmAttackState(bossAI.State))
+            OnBossArmAttack();
+    }
+
+    private void UnregisterBossEvents()
+    {
+        if (!registeredBossEvents || bossAI == null) return;
+
+        bossAI.OnArmAttackStarted -= OnBossArmAttack;
+        bossAI.OnStaminaBroken -= OnBossStaminaBroken;
+        registeredBossEvents = false;
     }
 
     private IEnumerator PlayPhaseRoutine(List<Stage01StepData> phaseSteps)

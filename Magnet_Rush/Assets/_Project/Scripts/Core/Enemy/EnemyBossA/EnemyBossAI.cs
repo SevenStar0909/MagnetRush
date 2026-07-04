@@ -560,13 +560,11 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
             m_rushKeepTimer = 0f;
         }
 
-        if (next == BossState.AttackStance)
+        if (!IsArmAttackState(prev) && IsArmAttackState(next))
         {
             m_attackHitboxes?.ResetArmHitThisAttack();
             OnArmAttackStarted?.Invoke();
         }
-
-            OnArmAttackStarted?.Invoke();
 
         if (next == BossState.Idle)
         {
