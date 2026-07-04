@@ -18,6 +18,11 @@ public class Stage01Message : MonoBehaviour
     [Tooltip("図3（ボス部屋）にある EnemyBossArenaGate（あれば登録、なければ空でOK）")]
     public EnemyBossArenaGate zone3Arena;
 
+    [Header("References")]
+    [SerializeField] private EnemyBossAI bossAI;
+
+    public Transform playerTransform;
+
     [Header("=== 全体共通設定 ===")]
     public float defaultTextSpeed = 0.05f;
 
@@ -57,11 +62,6 @@ public class Stage01Message : MonoBehaviour
 
     [Header("▼ Phase 9: ボスが倒されたら（No.16）")]
     public List<Stage01StepData> phase9_BossDefeated;
-
-    [Header("References")]
-    [SerializeField] private EnemyBossAI bossAI;
-
-    public Transform playerTransform;
 
     // 🏛️ アリーナの常時監視用フラグ
     private bool isZone1Sealed = false;
