@@ -28,6 +28,9 @@ public class BulletSettings : ScriptableObject
     [Label("弾衝突半径（m）")]
     [Tooltip("飛行中の弾が敵やオブジェクトに当たりやすくなる判定半径")]
     public float collisionRadius = 0.18f;
+    [Label("近接ヒット補正半径（m）")]
+    [Tooltip("敵や磁化可能オブジェクトの近くを弾が通過した時にヒット扱いにする距離。0で無効")]
+    public float nearMissAssistRadius = 0.45f;
 
     [Header("[磁力場]")]
     [Label("着弾時磁力場設定")]

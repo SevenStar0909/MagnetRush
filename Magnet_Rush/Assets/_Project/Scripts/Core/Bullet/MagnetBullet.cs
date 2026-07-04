@@ -30,10 +30,13 @@ public class MagnetBullet : MonoBehaviour, IBulletProximity
     // 自前速度。Kinematic Rigidbody なので物理エンジンの velocity は使わず、自分で位置を進める
     private Vector3 m_velocity;
     private readonly Collider[] m_hitBuffer = new Collider[8];
+    private readonly Collider[] m_nearMissBuffer = new Collider[32];
 
     // 衝突対象レイヤーマスク（PlayerBullet が当たるべき相手）。初期化は遅延（PhysicsLayers が確定後）
     private static int s_collisionMask;
     private static bool s_maskInitialized;
+    private static int s_nearMissAssistMask;
+    private static bool s_nearMissAssistMaskInitialized;
 
     private static int GetCollisionMask()
     {
@@ -50,6 +53,19 @@ public class MagnetBullet : MonoBehaviour, IBulletProximity
             s_maskInitialized = true;
         }
         return s_collisionMask;
+    }
+
+    private static int GetNearMissAssistMask()
+    {
+        if (!s_nearMissAssistMaskInitialized)
+        {
+            // 補正は敵・磁化可能物理オブジェクトだけに限定する。
+            // Ground/Wall まで吸うと、壁際を通った弾が意図せず環境へ着弾するため含めない。
+            s_nearMissAssistMask = PhysicsLayers.Bit(PhysicsLayers.Enemy)
+                | PhysicsLayers.Bit(PhysicsLayers.PhysicsObject);
+            s_nearMissAssistMaskInitialized = true;
+        }
+        return s_nearMissAssistMask;
     }
 
     void Awake()
@@ -171,20 +187,34 @@ public class MagnetBullet : MonoBehaviour, IBulletProximity
         Vector3 dir = m_velocity / speed;
         float dist = speed * Time.fixedDeltaTime;
 
+        Vector3 start = transform.position;
+        Vector3 end = start + m_velocity * Time.fixedDeltaTime;
+
         if (TryFindImmediateHit(radius, out Collider overlapped))
         {
             ResolveHit(overlapped);
         }
-        else if (Physics.SphereCast(transform.position, radius, dir, out RaycastHit hit, dist, GetCollisionMask(), QueryTriggerInteraction.Collide))
-        {
-            // 着弾で停止するので MovePosition の1フレーム遅延を避け、表面の手前へ直接スナップ。
-            // この位置がそのまま磁場の中心（＝着弾点）になる。
-            transform.position = hit.point - dir * radius;
-            ResolveHit(hit.collider);
-        }
         else
         {
-            m_rb.MovePosition(transform.position + m_velocity * Time.fixedDeltaTime);
+            bool hasHit = Physics.SphereCast(start, radius, dir, out RaycastHit hit, dist, GetCollisionMask(), QueryTriggerInteraction.Collide);
+            bool hasAssistedHit = TryFindNearMissHit(start, end, radius, dir, out Collider assistedHit, out Vector3 assistedPosition, out float assistedDistance);
+
+            if (hasAssistedHit && (!hasHit || assistedDistance < hit.distance))
+            {
+                transform.position = assistedPosition;
+                ResolveHit(assistedHit);
+            }
+            else if (hasHit)
+            {
+                // 着弾で停止するので MovePosition の1フレーム遅延を避け、表面の手前へ直接スナップ。
+                // この位置がそのまま磁場の中心（＝着弾点）になる。
+                transform.position = hit.point - dir * radius;
+                ResolveHit(hit.collider);
+            }
+            else
+            {
+                m_rb.MovePosition(end);
+            }
         }
     }
 
@@ -215,6 +245,109 @@ public class MagnetBullet : MonoBehaviour, IBulletProximity
 
         hit = null;
         return false;
+    }
+
+    private bool TryFindNearMissHit(Vector3 start, Vector3 end, float collisionRadius, Vector3 dir, out Collider hit, out Vector3 hitPosition, out float hitDistance)
+    {
+        hit = null;
+        hitPosition = Vector3.zero;
+        hitDistance = 0f;
+
+        float assistRadius = m_settings != null ? Mathf.Max(0f, m_settings.nearMissAssistRadius) : 0f;
+        if (assistRadius <= collisionRadius + 0.001f)
+            return false;
+
+        int count = Physics.OverlapCapsuleNonAlloc(start, end, assistRadius, m_nearMissBuffer, GetNearMissAssistMask(), QueryTriggerInteraction.Collide);
+        float bestSqrDistance = float.PositiveInfinity;
+        float bestDistance = float.PositiveInfinity;
+        Vector3 bestPosition = start;
+        Collider bestCollider = null;
+
+        for (int i = 0; i < count; i++)
+        {
+            Collider col = m_nearMissBuffer[i];
+            if (col == null)
+                continue;
+
+            if (col.transform.root == transform.root)
+                continue;
+
+            if (col.GetComponentInParent<Magnetizable>() == null)
+                continue;
+
+            if (!TryGetClosestApproach(col, start, end, dir, out Vector3 pathPoint, out float distanceAlong, out float sqrDistance))
+                continue;
+
+            if (sqrDistance < bestSqrDistance || (Mathf.Approximately(sqrDistance, bestSqrDistance) && distanceAlong < bestDistance))
+            {
+                bestSqrDistance = sqrDistance;
+                bestDistance = distanceAlong;
+                bestPosition = pathPoint;
+                bestCollider = col;
+            }
+        }
+
+        if (bestCollider == null)
+            return false;
+
+        hit = bestCollider;
+        hitPosition = bestPosition;
+        hitDistance = bestDistance;
+        return true;
+    }
+
+    private static bool TryGetClosestApproach(Collider col, Vector3 start, Vector3 end, Vector3 dir, out Vector3 bestPathPoint, out float bestDistanceAlong, out float bestSqrDistance)
+    {
+        Vector3 localBestPathPoint = start;
+        float localBestDistanceAlong = 0f;
+        float localBestSqrDistance = float.PositiveInfinity;
+
+        Vector3 segment = end - start;
+        float segmentLength = segment.magnitude;
+        if (segmentLength <= 0.0001f)
+        {
+            bestPathPoint = localBestPathPoint;
+            bestDistanceAlong = localBestDistanceAlong;
+            bestSqrDistance = localBestSqrDistance;
+            return false;
+        }
+
+        TestPathPoint(start);
+        TestPathPoint(Vector3.Lerp(start, end, 0.25f));
+        TestPathPoint(Vector3.Lerp(start, end, 0.5f));
+        TestPathPoint(Vector3.Lerp(start, end, 0.75f));
+        TestPathPoint(end);
+        TestPathPoint(ClosestPointOnSegment(start, end, col.bounds.center));
+
+        bestPathPoint = localBestPathPoint;
+        bestDistanceAlong = localBestDistanceAlong;
+        bestSqrDistance = localBestSqrDistance;
+        return !float.IsPositiveInfinity(localBestSqrDistance);
+
+        void TestPathPoint(Vector3 pathPoint)
+        {
+            Vector3 closest = col.ClosestPoint(pathPoint);
+            float sqrDistance = (closest - pathPoint).sqrMagnitude;
+            float distanceAlong = Mathf.Clamp(Vector3.Dot(pathPoint - start, dir), 0f, segmentLength);
+
+            if (sqrDistance < localBestSqrDistance || (Mathf.Approximately(sqrDistance, localBestSqrDistance) && distanceAlong < localBestDistanceAlong))
+            {
+                localBestSqrDistance = sqrDistance;
+                localBestDistanceAlong = distanceAlong;
+                localBestPathPoint = pathPoint;
+            }
+        }
+    }
+
+    private static Vector3 ClosestPointOnSegment(Vector3 start, Vector3 end, Vector3 point)
+    {
+        Vector3 segment = end - start;
+        float sqrLength = segment.sqrMagnitude;
+        if (sqrLength <= 0.0001f)
+            return start;
+
+        float t = Mathf.Clamp01(Vector3.Dot(point - start, segment) / sqrLength);
+        return start + segment * t;
     }
 
     /// <summary>SphereCast でヒットした collider に対する処理。</summary>
