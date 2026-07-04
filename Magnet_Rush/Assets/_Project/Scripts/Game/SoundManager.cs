@@ -9,6 +9,9 @@ using CriWare;
 /// </summary>
 public class SoundManager : Singleton<SoundManager>
 {
+    [Tooltip("音量調整データ（マスター＋キュー別倍率）。「Tools/サウンド調整シート」で編集する")]
+    [SerializeField] private SoundVolumeSettings m_volumeSettings;
+
     private CriAtomExPlayer m_player;
     private CriAtomExPlayer m_bgmPlayer;
     private CriAtomExPlayer m_player3d;
@@ -26,11 +29,14 @@ public class SoundManager : Singleton<SoundManager>
     {
         CriAtomExPlayer player;
         CriAtomExPlayback playback;
+        // 調整シート（SoundVolumeSettings）由来の音量倍率。呼び出し側のローカル音量に掛け合わせる
+        float sheetScale;
 
-        internal Playback(CriAtomExPlayer player, CriAtomExPlayback pb)
+        internal Playback(CriAtomExPlayer player, CriAtomExPlayback pb, float sheetScale = 1f)
         {
             this.player = player;
             this.playback = pb;
+            this.sheetScale = sheetScale;
         }
 
         public void SetVolumeAndPitch(float vol, float pitch)
@@ -38,7 +44,9 @@ public class SoundManager : Singleton<SoundManager>
 
         public void SetVolumePitchAndSpeed(float vol, float pitch, float playbackSpeed)
         {
-            this.player.SetVolume(vol);
+            // acbロード失敗時は default ハンドル（player=null）が返るため、触らず戻る
+            if (this.player == null) return;
+            this.player.SetVolume(vol * this.sheetScale);
             this.player.SetPitch(pitch);
             this.player.SetPlaybackRatio(Mathf.Max(0.01f, playbackSpeed));
             this.player.Update(playback);
@@ -46,11 +54,13 @@ public class SoundManager : Singleton<SoundManager>
 
         public void Stop()
         {
+            if (this.player == null) return;
             this.playback.Stop();
         }
 
         public bool IsPlaying()
         {
+            if (this.player == null) return false;
             return this.playback.GetStatus() == CriAtomExPlayback.Status.Playing;
         }
     }
@@ -64,12 +74,15 @@ public class SoundManager : Singleton<SoundManager>
         CriAtomExPlayer player;
         CriAtomExPlayback playback;
         CriAtomEx3dSource source;
+        // 調整シート（SoundVolumeSettings）由来の音量倍率。呼び出し側のローカル音量に掛け合わせる
+        float sheetScale;
 
-        internal Playback3d(CriAtomExPlayer player, CriAtomEx3dSource source, CriAtomExPlayback pb)
+        internal Playback3d(CriAtomExPlayer player, CriAtomEx3dSource source, CriAtomExPlayback pb, float sheetScale = 1f)
         {
             this.player = player;
             this.source = source;
             this.playback = pb;
+            this.sheetScale = sheetScale;
         }
 
         /// <summary>発音位置を更新する。移動する音源を毎フレーム追従させる用途。</summary>
@@ -86,7 +99,7 @@ public class SoundManager : Singleton<SoundManager>
 
             // m_player3d は全 3D 再生で共有なので、Update 前に自分のソースへ再バインドして取り違えを防ぐ
             player.Set3dSource(source);
-            player.SetVolume(vol);
+            player.SetVolume(vol * sheetScale);
             player.SetPitch(pitch);
             player.Update(playback);
         }
@@ -114,6 +127,9 @@ public class SoundManager : Singleton<SoundManager>
 
         m_player = new CriAtomExPlayer();
         m_bgmPlayer = new CriAtomExPlayer();
+        // SE多発で発音数上限に達すると後着優先でBGMのボイスが奪われ、BGMが途中で止まる（実測でSE15連発×3回で死亡）。
+        // BGMを最優先にしてSEに奪わせない
+        m_bgmPlayer.SetVoicePriority(255);
 
         // 3D再生用。リスナー(カメラ)とソース(発音位置)を player に紐付けて距離減衰させる
         m_player3d = new CriAtomExPlayer();
@@ -121,6 +137,9 @@ public class SoundManager : Singleton<SoundManager>
         m_source3d = new CriAtomEx3dSource();
         m_player3d.Set3dListener(m_listener);
         m_player3d.Set3dSource(m_source3d);
+        // acb のキューは全て Pan3d（2Dパン）でオーサリングされているため、3D経路のプレーヤ側で
+        // 3Dポジショニングを強制する。これが無いと SetMinMaxDistance が無視され距離減衰が一切効かない
+        m_player3d.SetPanType(CriAtomEx.PanType.Pos3d);
 
         // 疎結合ファサードに自分の再生処理を登録（Game を参照しない層からも Sound.Play で鳴らせる）
         Sound.OnPlay = Play;
@@ -128,6 +147,7 @@ public class SoundManager : Singleton<SoundManager>
         Sound.OnStopBgm = StopBgm;
         Sound.OnPlayAt = PlayAt;
         Sound.OnPlayLoop = PlayLoop;
+        Sound.OnPlayLoopAt = PlayLoopAt;
         Sound.OnPlayTimelineCue = PlayTimelineCue;
 
         DontDestroyOnLoad(gameObject);
@@ -135,9 +155,34 @@ public class SoundManager : Singleton<SoundManager>
 
     private void Start()
     {
+        if (m_volumeSettings == null)
+            Debug.LogWarning("[SoundManager] SoundVolumeSettings 未アサイン。全音量が等倍で再生されます。");
+
+        // ACF（同時発音数上限・AISAC等のグローバル設定）を最初に登録する。未登録だと発音制御が一切効かない
+        RegisterAcf();
+
         // 初回再生時の警告とロード待ちを避けるため、使うキューシートを先読みしておく
         LoadCueSheet(SoundData.CueSheet.SE);
         LoadCueSheet(SoundData.CueSheet.BGM);
+    }
+
+    /// <summary>
+    /// ACF を CRI に登録する。acb と同じく、エディタでは Audio フォルダのフルパス、
+    /// ビルドでは StreamingAssets 直下から読む。ファイルが無ければ警告して続行する（音は鳴るが発音制御なし）。
+    /// </summary>
+    private static void RegisterAcf()
+    {
+#if UNITY_EDITOR
+        string path = System.IO.Path.GetFullPath("Assets/_Project/Asset/Audio/MagnetRush.acf");
+        if (!System.IO.File.Exists(path))
+        {
+            Debug.LogWarning($"[SoundManager] ACF が見つかりません: {path}");
+            return;
+        }
+#else
+        string path = "MagnetRush.acf";
+#endif
+        CriAtomEx.RegisterAcf(null, path);
     }
 
     private void LateUpdate()
@@ -166,6 +211,7 @@ public class SoundManager : Singleton<SoundManager>
         if (Sound.OnStopBgm == StopBgm) Sound.OnStopBgm = null;
         if (Sound.OnPlayAt == PlayAt) Sound.OnPlayAt = null;
         if (Sound.OnPlayLoop == PlayLoop) Sound.OnPlayLoop = null;
+        if (Sound.OnPlayLoopAt == PlayLoopAt) Sound.OnPlayLoopAt = null;
         if (Sound.OnPlayTimelineCue == PlayTimelineCue) Sound.OnPlayTimelineCue = null;
 
         m_player?.Dispose();
@@ -180,13 +226,31 @@ public class SoundManager : Singleton<SoundManager>
     public void LoadCueSheet(string name)
     {
         if (m_acbCache.ContainsKey(name)) return;
-        m_acbCache[name] = CriAtomExAcb.LoadAcbFile(null, name + ".acb", "");
+        m_acbCache[name] = CriAtomExAcb.LoadAcbFile(null, ResolveAcbPath(name), "");
+        if (m_acbCache[name] == null)
+            Debug.LogWarning($"[SoundManager] '{name}' の acb を読み込めませんでした: {ResolveAcbPath(name)}");
+    }
+
+    /// <summary>
+    /// acb ファイルの読み込みパスを返す。
+    /// CRI は相対パスを StreamingAssets 基準で解決するが、本プロジェクトの acb は
+    /// Assets/_Project/Asset/Audio/&lt;キューシート名&gt;/ にある（サウンド担当の出力先）ため、
+    /// エディタではフルパスへ変換して読む。ビルドでは StreamingAssets 直下に acb を置く運用。
+    /// </summary>
+    private static string ResolveAcbPath(string name)
+    {
+#if UNITY_EDITOR
+        return System.IO.Path.GetFullPath($"Assets/_Project/Asset/Audio/{name}/{name}.acb");
+#else
+        return name + ".acb";
+#endif
     }
 
     public void UnloadCueSheet(string name)
     {
         if (!m_acbCache.TryGetValue(name, out var acb)) return;
-        acb.Dispose();
+        // ロード失敗時は null がキャッシュされているため null 条件付きで解放する
+        acb?.Dispose();
         m_acbCache.Remove(name);
     }
 
@@ -195,8 +259,11 @@ public class SoundManager : Singleton<SoundManager>
     /// </summary>
     public void Play(string cueSheetName, string cueName)
     {
+        var acb = GetAcb(cueSheetName);
+        if (acb == null) { ChannelLogger.LogGuardReturn("Sound", $"acb未ロードのため {cueName} を再生できない"); return; }
         m_player.SetPlaybackRatio(1f);
-        m_player.SetCue(GetAcb(cueSheetName), cueName);
+        m_player.SetVolume(GetSeVolume(cueName));
+        m_player.SetCue(acb, cueName);
         m_player.Start();
     }
 
@@ -206,9 +273,12 @@ public class SoundManager : Singleton<SoundManager>
     /// </summary>
     public Playback PlayWithHandle(string cueSheetName, string cueName)
     {
+        var acb = GetAcb(cueSheetName);
+        if (acb == null) { ChannelLogger.LogGuardReturn("Sound", $"acb未ロードのため {cueName} を再生できない"); return default; }
         m_player.SetPlaybackRatio(1f);
-        m_player.SetCue(GetAcb(cueSheetName), cueName);
-        Playback pb = new(m_player, m_player.Start());
+        m_player.SetVolume(GetSeVolume(cueName));
+        m_player.SetCue(acb, cueName);
+        Playback pb = new(m_player, m_player.Start(), GetSeVolume(cueName));
         return pb;
     }
 
@@ -233,12 +303,21 @@ public class SoundManager : Singleton<SoundManager>
     /// </summary>
     public Sound.TimelineCuePlayback PlayTimelineCue(string cueSheetName, string cueName, double startTimeSeconds, float initialPlaybackSpeed)
     {
+        var acb = GetAcb(cueSheetName);
+        if (acb == null)
+        {
+            ChannelLogger.LogGuardReturn("Sound", $"acb未ロードのため Timeline キュー {cueName} を再生できない");
+            return new Sound.TimelineCuePlayback(() => { }, (v, p, s) => { });
+        }
+
         long startTimeMs = Math.Max(0L, (long)Math.Round(startTimeSeconds * 1000.0));
 
         m_player.SetStartTime(startTimeMs);
         m_player.SetPlaybackRatio(Mathf.Max(0.01f, initialPlaybackSpeed));
-        m_player.SetCue(GetAcb(cueSheetName), cueName);
-        Playback pb = new(m_player, m_player.Start());
+        // Timeline のカーブが毎フレーム絶対値で音量を上書きするため、シート倍率はハンドル側に焼き込んで掛け算にする
+        m_player.SetVolume(GetSeVolume(cueName));
+        m_player.SetCue(acb, cueName);
+        Playback pb = new(m_player, m_player.Start(), GetSeVolume(cueName));
         m_player.SetStartTime(0);
 
         bool stopped = false;
@@ -270,6 +349,7 @@ public class SoundManager : Singleton<SoundManager>
         if (acb == null) { Debug.LogWarning("[SoundManager] BGM の acb を取得できません。"); return; }
 
         m_bgmPlayer.Stop();
+        m_bgmPlayer.SetVolume(GetBgmVolume(cueName));
         m_bgmPlayer.SetCue(acb, cueName);
         m_bgmPlayer.Start();
         m_currentBgm = cueName;
@@ -284,6 +364,7 @@ public class SoundManager : Singleton<SoundManager>
 
     /// <summary>
     /// 3D位置で SE を再生する（距離減衰あり）。リスナー(カメラ)から遠いほど小さく鳴る。
+    /// 距離が負値なら調整シート（SoundVolumeSettings）のキュー別減衰距離を使う。
     /// </summary>
     public void PlayAt(string cueSheetName, string cueName, Vector3 position, float minDistance, float maxDistance)
     {
@@ -292,12 +373,20 @@ public class SoundManager : Singleton<SoundManager>
         var acb = GetAcb(cueSheetName);
         if (acb == null) return;
 
+        if (minDistance < 0f || maxDistance < 0f)
+        {
+            Vector2 d = GetCueDistance(cueName);
+            minDistance = d.x;
+            maxDistance = d.y;
+        }
+
         m_source3d.SetMinMaxDistance(minDistance, maxDistance);
         m_source3d.SetPosition(position.x, position.y, position.z);
         m_source3d.Update();
 
         // PlayAtWithHandle で別ソースに差し替わっている場合があるので共有ソースへ戻す
         m_player3d.Set3dSource(m_source3d);
+        m_player3d.SetVolume(GetSeVolume(cueName));
         m_player3d.SetCue(acb, cueName);
         m_player3d.Start();
     }
@@ -319,9 +408,10 @@ public class SoundManager : Singleton<SoundManager>
         source.Update();
 
         m_player3d.Set3dSource(source);
+        m_player3d.SetVolume(GetSeVolume(cueName));
         m_player3d.SetCue(acb, cueName);
         CriAtomExPlayback pb = m_player3d.Start();
-        return new Playback3d(m_player3d, source, pb);
+        return new Playback3d(m_player3d, source, pb, GetSeVolume(cueName));
     }
 
     // ── カテゴリ操作 ──────────────────────────────────────────────
@@ -337,6 +427,36 @@ public class SoundManager : Singleton<SoundManager>
 
     public void StopCategory(string categoryName)
         => CriAtomExCategory.Stop(categoryName);
+
+    /// <summary>
+    /// 3D位置でループSEを再生し、位置更新・停止用ハンドルを返す（Sound.PlayLoopAt 経由）。
+    /// 減衰距離は調整シートのキュー別設定を使う。
+    /// </summary>
+    public Sound.PositionalLoopPlayback PlayLoopAt(string cueSheetName, string cueName, Vector3 position)
+    {
+        Vector2 d = GetCueDistance(cueName);
+        Playback3d pb = PlayAtWithHandle(cueSheetName, cueName, position, d.x, d.y);
+        bool stopped = false;
+        return new Sound.PositionalLoopPlayback(
+            () =>
+            {
+                if (stopped) return;
+                stopped = true;
+                pb.Stop();
+            },
+            p =>
+            {
+                if (stopped) return;
+                pb.SetPosition(p);
+            });
+    }
+
+    // 音量調整データから最終音量（マスター × キュー別倍率）を引く。未アサイン時は等倍（Start で警告済み）
+    private float GetSeVolume(string cueName) => m_volumeSettings != null ? m_volumeSettings.GetSeVolume(cueName) : 1f;
+    private float GetBgmVolume(string cueName) => m_volumeSettings != null ? m_volumeSettings.GetBgmVolume(cueName) : 1f;
+
+    // 3D減衰距離を調整シートから引く。未アサイン時は既定の (4, 35)
+    private Vector2 GetCueDistance(string cueName) => m_volumeSettings != null ? m_volumeSettings.GetCueDistance(cueName) : new Vector2(4f, 35f);
 
     private CriAtomExAcb GetAcb(string name)
     {

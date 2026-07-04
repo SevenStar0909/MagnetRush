@@ -24,6 +24,9 @@ public class GameManager : Singleton<GameManager>
 
     private void Start()
     {
+        // 追加マップが未ロードのうちは跳ばない（スポーン地点が無く Vector3.up へ落ちて見える）。
+        // リトライ等でロード画面を経由しない経路でも、マップロード完了時の OnSceneLoaded が正位置へ跳ばす
+        if (FindFirstObjectByType<StageSpawnPoint>() == null) { ChannelLogger.LogGuardReturn("Game", "SpawnPoint未ロードのため初期テレポートを保留"); return; }
         StartCoroutine(TeleportNextFrame());
     }
 

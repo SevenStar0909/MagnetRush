@@ -287,14 +287,15 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
     // AnimationEvent で呼び出す関数群。攻撃の当たり判定の有効化/無効化や、AIへの通知を行う。
     public void OnBossFootStepEvent()
     {
-        Sound.Play(SoundData.CueSheet.SE, SoundData.SE.BossEnemyFoot);
+        // ボス位置の3D再生（離れていると小さく聞こえる）。音量・減衰距離はサウンド調整シートで管理
+        Sound.PlayAt(SoundData.CueSheet.SE, SoundData.SE.BossEnemyFoot, transform.position);
     }
 
     public void EnableArmHitboxEvent()
     {
         if (m_attackHitboxes != null) m_attackHitboxes.EnableArmHitbox();
         PlayArmImpactDustEffect();
-        Sound.Play(SoundData.CueSheet.SE, SoundData.SE.BossEnemySlam);
+        Sound.PlayAt(SoundData.CueSheet.SE, SoundData.SE.BossEnemySlam, transform.position);
         ChannelLogger.Log("EnemyBoss", $"BossArmEvent step2 is Triggered ");
     }
 
@@ -431,6 +432,38 @@ public class EnemyBossBaseA_Animator : MonoBehaviour
                     $"[EnemyBossBaseA_Animator] Animator パラメータ '{name}' ({purpose}) が Controller に定義されていません。",
                     this);
         }
+    }
+
+    // 攻撃系トリガーの掃除用。SetTrigger は遷移で消費されるまで残留するため、
+    // 割り込み等で消費されなかったトリガーを EnemyBossAI が状態の入り口でリセットする。
+    public void ResetAttack()
+    {
+        if (m_animator != null) m_animator.ResetTrigger(m_hAttack);
+    }
+
+    public void ResetAttackFinished()
+    {
+        if (m_animator != null) m_animator.ResetTrigger(m_hAttackFinished);
+    }
+
+    public void ResetMissile()
+    {
+        if (m_animator != null) m_animator.ResetTrigger(m_hFireMissile);
+    }
+
+    public void ResetMissileFinished()
+    {
+        if (m_animator != null) m_animator.ResetTrigger(m_hFireMissileFinished);
+    }
+
+    public void ResetAttackRush()
+    {
+        if (m_animator != null) m_animator.ResetTrigger(m_hAttackRush);
+    }
+
+    public void ResetAttackRushFinished()
+    {
+        if (m_animator != null) m_animator.ResetTrigger(m_hAttackRushFinished);
     }
 
     public void ResetStunEnd()

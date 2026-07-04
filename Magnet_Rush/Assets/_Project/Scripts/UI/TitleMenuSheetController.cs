@@ -66,6 +66,7 @@ public class TitleMenuSheetController : MonoBehaviour
 
     void OnDisable()
     {
+        Sound.StopBgm();
         m_anyButtonListener?.Dispose();
     }
 
@@ -86,6 +87,7 @@ public class TitleMenuSheetController : MonoBehaviour
     {
         yield return new WaitForSeconds(1.0f);
         m_anyButtonImage.enabled = true;
+        Sound.PlayBgm(SoundData.BGM.Title);
 
         yield return StartCoroutine(PlayAnimationOneShot(m_anyButtonImage, m_anyButtonFps, m_anyButtonFadeInFrames));
 

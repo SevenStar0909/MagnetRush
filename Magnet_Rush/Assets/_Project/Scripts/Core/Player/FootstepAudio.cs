@@ -6,9 +6,9 @@ public class FootstepAudio : MonoBehaviour
     // static だった配列も、必要に応じて変えるか、static のまま保持します
     private static readonly string[] FootstepCues =
     {
-        SoundData.SE.PlayerFoot01,
+        //SoundData.SE.PlayerFoot01,
         SoundData.SE.PlayerFoot02,
-        SoundData.SE.PlayerFoot03,
+        //SoundData.SE.PlayerFoot03,
         SoundData.SE.PlayerFoot04
     };
 
@@ -21,6 +21,6 @@ public class FootstepAudio : MonoBehaviour
 
         var handle = SoundManager.Instance.PlayWithHandle(SoundData.CueSheet.SE, selectedCue);
         float randomPitch = Random.Range(0.95f, 1.05f);
-        handle.SetVolumeAndPitch(0.1f, randomPitch);
+        handle.SetVolumeAndPitch(1f, randomPitch);
     }
 }

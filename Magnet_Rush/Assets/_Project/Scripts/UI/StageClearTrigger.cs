@@ -6,9 +6,16 @@ using UnityEngine.SceneManagement;
 
 /// <summary>
 /// ゴール演出スクリプト。特定のオブジェクト（ゴール）にプレイヤーが接触した瞬間に起動する。
+/// 検出は OnTriggerEnter ではなく AABB への距離ポーリングで行う（DeathZone と同じ理由:
+/// プレイヤーは kinematic Rigidbody を transform で直接動かす KCC ＋ autoSyncTransforms=false のため、
+/// 静的コライダーとのトリガーイベントが安定して発火しない）。
+/// コライダーはプレイヤーが乗る床を兼ねるため無効化せず、判定だけポーリングに置き換える。
 /// </summary>
 public class GameClearTrigger : MonoBehaviour
 {
+    // ゴール床の AABB からこの距離以内なら「接触」とみなす（床上に立つと root は面上ぴったりに来る）
+    private const float k_TouchDistance = 0.3f;
+
     [Header("演出テクスチャ")]
     [Tooltip("順番に再生するスプライトシート(1〜4)")]
     [SerializeField] private Texture[] m_sheetTextures;
@@ -40,6 +47,10 @@ public class GameClearTrigger : MonoBehaviour
 
     private bool m_playing;
     private bool m_waitingForInput;
+    private Bounds m_bounds;
+    private bool m_hasBounds;
+    private Transform m_playerRoot;
+    private bool m_touching;
 
     void Awake()
     {
@@ -63,19 +74,39 @@ public class GameClearTrigger : MonoBehaviour
                 Transform sequenceTransform = rootTransform.Find("Sequence");
                 if (sequenceTransform != null)
                 {
-                    // ➔ 変数名に合わせて書き換えてください
                     m_sequenceImage = sequenceTransform.GetComponent<RawImage>();
-
-                    // 💡 もしm_sequenceの型がGameObjectではなく、特定のコンポーネント（例: PlayableDirectorなど）の場合は以下のように記述します
-                    // m_sequence = sequenceTransform.GetComponent<型名>();
                 }
             }
-            Debug.Log("[Goal] シーンの壁を越えて、GameClearCanvasのRootとSequenceを自動接続しました！");
         }
-        else
+
+        // ゴール床は静的前提なので AABB を1回だけキャッシュ。autoSyncTransforms=false 対策に取得直前で同期
+        var col = GetComponent<Collider>();
+        if (col == null) { ChannelLogger.LogGuardReturn("Game", "ゴールに Collider が無いため接触判定不可"); return; }
+        Physics.SyncTransforms();
+        m_bounds = col.bounds;
+        m_hasBounds = true;
+    }
+
+    void FixedUpdate()
+    {
+        if (!m_hasBounds || m_playing) return;
+
+        if (m_playerRoot == null)
         {
-            Debug.LogWarning("[Goal] GameClearCanvasが見つかりませんでした。オブジェクト名を確認してください。");
+            var tagged = GameObject.FindWithTag(m_playerTag);
+            if (tagged == null) return;
+            // Player タグは root と Hurtbox(子) の両方に付いているため root に寄せる
+            m_playerRoot = tagged.transform.root;
         }
+
+        // 接触した瞬間（外→内の遷移）だけ発火
+        bool touching = m_bounds.SqrDistance(m_playerRoot.position) <= k_TouchDistance * k_TouchDistance;
+        if (touching && !m_touching)
+        {
+            Debug.Log("[Goal] ゴール到達を検知（ポーリング）。演出を開始します。");
+            PlayClear();
+        }
+        m_touching = touching;
     }
 
     void Update()
@@ -90,7 +121,7 @@ public class GameClearTrigger : MonoBehaviour
         // 磁力フィールドは完全に無視する
         if (other.name.Contains("MagnetField"))
         {
-            return; // ここで処理を終了して追い返す
+            return;
         }
 
         // 触れてきた相手自身、またはその親（ルート）が Player タグを持っているかチェック

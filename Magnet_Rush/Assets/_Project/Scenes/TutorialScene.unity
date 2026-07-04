@@ -16170,6 +16170,52 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 3424a1d29736f5c46a92d4fcc1a08768, type: 3}
   m_PrefabInstance: {fileID: 1377862624}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1380045633
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1380045635}
+  - component: {fileID: 1380045634}
+  m_Layer: 0
+  m_Name: BgmPlayer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1380045634
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1380045633}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 506b889d98e15f74d9936a6abe7d64c5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Data::SceneBgmPlayer
+  m_bgmType: 4
+  m_stopBgmIfNone: 0
+--- !u!4 &1380045635
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1380045633}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 671.2225, y: -172.5631, z: -1807.4578}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1390908408
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -24671,3 +24717,4 @@ SceneRoots:
   - {fileID: 1972788618}
   - {fileID: 1544211109}
   - {fileID: 1267313671}
+  - {fileID: 1380045635}

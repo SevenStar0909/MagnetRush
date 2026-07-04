@@ -63,6 +63,10 @@ public class SceneLoader : Singleton<SceneLoader>
     {
         if (mode != LoadSceneMode.Single) return;
 
+        // BGM（ボス戦等）は SoundManager がシーンを跨いで生存するため鳴り続ける。
+        // リトライ・セレクト・タイトルなどシーン切替では必ず止め、再生は各トリガー（ボスアリーナ封鎖等）に任せる
+        Sound.StopBgm();
+
         if (ShouldLoadAdditives(scene.name))
         {
             LoadAdditiveScenes();

@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 1802304174126137012}
   - component: {fileID: 1802304174126137014}
   - component: {fileID: 1802304174126137013}
+  - component: {fileID: 2923010806896101153}
   m_Layer: 0
   m_Name: EnemyBossArenaGate
   m_TagString: Untagged
@@ -88,3 +89,17 @@ MonoBehaviour:
   m_onCleared:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &2923010806896101153
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1802304174126137011}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 574a0e693d402ea4ebade5190bbf770a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MagnetRush.Enemy::BossArenaBgm
+  m_bgmCue: BossBattle
+  m_stopOnCleared: 1

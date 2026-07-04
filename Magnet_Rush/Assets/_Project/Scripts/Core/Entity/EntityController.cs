@@ -28,6 +28,13 @@ public class EntityController : MonoBehaviour
     [Tooltip("動的な PhysicsObject を押せるか。既定 OFF（プレイヤー・雑魚は押さず壁扱い）。ボスだけ ON にする。")]
     [SerializeField] private bool m_canPushPhysicsObjects = false;
 
+    /// <summary>
+    /// 移動解決中に他コライダー（Rigidbody持ち）へ接触した時の通知。(相手Collider, 接触点)。
+    /// kinematic Entity 同士は OnCollisionEnter が発火しないため、磁力接触ダメージ(MagneticContactDamage)はこれを購読する。
+    /// 接触が続く間は毎フレーム発火し得る。静的な壁・地面（Rigidbodyなし）では発火しない。
+    /// </summary>
+    public event System.Action<Collider, Vector3> OnMoveContact;
+
     private const int k_MaxCollisionSteps = 3;
 
     private Rigidbody m_rigidbody;
@@ -318,6 +325,10 @@ public class EntityController : MonoBehaviour
 
                 // 壁として止まる+スライド
                 wallHandling:
+                // Rigidbody持ち（Entity Pushbox / PhysicsObject）への接触を通知。静的な壁・地面は対象外
+                if (hit.collider.attachedRigidbody != null)
+                    OnMoveContact?.Invoke(hit.collider, hit.point);
+
                 float safeDistance = hit.distance - skinWidth - radius;
                 Vector3 offset = moveDirection * safeDistance;
                 Vector3 leftover = motion - offset;
@@ -373,6 +384,10 @@ public class EntityController : MonoBehaviour
                 m_overlaps[i], m_overlaps[i].transform.position, m_overlaps[i].transform.rotation,
                 out var direction, out var dist))
             {
+                // Rigidbody持ちとの重なり解決も接触として通知（スイープをすり抜けた高速接触の保険）
+                if (overlapRb != null)
+                    OnMoveContact?.Invoke(m_overlaps[i], m_overlaps[i].ClosestPoint(origin));
+
                 Vector3 displacement = direction * dist;
 
                 // 接地中 Entity 同士の Pushbox 衝突は y を抑えて水平のみ解決する。

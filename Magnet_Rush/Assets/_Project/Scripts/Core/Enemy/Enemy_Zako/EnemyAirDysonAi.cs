@@ -14,7 +14,8 @@ public class EnemyAirDysonAi : MonoBehaviour
         Approach,
         Search,
         Pull,
-        Reposition
+        Reposition,
+        Wander
     }
 
     [Header("References")]
@@ -50,6 +51,10 @@ public class EnemyAirDysonAi : MonoBehaviour
     private float m_stateTimer;
     private float m_approachTimer;
     private float m_currentPullSpeed;
+    // 徘徊（プレイヤーが追跡範囲外の間）の行き先と移動/休止サイクル
+    private Vector3 m_wanderTarget;
+    private float m_wanderTimer;
+    private bool m_isWanderMoving;
 
     private void Awake()
     {
@@ -122,6 +127,10 @@ public class EnemyAirDysonAi : MonoBehaviour
             case DysonState.Reposition:
                 TickReposition(flatToPlayer, distance, dt);
                 break;
+            // プレイヤーが追跡範囲外のフェーズ。出現位置を中心にうろうろ飛び回り、範囲内に戻ったらApproachへ。
+            case DysonState.Wander:
+                TickWander(flatToPlayer, distance, dt);
+                break;
         }
     }
 
@@ -148,10 +157,10 @@ public class EnemyAirDysonAi : MonoBehaviour
     {
         // 自分のdataを参照して、追跡範囲内にいる場合は減速する
         EnemyAirSettings data = m_enemyBase.StatusData;
-        // 追跡範囲は、プレイヤーへの水平距離がdata.chaseRange以下の場合とする
+        // 追跡範囲は、プレイヤーへの水平距離がdata.chaseRange以下の場合とする。範囲外なら徘徊に入る
         if (m_useAirSettingsChaseRange && data != null && data.chaseRange > 0f && distance > data.chaseRange)
         {
-            ChangeState(DysonState.Search);
+            ChangeState(DysonState.Wander);
             return;
         }
 
@@ -220,6 +229,50 @@ public class EnemyAirDysonAi : MonoBehaviour
 
         if (m_stateTimer <= -m_pullCooldown)
             ChangeState(DysonState.Approach);
+    }
+
+    // プレイヤーが追跡範囲外の間の徘徊。出現位置を中心に、出現時の高度へ戻りながらランダムな地点へ飛んでは休む。
+    private void TickWander(Vector3 flatToPlayer, float distance, float dt)
+    {
+        EnemyAirSettings data = m_enemyBase.StatusData;
+        bool playerInRange = data == null || data.chaseRange <= 0f || distance <= data.chaseRange;
+        if (playerInRange)
+        {
+            ChangeState(DysonState.Approach);
+            return;
+        }
+
+        EnemyWanderSettings wander = data.wander;
+        if (wander == null || !wander.enabled)
+        {
+            m_enemyBase.SlowDown(dt);
+            return;
+        }
+
+        m_wanderTimer -= dt;
+
+        if (!m_isWanderMoving)
+        {
+            m_enemyBase.SlowDown(dt);
+            if (m_wanderTimer <= 0f)
+            {
+                Vector2 offset = Random.insideUnitCircle * Mathf.Max(0f, wander.radius);
+                m_wanderTarget = m_enemyBase.SpawnPosition + new Vector3(offset.x, 0f, offset.y);
+                m_isWanderMoving = true;
+                m_wanderTimer = Mathf.Max(1f, wander.moveTimeout);
+            }
+            return;
+        }
+
+        Vector3 toTarget = m_wanderTarget - transform.position;
+        if (m_wanderTimer <= 0f || toTarget.sqrMagnitude <= 1f)
+        {
+            m_isWanderMoving = false;
+            m_wanderTimer = Random.Range(wander.pauseDurationMin, Mathf.Max(wander.pauseDurationMin, wander.pauseDurationMax));
+            return;
+        }
+
+        m_enemyBase.AccelerateToward(toTarget, dt, wander.speedMultiplier);
     }
 
     // プレイヤーを引き寄せる処理。プレイヤーが一定距離以上離れている場合に、加速度を計算してプレイヤーを引き寄せる。
@@ -300,6 +353,19 @@ public class EnemyAirDysonAi : MonoBehaviour
                 m_stateTimer = Mathf.Max(0f, m_repositionDuration);
                 m_approachTimer = 0f;
                 m_currentPullSpeed = 0f;
+                break;
+            case DysonState.Wander:
+                if (previous == DysonState.Pull)
+                    m_animator?.TriggerSuctionEnd();
+                else
+                    m_animator?.PlayIdle();
+
+                m_stateTimer = 0f;
+                m_approachTimer = 0f;
+                m_currentPullSpeed = 0f;
+                // 徘徊は休止フェーズから始める（入った直後に急発進しない）
+                m_isWanderMoving = false;
+                m_wanderTimer = 0f;
                 break;
             default:
                 if (previous == DysonState.Pull)

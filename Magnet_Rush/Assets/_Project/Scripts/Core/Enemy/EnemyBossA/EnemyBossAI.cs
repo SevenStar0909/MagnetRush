@@ -14,6 +14,7 @@ using UnityEngine.AI;
 public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
 {
     public enum BossState { Idle, AttackStance, AttackMotion, Rush, Missile, Stunned, Stagger, Standing }
+    private const string StabReadyEffectName = "StabReadyMagnetEffect";
 
     [Header("References")]
     [SerializeField] private EnemyBossBaseA_Animator m_animator;
@@ -50,12 +51,32 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
     [SerializeField] private float m_rushKnockbackHorizontalForce = 12f;
     [SerializeField] private float m_rushKnockbackUpwardForce = 3f;
 
+    [Header("Stab Ready Effect")]
+    [Tooltip("ダウンアニメーション開始からエフェクトを表示するまでの待ち時間")]
+    [Min(0f)]
+    [SerializeField] private float m_stabReadyEffectDelayAfterBreak = 3f;
+    [Tooltip("スタブ可能時に磁力エフェクトを出す胸コア周りのボーンパス")]
+    [SerializeField] private string m_stabReadyEffectBonePath = "Model/Boss01_Riging/Root/Oelvis/Body_Tube_1";
+    [Tooltip("Scene上で位置調整したい場合に使う配置用Transform。未設定ならボーンパスを使う")]
+    [SerializeField] private Transform m_stabReadyEffectSceneAnchor;
+    [Tooltip("Scene/Prefab上に常時置いて調整するStabReadyMagnetEffect。未設定なら同名の子を探し、なければPrefabから生成する")]
+    [SerializeField] private GameObject m_stabReadyEffectSceneObject;
+    [SerializeField] private GameObject m_stabReadyEffectPrefab;
+    [SerializeField] private Vector3 m_stabReadyEffectLocalOffset = Vector3.zero;
+    [SerializeField] private Vector3 m_stabReadyEffectLocalEulerAngles = Vector3.zero;
+    [SerializeField] private Vector3 m_stabReadyEffectLocalScale = Vector3.one;
+    [SerializeField] private Color m_stabReadyEffectColor = new Color(1f, 0.42f, 0.04f, 0.9f);
+    [SerializeField, Min(0f)] private float m_stabReadyEffectBlinkCyclesPerSecond = 2f;
+    [SerializeField, Range(0f, 1f)] private float m_stabReadyEffectMinAlpha = 0.18f;
+    [SerializeField, Min(0f)] private float m_stabReadyEffectPulseScale = 0.18f;
+
     [Header("Debug")]
     [SerializeField] private bool m_logStateChange = true;
     public bool isBattleing = false;
 
     private EnemyBossBase m_boss;
     private BossMissileLauncher m_missileLauncher;
+    private BossAttackHitboxes m_attackHitboxes;
     private Transform m_player;
     private EnemyBossSettings m_settings;
     private Stamina m_stamina;
@@ -64,6 +85,8 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
 
     // ボス本体（各ボーン）の Hitbox。物理オブジェクト接触でスタンゲージを溜める（機構1）。
     private Hitbox[] m_bodyHitboxes;
+    // ボス配下の全 Magnetizable（本体root＋手などのHurtbox）。弾で付いた磁力の一括リセットに使う。
+    private Magnetizable[] m_bodyMagnetizables;
     private readonly Collider[] m_interruptShockWaveBuffer = new Collider[64];
     private readonly HashSet<Rigidbody> m_interruptShockWaveBodies = new HashSet<Rigidbody>();
 
@@ -81,6 +104,17 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
 
     private bool m_wasInStunAnim;
     private bool m_wasInStaggerAnim;
+    private float m_breakAnimationStartedTime = float.NegativeInfinity;
+    private Transform m_stabReadyEffectAnchor;
+    private GameObject m_stabReadyEffectRoot;
+    private ParticleSystem[] m_stabReadyEffectParticles = Array.Empty<ParticleSystem>();
+    private Renderer[] m_stabReadyEffectRenderers = Array.Empty<Renderer>();
+    private Light[] m_stabReadyEffectLights = Array.Empty<Light>();
+    private float[] m_stabReadyEffectLightBaseIntensities = Array.Empty<float>();
+    private bool m_usePlacedStabReadyEffect;
+    private Vector3 m_stabReadyEffectBaseLocalScale = Vector3.one;
+    private bool m_warnedMissingStabReadyEffectAnchor;
+    private bool m_warnedMissingStabReadyEffectPrefab;
     private bool m_staminaBreakEndRequested;
     private bool m_stabFinisherActive;
     private bool m_postStabHoldPending;      // スタブ命中後、起き上がりを遅らせて崩れたまま伏せている間 true
@@ -97,8 +131,24 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
     private bool m_rushMovementStopped;
     private bool m_rushEndRequested;
     private float m_rushKeepTimer;
+    private bool m_missileAnimationStarted;
+    // Animator が実際にミサイル系ステートへ入ったのを見届けたか。Idle→MissileReady のブレンド中は
+    // GetCurrentAnimatorStateInfo が Idle を返し続けるため、これを見ずに IsIdle を終了判定に使うと
+    // 発射トリガー直後に Missile 状態を即抜けして AI と Animator がズレる（残留トリガーの温床）
+    private bool m_missileAnimEntered;
+    [SerializeField] private float m_missileFaceReadyAngleDeg = 0.5f;
+    [Tooltip("ミサイル前にプレイヤーへ向き直るのを待つ上限（秒）。超えたら完全に向いていなくてもランダムで攻撃を強制開始する。0で無効")]
+    [Min(0f)]
+    [SerializeField] private float m_missileFaceWaitTimeoutSeconds = 2f;
+    private float m_missileFaceWaitTimer;
+    private float m_attackMissTurnTimer;
+    private float m_attackMissTurnSpeedDegPerSec;
+    private const float AttackMissTurnDuration = 1f;
 
     public event Action OnStabHitSucceeded;   // スタブが成功したときに発火
+
+    public event Action OnArmAttackStarted;   // 振り下ろし（腕）攻撃を開始した時
+    public event Action OnStaminaBroken;      // スンタゲージが削れきった（よろけた）時
 
     public BossState State => m_state;
     public bool IsInvincibleState => m_state == BossState.Standing;
@@ -126,11 +176,15 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
     {
         m_boss = GetComponent<EnemyBossBase>();
         m_missileLauncher = GetComponent<BossMissileLauncher>();
+        m_attackHitboxes = GetComponentInChildren<BossAttackHitboxes>(true);
         m_stamina = GetComponent<Stamina>();
         m_health = GetComponent<Health>();
 
         // 右手の ArmStunHitbox は Hitbox 派生ではないので含まれない（＝カウンター経路と分離される）。
         m_bodyHitboxes = GetComponentsInChildren<Hitbox>(true);
+
+        // Awake時点のプレハブ構成だけを対象にする（実行時に湧くミサイル等は含めない）
+        m_bodyMagnetizables = GetComponentsInChildren<Magnetizable>(true);
 
         if (m_animator == null)
             m_animator = GetComponentInChildren<EnemyBossBaseA_Animator>();
@@ -138,6 +192,8 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
         // 旧プレハブに残る NavMeshAgent は AI では使わないので無効化しておく（付いていても動かさない）。
         var navAgent = GetComponent<NavMeshAgent>();
         if (navAgent != null) navAgent.enabled = false;
+
+        BuildStabReadyEffect();
     }
 
     void OnEnable()
@@ -158,6 +214,8 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
         if (m_bodyHitboxes != null)
             foreach (var hb in m_bodyHitboxes)
                 if (hb != null) hb.OnHitEvent -= OnBodyHit;
+
+        SetStabReadyEffectVisible(false);
     }
 
     void Start()
@@ -190,6 +248,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
             if (m_state != BossState.Idle)
                 ChangeState(BossState.Idle);
 
+            SetStabReadyEffectVisible(false);
             m_boss.SlowDown(dt);
             return;
         }
@@ -211,6 +270,8 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
             case BossState.Stagger: TickStagger(dt); break;
             case BossState.Standing: TickStanding(dt); break;
         }
+
+        UpdateStabReadyEffect();
     }
 
     void LateUpdate()
@@ -227,6 +288,76 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
         }
     }
 
+#if UNITY_EDITOR
+    void OnValidate()
+    {
+        if (Application.isPlaying)
+            return;
+
+        UnityEditor.EditorApplication.delayCall -= EnsureStabReadyEffectInEditor;
+        UnityEditor.EditorApplication.delayCall += EnsureStabReadyEffectInEditor;
+    }
+
+    [ContextMenu("Ensure Stab Ready Magnet Effect In Scene")]
+    internal void EnsureStabReadyEffectInEditor()
+    {
+        if (this == null || Application.isPlaying)
+            return;
+
+        if (!gameObject.scene.IsValid() || !gameObject.scene.isLoaded)
+            return;
+
+        GameObject placedEffect = ResolvePlacedStabReadyEffect();
+        if (placedEffect == null && m_stabReadyEffectPrefab != null)
+        {
+            Transform parent = ResolveStabReadyEffectAnchor();
+            if (parent == null)
+                parent = transform;
+
+            placedEffect = UnityEditor.PrefabUtility.InstantiatePrefab(m_stabReadyEffectPrefab, parent) as GameObject;
+            if (placedEffect == null)
+                return;
+
+            UnityEditor.Undo.RegisterCreatedObjectUndo(placedEffect, "Create Stab Ready Magnet Effect");
+            placedEffect.name = StabReadyEffectName;
+            placedEffect.transform.localPosition = m_stabReadyEffectLocalOffset;
+            placedEffect.transform.localRotation = Quaternion.Euler(m_stabReadyEffectLocalEulerAngles);
+            placedEffect.transform.localScale = m_stabReadyEffectLocalScale;
+            placedEffect.SetActive(false);
+        }
+
+        if (placedEffect == null)
+            return;
+
+        placedEffect.name = StabReadyEffectName;
+
+        bool changed = false;
+        if (m_stabReadyEffectSceneObject != placedEffect)
+        {
+            m_stabReadyEffectSceneObject = placedEffect;
+            changed = true;
+        }
+
+        if (!Mathf.Approximately(m_stabReadyEffectDelayAfterBreak, 3f))
+        {
+            m_stabReadyEffectDelayAfterBreak = 3f;
+            changed = true;
+        }
+
+        if (!Mathf.Approximately(m_stabReadyEffectBlinkCyclesPerSecond, 2f))
+        {
+            m_stabReadyEffectBlinkCyclesPerSecond = 2f;
+            changed = true;
+        }
+
+        if (changed)
+        {
+            UnityEditor.EditorUtility.SetDirty(this);
+            UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
+        }
+    }
+#endif
+
     // スタンゲージが満タン（＝Stamina 0）になった時に Stamina.OnBreak から呼ばれる。
     // よろけ（Stagger）を1回だけ発火する。OnBreak はゲージが 0 に落ちた瞬間に1度だけ発火するのでループしない。
     // よろけ中もスタブ可（CanReceiveStab が Stagger を含む）。スタン（振り上げカウンター=ArmStunHitbox）でも同様にスタブできる。
@@ -234,6 +365,8 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
     {
         if (m_animator == null) return;
         if (IsInvincibleState) return;
+
+        OnStaminaBroken?.Invoke();
 
         m_animator.TriggerBeInterrupted();
     }
@@ -291,6 +424,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
 
             m_staminaBreakTimer = Mathf.Max(0f, m_settings.staminaBreakDuration);
             m_staminaBreakEndRequested = false;
+            m_breakAnimationStartedTime = Time.time;
             ChangeState(BossState.Stunned);
             // StunAnim に入ったら IsStunned bool を即落とす。AnyState→StunAnim は IsStunned==true で遷移するため、
             // true のままだと StunkeepAnim から AnyState 経由で StunAnim へ戻り続けてループする。
@@ -321,6 +455,7 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
             // よろけ（蓄積ルート）は専用の継続時間を使う。仕様＝10秒。スタン（カウンタールート）は staminaBreakDuration＝5秒。
             m_staminaBreakTimer = Mathf.Max(0f, m_settings.staggerDuration);
             m_staminaBreakEndRequested = false;
+            m_breakAnimationStartedTime = Time.time;
             ChangeState(BossState.Stagger);
         }
 
@@ -398,12 +533,22 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
         var prev = m_state;
         m_state = next;
 
+        ResetStaleAttackTriggers(next);
+
         // 崩れ（Stun/Stagger）中だけ接地スナップを切る。崩れアニメで胴体が沈む間の下押しを止め、
         // 本体が地面にめり込むのを防ぐ。崩れを抜けた瞬間（Idle 等）に false へ戻して通常の接地に復帰する。
         if (m_boss != null)
             m_boss.SuppressGroundSnap = next == BossState.Stunned || next == BossState.Stagger || next == BossState.Standing;
 
         TryEmitInterruptShockWave(prev, next);
+
+        // 振り上げ攻撃の終了時とダウン（Stun/Stagger）確定時に、弾で付いた磁力を本体から一掃する。
+        // 前回の攻撃で付いた磁力が残ると、次の振り上げでプレイヤーが何もしなくても
+        // クレートが磁化部位へ飛んでダウンしてしまうため。
+        bool leftArmAttack = IsArmAttackState(prev) && !IsArmAttackState(next);
+        bool enteredBreak = next == BossState.Stunned || next == BossState.Stagger;
+        if (leftArmAttack || enteredBreak)
+            ResetBodyMagnetismAndRefundAmmo();
 
         if (next == BossState.Rush)
         {
@@ -415,8 +560,17 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
             m_rushKeepTimer = 0f;
         }
 
+        if (next == BossState.AttackStance)
+        {
+            m_attackHitboxes?.ResetArmHitThisAttack();
+            OnArmAttackStarted?.Invoke();
+        }
+
         if (next == BossState.Idle)
         {
+            if (prev == BossState.AttackMotion && !DidArmAttackHit())
+                BeginAttackMissTurn();
+
             ClearStaminaFlags();
             // Idle に戻る時は Wind/Dust を必ず止める。Rush の DisableWindEffectEvent が
             // 中断（被弾→Stagger 等）で発火しないまま Idle へ戻ると Wind が出続けるため、保険として停止する。
@@ -433,7 +587,12 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
 
         // ミサイル攻撃の入り口でトグルをリセット（必ず 1発目=上波 から始める）
         if (next == BossState.Missile)
+        {
+            m_missileAnimationStarted = false;
+            m_missileAnimEntered = false;
+            m_missileFaceWaitTimer = 0f;
             m_missileLauncher?.ResetWave();
+        }
 
         // Rush 中に Stun/Stagger で割り込まれると Rush 側の Disable AnimEvent が発火せず
         // Wind/Dust が出続けるので、ブレイク入り口でも明示停止する
@@ -510,6 +669,80 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
         m_interruptShockWaveBodies.Clear();
     }
 
+    /// <summary>
+    /// 振り上げ攻撃（腕攻撃）中の状態か。磁力リセットとドームキャスト(BossHandMagnetCaster)で
+    /// 同じ状態集合を共有する（片方だけ直して対象がズレるのを防ぐ）。
+    /// </summary>
+    public static bool IsArmAttackState(BossState state)
+    {
+        return state == BossState.AttackStance || state == BossState.AttackMotion;
+    }
+
+    // 弾で付いたボスの磁力（本体root＋手）を全解除し、使った分の残弾をプレイヤーへ返す。
+    // ボスの磁化は弾着弾のみで起きる（ドームキャストは PhysicsObject 限定）ので、磁化1箇所＝弾1発として返却する。
+    private void ResetBodyMagnetismAndRefundAmmo()
+    {
+        if (m_bodyMagnetizables == null)
+        { ChannelLogger.LogGuardReturn("EnemyBossA", "Magnetizable未取得"); return; }
+
+        // 先に返却数を確定する。root の DeactivateWithFields は子孫（手）のフィールドも
+        // 巻き込んで解除するため、解除しながら数えると取りこぼす。
+        int refundCount = 0;
+        foreach (var mag in m_bodyMagnetizables)
+            if (mag != null && mag.IsActive) refundCount++;
+
+        if (refundCount == 0)
+        { ChannelLogger.LogGuardReturn("EnemyBossA", "磁化箇所なしでリセット不要"); return; }
+
+        foreach (var mag in m_bodyMagnetizables)
+        {
+            if (mag == null || !mag.IsActive) continue;
+            mag.DeactivateWithFields();
+        }
+
+        bool refunded = BulletManager.Instance != null;
+        if (refunded)
+            BulletManager.Instance.RefundShots(refundCount);
+
+        ChannelLogger.Log("EnemyBossA", refunded
+            ? $"[MagnetReset] ボスの磁力を{refundCount}箇所解除、残弾{refundCount}発返却"
+            : $"[MagnetReset] ボスの磁力を{refundCount}箇所解除（BulletManager不在で残弾返却なし）");
+    }
+
+    // 攻撃系トリガーは、Stun/Stagger の AnyState 割り込みや Animator が Idle 以外にいるタイミングで
+    // SetTrigger されると消費されずに残留する。残留したまま Animator が Idle へ戻ると、AI の状態と
+    // 無関係に発火する（例: ミサイル発射と振り下ろしの同時発動）。状態の入り口で不要なトリガーを掃除する。
+    // 直前の TickIdle / 強制攻撃で出したばかりの開始トリガー（Attack/AttackRush）は消さない。
+    private void ResetStaleAttackTriggers(BossState next)
+    {
+        if (m_animator == null) return;
+
+        switch (next)
+        {
+            case BossState.Stunned:
+            case BossState.Stagger:
+                m_animator.ResetAttack();
+                m_animator.ResetMissile();
+                m_animator.ResetAttackRush();
+                break;
+            case BossState.AttackStance:
+                m_animator.ResetMissile();
+                m_animator.ResetAttackRush();
+                m_animator.ResetAttackFinished();
+                break;
+            case BossState.Rush:
+                m_animator.ResetAttack();
+                m_animator.ResetMissile();
+                m_animator.ResetAttackRushFinished();
+                break;
+            case BossState.Missile:
+                m_animator.ResetAttack();
+                m_animator.ResetAttackRush();
+                m_animator.ResetMissileFinished();
+                break;
+        }
+    }
+
     private void ClearStaminaFlags()
     {
         if (m_animator == null) return;
@@ -561,8 +794,6 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
         {
             if (m_nextLongRangeAttackIsRush)
                 m_animator.TriggerAttackRush();
-            else
-                m_animator.TriggerMissile();
             ChangeState(m_nextLongRangeAttackIsRush ? BossState.Rush : BossState.Missile);
             // 遠距離攻撃が実際に発動したときだけ Rush ↔ Missile を反転させる
             m_nextLongRangeAttackIsRush = !m_nextLongRangeAttackIsRush;
@@ -683,10 +914,52 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
 
     private void TickMissile(float dt)
     {
-        if (m_animator.IsIdle) { ChangeState(BossState.Idle); return; }
-
         m_boss.SlowDown(dt);
-        FacePlayer(dt, m_settings.faceDeadZoneDeg);
+
+        if (!m_missileAnimationStarted)
+        {
+            if (FacePlayerForMissileStart(dt))
+            {
+                m_missileAnimationStarted = true;
+                m_animator.TriggerMissile();
+                return;
+            }
+
+            // 振り向き待ちが長引くとボスが棒立ちになるため、上限を超えたらランダムで攻撃を強制開始する
+            m_missileFaceWaitTimer += dt;
+            if (m_missileFaceWaitTimeoutSeconds > 0f && m_missileFaceWaitTimer >= m_missileFaceWaitTimeoutSeconds)
+                ForceAttackAfterFaceWaitTimeout();
+            return;
+        }
+
+        // Idle→MissileReady のブレンド中は current state が Idle のまま報告されるため、
+        // ミサイル系ステートへ入ったのを見届けるまで IsIdle を終了判定に使わない
+        if (!m_missileAnimEntered)
+        {
+            if (m_animator.IsInMissile)
+                m_missileAnimEntered = true;
+            return;
+        }
+
+        if (m_animator.IsIdle) { ChangeState(BossState.Idle); return; }
+    }
+
+    // 振り向き待ちがタイムアウトした時の強制攻撃。完全に向き直るのを諦め、
+    // ミサイル即発射かラッシュ切替をランダムに選んで攻撃フェーズへ入る。
+    private void ForceAttackAfterFaceWaitTimeout()
+    {
+        if (UnityEngine.Random.Range(0, 2) == 0)
+        {
+            m_missileAnimationStarted = true;
+            m_animator.TriggerMissile();
+            ChannelLogger.Log("EnemyBossA", "[FaceWait] 振り向き待ちタイムアウト → ミサイルを強制発射");
+        }
+        else
+        {
+            ChannelLogger.Log("EnemyBossA", "[FaceWait] 振り向き待ちタイムアウト → ラッシュへ切替");
+            m_animator.TriggerAttackRush();
+            ChangeState(BossState.Rush);
+        }
     }
 
     private void TickStunned(float dt)
@@ -737,9 +1010,8 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
     /// <summary>Missile 発射イベント専用。AnimationEvent から呼ばれ、BossMissileLauncher に1波分の発射を委譲する。</summary>
     public void OnMissileFireEvent()
     {
-        if (m_missileLauncher != null)
-            m_missileLauncher.FireNextWave();
-        m_animator.TriggerMissileFinished();
+        if (m_missileLauncher != null && m_missileLauncher.FireNextWave())
+            m_animator.TriggerMissileFinished();
     }
 
     // === IStabReceiver 実装 (Player → Boss スタブ受信) ===
@@ -863,6 +1135,257 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
         return m_state == BossState.Stunned || m_state == BossState.Stagger;
     }
 
+    private void UpdateStabReadyEffect()
+    {
+        bool visible = IsBreakState()
+            && !m_stabFinisherActive
+            && Time.time >= m_breakAnimationStartedTime + Mathf.Max(0f, m_stabReadyEffectDelayAfterBreak);
+
+        SetStabReadyEffectVisible(visible);
+        if (!visible || m_stabReadyEffectRoot == null) return;
+
+        float cycles = Mathf.Max(0f, m_stabReadyEffectBlinkCyclesPerSecond);
+        float wave = cycles > 0f
+            ? (Mathf.Sin(Time.time * cycles * Mathf.PI * 2f) + 1f) * 0.5f
+            : 1f;
+        float alpha = Mathf.Lerp(Mathf.Clamp01(m_stabReadyEffectMinAlpha), 1f, wave) * m_stabReadyEffectColor.a;
+        Color color = m_stabReadyEffectColor;
+        color.a = alpha;
+
+        float scale = 1f + wave * Mathf.Max(0f, m_stabReadyEffectPulseScale);
+        if (!m_usePlacedStabReadyEffect)
+        {
+            m_stabReadyEffectRoot.transform.localPosition = m_stabReadyEffectLocalOffset;
+            m_stabReadyEffectRoot.transform.localRotation = Quaternion.Euler(m_stabReadyEffectLocalEulerAngles);
+            m_stabReadyEffectBaseLocalScale = m_stabReadyEffectLocalScale;
+        }
+        m_stabReadyEffectRoot.transform.localScale = Vector3.Scale(m_stabReadyEffectBaseLocalScale, Vector3.one * scale);
+
+        TintStabReadyEffect(color);
+        BlinkStabReadyEffectLights(wave);
+    }
+
+    private void TintStabReadyEffect(Color color)
+    {
+        for (int i = 0; i < m_stabReadyEffectParticles.Length; i++)
+        {
+            ParticleSystem particle = m_stabReadyEffectParticles[i];
+            if (particle == null) continue;
+
+            ParticleSystem.MainModule main = particle.main;
+            main.startColor = color;
+        }
+
+        for (int i = 0; i < m_stabReadyEffectRenderers.Length; i++)
+        {
+            Renderer effectRenderer = m_stabReadyEffectRenderers[i];
+            if (effectRenderer == null) continue;
+
+            Material[] materials = effectRenderer.materials;
+            for (int j = 0; j < materials.Length; j++)
+            {
+                Material material = materials[j];
+                if (material == null) continue;
+
+                if (material.HasProperty("_BaseColor"))
+                    material.SetColor("_BaseColor", color);
+                if (material.HasProperty("_Color"))
+                    material.SetColor("_Color", color);
+                if (material.HasProperty("_TintColor"))
+                    material.SetColor("_TintColor", color);
+                if (material.HasProperty("_EmissionColor"))
+                    material.SetColor("_EmissionColor", color);
+            }
+        }
+    }
+
+    private void SetStabReadyEffectVisible(bool visible)
+    {
+        if (visible && m_stabReadyEffectRoot == null)
+            BuildStabReadyEffect();
+
+        if (m_stabReadyEffectRoot == null || m_stabReadyEffectRoot.activeSelf == visible)
+            return;
+
+        if (visible)
+        {
+            m_stabReadyEffectRoot.SetActive(true);
+            PlayStabReadyEffect();
+        }
+        else
+        {
+            StopStabReadyEffect();
+            m_stabReadyEffectRoot.transform.localScale = m_stabReadyEffectBaseLocalScale;
+            ResetStabReadyEffectLights();
+            m_stabReadyEffectRoot.SetActive(false);
+        }
+    }
+
+    private void BuildStabReadyEffect()
+    {
+        if (m_stabReadyEffectRoot != null)
+            return;
+
+        m_stabReadyEffectRoot = ResolvePlacedStabReadyEffect();
+        if (m_stabReadyEffectRoot != null)
+        {
+            m_usePlacedStabReadyEffect = true;
+            m_stabReadyEffectRoot.name = StabReadyEffectName;
+            m_stabReadyEffectBaseLocalScale = m_stabReadyEffectRoot.transform.localScale;
+            m_stabReadyEffectParticles = m_stabReadyEffectRoot.GetComponentsInChildren<ParticleSystem>(true);
+            m_stabReadyEffectRenderers = m_stabReadyEffectRoot.GetComponentsInChildren<Renderer>(true);
+            CacheStabReadyEffectLights();
+            TintStabReadyEffect(m_stabReadyEffectColor);
+            m_stabReadyEffectRoot.SetActive(false);
+            return;
+        }
+
+        m_stabReadyEffectAnchor = ResolveStabReadyEffectAnchor();
+        if (m_stabReadyEffectAnchor == null)
+        {
+            if (!m_warnedMissingStabReadyEffectAnchor)
+            {
+                ChannelLogger.LogWarning("EnemyBossA", $"スタブ可能エフェクトの表示先ボーン未検出: {m_stabReadyEffectBonePath}");
+                m_warnedMissingStabReadyEffectAnchor = true;
+            }
+            return;
+        }
+
+        if (m_stabReadyEffectPrefab == null)
+        {
+            if (!m_warnedMissingStabReadyEffectPrefab)
+            {
+                ChannelLogger.LogWarning("EnemyBossA", "スタブ可能エフェクトPrefab未設定");
+                m_warnedMissingStabReadyEffectPrefab = true;
+            }
+            return;
+        }
+
+        m_stabReadyEffectRoot = Instantiate(m_stabReadyEffectPrefab, m_stabReadyEffectAnchor);
+        m_usePlacedStabReadyEffect = false;
+        m_stabReadyEffectRoot.name = StabReadyEffectName;
+        m_stabReadyEffectRoot.transform.SetParent(m_stabReadyEffectAnchor, false);
+        m_stabReadyEffectRoot.transform.localPosition = m_stabReadyEffectLocalOffset;
+        m_stabReadyEffectRoot.transform.localRotation = Quaternion.Euler(m_stabReadyEffectLocalEulerAngles);
+        m_stabReadyEffectRoot.transform.localScale = m_stabReadyEffectLocalScale;
+        m_stabReadyEffectBaseLocalScale = m_stabReadyEffectLocalScale;
+        m_stabReadyEffectParticles = m_stabReadyEffectRoot.GetComponentsInChildren<ParticleSystem>(true);
+        m_stabReadyEffectRenderers = m_stabReadyEffectRoot.GetComponentsInChildren<Renderer>(true);
+        CacheStabReadyEffectLights();
+        TintStabReadyEffect(m_stabReadyEffectColor);
+        m_stabReadyEffectRoot.SetActive(false);
+    }
+
+    private void CacheStabReadyEffectLights()
+    {
+        if (m_stabReadyEffectRoot == null)
+        {
+            m_stabReadyEffectLights = Array.Empty<Light>();
+            m_stabReadyEffectLightBaseIntensities = Array.Empty<float>();
+            return;
+        }
+
+        m_stabReadyEffectLights = m_stabReadyEffectRoot.GetComponentsInChildren<Light>(true);
+        m_stabReadyEffectLightBaseIntensities = new float[m_stabReadyEffectLights.Length];
+        for (int i = 0; i < m_stabReadyEffectLights.Length; i++)
+        {
+            Light effectLight = m_stabReadyEffectLights[i];
+            m_stabReadyEffectLightBaseIntensities[i] = effectLight != null ? effectLight.intensity : 0f;
+        }
+    }
+
+    private void BlinkStabReadyEffectLights(float wave)
+    {
+        float minMultiplier = Mathf.Clamp01(m_stabReadyEffectMinAlpha);
+        for (int i = 0; i < m_stabReadyEffectLights.Length; i++)
+        {
+            Light effectLight = m_stabReadyEffectLights[i];
+            if (effectLight == null) continue;
+
+            float baseIntensity = i < m_stabReadyEffectLightBaseIntensities.Length
+                ? m_stabReadyEffectLightBaseIntensities[i]
+                : effectLight.intensity;
+            effectLight.intensity = baseIntensity * Mathf.Lerp(minMultiplier, 1f, wave);
+        }
+    }
+
+    private void ResetStabReadyEffectLights()
+    {
+        for (int i = 0; i < m_stabReadyEffectLights.Length; i++)
+        {
+            Light effectLight = m_stabReadyEffectLights[i];
+            if (effectLight == null || i >= m_stabReadyEffectLightBaseIntensities.Length) continue;
+
+            effectLight.intensity = m_stabReadyEffectLightBaseIntensities[i];
+        }
+    }
+
+    private void PlayStabReadyEffect()
+    {
+        if (m_stabReadyEffectRoot != null)
+            m_stabReadyEffectBaseLocalScale = m_stabReadyEffectRoot.transform.localScale;
+
+        for (int i = 0; i < m_stabReadyEffectParticles.Length; i++)
+        {
+            ParticleSystem particle = m_stabReadyEffectParticles[i];
+            if (particle == null) continue;
+
+            particle.Play(true);
+        }
+    }
+
+    private void StopStabReadyEffect()
+    {
+        for (int i = 0; i < m_stabReadyEffectParticles.Length; i++)
+        {
+            ParticleSystem particle = m_stabReadyEffectParticles[i];
+            if (particle == null) continue;
+
+            particle.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        }
+    }
+
+    private Transform ResolveStabReadyEffectAnchor()
+    {
+        if (m_stabReadyEffectSceneAnchor != null)
+            return m_stabReadyEffectSceneAnchor;
+
+        Transform anchor = null;
+        if (!string.IsNullOrEmpty(m_stabReadyEffectBonePath))
+        {
+            anchor = transform.Find(m_stabReadyEffectBonePath);
+            if (anchor == null && m_stabReadyEffectBonePath.Contains("/Oelvis/"))
+                anchor = transform.Find(m_stabReadyEffectBonePath.Replace("/Oelvis/", "/Pelvis/"));
+            if (anchor == null && m_stabReadyEffectBonePath.Contains("/Pelvis/"))
+                anchor = transform.Find(m_stabReadyEffectBonePath.Replace("/Pelvis/", "/Oelvis/"));
+        }
+
+        return anchor != null ? anchor : FindChildRecursive(transform, "Body_Tube_1");
+    }
+
+    private GameObject ResolvePlacedStabReadyEffect()
+    {
+        if (m_stabReadyEffectSceneObject != null)
+            return m_stabReadyEffectSceneObject;
+
+        Transform placedEffect = FindChildRecursive(transform, StabReadyEffectName);
+        return placedEffect != null ? placedEffect.gameObject : null;
+    }
+
+    private static Transform FindChildRecursive(Transform root, string childName)
+    {
+        if (root == null) return null;
+        if (root.name == childName) return root;
+
+        for (int i = 0; i < root.childCount; i++)
+        {
+            Transform found = FindChildRecursive(root.GetChild(i), childName);
+            if (found != null) return found;
+        }
+
+        return null;
+    }
+
     // === ヘルパ ===
 
     private float DistanceToPlayer()
@@ -894,7 +1417,132 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
         if (m_stabFinisherFacingLock) return; // スタブ演出中(開始〜終了)はプレイヤーを追尾して回頭しない（命中後の立ち上がり中も維持）
         Vector3 look = m_player.position - transform.position;
         look.y = 0f;
-        if (look.sqrMagnitude > 0.0001f)
-            m_boss.FaceToward(look.normalized, dt, deadZoneDeg);
+        if (look.sqrMagnitude <= 0.0001f)
+            return;
+
+        if (m_attackMissTurnTimer > 0f)
+        {
+            FacePlayerAfterAttackMiss(look.normalized, dt);
+            return;
+        }
+
+        m_boss.FaceToward(look.normalized, dt, deadZoneDeg);
+    }
+
+    private bool FacePlayerForMissileStart(float dt)
+    {
+        if (m_stabFinisherFacingLock)
+            return true;
+
+        Vector3 look = m_player.position - transform.position;
+        look.y = 0f;
+        if (look.sqrMagnitude <= 0.0001f)
+            return true;
+
+        Vector3 direction = look.normalized;
+
+        if (m_attackMissTurnTimer > 0f)
+        {
+            FacePlayerAfterAttackMiss(direction, dt);
+            return false;
+        }
+
+        m_boss.FaceToward(direction, dt);
+        return IsFacingDirection(direction, Mathf.Max(0f, m_missileFaceReadyAngleDeg));
+    }
+
+    private bool IsFacingDirection(Vector3 direction, float angleDeg)
+    {
+        Vector3 currentForward = transform.forward;
+        currentForward.y = 0f;
+        direction.y = 0f;
+
+        if (currentForward.sqrMagnitude <= 0.0001f || direction.sqrMagnitude <= 0.0001f)
+            return true;
+
+        return Vector3.Angle(currentForward.normalized, direction.normalized) <= angleDeg;
+    }
+
+    private bool DidArmAttackHit()
+    {
+        return m_attackHitboxes != null && m_attackHitboxes.ArmHitThisAttack;
+    }
+
+    private void BeginAttackMissTurn()
+    {
+        if (m_player == null)
+            return;
+
+        Vector3 look = m_player.position - transform.position;
+        look.y = 0f;
+        if (look.sqrMagnitude <= 0.0001f)
+            return;
+
+        Vector3 currentForward = transform.forward;
+        currentForward.y = 0f;
+        if (currentForward.sqrMagnitude <= 0.0001f)
+            currentForward = transform.forward;
+
+        float angle = Vector3.Angle(currentForward.normalized, look.normalized);
+        if (angle <= Mathf.Max(0f, m_settings.faceDeadZoneDeg))
+            return;
+
+        m_attackMissTurnTimer = AttackMissTurnDuration;
+        m_attackMissTurnSpeedDegPerSec = angle / AttackMissTurnDuration;
+    }
+
+    private void FacePlayerAfterAttackMiss(Vector3 direction, float dt)
+    {
+        m_attackMissTurnTimer = Mathf.Max(0f, m_attackMissTurnTimer - dt);
+
+        Quaternion targetRotation = Quaternion.LookRotation(direction, transform.up);
+        transform.rotation = Quaternion.RotateTowards(
+            transform.rotation,
+            targetRotation,
+            m_attackMissTurnSpeedDegPerSec * dt
+        );
     }
 }
+
+#if UNITY_EDITOR
+[UnityEditor.InitializeOnLoad]
+internal static class EnemyBossAIStabReadyEffectEditorBootstrap
+{
+    private static bool s_applyQueued;
+
+    static EnemyBossAIStabReadyEffectEditorBootstrap()
+    {
+        UnityEditor.EditorApplication.delayCall += QueueApplyToLoadedScenes;
+        UnityEditor.SceneManagement.EditorSceneManager.sceneOpened += (_, _) => QueueApplyToLoadedScenes();
+        UnityEditor.EditorApplication.hierarchyChanged += QueueApplyToLoadedScenes;
+    }
+
+    [UnityEditor.MenuItem("Tools/MagnetRush/Apply Stab Ready Magnet Effect To Loaded Scenes")]
+    private static void QueueApplyToLoadedScenes()
+    {
+        if (s_applyQueued || UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode)
+            return;
+
+        s_applyQueued = true;
+        UnityEditor.EditorApplication.delayCall += ApplyToLoadedScenes;
+    }
+
+    private static void ApplyToLoadedScenes()
+    {
+        s_applyQueued = false;
+        if (UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode)
+            return;
+
+        EnemyBossAI[] bosses = UnityEngine.Resources.FindObjectsOfTypeAll<EnemyBossAI>();
+        for (int i = 0; i < bosses.Length; i++)
+        {
+            EnemyBossAI boss = bosses[i];
+            if (boss == null) continue;
+            if (UnityEditor.EditorUtility.IsPersistent(boss)) continue;
+            if (!boss.gameObject.scene.IsValid() || !boss.gameObject.scene.isLoaded) continue;
+
+            boss.EnsureStabReadyEffectInEditor();
+        }
+    }
+}
+#endif

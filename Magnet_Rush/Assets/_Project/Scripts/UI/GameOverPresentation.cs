@@ -127,6 +127,10 @@ public class GameOverPresentation : MonoBehaviour
     {
         if (m_playing) { ChannelLogger.LogGuardReturn("Game", "ゲームオーバー演出が既に再生中"); return; }
         if (m_sequenceImage == null) { ChannelLogger.LogGuardReturn("Game", "m_sequenceImage 未設定"); return; }
+
+        // ボス戦BGMが鳴ったまま死亡演出に入らないよう止める（BGMはシーンを跨いで鳴り続けるため）
+        Sound.StopBgm();
+
         StartCoroutine(PlayRoutine());
     }
 

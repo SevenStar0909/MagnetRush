@@ -554,30 +554,11 @@ public class EnemyMissile : MonoBehaviour, IMagneticResponse
     {
         if (m_exploded) { ChannelLogger.LogGuardReturn("Enemy", "Missile既に爆発済み"); return; }
 
-        Vector3 point = other != null ? Vector3.Lerp(transform.position, other.transform.position, 0.5f) : transform.position;
-        if (ShouldExplodeWithMissile(other))
-        {
-            Explode(point);
+        if (other != null && other.GetComponentInParent<EnemyMissile>() != null)
             return;
-        }
 
+        Vector3 point = other != null ? Vector3.Lerp(transform.position, other.transform.position, 0.5f) : transform.position;
         ResolveHitAndExplode(other != null ? other.gameObject : null, point);
-    }
-
-    private bool ShouldExplodeWithMissile(Magnetizable other)
-    {
-        if (other == null || m_selfMagnetizable == null)
-            return false;
-
-        EnemyMissile otherMissile = other.GetComponentInParent<EnemyMissile>();
-        if (otherMissile == null || otherMissile == this)
-            return false;
-
-        MagneticPole selfPole = m_selfMagnetizable.Pole;
-        MagneticPole otherPole = other.Pole;
-        return selfPole != MagneticPole.None
-            && otherPole != MagneticPole.None
-            && selfPole != otherPole;
     }
 
     // OnCollisionEnter（物理衝突）と HandleMagnetContact（磁石接触）の共通経路。

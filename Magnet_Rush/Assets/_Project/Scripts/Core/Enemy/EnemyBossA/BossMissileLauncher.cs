@@ -15,6 +15,13 @@ public class BossMissileLauncher : MonoBehaviour
     [Tooltip("生成するミサイルPrefab")]
     [SerializeField] private EnemyMissile m_missilePrefab;
 
+    [Tooltip("ミサイル発射時に発射口から出す爆発エフェクト。AxeEnemy死亡時と同じPrefabを想定")]
+    [SerializeField] private GameObject m_launchExplosionEffectPrefab;
+
+    [SerializeField] private float m_launchExplosionEffectLifetime = 0.75f;
+
+    [SerializeField] private float m_launchExplosionEffectScale = 2f;
+
     [Tooltip("ミサイル生成位置。未設定ならこのオブジェクト位置を使用")]
     [SerializeField] private Transform[] m_missileSpawnPoints;
 
@@ -24,6 +31,8 @@ public class BossMissileLauncher : MonoBehaviour
     private EnemyBossBase m_boss;
     // 次の発射で左右上ミサイルを撃つか。アニメの2イベントで 上→左右上 と切り替える。
     private bool m_nextMissileIsSideLob;
+    private int m_firedWaveCount;
+    private const int MaxWavesPerAttack = 2;
 
     private enum MissileWavePattern { Forward, Up, LeftRightUp }
 
@@ -33,17 +42,25 @@ public class BossMissileLauncher : MonoBehaviour
     }
 
     /// <summary>Missile ステート突入時に呼び、発射パターンを先頭（上2発）へ戻す。</summary>
-    public void ResetWave() => m_nextMissileIsSideLob = false;
+    public void ResetWave()
+    {
+        m_nextMissileIsSideLob = false;
+        m_firedWaveCount = 0;
+    }
 
     /// <summary>
     /// 1波発射する。設定 or ミサイルPrefab 未アサイン時は何もしない。
     /// </summary>
-    public void FireNextWave()
+    /// <returns>このミサイル攻撃で必要な波数を撃ち終えたら true。</returns>
+    public bool FireNextWave()
     {
+        if (m_firedWaveCount >= MaxWavesPerAttack)
+            return true;
+
         if (m_settings == null || m_missilePrefab == null)
         {
             ChannelLogger.LogGuardReturn("EnemyBossA", "BossMissileLauncher: Settings か MissilePrefab が未アサイン");
-            return;
+            return true;
         }
 
         MissileWavePattern pattern = m_settings.fireLobMissiles
@@ -51,8 +68,12 @@ public class BossMissileLauncher : MonoBehaviour
             : MissileWavePattern.Forward;
 
         FireMissileWave(pattern);
-        Sound.Play(SoundData.CueSheet.SE, SoundData.SE.MissileShot);
+        // ボス位置の3D再生（離れていると小さく聞こえる）。音量・減衰距離はサウンド調整シートで管理
+        Sound.PlayAt(SoundData.CueSheet.SE, SoundData.SE.MissileShot, transform.position);
         m_nextMissileIsSideLob = !m_nextMissileIsSideLob;
+        m_firedWaveCount++;
+
+        return m_firedWaveCount >= MaxWavesPerAttack;
     }
 
     /// <summary>1波分。全発射点からパターンに応じた初期方向で1発ずつ撃つ。</summary>
@@ -167,6 +188,8 @@ public class BossMissileLauncher : MonoBehaviour
         launchDirection = launchDirection.normalized;
 
         Quaternion rotation = Quaternion.LookRotation(launchDirection, Vector3.up);
+        SpawnLaunchExplosionEffect(spawnPos, rotation);
+
         EnemyMissile missile = Instantiate(m_missilePrefab, spawnPos, rotation);
         Transform player = m_boss != null ? m_boss.Player : null;
         if (useArcFlight)
@@ -188,5 +211,16 @@ public class BossMissileLauncher : MonoBehaviour
         }
         // ミサイルは PhysicsObject なので発射元ボスの Pushbox 等と衝突してしまう。spawn 即爆発・自傷を防ぐ。
         missile.IgnoreCollisionsWith(gameObject, m_settings.collisionGrace);
+    }
+
+    private void SpawnLaunchExplosionEffect(Vector3 position, Quaternion rotation)
+    {
+        if (m_launchExplosionEffectPrefab == null)
+            return;
+
+        GameObject effectObject = Instantiate(m_launchExplosionEffectPrefab, position, rotation);
+        effectObject.transform.localScale *= Mathf.Max(0f, m_launchExplosionEffectScale);
+        if (m_launchExplosionEffectLifetime > 0f)
+            Destroy(effectObject, m_launchExplosionEffectLifetime);
     }
 }

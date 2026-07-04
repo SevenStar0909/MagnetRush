@@ -23,6 +23,14 @@ public class BossAttackHitboxes : MonoBehaviour
     private readonly HashSet<Health> m_armHitTargets = new();
     private readonly HashSet<Health> m_rushHitTargets = new();
     private readonly Collider[] m_overlapResults = new Collider[16];
+    private bool m_armHitThisAttack;
+
+    public bool ArmHitThisAttack => m_armHitThisAttack;
+
+    public void ResetArmHitThisAttack()
+    {
+        m_armHitThisAttack = false;
+    }
 
     private void Awake()
     {
@@ -50,6 +58,7 @@ public class BossAttackHitboxes : MonoBehaviour
 
     public void EnableArmHitbox()
     {
+        ResetArmHitThisAttack();
         EnableHitbox(m_armCollider, m_armHitTargets);
         ChannelLogger.Log("EnemyBoss", $"BossArmHitbox step3 is Triggered ");
     }
@@ -208,6 +217,9 @@ public class BossAttackHitboxes : MonoBehaviour
             knockbackDir = (other.transform.position - origin).normalized,
             source = m_owner != null ? m_owner.gameObject : gameObject
         });
+
+        if (attackCollider == m_armCollider)
+            m_armHitThisAttack = true;
 
         if (attackCollider == m_rushCollider && m_ai != null)
             m_ai.TryApplyRushKnockback(other, origin, attackColliderForward());
