@@ -566,6 +566,8 @@ public class EnemyBossAI : MonoBehaviour, IStabReceiver, IDamageGuard
             OnArmAttackStarted?.Invoke();
         }
 
+            OnArmAttackStarted?.Invoke();
+
         if (next == BossState.Idle)
         {
             if (prev == BossState.AttackMotion && !DidArmAttackHit())
