@@ -234,7 +234,7 @@ MonoBehaviour:
   m_stabReadyEffectDelayAfterBreak: 3
   m_stabReadyEffectBonePath: Model/Boss01_Riging/Root/Oelvis/Body_Tube_1
   m_stabReadyEffectSceneAnchor: {fileID: 0}
-  m_stabReadyEffectSceneObject: {fileID: 0}
+  m_stabReadyEffectSceneObject: {fileID: 7977711142452245143}
   m_stabReadyEffectPrefab: {fileID: 7392582979745333818, guid: b92291959a61b7a40acf101366cbe905, type: 3}
   m_stabReadyEffectLocalOffset: {x: 0, y: 0, z: 0}
   m_stabReadyEffectLocalEulerAngles: {x: 0, y: 0, z: 0}
@@ -247,6 +247,8 @@ MonoBehaviour:
   isBattleing: 1
   m_nextLongRangeAttackIsRush: 1
   m_rushKeepSeconds: 3
+  m_missileFaceReadyAngleDeg: 0.5
+  m_missileFaceWaitTimeoutSeconds: 2
 --- !u!114 &8780740096348751557
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4491,6 +4493,81 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1.6, y: 3.35, z: 7.76}
   m_Center: {x: 0, y: 0, z: -1.57}
+--- !u!1001 &585816536990314669
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 9134741032637093407}
+    m_Modifications:
+    - target: {fileID: 5193496860373012707, guid: b92291959a61b7a40acf101366cbe905, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1.16
+      objectReference: {fileID: 0}
+    - target: {fileID: 5193496860373012707, guid: b92291959a61b7a40acf101366cbe905, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5193496860373012707, guid: b92291959a61b7a40acf101366cbe905, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5193496860373012707, guid: b92291959a61b7a40acf101366cbe905, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5193496860373012707, guid: b92291959a61b7a40acf101366cbe905, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5193496860373012707, guid: b92291959a61b7a40acf101366cbe905, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5193496860373012707, guid: b92291959a61b7a40acf101366cbe905, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5193496860373012707, guid: b92291959a61b7a40acf101366cbe905, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5193496860373012707, guid: b92291959a61b7a40acf101366cbe905, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5193496860373012707, guid: b92291959a61b7a40acf101366cbe905, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5193496860373012707, guid: b92291959a61b7a40acf101366cbe905, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7392582979745333818, guid: b92291959a61b7a40acf101366cbe905, type: 3}
+      propertyPath: m_Name
+      value: StabReadyMagnetEffect
+      objectReference: {fileID: 0}
+    - target: {fileID: 7392582979745333818, guid: b92291959a61b7a40acf101366cbe905, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: b92291959a61b7a40acf101366cbe905, type: 3}
+--- !u!4 &4625826741078237262 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5193496860373012707, guid: b92291959a61b7a40acf101366cbe905, type: 3}
+  m_PrefabInstance: {fileID: 585816536990314669}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &7977711142452245143 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7392582979745333818, guid: b92291959a61b7a40acf101366cbe905, type: 3}
+  m_PrefabInstance: {fileID: 585816536990314669}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &4266390395678169390
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4972,6 +5049,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 8325517911461594592, guid: 1c2cca4e084967f4a93e23d311965809, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6276637346600870891}
+    - targetCorrespondingSourceObject: {fileID: -4842141868647461288, guid: 1c2cca4e084967f4a93e23d311965809, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4625826741078237262}
     - targetCorrespondingSourceObject: {fileID: 6141688182149395561, guid: 1c2cca4e084967f4a93e23d311965809, type: 3}
       insertIndex: -1
       addedObject: {fileID: 5917261671779333884}
@@ -5221,6 +5301,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -5187764740157978303, guid: 1c2cca4e084967f4a93e23d311965809, type: 3}
   m_PrefabInstance: {fileID: 4758157675521120327}
   m_PrefabAsset: {fileID: 0}
+--- !u!4 &9134741032637093407 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -4842141868647461288, guid: 1c2cca4e084967f4a93e23d311965809, type: 3}
+  m_PrefabInstance: {fileID: 4758157675521120327}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &9214628887999638956 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4461007936528414187, guid: 1c2cca4e084967f4a93e23d311965809, type: 3}
@@ -5355,6 +5440,7 @@ MonoBehaviour:
   m_health: {fileID: 971369539054672765}
   m_animator: {fileID: 1537800206930250247}
   m_bossAI: {fileID: 8951133768723248270}
+  m_handMagnetizable: {fileID: 9204037468457798630}
   m_hitGroup: 1
   m_showCounterCue: 1
   m_counterCueTarget: {fileID: 0}
