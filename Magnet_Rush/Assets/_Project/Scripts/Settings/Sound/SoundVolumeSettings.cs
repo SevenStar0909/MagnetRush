@@ -3,7 +3,7 @@ using UnityEngine;
 /// <summary>
 /// サウンド音量のプランナー用調整シート。全ての音を1音1項目で個別調整する。
 /// SoundManager が再生時に「全体音量 × 各音の音量」を適用する。
-/// 「MagnetRush/サウンド調整シート」ウィンドウなら各音をその場で試聴できる（Inspectorでも編集可）。
+/// 「Tools/サウンド調整シート」ウィンドウなら各音をその場で試聴できる（Inspectorでも編集可）。
 /// </summary>
 [CreateAssetMenu(menuName = "MagnetRush/SoundVolumeSettings")]
 [ClassLabelSO("サウンド音量調整シート")]
@@ -92,8 +92,17 @@ public class SoundVolumeSettings : ScriptableObject
     [LabelRange("ボス戦BGM", 0f, 2f)]
     public float bossBattleBgm = 1f;
 
-    [LabelRange("テストBGM", 0f, 2f)]
-    public float testBgm = 1f;
+    [LabelRange("タイトルBGM", 0f, 2f)]
+    public float titleBgm = 1f;
+
+    [LabelRange("ステージセレクトBGM", 0f, 2f)]
+    public float stageSelectBgm = 1f;
+
+    [LabelRange("チュートリアルBGM", 0f, 2f)]
+    public float tutorialBgm = 1f;
+
+    [LabelRange("ステージ１BGM", 0f, 2f)]
+    public float stage01Bgm = 1f;
 
     [Header("[3D距離減衰]")]
     [LabelMin("磁力場ループ音：フル音量の距離(m)", 0f)]
@@ -161,7 +170,10 @@ public class SoundVolumeSettings : ScriptableObject
         switch (cueName)
         {
             case SoundData.BGM.BossBattle: return bossBattleBgm;
-            case SoundData.BGM.Test: return testBgm;
+            case SoundData.BGM.Title: return titleBgm;
+            case SoundData.BGM.StageSelect: return stageSelectBgm;
+            case SoundData.BGM.Tutorial: return tutorialBgm;
+            case SoundData.BGM.Stage01: return stage01Bgm;
             default: return 1f;
         }
     }

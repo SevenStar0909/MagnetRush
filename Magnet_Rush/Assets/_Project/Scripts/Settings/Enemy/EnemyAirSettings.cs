@@ -57,4 +57,7 @@ public class EnemyAirSettings : ScriptableObject
     [Label("外部力減衰率")]
     [Tooltip("外部力（磁力等）の指数減衰率。大きいほど早く減速する")]
     public float externalDrag = 3f;
+
+    [Header("[徘徊]")]
+    public EnemyWanderSettings wander = new EnemyWanderSettings();
 }

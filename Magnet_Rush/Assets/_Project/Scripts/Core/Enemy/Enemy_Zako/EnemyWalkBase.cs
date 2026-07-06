@@ -86,6 +86,12 @@ public class EnemyWalkBase : Entity
 
     public void AccelerateToward(Vector3 worldDirection, float dt)
     {
+        AccelerateToward(worldDirection, dt, 1f);
+    }
+
+    /// <summary>topSpeedMul で moveSpeed の上限を倍率調整して加速する（徘徊のゆっくり移動等）。</summary>
+    public void AccelerateToward(Vector3 worldDirection, float dt, float topSpeedMul)
+    {
         if (m_statusData == null)
             return;
 
@@ -98,7 +104,7 @@ public class EnemyWalkBase : Entity
             localDirection,
             m_statusData.turningDrag,
             m_statusData.acceleration,
-            m_statusData.moveSpeed,
+            m_statusData.moveSpeed * Mathf.Max(0f, topSpeedMul),
             dt
         );
         FaceToward(worldDirection, dt);

@@ -115,11 +115,17 @@ public class EnemyAirBase : Entity
     /// <summary>指定方向へ3Dで飛行する。回転はY軸のみ。</summary>
     public void AccelerateToward(Vector3 worldDirection, float dt)
     {
+        AccelerateToward(worldDirection, dt, 1f);
+    }
+
+    /// <summary>topSpeedMul で moveSpeed の上限を倍率調整して飛行する（徘徊のゆっくり移動等）。</summary>
+    public void AccelerateToward(Vector3 worldDirection, float dt, float topSpeedMul)
+    {
         if (m_statusData == null) return;
         if (worldDirection.sqrMagnitude <= 0.0001f) return;
 
         Vector3 desiredDirection = worldDirection.normalized;
-        Vector3 desiredVelocity = desiredDirection * Mathf.Max(0f, m_statusData.moveSpeed);
+        Vector3 desiredVelocity = desiredDirection * Mathf.Max(0f, m_statusData.moveSpeed * topSpeedMul);
 
         if (velocity.sqrMagnitude > 0.001f)
         {

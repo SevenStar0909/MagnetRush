@@ -40,9 +40,13 @@ public class EnemyWalkAxeAi : MonoBehaviour
     private float m_attackTimer;
     private bool m_isAttacking;
     private bool m_wasMoving;
+    // 徘徊（プレイヤーが追跡範囲外の間）の行き先と移動/休止サイクル
+    private Vector3 m_wanderTarget;
+    private float m_wanderTimer;
+    private bool m_isWanderMoving;
     private bool m_enemyWheelPlaying;
     private Health m_ownHealth;
-    private SoundManager.Playback3d m_enemyWheelPlayback;
+    private Sound.PositionalLoopPlayback m_enemyWheelPlayback;
 
     private readonly HashSet<Health> m_hitTargets = new();
     private readonly Collider[] m_overlapResults = new Collider[32];
@@ -143,9 +147,7 @@ public class EnemyWalkAxeAi : MonoBehaviour
         float distance = Vector3.Distance(transform.position, player.position);
         if (distance > m_data.chaseRange)
         {
-            SetMoving(false);
-            m_agent.ResetPath();
-            m_enemyBase.SlowDown(dt);
+            TickWander(dt);
             return;
         }
 
@@ -165,6 +167,90 @@ public class EnemyWalkAxeAi : MonoBehaviour
         m_enemyBase.AccelerateToward(AddAllyAvoidance(GetNavMeshDirection(player)), dt);
 
 
+    }
+
+    // プレイヤーが追跡範囲外の間の徘徊。出現位置を中心にランダムな地点へ移動しては休むを繰り返す。
+    // NavMesh に乗れていない敵も直線移動で徘徊する（壁は EntityController の衝突が止め、移動上限時間で打ち切る）。
+    private void TickWander(float dt)
+    {
+        EnemyWanderSettings wander = m_data.wander;
+        bool agentReady = m_agent != null && m_agent.enabled && m_agent.isOnNavMesh;
+
+        if (wander == null || !wander.enabled)
+        {
+            SetMoving(false);
+            if (agentReady)
+                m_agent.ResetPath();
+            m_enemyBase.SlowDown(dt);
+            return;
+        }
+
+        m_wanderTimer -= dt;
+
+        if (!m_isWanderMoving)
+        {
+            SetMoving(false);
+            m_enemyBase.SlowDown(dt);
+            if (m_wanderTimer <= 0f && TryPickWanderTarget(wander, agentReady))
+            {
+                m_isWanderMoving = true;
+                m_wanderTimer = Mathf.Max(1f, wander.moveTimeout);
+            }
+            return;
+        }
+
+        Vector3 toTarget = m_wanderTarget - transform.position;
+        toTarget.y = 0f;
+        float arriveDistance = Mathf.Max(0.5f, m_data.stopDistance);
+        if (m_wanderTimer <= 0f || toTarget.sqrMagnitude <= arriveDistance * arriveDistance)
+        {
+            BeginWanderPause(wander);
+            SetMoving(false);
+            if (agentReady)
+                m_agent.ResetPath();
+            m_enemyBase.SlowDown(dt);
+            return;
+        }
+
+        Vector3 direction;
+        if (agentReady)
+        {
+            m_agent.SetDestination(m_wanderTarget);
+            direction = GetNavMeshDirectionTo(m_wanderTarget);
+        }
+        else
+        {
+            direction = toTarget.normalized;
+        }
+
+        SetMoving(true);
+        m_enemyBase.AccelerateToward(AddAllyAvoidance(direction), dt, wander.speedMultiplier);
+    }
+
+    private void BeginWanderPause(EnemyWanderSettings wander)
+    {
+        m_isWanderMoving = false;
+        m_wanderTimer = Random.Range(wander.pauseDurationMin, Mathf.Max(wander.pauseDurationMin, wander.pauseDurationMax));
+    }
+
+    // 出現位置を中心とした半径内から行き先を選ぶ。NavMesh に乗っていれば NavMesh 上の点にスナップし、
+    // 乗っていなければそのままの点を使う（届かない点は移動上限時間で打ち切られる）。
+    private bool TryPickWanderTarget(EnemyWanderSettings wander, bool agentReady)
+    {
+        Vector2 offset = Random.insideUnitCircle * Mathf.Max(0f, wander.radius);
+        Vector3 candidate = m_enemyBase.SpawnPosition + new Vector3(offset.x, 0f, offset.y);
+
+        if (agentReady)
+        {
+            if (!NavMesh.SamplePosition(candidate, out NavMeshHit hit, 2f, NavMesh.AllAreas))
+                return false;
+
+            m_wanderTarget = hit.position;
+            return true;
+        }
+
+        m_wanderTarget = candidate;
+        return true;
     }
 
     // 丸腰のとき、落ちた自分の武器まで移動し、拾える状態になったら手元へ戻して再装備する。
@@ -247,8 +333,7 @@ public class EnemyWalkAxeAi : MonoBehaviour
         float distance = Vector3.Distance(transform.position, player.position);
         if (distance > m_data.chaseRange)
         {
-            SetMoving(false);
-            m_enemyBase.SlowDown(dt);
+            TickWander(dt);
             return;
         }
 
@@ -398,8 +483,9 @@ public class EnemyWalkAxeAi : MonoBehaviour
             return;
 
         StopEnemyWheel();
-        // 音量はサウンド調整シート（SoundVolumeSettings）の「車輪敵の走行ループ音」で管理する
-        m_enemyWheelPlayback = soundManager.PlayAtWithHandle(
+        // 音量はサウンド調整シート（SoundVolumeSettings）の「車輪敵の走行ループ音」で管理する。
+        // 距離カリング付き（可聴距離外ではボイスを解放）なので遠くの敵が発音数を食わない
+        m_enemyWheelPlayback = soundManager.PlayLoopAt(
             SoundData.CueSheet.SE, SoundData.SE.EnemyWheel,
             transform.position, m_enemyWheelMinDistance, m_enemyWheelMaxDistance);
         m_enemyWheelPlaying = true;
@@ -410,7 +496,8 @@ public class EnemyWalkAxeAi : MonoBehaviour
         if (!m_enemyWheelPlaying)
             return;
 
-        m_enemyWheelPlayback.Stop();
+        m_enemyWheelPlayback?.Stop();
+        m_enemyWheelPlayback = null;
         m_enemyWheelPlaying = false;
     }
 
@@ -426,7 +513,7 @@ public class EnemyWalkAxeAi : MonoBehaviour
     {
         // 3D車輪音を本体位置に追従させる（距離減衰の聴取点はカメラ）
         if (m_enemyWheelPlaying)
-            m_enemyWheelPlayback.SetPosition(transform.position);
+            m_enemyWheelPlayback?.SetPosition(transform.position);
 
         if (m_activeAttackCollider != null && m_activeAttackCollider.enabled)
             CheckAttackBoxOverlapAndDamage();
@@ -655,6 +742,24 @@ public class EnemyWalkAxeAi : MonoBehaviour
         if (m_agent == null || !m_agent.hasPath && !m_agent.pathPending)
             return GetDirectionToPlayer(player);
 
+        return GetNavMeshSteeringDirection();
+    }
+
+    // NavMesh 経路が使えないときは行き先への直線方向にフォールバックする（徘徊用）。
+    private Vector3 GetNavMeshDirectionTo(Vector3 fallbackTarget)
+    {
+        if (m_agent == null || !m_agent.hasPath && !m_agent.pathPending)
+        {
+            Vector3 direct = fallbackTarget - transform.position;
+            direct.y = 0f;
+            return direct.sqrMagnitude > 0.0001f ? direct.normalized : Vector3.zero;
+        }
+
+        return GetNavMeshSteeringDirection();
+    }
+
+    private Vector3 GetNavMeshSteeringDirection()
+    {
         if (m_agent.pathPending)
             return m_lastDirection;
 

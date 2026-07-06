@@ -90,7 +90,9 @@ public class ShootingAbility : Ability
             // 着弾時にエイム解除、自己 unsubscribe で累積・ダングリング参照を防ぐ
             void HandleImpact()
             {
-                m_aim.StopAim();
+                // エイム中のみ解除。エイム外の着弾で StopAim のステート遷移を起こすと
+                // 死亡・スタブ演出中のステートを Fall/Move/Idle で上書きしてしまう
+                if (m_aim.IsAiming) m_aim.StopAim();
                 bullet.OnImpact -= HandleImpact;
             }
             bullet.OnImpact += HandleImpact;

@@ -397,8 +397,15 @@ public class Player : Entity
         if (magnetizable == null || !magnetizable.IsActive) return false;
         if (!HasAttractionInPullDirection(m_settings.magnetStickMinPullSpeed)) return false;
 
-        return IsPulledIntoSurface(m_settings.magnetStickLayer,
-            m_settings.magnetStickCheckDistance, m_settings.magnetStickMinPullSpeed);
+        // 押し付け深さ（magnetStickIntoSurfaceDot）を要求し、遠くの磁石へ横向きに引かれながら
+        // 面を掠っただけで張り付く誤発動を弾く
+        if (!IsPulledIntoSurface(m_settings.magnetStickLayer,
+            m_settings.magnetStickCheckDistance, m_settings.magnetStickMinPullSpeed,
+            m_settings.magnetStickIntoSurfaceDot, out RaycastHit surfaceHit)) return false;
+
+        // ビタ止めは壁のみ。床にも張り付けると、反発ジャンプ後の着地の瞬間に
+        // 近くの磁化物への引きで床に固定されて「硬直」して見えるため
+        return Vector3.Angle(Vector3.up, surfaceHit.normal) >= m_settings.magnetStickWallAngleMinDeg;
     }
 
     private bool HasAttractionInPullDirection(float minPullSpeed)

@@ -80,6 +80,12 @@ public class PlayerSettings : ScriptableObject
     [Label("張り付きに必要な引き速度（m/s）")]
     [Tooltip("磁力に引かれる速さがこの値以上の時だけ張り付く。弱い磁力では張り付かない")]
     public float magnetStickMinPullSpeed = 3f;
+    [LabelRange("面への押し付け深さの下限", 0f, 1f)]
+    [Tooltip("面に向かってまっすぐ引かれている時だけ張り付くための下限。1に近いほど真正面から押し付けられた時だけ張り付き、0だと横向きに引かれながら床を掠っただけでも張り付く（着地の瞬間に固まる誤発動の原因）")]
+    public float magnetStickIntoSurfaceDot = 0.5f;
+    [LabelRange("壁とみなす最小傾斜（度）", 0f, 90f)]
+    [Tooltip("ビタ止めは壁のみ。面の向きが真上からこの角度以上傾いていれば壁とみなして張り付く。床や緩い坂には張り付かない（反発ジャンプ後の着地で固まる誤発動防止）。0にすると床にも張り付く")]
+    public float magnetStickWallAngleMinDeg = 60f;
 
     [Header("[射撃]")]
     [Label("発射位置の高さ（m）")]

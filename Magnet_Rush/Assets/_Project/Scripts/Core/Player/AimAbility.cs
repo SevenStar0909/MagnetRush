@@ -137,9 +137,36 @@ public class AimAbility : Ability
         m_aimPlayback = SoundManager.Instance.PlayWithHandle(SoundData.CueSheet.SE, SoundData.SE.Aim);
     }
 
+    /// <summary>
+    /// ステート遷移なしでエイムだけを強制解除する。死亡などステート管理を別系統が握る場面用。
+    /// StopAim は Fall/Move/Idle へ遷移するため、Die 中に呼ぶと死亡状態から復帰してしまう。
+    /// </summary>
+    public void CancelAim()
+    {
+        m_slowLockoutWhileHeld = false;
+        m_aimElapsed = 0f;
+        m_targetTimeScale = 1f;
+        if (!IsAiming)
+        {
+            ChannelLogger.LogGuardReturn("Player", "エイム中でないため CancelAim の解除通知をスキップ");
+            return;
+        }
+        IsAiming = false;
+        OnAimChanged?.Invoke(false);
+        m_aimPlayback.Stop();
+    }
+
     /// <summary>エイムモード終了。空中なら Fall、地上では入力があれば Move、なければ Idle に戻る。timeScale は Update で 1.0 に戻る。</summary>
     public void StopAim()
     {
+        // エイム中でなければステート遷移させない。着弾コールバック等から遅れて呼ばれた時に
+        // 死亡・演出ステートを Fall/Move/Idle で上書きしてしまう事故を防ぐ
+        if (!IsAiming)
+        {
+            ChannelLogger.LogGuardReturn("Player", "エイム中でないため StopAim をスキップ");
+            return;
+        }
+
         IsAiming = false;
         m_targetTimeScale = 1f;
         OnAimChanged?.Invoke(false);

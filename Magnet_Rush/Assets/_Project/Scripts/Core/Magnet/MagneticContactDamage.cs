@@ -28,6 +28,9 @@ public class MagneticContactDamage : MonoBehaviour
     private Vector3 m_pullStartPosition;
 
     private static Coroutine s_hitStopRoutine;
+    // ヒットストップのコルーチンを回しているインスタンス。所有者が破棄されるとコルーチンが黙って
+    // 止まり timeScale が復帰しないため、OnDisable で自分が所有者なら後始末する
+    private static MagneticContactDamage s_hitStopOwner;
     private static float s_hitStopEndTime;
     private static float s_hitStopTimeScale;
     private static float s_restoreTimeScale;
@@ -38,6 +41,7 @@ public class MagneticContactDamage : MonoBehaviour
     {
         OnEnemyDamageCameraShake = null;
         s_hitStopRoutine = null;
+        s_hitStopOwner = null;
         s_hitStopEndTime = 0f;
         s_hitStopTimeScale = 0f;
         s_restoreTimeScale = 1f;
@@ -62,6 +66,18 @@ public class MagneticContactDamage : MonoBehaviour
     {
         if (m_entityController != null)
             m_entityController.OnMoveContact -= HandleMoveContact;
+
+        // ヒットストップ中に所有者（自分）が破棄・無効化されるとコルーチンが黙って止まり、
+        // timeScale が復帰せず IsHitStopActive も立ちっぱなしになる（ミサイル等の衝突直後の消滅で起きる）。
+        // その場で復帰させて時間停止の取り残しを防ぐ。
+        if (s_hitStopOwner == this && s_hitStopRoutine != null)
+        {
+            Time.timeScale = s_restoreTimeScale;
+            Time.fixedDeltaTime = s_restoreFixedDeltaTime;
+            s_hitStopRoutine = null;
+            s_hitStopOwner = null;
+            ChannelLogger.Log("ContactDmg", "[HitStop] 所有オブジェクト破棄によりヒットストップを強制復帰");
+        }
     }
 
     void FixedUpdate()
@@ -225,6 +241,7 @@ public class MagneticContactDamage : MonoBehaviour
             s_restoreFixedDeltaTime = Time.fixedDeltaTime;
             s_hitStopTimeScale = timeScale;
             s_hitStopEndTime = requestedEndTime;
+            s_hitStopOwner = this;
             s_hitStopRoutine = StartCoroutine(HitStopRoutine());
             return;
         }
@@ -247,6 +264,7 @@ public class MagneticContactDamage : MonoBehaviour
         Time.timeScale = s_restoreTimeScale;
         Time.fixedDeltaTime = s_restoreFixedDeltaTime;
         s_hitStopRoutine = null;
+        s_hitStopOwner = null;
     }
 
     private static void ApplyHitStopTimeScale()

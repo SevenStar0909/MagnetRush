@@ -31,3 +31,10 @@ MonoBehaviour:
   attackInterval: 1.5
   rotationSpeed: 10
   attackHitboxDuration: 0.2
+  wander:
+    enabled: 1
+    radius: 6
+    speedMultiplier: 0.5
+    moveTimeout: 6
+    pauseDurationMin: 1
+    pauseDurationMax: 3
