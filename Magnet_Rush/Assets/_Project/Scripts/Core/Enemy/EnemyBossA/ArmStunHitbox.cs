@@ -18,6 +18,7 @@ public sealed class ArmStunHitbox : MonoBehaviour, IHittable
     [SerializeField] private Health m_health;
     [SerializeField] private EnemyBossBaseA_Animator m_animator;
     [SerializeField] private EnemyBossAI m_bossAI;
+    [SerializeField] private Magnetizable m_handMagnetizable;
 
     [SerializeField]
     [Tooltip("ヒット解決上の所属グループ。ボスなので通常 Enemy")]
@@ -86,6 +87,9 @@ public sealed class ArmStunHitbox : MonoBehaviour, IHittable
         if (m_bossAI == null)
             m_bossAI = GetComponentInParent<EnemyBossAI>();
 
+        if (m_handMagnetizable == null)
+            m_handMagnetizable = GetComponentInParent<Magnetizable>();
+
         if (m_health == null)
             ChannelLogger.LogError("EnemyBossA", $"[ArmStunHitbox] {name}: Health 未取得");
         if (m_animator == null)
@@ -149,11 +153,19 @@ public sealed class ArmStunHitbox : MonoBehaviour, IHittable
         // スタンゲージ（よろけ）の蓄積はボス本体ヒット側（EnemyBossAI.OnBodyHit）が担当するので、ここでは触らない。
         if (m_animator != null && (m_animator.IsInAttackStance || m_animator.IsInAttackMotion))
         {
+            if (!CanTriggerStun())
+                return;
+
             m_animator.SetIsStunnedTrue();
             SetCounterCueVisible(false);
             ChannelLogger.Log("EnemyBossA",
                 $"[ArmStunHitbox] 振り下ろしカウンター成立 → Stun src={(hit.source != null ? hit.source.name : "null")}");
         }
+    }
+
+    private bool CanTriggerStun()
+    {
+        return m_handMagnetizable != null && m_handMagnetizable.IsActive;
     }
 
     private bool CanShowCounterCue()
