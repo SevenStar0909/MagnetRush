@@ -44,7 +44,9 @@ public class EnemyBoss02AI : MonoBehaviour, IStabReceiver, IDamageGuard
     [SerializeField] private float m_rushTravelSeconds = 0.35f;
     [SerializeField] private float m_rushEndDuration = 2.66f;
     [SerializeField] private float m_rushOvershootDistance = 4.0f;
-    [SerializeField] private float m_rushDeflectDistance = 5.0f;
+    [SerializeField] private float m_rushArcHeight = 2.0f;
+    [SerializeField] private float m_rushRepelDuration = 0.35f;
+    [SerializeField] private float m_rushRepelArcHeight = 2.0f;
     [SerializeField] private MagneticPole m_rushAuraPole = MagneticPole.S;
 
     [Header("Down")]
@@ -67,6 +69,9 @@ public class EnemyBoss02AI : MonoBehaviour, IStabReceiver, IDamageGuard
     private bool m_rushHitboxEnabled;
     private Vector3 m_rushStartPosition;
     private Vector3 m_rushTargetPosition;
+    private bool m_rushRepelActive;
+    private Vector3 m_rushRepelStartPosition;
+    private Vector3 m_rushRepelTargetPosition;
 
     public bool CanReceiveStab => m_state == Boss02State.Down;
     public Transform StabAnchor => m_stabAnchor != null ? m_stabAnchor : transform;
@@ -196,8 +201,35 @@ public class EnemyBoss02AI : MonoBehaviour, IStabReceiver, IDamageGuard
         if (m_stamina != null)
             m_stamina.ResetStamina();
 
+        m_rushRepelActive = false;
         m_animator.TriggerDownEnd();
         ChangeState(Boss02State.DownEnd);
+    }
+
+    public bool TryStartRushRepel(Collider playerCollider)
+    {
+        if (m_state != Boss02State.Rush || !m_rushHitboxEnabled)
+            return false;
+
+        Magnetizable playerMagnetizable = playerCollider != null
+            ? playerCollider.GetComponentInParent<Magnetizable>()
+            : null;
+
+        if (!IsSamePoleAsSelf(playerMagnetizable))
+            return false;
+
+        Vector3 playerPosition = playerCollider != null ? playerCollider.transform.position : transform.position;
+        m_rushRepelStartPosition = transform.position;
+        m_rushRepelTargetPosition = (m_rushStartPosition + playerPosition) * 0.5f;
+        m_rushRepelTargetPosition.y = m_rushRepelStartPosition.y;
+        m_rushRepelActive = true;
+
+        m_hitboxes?.DisableAll();
+        m_attackHitboxEnabled = false;
+        m_rushHitboxEnabled = false;
+        ClearSelfMagnet();
+        EnterDown();
+        return true;
     }
 
     private void TickIdle(float dt)
@@ -291,7 +323,9 @@ public class EnemyBoss02AI : MonoBehaviour, IStabReceiver, IDamageGuard
     {
         float travelSeconds = Mathf.Max(0.01f, m_rushTravelSeconds);
         float t = Mathf.Clamp01(m_stateTimer / travelSeconds);
-        transform.position = Vector3.Lerp(m_rushStartPosition, m_rushTargetPosition, t);
+        Vector3 position = Vector3.Lerp(m_rushStartPosition, m_rushTargetPosition, t);
+        position.y += Mathf.Sin(t * Mathf.PI) * m_rushArcHeight;
+        transform.position = position;
 
         Vector3 direction = m_rushTargetPosition - m_rushStartPosition;
         direction.y = 0f;
@@ -311,6 +345,10 @@ public class EnemyBoss02AI : MonoBehaviour, IStabReceiver, IDamageGuard
     private void TickDown(float dt)
     {
         m_boss.SlowDown(dt);
+
+        if (m_rushRepelActive)
+            TickRushRepel();
+
         if (m_autoRecoverFromDown && m_stateTimer >= m_downRecoverDelay)
         {
             if (m_stamina != null)
@@ -326,6 +364,18 @@ public class EnemyBoss02AI : MonoBehaviour, IStabReceiver, IDamageGuard
         m_boss.SlowDown(dt);
         if (m_stateTimer >= m_downEndDuration)
             FinishAction();
+    }
+
+    private void TickRushRepel()
+    {
+        float duration = Mathf.Max(0.01f, m_rushRepelDuration);
+        float t = Mathf.Clamp01(m_stateTimer / duration);
+        Vector3 position = Vector3.Lerp(m_rushRepelStartPosition, m_rushRepelTargetPosition, t);
+        position.y += Mathf.Sin(t * Mathf.PI) * m_rushRepelArcHeight;
+        transform.position = position;
+
+        if (t >= 1f)
+            m_rushRepelActive = false;
     }
 
     private void BeginAttack()
@@ -373,6 +423,7 @@ public class EnemyBoss02AI : MonoBehaviour, IStabReceiver, IDamageGuard
         ClearSelfMagnet();
         m_attackHitboxEnabled = false;
         m_rushHitboxEnabled = false;
+        m_rushRepelActive = false;
         m_cooldownTimer = m_settings != null ? m_settings.attackInterval : 0f;
         ChangeState(Boss02State.Idle);
     }
@@ -400,26 +451,18 @@ public class EnemyBoss02AI : MonoBehaviour, IStabReceiver, IDamageGuard
         direction.Normalize();
 
         Vector3 target = playerPosition + direction * Mathf.Max(0f, m_rushOvershootDistance);
-        if (IsPlayerSamePole())
-        {
-            Vector3 side = Vector3.Cross(Vector3.up, direction).normalized;
-            float sideSign = Vector3.Dot(transform.right, side) >= 0f ? 1f : -1f;
-            target += side * sideSign * Mathf.Max(0f, m_rushDeflectDistance);
-        }
-
         target.y = start.y;
         m_rushTargetPosition = target;
     }
 
-    private bool IsPlayerSamePole()
+    private bool IsSamePoleAsSelf(Magnetizable other)
     {
-        if (m_player == null || m_selfMagnetizable == null || !m_selfMagnetizable.IsActive)
-            return false;
-
-        Magnetizable playerMagnetizable = m_player.GetComponent<Magnetizable>();
-        return playerMagnetizable != null
-            && playerMagnetizable.IsActive
-            && playerMagnetizable.Pole == m_selfMagnetizable.Pole;
+        return m_selfMagnetizable != null
+            && m_selfMagnetizable.IsActive
+            && m_selfMagnetizable.Pole != MagneticPole.None
+            && other != null
+            && other.IsActive
+            && other.Pole == m_selfMagnetizable.Pole;
     }
 
     private void ApplySelfMagnet()

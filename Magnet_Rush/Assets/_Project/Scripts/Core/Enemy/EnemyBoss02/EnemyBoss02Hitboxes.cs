@@ -13,6 +13,7 @@ public class EnemyBoss02Hitboxes : MonoBehaviour
     [Header("References")]
     [SerializeField] private EnemyBossBase m_owner;
     [SerializeField] private EnemyBossSettings m_settings;
+    [SerializeField] private EnemyBoss02AI m_ai;
 
     private readonly HashSet<Health> m_hitTargets = new();
     private readonly Collider[] m_overlapResults = new Collider[32];
@@ -22,6 +23,9 @@ public class EnemyBoss02Hitboxes : MonoBehaviour
     {
         if (m_owner == null)
             m_owner = GetComponentInParent<EnemyBossBase>();
+
+        if (m_ai == null)
+            m_ai = GetComponentInParent<EnemyBoss02AI>();
 
         if (m_settings == null && m_owner != null)
             m_settings = m_owner.StatusData;
@@ -148,6 +152,9 @@ public class EnemyBoss02Hitboxes : MonoBehaviour
     private void TryApplyDamage(Collider attackCollider, Collider other)
     {
         if (other == null || other.transform.IsChildOf(transform))
+            return;
+
+        if (attackCollider == m_rushCollider && m_ai != null && m_ai.TryStartRushRepel(other))
             return;
 
         IHittable hittable = other.GetComponentInParent<IHittable>();
