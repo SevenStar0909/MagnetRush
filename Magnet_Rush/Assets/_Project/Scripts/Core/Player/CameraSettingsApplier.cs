@@ -72,6 +72,9 @@ public class CameraSettingsApplier : MonoBehaviour
     private float m_damageShakeFrequency;
     private Vector3 m_damageShakeSeed;
 
+    // エイム補助（ソフトロックオン）の候補取得用。エイム中のみ OverlapSphere で埋める
+    private readonly Collider[] m_aimAssistBuffer = new Collider[32];
+
     void OnEnable()
     {
         AimAbility.OnAimChanged += SetAimMode;
@@ -211,6 +214,11 @@ public class CameraSettingsApplier : MonoBehaviour
         // チュートリアルの強制注目中はターゲット方向へヨー/ピッチを寄せる（カメラ入力ロック中に呼ばれる想定）
         if (m_isFocusing && m_focusTarget != null)
             ApplyFocus();
+
+        // エイム中は最寄りの敵・オブジェクトへレティクルをそっと寄せる（軽いソフトロックオン）。
+        // 強制注目・カメラロック中は主導権がそちらにあるので効かせない
+        if (m_isAiming && !m_isFocusing && !cameraLocked)
+            ApplyAimAssist();
 
         m_pitch = Mathf.Clamp(m_pitch, m_settings.cameraPitchMin, m_settings.cameraPitchMax);
         m_cameraPivot.rotation = Quaternion.Euler(m_pitch, m_yaw, 0f);
@@ -401,6 +409,87 @@ public class CameraSettingsApplier : MonoBehaviour
             lens.FieldOfView = Mathf.MoveTowards(lens.FieldOfView, m_focusFov, m_focusFovSpeed * Time.unscaledDeltaTime);
             m_cinemachineCamera.Lens = lens;
         }
+    }
+
+    /// <summary>
+    /// エイム中のソフトロックオン。レティクル（＝画面中央）付近の最寄りターゲットへ
+    /// ヨー/ピッチを弱く寄せる。中央に近いほど強く、コーン端で0にフェードするので
+    /// 端で急に効いて操作感が乱れない。効きが弱いのでスティック入力に容易に上書きされる（＝主導権はプレイヤー）。
+    /// LateUpdate から、エイム中かつ強制注目/カメラロックでない時だけ呼ぶ。
+    /// </summary>
+    private void ApplyAimAssist()
+    {
+        if (m_settings == null || m_cameraPivot == null) return;
+
+        float strength = m_settings.aimAssistStrength;
+        float maxAngle = m_settings.aimAssistMaxAngle;
+        if (strength <= 0f || maxAngle <= 0f) return; // 強さ0・角度0で無効
+
+        if (!TryAcquireAimTarget(maxAngle, out Vector3 targetPoint, out float angle)) return;
+
+        Vector3 pivotPos = m_cameraPivot.position;
+        Vector3 dir = targetPoint - pivotPos;
+        if (dir.sqrMagnitude < 0.0001f) return;
+
+        Vector3 n = dir.normalized;
+        // ApplyFocus と同じ換算（ヨー=水平方位、ピッチは Euler.x の符号に合わせて反転）
+        float desiredYaw = Mathf.Atan2(n.x, n.z) * Mathf.Rad2Deg;
+        float desiredPitch = -Mathf.Asin(Mathf.Clamp(n.y, -1f, 1f)) * Mathf.Rad2Deg;
+
+        float weight = 1f - Mathf.Clamp01(angle / maxAngle);
+        float maxStep = strength * weight * Time.unscaledDeltaTime;
+        m_yaw = Mathf.MoveTowardsAngle(m_yaw, desiredYaw, maxStep);
+        m_pitch = Mathf.MoveTowards(m_pitch, desiredPitch, maxStep);
+    }
+
+    /// <summary>
+    /// ピボットの前方コーン内・遮蔽なしの最寄り（画面中央に一番近い＝角度最小）ターゲットを取得する。
+    /// レイヤーは SO の LayerMask で持ち、未設定時のみ Enemy+PhysicsObject / Ground+Wall にフォールバックする。
+    /// </summary>
+    /// <param name="maxAngle">画面中央からの許容角（度）。これより外のターゲットは無視</param>
+    /// <param name="point">採用ターゲットの狙い点（コライダー境界の中心）</param>
+    /// <param name="bestAngle">採用ターゲットの中央からの角度（度）。寄せの重み付けに使う</param>
+    private bool TryAcquireAimTarget(float maxAngle, out Vector3 point, out float bestAngle)
+    {
+        point = default;
+        bestAngle = maxAngle;
+
+        Vector3 pivotPos = m_cameraPivot.position;
+        Vector3 forward = Quaternion.Euler(m_pitch, m_yaw, 0f) * Vector3.forward;
+
+        float maxDist = m_settings.aimAssistMaxDistance > 0f ? m_settings.aimAssistMaxDistance : 30f;
+        int targetMask = m_settings.aimAssistLayer.value != 0
+            ? m_settings.aimAssistLayer.value
+            : (PhysicsLayers.Bit(PhysicsLayers.Enemy) | PhysicsLayers.Bit(PhysicsLayers.PhysicsObject));
+        int occluderMask = m_settings.aimAssistOccluderLayer.value != 0
+            ? m_settings.aimAssistOccluderLayer.value
+            : (PhysicsLayers.Bit(PhysicsLayers.Ground) | PhysicsLayers.Bit(PhysicsLayers.Wall));
+
+        int count = Physics.OverlapSphereNonAlloc(pivotPos, maxDist, m_aimAssistBuffer, targetMask, QueryTriggerInteraction.Collide);
+        bool found = false;
+        for (int i = 0; i < count; i++)
+        {
+            Collider c = m_aimAssistBuffer[i];
+            if (c == null) continue;
+
+            Vector3 aimPoint = c.bounds.center;
+            Vector3 to = aimPoint - pivotPos;
+            float dist = to.magnitude;
+            if (dist < 0.001f) continue;
+
+            Vector3 toN = to / dist;
+            float ang = Vector3.Angle(forward, toN);
+            if (ang > bestAngle) continue; // コーン外、または既出の最良より中央から遠い
+
+            // 壁・地面の裏に隠れた相手には吸い付かせない（少し手前で打ち切る）
+            if (Physics.Raycast(pivotPos, toN, dist - 0.1f, occluderMask, QueryTriggerInteraction.Ignore)) continue;
+
+            bestAngle = ang;
+            point = aimPoint;
+            found = true;
+        }
+
+        return found;
     }
 
     private void OnFallRespawnStart() => Freeze(true);

@@ -144,6 +144,23 @@ public class PlayerSettings : ScriptableObject
     [Tooltip("エイム中の移動速度倍率")]
     public float aimMoveSpeedMultiplier = 0.5f;
 
+    [Header("[エイム補助（ソフトロックオン）]")]
+    [Label("吸着の対象レイヤー")]
+    [Tooltip("狙っている間、レティクルがそっと吸い付く相手のレイヤー（敵・磁力で動く箱など）。未設定なら敵と磁力オブジェクトに自動で効く")]
+    public LayerMask aimAssistLayer;
+    [Label("吸着が届く距離（m）")]
+    [Tooltip("この距離までにいる相手だけ吸着の候補になる。遠すぎる相手には効かない")]
+    public float aimAssistMaxDistance = 30f;
+    [Label("レティクルから外れた相手を拾う広さ（度）")]
+    [Tooltip("レティクル（画面中央）からどれだけ外れた相手まで吸着の候補にするかの広さ。大きいほど遠くまで拾うが、狙っていない相手にも効きやすくなる。吸う強さではない（強さは別項目）")]
+    public float aimAssistMaxAngle = 10f;
+    [Label("吸い付く強さ（度/秒）")]
+    [Tooltip("レティクルが相手へ寄っていく速さ。小さいほど軽い補助、大きいほどグッと持っていかれる。0で吸着オフ")]
+    public float aimAssistStrength = 40f;
+    [Label("遮蔽とみなすレイヤー")]
+    [Tooltip("壁や地面の裏に隠れた相手には吸い付かせないための判定レイヤー。未設定ならGroundとWallに自動で効く")]
+    public LayerMask aimAssistOccluderLayer;
+
     [Header("[死亡・リスポーン]")]
     [Label("リスポーン待機時間（秒）")]
     [Tooltip("死亡からリスポーンまでの待機時間（秒）。PlayerRespawner が WaitForSeconds に渡す")]

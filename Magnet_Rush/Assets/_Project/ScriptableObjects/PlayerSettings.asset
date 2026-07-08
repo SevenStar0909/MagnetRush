@@ -57,6 +57,15 @@ MonoBehaviour:
   aimFOV: 40
   aimCameraDistance: 3
   aimMoveSpeedMultiplier: 0.5
+  aimAssistLayer:
+    serializedVersion: 2
+    m_Bits: 16896
+  aimAssistMaxDistance: 30
+  aimAssistMaxAngle: 10
+  aimAssistStrength: 40
+  aimAssistOccluderLayer:
+    serializedVersion: 2
+    m_Bits: 192
   respawnDelay: 0.5
   fallRespawnDelay: 0.5
   slopeUpwardForce: 15
