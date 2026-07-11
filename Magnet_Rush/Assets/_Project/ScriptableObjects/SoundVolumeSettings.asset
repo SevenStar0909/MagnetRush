@@ -12,7 +12,37 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2677bae50b2fc0441872880eaded1e84, type: 3}
   m_Name: SoundVolumeSettings
   m_EditorClassIdentifier: MagnetRush.Data::SoundVolumeSettings
-  seMasterVolume: 0.5
-  bgmMasterVolume: 0.8
-  seVolumes: []
-  bgmVolumes: []
+  seMasterVolume: 0.8
+  bgmMasterVolume: 0.5
+  playerShot: 0.1
+  selfShot: 1
+  aim: 1
+  reload: 1
+  magChange: 1
+  playerFoot: 0.314
+  stab: 1
+  magField: 1
+  hitObject: 0.462
+  turretShot: 1
+  turretImpact: 0.306
+  dysonEnemy: 1
+  droneEnemy: 0.5
+  enemyWheel: 0.3
+  missileShot: 1.2
+  missileImpact: 1.3
+  bossEnemySlam: 2
+  bossEnemyFoot: 1
+  button: 1
+  select: 1
+  stageSelect: 1
+  bossBattleBgm: 0.372
+  titleBgm: 0.3
+  stageSelectBgm: 0.3
+  tutorialBgm: 0.3
+  stage01Bgm: 0.3
+  magFieldMinDistance: 4
+  magFieldMaxDistance: 25
+  hitObjectMinDistance: 0.9
+  hitObjectMaxDistance: 21
+  bossSeMinDistance: 6
+  bossSeMaxDistance: 60
