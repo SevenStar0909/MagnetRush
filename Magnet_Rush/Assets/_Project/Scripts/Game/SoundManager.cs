@@ -201,7 +201,8 @@ public class SoundManager : Singleton<SoundManager>
             return;
         }
 #else
-        string path = "MagnetRush.acf";
+        // 生の RegisterAcf は相対パスを StreamingAssets 基準で解決しないため、明示的に前置する
+        string path = System.IO.Path.Combine(CriWare.Common.streamingAssetsPath, "MagnetRush.acf");
 #endif
         CriAtomEx.RegisterAcf(null, path);
     }
@@ -289,16 +290,16 @@ public class SoundManager : Singleton<SoundManager>
 
     /// <summary>
     /// acb ファイルの読み込みパスを返す。
-    /// CRI は相対パスを StreamingAssets 基準で解決するが、本プロジェクトの acb は
-    /// Assets/_Project/Asset/Audio/&lt;キューシート名&gt;/ にある（サウンド担当の出力先）ため、
-    /// エディタではフルパスへ変換して読む。ビルドでは StreamingAssets 直下に acb を置く運用。
+    /// 本プロジェクトの acb は Assets/_Project/Asset/Audio/&lt;キューシート名&gt;/ にある（サウンド担当の出力先）ため、
+    /// エディタではフルパスへ変換して読む。ビルドでは AudioBuildPreprocessor が StreamingAssets 直下へコピーしたものを読む。
+    /// 生の LoadAcbFile は相対パスを StreamingAssets 基準で解決しないため、明示的に前置する必要がある。
     /// </summary>
     private static string ResolveAcbPath(string name)
     {
 #if UNITY_EDITOR
         return System.IO.Path.GetFullPath($"Assets/_Project/Asset/Audio/{name}/{name}.acb");
 #else
-        return name + ".acb";
+        return System.IO.Path.Combine(CriWare.Common.streamingAssetsPath, name + ".acb");
 #endif
     }
 
