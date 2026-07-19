@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 20f418b8a91078a4c8502133f347c9d4, type: 3}
+  m_Name: EnemyBossSettings_2
+  m_EditorClassIdentifier: MagnetRush.Data::EnemyBossSettings
+  maxHp: 500
+  healthBarSegments: 3
+  maxStamina: 40
+  staminaRecovery: 0
+  staminaRecoveryCooldown: 15
+  staminaBreakDuration: 15
+  stunGaugePercentPerBodyHit: 2
+  moveSpeed: 8
+  acceleration: 9
+  chaseRange: 40
+  stopDistance: 5
+  turningDrag: 33.5
+  deceleration: 20
+  gravity: -20
+  snapForce: 2
+  groundCheckDistance: 0.3
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 65
+  externalDrag: 3
+  attackDamage: 5
+  activationRange: 75
+  attackRange: 20
+  rushAttackRange: 30
+  rushSpeedMultiplier: 3
+  missileAttackRange: 30
+  attackInterval: 1.2
+  rotationSpeed: 1
+  attackHitboxDuration: 0.2
+  faceDeadZoneDeg: 0
+  attackMotionFaceDeadZoneDeg: 180
+  staggerDuration: 15
+  staggerMoveMultiplier: 0.5
+  postStabDownDuration: 2
+  magnetCastRadius: 30
