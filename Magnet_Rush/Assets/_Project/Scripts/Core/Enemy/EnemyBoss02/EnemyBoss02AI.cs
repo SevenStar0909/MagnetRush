@@ -18,40 +18,85 @@ public class EnemyBoss02AI : MonoBehaviour, IStabReceiver, IDamageGuard
     }
 
     [Header("References")]
+    [Tooltip("Boss02のAnimator制御ラッパー。通常は子オブジェクトから自動取得されます。")]
     [SerializeField] private EnemyBoss02Animator m_animator;
+    [Tooltip("通常攻撃と突進攻撃の当たり判定を管理するコンポーネント。")]
     [SerializeField] private EnemyBoss02Hitboxes m_hitboxes;
+    [Tooltip("突進中にBoss自身へ磁極を付与するためのMagnetizable。未設定なら同じGameObjectから取得します。")]
     [SerializeField] private Magnetizable m_selfMagnetizable;
+    [Tooltip("プレイヤーのStab演出で参照する位置。未設定ならBoss本体のTransformを使用します。")]
     [SerializeField] private Transform m_stabAnchor;
+    [Tooltip("Stab処刑攻撃時に使用する演出設定。")]
     [SerializeField] private StabFinisherSettings m_stabFinisherSettings;
 
     [Header("Battle")]
+    [Tooltip("trueの間だけBoss02のAIが行動します。falseではIdleで待機します。")]
     public bool isBattleing = false;
+    [Tooltip("状態遷移ログを出すかどうか。調整中の確認用です。")]
     [SerializeField] private bool m_logStateChange = true;
 
+    [Header("Decision Ranges")]
+    [Tooltip("近距離判定。AttackRange外かつこの距離以内では、直線移動で接近してから通常攻撃します。")]
+    [SerializeField] private float m_shortRange = 20.0f;
+    [Tooltip("中距離判定。ShortRange外かつこの距離以内では、弧を描く接近か突進を重みで選びます。この距離より外では突進のみ行います。")]
+    [SerializeField] private float m_meleeRange = 35.0f;
+    [Tooltip("中距離で弧を描く接近を選ぶ重み。Rush Weightとの比率で確率が決まります。")]
+    [SerializeField] private float m_arcApproachWeight = 50.0f;
+    [Tooltip("中距離で突進を選ぶ重み。Arc Approach Weightとの比率で確率が決まります。")]
+    [SerializeField] private float m_rushWeight = 50.0f;
+
     [Header("Attack")]
+    [Tooltip("通常攻撃を開始できる距離。この距離以内ならその場でひっかき攻撃します。")]
+    [SerializeField] private float m_attackRange = 4.0f;
+    [Tooltip("通常攻撃状態の継続時間。終了するとIdleへ戻ります。")]
     [SerializeField] private float m_attackDuration = 3.56f;
+    [Tooltip("通常攻撃の当たり判定を有効にする時間。Attack開始からの秒数です。")]
     [SerializeField] private float m_attackHitStartTime = 1.33f;
+    [Tooltip("通常攻撃の当たり判定を無効にする時間。Attack開始からの秒数です。")]
     [SerializeField] private float m_attackHitEndTime = 1.75f;
 
     [Header("Move")]
+    [Tooltip("接近移動を続ける最大時間。時間切れになると攻撃せずMoveEndへ移行します。")]
     [SerializeField] private float m_moveDuration = 2.0f;
+    [Tooltip("MoveEnd状態の継続時間。MoveEndからAttackへつなぐ時の待ち時間です。")]
     [SerializeField] private float m_moveEndDuration = 0.77f;
+    [Tooltip("移動速度倍率の予備値。直線/弧移動の倍率が0以下の場合に使用します。")]
     [SerializeField] private float m_moveSpeedMultiplier = 1.35f;
+    [Tooltip("直線接近時の移動速度倍率。EnemyBossSettingsのMove Speedに掛けられます。")]
+    [SerializeField] private float m_directMoveSpeedMultiplier = 2.0f;
+    [Tooltip("弧を描く接近時の移動速度倍率。EnemyBossSettingsのMove Speedに掛けられます。")]
+    [SerializeField] private float m_arcMoveSpeedMultiplier = 1.6f;
+    [Tooltip("接近移動を止める距離。AttackRangeより小さい場合はAttackRangeが優先されます。")]
     [SerializeField] private float m_moveStopDistance = 4.0f;
+    [Tooltip("trueにすると接近完了後にMoveEndを飛ばして即Attackします。falseならMoveEndからAttackへ遷移します。")]
+    [SerializeField] private bool m_skipMoveEndBeforeAttack = false;
+    [Tooltip("弧を描く接近時の横方向成分の強さ。大きいほど回り込みが強くなります。")]
+    [SerializeField] private float m_arcMoveLateralStrength = 0.75f;
 
     [Header("Rush")]
+    [Tooltip("突進前の溜め時間。Rush Stanceアニメーションを再生してプレイヤーを狙います。")]
     [SerializeField] private float m_rushStanceDuration = 2.63f;
+    [Tooltip("突進で開始位置から目標位置へ移動する時間。短いほど高速になります。")]
     [SerializeField] private float m_rushTravelSeconds = 0.35f;
+    [Tooltip("突進後の状態継続時間。突進移動時間より長い場合、残り時間はRushEndとして待機します。")]
     [SerializeField] private float m_rushEndDuration = 2.66f;
+    [Tooltip("突進の目標をプレイヤー位置からどれだけ奥へ伸ばすか。大きいほど通り過ぎます。")]
     [SerializeField] private float m_rushOvershootDistance = 4.0f;
+    [Tooltip("突進軌道の山なり高さ。0にすると直線突進になります。")]
     [SerializeField] private float m_rushArcHeight = 2.0f;
+    [Tooltip("同極反発が発生した時、Bossが弾き返される移動時間。")]
     [SerializeField] private float m_rushRepelDuration = 0.35f;
+    [Tooltip("同極反発で弾き返される時の山なり高さ。")]
     [SerializeField] private float m_rushRepelArcHeight = 2.0f;
+    [Tooltip("突進中にBoss自身へ付与する磁極。プレイヤーが同極なら反発してDownへ移行します。")]
     [SerializeField] private MagneticPole m_rushAuraPole = MagneticPole.S;
 
     [Header("Down")]
+    [Tooltip("trueならDown状態から一定時間後に自動で起き上がります。falseならStabなど外部処理待ちになります。")]
     [SerializeField] private bool m_autoRecoverFromDown = true;
+    [Tooltip("Down状態から自動で起き上がり始めるまでの時間。")]
     [SerializeField] private float m_downRecoverDelay = 5.0f;
+    [Tooltip("DownEnd状態の継続時間。終了するとIdleへ戻ります。")]
     [SerializeField] private float m_downEndDuration = 4.9f;
 
     private EnemyBossBase m_boss;
@@ -67,6 +112,9 @@ public class EnemyBoss02AI : MonoBehaviour, IStabReceiver, IDamageGuard
     private float m_cooldownTimer;
     private bool m_attackHitboxEnabled;
     private bool m_rushHitboxEnabled;
+    private bool m_attackAfterMoveEnd;
+    private bool m_useArcMove;
+    private float m_arcMoveSideSign = 1f;
     private Vector3 m_rushStartPosition;
     private Vector3 m_rushTargetPosition;
     private bool m_rushRepelActive;
@@ -78,6 +126,10 @@ public class EnemyBoss02AI : MonoBehaviour, IStabReceiver, IDamageGuard
     public int StabChoreographyIndex => 1;
     public StabFinisherSettings StabFinisherSettings => m_stabFinisherSettings;
     public bool CanTakeDamage(HitData hit) => m_state != Boss02State.DownEnd;
+    private float AttackRange => Mathf.Max(0f, m_attackRange);
+    private float ShortRange => Mathf.Max(AttackRange, m_shortRange);
+    private float MeleeRange => Mathf.Max(ShortRange, m_meleeRange);
+    private float ApproachStopDistance => Mathf.Max(m_moveStopDistance, AttackRange);
 
     private void Awake()
     {
@@ -241,19 +293,29 @@ public class EnemyBoss02AI : MonoBehaviour, IStabReceiver, IDamageGuard
             return;
 
         float distance = DistanceToPlayer();
-        if (distance <= m_settings.attackRange)
+        if (distance <= AttackRange)
         {
             BeginAttack();
             return;
         }
 
-        if (distance <= m_settings.rushAttackRange)
+        if (distance <= ShortRange)
         {
-            BeginRush();
+            BeginMove(useArcMove: false, attackAfterMoveEnd: true);
             return;
         }
 
-        BeginMove();
+        if (distance <= MeleeRange)
+        {
+            if (ChooseRushOverArcApproach())
+                BeginRush();
+            else
+                BeginMove(useArcMove: true, attackAfterMoveEnd: true);
+
+            return;
+        }
+
+        BeginRush();
     }
 
     private void TickAttack(float dt)
@@ -281,26 +343,47 @@ public class EnemyBoss02AI : MonoBehaviour, IStabReceiver, IDamageGuard
     {
         if (m_player == null)
         {
-            EndMove();
+            EndMove(attackAfterMoveEnd: false);
             return;
         }
 
         Vector3 toPlayer = GetDirectionToPlayer();
         float distance = DistanceToPlayer();
-        if (distance <= Mathf.Max(m_moveStopDistance, m_settings.attackRange) || m_stateTimer >= m_moveDuration)
+        if (distance <= ApproachStopDistance)
         {
-            EndMove();
+            if (m_attackAfterMoveEnd && m_skipMoveEndBeforeAttack)
+            {
+                BeginAttack();
+                return;
+            }
+
+            EndMove(attackAfterMoveEnd: true);
             return;
         }
 
-        m_boss.AccelerateToward(toPlayer, dt, m_moveSpeedMultiplier);
+        if (m_stateTimer >= m_moveDuration)
+        {
+            EndMove(attackAfterMoveEnd: false);
+            return;
+        }
+
+        Vector3 moveDirection = m_useArcMove ? GetArcMoveDirection(toPlayer) : toPlayer;
+        m_boss.AccelerateToward(moveDirection, dt, GetCurrentMoveSpeedMultiplier());
     }
 
     private void TickMoveEnd(float dt)
     {
         m_boss.SlowDown(dt);
-        if (m_stateTimer >= m_moveEndDuration)
-            FinishAction();
+        if (m_stateTimer < m_moveEndDuration)
+            return;
+
+        if (m_attackAfterMoveEnd && m_player != null && DistanceToPlayer() <= ApproachStopDistance)
+        {
+            BeginAttack();
+            return;
+        }
+
+        FinishAction();
     }
 
     private void TickRushStance(float dt)
@@ -380,19 +463,25 @@ public class EnemyBoss02AI : MonoBehaviour, IStabReceiver, IDamageGuard
 
     private void BeginAttack()
     {
+        m_attackAfterMoveEnd = false;
+        m_useArcMove = false;
         m_attackHitboxEnabled = false;
         m_animator.TriggerAttack();
         ChangeState(Boss02State.Attack);
     }
 
-    private void BeginMove()
+    private void BeginMove(bool useArcMove, bool attackAfterMoveEnd)
     {
+        m_useArcMove = useArcMove;
+        m_attackAfterMoveEnd = attackAfterMoveEnd;
+        m_arcMoveSideSign = UnityEngine.Random.value < 0.5f ? -1f : 1f;
         m_animator.TriggerMove();
         ChangeState(Boss02State.Move);
     }
 
-    private void EndMove()
+    private void EndMove(bool attackAfterMoveEnd)
     {
+        m_attackAfterMoveEnd = attackAfterMoveEnd;
         m_animator.TriggerMoveEnd();
         ChangeState(Boss02State.MoveEnd);
     }
@@ -413,6 +502,8 @@ public class EnemyBoss02AI : MonoBehaviour, IStabReceiver, IDamageGuard
         ClearSelfMagnet();
         m_attackHitboxEnabled = false;
         m_rushHitboxEnabled = false;
+        m_attackAfterMoveEnd = false;
+        m_useArcMove = false;
         m_animator.TriggerDown();
         ChangeState(Boss02State.Down);
     }
@@ -424,6 +515,8 @@ public class EnemyBoss02AI : MonoBehaviour, IStabReceiver, IDamageGuard
         m_attackHitboxEnabled = false;
         m_rushHitboxEnabled = false;
         m_rushRepelActive = false;
+        m_attackAfterMoveEnd = false;
+        m_useArcMove = false;
         m_cooldownTimer = m_settings != null ? m_settings.attackInterval : 0f;
         ChangeState(Boss02State.Idle);
     }
@@ -438,6 +531,36 @@ public class EnemyBoss02AI : MonoBehaviour, IStabReceiver, IDamageGuard
 
         m_state = next;
         m_stateTimer = 0f;
+    }
+
+    private bool ChooseRushOverArcApproach()
+    {
+        float rushWeight = Mathf.Max(0f, m_rushWeight);
+        float arcWeight = Mathf.Max(0f, m_arcApproachWeight);
+        float totalWeight = rushWeight + arcWeight;
+        if (totalWeight <= 0f)
+            return true;
+
+        return UnityEngine.Random.value * totalWeight < rushWeight;
+    }
+
+    private Vector3 GetArcMoveDirection(Vector3 toPlayer)
+    {
+        if (toPlayer.sqrMagnitude <= 0.0001f)
+            return Vector3.zero;
+
+        Vector3 side = Vector3.Cross(Vector3.up, toPlayer).normalized * m_arcMoveSideSign;
+        Vector3 direction = toPlayer + side * Mathf.Max(0f, m_arcMoveLateralStrength);
+        return direction.sqrMagnitude > 0.0001f ? direction.normalized : toPlayer;
+    }
+
+    private float GetCurrentMoveSpeedMultiplier()
+    {
+        float speedMultiplier = m_useArcMove ? m_arcMoveSpeedMultiplier : m_directMoveSpeedMultiplier;
+        if (speedMultiplier <= 0f)
+            speedMultiplier = m_moveSpeedMultiplier;
+
+        return Mathf.Max(0f, speedMultiplier);
     }
 
     private void LockRushTarget()

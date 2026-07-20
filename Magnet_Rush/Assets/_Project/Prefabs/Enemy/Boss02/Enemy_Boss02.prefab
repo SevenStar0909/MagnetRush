@@ -209,6 +209,7 @@ MonoBehaviour:
   m_rushDebugRenderer: {fileID: 0}
   m_owner: {fileID: 4433477474537176780}
   m_settings: {fileID: 11400000, guid: c18fd890e7dc6ab42854abb4e3c2e1f1, type: 2}
+  m_ai: {fileID: 0}
 --- !u!1 &6053736044130491545
 GameObject:
   m_ObjectHideFlags: 0
@@ -438,13 +439,22 @@ MonoBehaviour:
   m_stabFinisherSettings: {fileID: 11400000, guid: cb977d2290347014cb9d9ece1b6f684b, type: 2}
   isBattleing: 1
   m_logStateChange: 1
+  m_shortRange: 20
+  m_meleeRange: 35
+  m_arcApproachWeight: 50
+  m_rushWeight: 50
+  m_attackRange: 4
   m_attackDuration: 3.56
   m_attackHitStartTime: 1.33
   m_attackHitEndTime: 1.75
   m_moveDuration: 2
   m_moveEndDuration: 0.77
   m_moveSpeedMultiplier: 1.35
+  m_directMoveSpeedMultiplier: 3
+  m_arcMoveSpeedMultiplier: 4
   m_moveStopDistance: 4
+  m_skipMoveEndBeforeAttack: 0
+  m_arcMoveLateralStrength: 0.75
   m_rushStanceDuration: 2.63
   m_rushTravelSeconds: 0.35
   m_rushEndDuration: 2.66
