@@ -44,6 +44,8 @@ public class EnemyBoss02AI : MonoBehaviour, IStabReceiver, IDamageGuard
     [SerializeField] private float m_arcApproachWeight = 50.0f;
     [Tooltip("中距離で突進を選ぶ重み。Arc Approach Weightとの比率で確率が決まります。")]
     [SerializeField] private float m_rushWeight = 50.0f;
+    [Tooltip("この回数だけMoveに入った後、次の行動選択を必ずRushにします。0以下で無効です。")]
+    [SerializeField] private int m_forceRushAfterMoveCount = 3;
 
     [Header("Attack")]
     [Tooltip("通常攻撃を開始できる距離。この距離以内ならその場でひっかき攻撃します。")]
@@ -114,6 +116,7 @@ public class EnemyBoss02AI : MonoBehaviour, IStabReceiver, IDamageGuard
     private bool m_rushHitboxEnabled;
     private bool m_attackAfterMoveEnd;
     private bool m_useArcMove;
+    private int m_moveEntryCount;
     private float m_arcMoveSideSign = 1f;
     private Vector3 m_rushStartPosition;
     private Vector3 m_rushTargetPosition;
@@ -292,6 +295,12 @@ public class EnemyBoss02AI : MonoBehaviour, IStabReceiver, IDamageGuard
         if (m_player == null || m_cooldownTimer > 0f)
             return;
 
+        if (ShouldForceRushByMoveCount())
+        {
+            BeginRush();
+            return;
+        }
+
         float distance = DistanceToPlayer();
         if (distance <= AttackRange)
         {
@@ -383,6 +392,7 @@ public class EnemyBoss02AI : MonoBehaviour, IStabReceiver, IDamageGuard
             return;
         }
 
+        m_animator.TriggerIdle();
         FinishAction();
     }
 
@@ -474,6 +484,7 @@ public class EnemyBoss02AI : MonoBehaviour, IStabReceiver, IDamageGuard
     {
         m_useArcMove = useArcMove;
         m_attackAfterMoveEnd = attackAfterMoveEnd;
+        m_moveEntryCount++;
         m_arcMoveSideSign = UnityEngine.Random.value < 0.5f ? -1f : 1f;
         m_animator.TriggerMove();
         ChangeState(Boss02State.Move);
@@ -488,6 +499,7 @@ public class EnemyBoss02AI : MonoBehaviour, IStabReceiver, IDamageGuard
 
     private void BeginRush()
     {
+        m_moveEntryCount = 0;
         ApplySelfMagnet();
         m_animator.TriggerRush();
         ChangeState(Boss02State.RushStance);
@@ -531,6 +543,11 @@ public class EnemyBoss02AI : MonoBehaviour, IStabReceiver, IDamageGuard
 
         m_state = next;
         m_stateTimer = 0f;
+    }
+
+    private bool ShouldForceRushByMoveCount()
+    {
+        return m_forceRushAfterMoveCount > 0 && m_moveEntryCount >= m_forceRushAfterMoveCount;
     }
 
     private bool ChooseRushOverArcApproach()

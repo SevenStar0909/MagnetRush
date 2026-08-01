@@ -7,6 +7,7 @@ public class EnemyBoss02Animator : MonoBehaviour
     [SerializeField] private Animator m_animator;
 
     [Header("Animator Parameter Names")]
+    [SerializeField] private string m_idleTriggerName = "Idle";
     [SerializeField] private string m_attackTriggerName = "Attack";
     [SerializeField] private string m_moveTriggerName = "Move";
     [SerializeField] private string m_moveEndTriggerName = "MoveEnd";
@@ -15,6 +16,7 @@ public class EnemyBoss02Animator : MonoBehaviour
     [SerializeField] private string m_downTriggerName = "Down";
     [SerializeField] private string m_downEndTriggerName = "DownEnd";
 
+    private int m_idleTriggerHash;
     private int m_attackTriggerHash;
     private int m_moveTriggerHash;
     private int m_moveEndTriggerHash;
@@ -38,6 +40,7 @@ public class EnemyBoss02Animator : MonoBehaviour
         if (m_animator == null)
             m_animator = GetComponentInChildren<Animator>(true);
 
+        m_idleTriggerHash = Animator.StringToHash(m_idleTriggerName);
         m_attackTriggerHash = Animator.StringToHash(m_attackTriggerName);
         m_moveTriggerHash = Animator.StringToHash(m_moveTriggerName);
         m_moveEndTriggerHash = Animator.StringToHash(m_moveEndTriggerName);
@@ -53,6 +56,7 @@ public class EnemyBoss02Animator : MonoBehaviour
         }
     }
 
+    public void TriggerIdle() => SetTrigger(m_idleTriggerHash);
     public void TriggerAttack() => SetTrigger(m_attackTriggerHash);
     public void TriggerMove() => SetTrigger(m_moveTriggerHash);
     public void TriggerMoveEnd() => SetTrigger(m_moveEndTriggerHash);

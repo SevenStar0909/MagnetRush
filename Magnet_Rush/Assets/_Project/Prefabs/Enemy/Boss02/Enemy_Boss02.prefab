@@ -443,6 +443,7 @@ MonoBehaviour:
   m_meleeRange: 35
   m_arcApproachWeight: 50
   m_rushWeight: 50
+  m_forceRushAfterMoveCount: 3
   m_attackRange: 4
   m_attackDuration: 3.56
   m_attackHitStartTime: 1.33
@@ -479,6 +480,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MagnetRush.Enemy::EnemyBoss02Animator
   m_animator: {fileID: 5391226065646052218}
+  m_idleTriggerName: Idle
   m_attackTriggerName: Attack
   m_moveTriggerName: Move
   m_moveEndTriggerName: MoveEnd
